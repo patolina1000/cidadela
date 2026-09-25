@@ -15,7 +15,6 @@ public partial class GameRoot : Node3D
     private SimWorld _world = null!;
     private readonly SimClock _clock = new();
     private WorldView _view = null!;
-    private CameraRig _camera = null!;
     private Label _debugLabel = null!;
 
     private System.Numerics.Vector2 _lastMoveSent;
@@ -30,9 +29,7 @@ public partial class GameRoot : Node3D
         _view = GetNode<WorldView>("WorldView");
         _view.Build(_world);
 
-        _camera = GetNode<CameraRig>("CameraRig");
-        _camera.Target = _view.CastellanNode;
-        _camera.SnapToTarget();
+        GetNode<CameraRig>("CameraRig").Target = _view.CastellanNode;
 
         _debugLabel = GetNode<Label>("DebugHud/DebugLabel");
     }
@@ -50,14 +47,13 @@ public partial class GameRoot : Node3D
     }
 
     /// <summary>
-    /// WASD é relativo à câmera; a simulação quer direção no mundo.
+    /// A câmera não gira, então W é sempre o norte (-Z) do mundo.
     /// Só manda comando quando a direção muda, para não encher a fila.
     /// </summary>
     private void SendMoveInput()
     {
         Vector2 input = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
-        Vector3 world = new Vector3(input.X, 0f, input.Y).Rotated(Vector3.Up, _camera.Yaw);
-        var direction = new System.Numerics.Vector2(world.X, world.Z);
+        var direction = new System.Numerics.Vector2(input.X, input.Y);
 
         if (direction == _lastMoveSent)
             return;

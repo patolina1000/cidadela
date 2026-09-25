@@ -125,3 +125,25 @@ onde errou, correções manuais e quanto tempo levou.
   - Tentei exportar o GDD com `maxBytes: 1` para forçar salvar em arquivo; foi recusado. Sem `maxBytes`, funcionou.
 - **Correções manuais:** nenhuma.
 - **Tempo:** cerca de 3 min de relógio (20:41–20:43).
+
+---
+
+## 2026-09-25 — Câmera copiada do Factorio
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** pesquisar como funciona a câmera do Factorio e copiar.
+- **O que foi pesquisado:** no Factorio a câmera fica travada no personagem (sempre no centro), não gira e
+  não arrasta no modo personagem; o jogador só mexe no zoom pela roda. Valores do jogo base, segundo o mod
+  Zooming Reinvented: cerca de 1,1 por clique e afastamento máximo de cerca de 0,4.
+- **O que foi feito:**
+  - `CameraRig` reescrito: travado no Castelão sem atraso (o desenho dele já é interpolado entre ticks),
+    sem giro, inclinação fixa em 55° e zoom de 0,4 a 2,5 com passo de 1,1 por clique (suavizado).
+  - Saíram o giro com o botão do meio e a inclinação variável. O WASD agora é fixo no mundo
+    (W = norte), e o código que girava a entrada pela câmera foi removido.
+  - GDD (seções 12 e 20) atualizado no Claude Docs e reexportado, com as fontes.
+  - Verificado: câmera na mesma posição do Castelão; D andou para leste; depois de 12 cliques de zoom para
+    fora, a distância parou em 40 (= 16 / 0,4).
+- **O que deu errado:** a wiki de controles do Factorio e duas páginas de mods não dão todos os números do jogo
+  base; os valores de zoom vêm da descrição de um mod, que cita os valores do jogo base.
+- **Correções manuais:** nenhuma.
+- **Tempo:** cerca de 3 min de relógio (20:47–20:49), mais a pesquisa antes.
