@@ -14,6 +14,10 @@ public partial class WorldView : Node3D
 
     private SimWorld _world = null!;
     private readonly Dictionary<Villager, Node3D> _villagerNodes = new();
+    private Node3D _castellanNode = null!;
+
+    /// <summary>Nó desenhado do Castelão, para a câmera seguir.</summary>
+    public Node3D CastellanNode => _castellanNode;
 
     public void Build(SimWorld world)
     {
@@ -39,6 +43,8 @@ public partial class WorldView : Node3D
             _villagerNodes[villager] = AddShape($"Villager_{villager.Id}", mesh, Palette.Bone, Vector3.Zero);
         }
 
+        _castellanNode = BuildCastellan();
+
         Render(0.0);
     }
 
@@ -51,6 +57,31 @@ public partial class WorldView : Node3D
                 villager.PreviousPosition, villager.Position, (float)alpha);
             node.Position = new Vector3(p.X + 0.5f, 0.4f, p.Y + 0.5f);
         }
+
+        Castellan castellan = _world.Castellan;
+        System.Numerics.Vector2 c = System.Numerics.Vector2.Lerp(
+            castellan.PreviousPosition, castellan.Position, (float)alpha);
+        _castellanNode.Position = new Vector3(c.X + 0.5f, 0f, c.Y + 0.5f);
+        // Basis.LookingAt olha para -Z; o "nariz" do Castelão fica em -Z local.
+        var facing = new Vector3(castellan.Facing.X, 0f, castellan.Facing.Y);
+        _castellanNode.Basis = Basis.LookingAt(facing, Vector3.Up);
+    }
+
+    /// <summary>Cápsula maior e escura, com um "nariz" que mostra para onde está virado.</summary>
+    private Node3D BuildCastellan()
+    {
+        var root = new Node3D { Name = "Castellan" };
+        AddChild(root);
+
+        var body = new CapsuleMesh { Radius = 0.3f, Height = 1.2f };
+        body.Material = new StandardMaterial3D { AlbedoColor = Palette.DeepPurple, Roughness = 0.8f };
+        root.AddChild(new MeshInstance3D { Name = "Body", Mesh = body, Position = new Vector3(0f, 0.6f, 0f) });
+
+        var nose = new BoxMesh { Size = new Vector3(0.14f, 0.14f, 0.25f) };
+        nose.Material = new StandardMaterial3D { AlbedoColor = Palette.Pumpkin, Roughness = 0.8f };
+        root.AddChild(new MeshInstance3D { Name = "Nose", Mesh = nose, Position = new Vector3(0f, 0.9f, -0.35f) });
+
+        return root;
     }
 
     private void BuildGround(WorldGrid grid)

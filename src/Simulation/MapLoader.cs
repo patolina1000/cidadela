@@ -25,6 +25,11 @@ public static class MapLoader
 
         var world = new SimWorld(new WorldGrid(data.Width, data.Height));
 
+        if (data.Castellan is null)
+            throw new FormatException("Mapa sem o Castelão.");
+        GridPos start = Checked(world, data.Castellan.X, data.Castellan.Z);
+        world.SetCastellan(new System.Numerics.Vector2(start.X, start.Z), data.Castellan.Speed);
+
         foreach (PlacedData r in data.Resources)
             world.AddResource(r.Kind, Checked(world, r.X, r.Z));
 
@@ -54,6 +59,7 @@ public static class MapLoader
     {
         public int Width { get; set; }
         public int Height { get; set; }
+        public CastellanData? Castellan { get; set; }
         public List<PlacedData> Resources { get; set; } = new();
         public List<PlacedData> Machines { get; set; } = new();
         public List<VillagerData> Villagers { get; set; } = new();
@@ -64,6 +70,13 @@ public static class MapLoader
         public string Kind { get; set; } = "";
         public int X { get; set; }
         public int Z { get; set; }
+    }
+
+    private sealed class CastellanData
+    {
+        public int X { get; set; }
+        public int Z { get; set; }
+        public float Speed { get; set; } = 6f;
     }
 
     private sealed class VillagerData

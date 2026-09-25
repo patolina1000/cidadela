@@ -49,7 +49,8 @@ onde errou, correções manuais e quanto tempo levou.
   - Na chamada `bind_event` o MCP exige que a ação exista antes; `ensure_binding` resolve em uma chamada.
   - `input_sequence` do MCP recusou o formato de passos tentado; os testes usaram `input_action` avulso.
   - Um teste com a tecla W simulada (`input_key`) deslocou o foco numa direção inesperada; o teste
-    controlado com `input_action` deu a direção correta. **Causa não identificada — confirmar no teclado real.**
+    controlado com `input_action` deu a direção correta. *Resolvido na tarefa do Castelão:* o W foi enviado
+    logo depois do Q, com o giro de 90° ainda animando, então a "frente" estava no meio do caminho. Não era bug.
 - **Correções manuais (o quê e quanto tempo):** nenhuma no código. O humano moveu o GDD para `docs/` à mão.
 - **Tempo:** cerca de 15 min de trabalho do agente (20:14–20:29), sem contar a revisão do plano.
 - **Commits:** `a250651` (regras e diário) e o commit do marco 1.
@@ -78,3 +79,28 @@ onde errou, correções manuais e quanto tempo levou.
 - **Tempo:** cerca de 10 min.
 - **Impacto no código:** o marco 1 tem câmera livre com WASD. Isso muda: WASD passa a mover o Castelão
   e a câmera o segue. Fica como próxima tarefa.
+
+---
+
+## 2026-09-25 — Castelão: personagem principal andando com WASD
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** criar o personagem principal e fazê-lo andar (GDD, seção 20).
+- **O que foi feito:**
+  - Simulação: `Castellan` (posição, posição anterior, direção, velocidade), fila de comandos
+    (`ISimCommand` + `MoveCommand`) aplicada no começo de cada tick, e o Castelão preso dentro do mapa.
+    A posição inicial e a velocidade (6 células/s) vêm do `mapa_teste.json`.
+  - Cena: o `GameRoot` lê o WASD, gira a direção pelo giro da câmera e manda um `MoveCommand` só quando a
+    direção muda. O `WorldView` desenha o Castelão como cápsula roxa (paleta) com "nariz" laranja apontando
+    a direção. O `CameraRig` segue o Castelão com atraso suave; o movimento livre da câmera saiu.
+  - Ações de input renomeadas: `camera_forward/back/left/right` → `move_*`.
+  - `<Nullable>enable</Nullable>` no csproj (o código já usava anotações; o build dava 2 avisos).
+  - Verificado rodando: W andou para -Z com a câmera sem giro; depois do Q, D andou para -Z (a "direita"
+    girada); a câmera ficou centrada nele; 20 ticks/s, sem erros.
+- **O que deu errado:**
+  - Avisos CS8632 porque o projeto não tinha nullable ativado; resolvido no csproj.
+  - `input_action` do MCP só muda o estado da ação e não gera evento, então o Q (lido em `_UnhandledInput`)
+    não girou por esse caminho; com `input_key` funcionou.
+- **Correções manuais:** nenhuma.
+- **Tempo:** cerca de 3 min de relógio (20:36–20:38), segundo o `date` do terminal.
+- **Fica para depois:** colisão com recursos e máquinas (hoje ele atravessa), alcance de 10 células, coleta.

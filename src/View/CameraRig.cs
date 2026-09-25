@@ -3,33 +3,38 @@ using Godot;
 namespace Cidadela.View;
 
 /// <summary>
-/// Câmera estilo Albion (GDD, seção 12). O nó fica no chão, no ponto que a câmera olha;
-/// o giro é o do próprio nó e a câmera filha orbita a uma distância e inclinação.
-/// WASD move, roda do mouse dá zoom, Q/E giram 90°.
+/// Câmera estilo Albion (GDD, seções 12 e 20) que segue o Castelão.
+/// O nó fica no chão, no ponto que a câmera olha; o giro é o do próprio nó e a câmera
+/// filha orbita a uma distância e inclinação. Roda do mouse dá zoom, Q/E giram 90°.
 /// </summary>
 public partial class CameraRig : Node3D
 {
     [Export] public float MinDistance = 6f;
-    [Export] public float MaxDistance = 60f;
-    [Export] public float StartDistance = 22f;
+    [Export] public float MaxDistance = 40f;
+    [Export] public float StartDistance = 16f;
     [Export] public float ZoomStep = 0.85f;
 
     /// <summary>Inclinação em graus acima do horizonte: mais inclinada de perto, mais vertical de longe.</summary>
     [Export] public float PitchNear = 50f;
     [Export] public float PitchFar = 65f;
 
-    /// <summary>Velocidade de movimento em telas por segundo, proporcional ao zoom.</summary>
-    [Export] public float PanSpeed = 0.9f;
-
     /// <summary>Quão rápido zoom e giro alcançam o alvo (maior = mais rápido).</summary>
     [Export] public float Smoothing = 12f;
+
+    /// <summary>Quão rápido a câmera alcança o Castelão; menor = atraso mais visível.</summary>
+    [Export] public float FollowSmoothing = 8f;
+
+    /// <summary>O que a câmera segue.</summary>
+    public Node3D? Target { get; set; }
+
+    /// <summary>Giro atual em radianos, para converter a entrada do jogador em direção no mundo.</summary>
+    public float Yaw => _yaw;
 
     private Camera3D _camera = null!;
     private float _distance;
     private float _targetDistance;
     private float _yaw;
     private float _targetYaw;
-    private Rect2 _bounds = new(Vector2.Zero, new Vector2(float.MaxValue, float.MaxValue));
 
     public override void _Ready()
     {
@@ -40,8 +45,12 @@ public partial class CameraRig : Node3D
         ApplyTransform();
     }
 
-    /// <summary>Limita o ponto focal a uma área do mapa (em X/Z).</summary>
-    public void SetBounds(Rect2 bounds) => _bounds = bounds;
+    /// <summary>Pula direto para o alvo, sem suavizar (início de jogo, renascer).</summary>
+    public void SnapToTarget()
+    {
+        if (Target is not null)
+            Position = GroundPoint(Target);
+    }
 
     public override void _UnhandledInput(InputEvent @event)
     {
@@ -69,21 +78,17 @@ public partial class CameraRig : Node3D
         _distance = Mathf.Lerp(_distance, _targetDistance, blend);
         _yaw = Mathf.Lerp(_yaw, _targetYaw, blend);
 
-        Vector2 input = Input.GetVector("camera_left", "camera_right", "camera_forward", "camera_back");
-        if (input != Vector2.Zero)
+        if (Target is not null)
         {
-            // Direção relativa à câmera: "frente" é para onde ela olha, projetado no chão.
-            Vector3 move = new Vector3(input.X, 0f, input.Y).Rotated(Vector3.Up, _yaw);
-            Position += move * PanSpeed * _distance * dt;
+            float follow = 1f - Mathf.Exp(-FollowSmoothing * dt);
+            Position = Position.Lerp(GroundPoint(Target), follow);
         }
-
-        Position = new Vector3(
-            Mathf.Clamp(Position.X, _bounds.Position.X, _bounds.End.X),
-            0f,
-            Mathf.Clamp(Position.Z, _bounds.Position.Y, _bounds.End.Y));
 
         ApplyTransform();
     }
+
+    private static Vector3 GroundPoint(Node3D target) =>
+        new(target.GlobalPosition.X, 0f, target.GlobalPosition.Z);
 
     private void Zoom(float factor)
     {
