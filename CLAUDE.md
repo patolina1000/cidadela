@@ -5,7 +5,7 @@
 
 Jogo de automação medieval com defesa de hordas (estilo Factorio + tower defense).
 O design completo está em `docs/GDD.md`. Leia as seções relevantes antes de cada tarefa;
-as mais importantes para código são a 10 (MVP), a 12 (câmera e andares), a 13 (engine) e a 17 (arte).
+as mais importantes para código são a 10 (MVP), a 12 (câmera e andares), a 13 (engine), a 17 (arte) e a 20 (personagem principal, o Castelão).
 
 **Como o projeto funciona:** o humano dirige e revisa; a IA implementa. Não invente design:
 se algo não está no GDD nem no pedido, pergunte ou escolha o mais simples e diga o que escolheu.

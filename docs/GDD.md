@@ -21,6 +21,7 @@ Exportado do Claude Docs em 25/09/2026. A versão oficial (viva) está no claude
 3. **Pessoas são recursos vivos.** Aldeões são educados e equipados pela automação e viram soldados, magos e curandeiros.
 4. **Fácil de entrar, quase impossível de dominar.** As primeiras noites ensinam; as últimas exigem domínio total do sistema.
 5. **Medieval com fantasia controlada.** Tecnologia de água, vento e tração animal no início; alquimia e runas mágicas no fim substituem a "eletricidade".
+6. **O Castelão está sempre em campo.** O jogador é um personagem, não uma câmera: coleta, constrói, luta e comanda de perto, e a câmera o segue (seção 20).
 
 ## 2. Referências e o que pegar de cada
 
@@ -57,7 +58,7 @@ flowchart LR
   G --> A
 ```
 
-**Loop curto (segundos a minutos):** colocar máquinas, ligar esteiras, resolver gargalos.
+**Loop curto (segundos a minutos):** andar com o Castelão, colocar máquinas, ligar esteiras, resolver gargalos.
 
 **Loop médio (um ciclo dia/noite):** preparar a defesa para a próxima horda, reparar danos, repor munição e poções.
 
@@ -279,6 +280,7 @@ Comece pequeno: um protótipo 3D simples (formas básicas, câmera estilo Albion
 - 1 cadeia completa: ferro → espada → soldado.
 - 1 cadeia de munição: madeira → flechas → torre de arqueiros.
 - Ciclo dia/noite com 10 noites e 2 tipos de inimigo.
+- O Castelão (seção 20): anda com WASD, coleta e constrói no alcance, luta nas noites e renasce no Coração.
 
 ### Roadmap sugerido
 
@@ -314,8 +316,8 @@ Câmera 3D em perspectiva, de cima e inclinada (cerca de 50° a 60°), como em A
 
 ### Controles da câmera
 
-- **Mover:** WASD ou arrastar com o botão do meio.
-- **Zoom:** roda do mouse, de visão de rua até visão do mapa inteiro.
+- **Mover:** WASD move o Castelão e a câmera o segue (seção 20). Não há câmera livre no início; a visão remota vem na Era IV.
+- **Zoom:** roda do mouse, em torno do Castelão, de visão de rua até visão ampla da base.
 - **Girar:** Q/E em passos de 90° (girar livre confunde a leitura das esteiras).
 - **Inclinação:** ajusta levemente com o zoom (mais vertical de longe, mais inclinada de perto).
 
@@ -612,11 +614,62 @@ Mesmo o autor de um desses servidores MCP avisa, no [fórum do Godot](https://fo
 - Não confiar em máquina virtual Windows no Mac (Parallels) para medir desempenho: ela roda Windows para ARM, não o PC típico do jogador.
 - Não usar a versão do Godot da Steam: ela não tem suporte a C#.
 
-## 20. Perguntas em aberto
+## 20. Personagem principal: o Castelão
+
+**Decidido: o jogador controla um personagem, o Castelão, que anda com WASD e fica sempre no centro da câmera.** Tudo passa por ele: coletar, construir, lutar e comandar. É a mesma escolha de Factorio, em que o engenheiro está sempre no centro da tela.
+
+### Por que um personagem, e não uma câmera livre
+
+O criador de Factorio, Michal Kovařík, dá dois motivos ([entrevista](https://www.pushtotalk.gg/p/factorio-claude-code)):
+
+1. **É pessoal:** "seu avatar está ali", pode ser alcançado e pode lutar.
+2. **A progressão vale mais:** ganhar robôs e controle à distância só é recompensa se no começo você não tem isso.
+
+No nosso jogo isso encaixa nos pilares: o Castelão é o primeiro trabalhador da vila e o último defensor do Coração.
+
+### Como os jogos de referência resolvem
+
+| Jogo | O personagem | Câmera | O que pegar |
+| --- | --- | --- | --- |
+| [Factorio](https://wiki.factorio.com/player) | Engenheiro: minera e fabrica à mão, alcance de 10 células, 250 de vida, renasce em 10 s | Inclinada, sempre centrada nele | Alcance limitado; trabalho manual lento que empurra para automatizar |
+| [Factorio 2.0 / Space Age](https://factorio.com/blog/post/fff-380) | Visão remota: construir e configurar à distância, com robôs entregando os itens | Sai do personagem só na visão remota | Liberdade de câmera como recompensa tardia, não como padrão |
+| [The Riftbreaker](https://en.wikipedia.org/wiki/The_Riftbreaker) | Mecha que luta, constrói a base e explora; renasce no portal e larga a arma onde morreu | Top-down no personagem | O herói luta de verdade nas ondas, junto com as torres |
+| [Necesse](https://necessewiki.com/Settlements) | Herói top-down; os colonos trabalham, pegam equipamento dos baús e defendem contra ataques noturnos | Centrada no herói | Aldeões se equipam sozinhos a partir do estoque; o herói organiza |
+| [Mindustry](https://mindustry.miraheze.org/wiki/Mindustry) | Pequena nave de construção lançada do Núcleo; perder o Núcleo é a derrota | Segue a nave | O Castelão sai do Coração da Cidadela, que é o que não pode cair |
+| [Core Keeper](https://en.wikipedia.org/wiki/Core_Keeper) | Herói com mineração, fazenda, automação e combate | Top-down no personagem | Automação e aventura na mesma câmera |
+
+### Regras do Castelão
+
+- **Movimento:** WASD relativo à câmera; Q/E continuam girando a câmera em 90°. A velocidade inicial é um número de balanceamento em JSON (Factorio usa 8,9 células/s como referência).
+- **Câmera:** segue o Castelão com um leve atraso suave. A roda do mouse faz zoom em torno dele. Não há arrastar a câmera para longe no começo.
+- **Alcance:** constrói, coleta e abre máquinas só num raio em volta dele (ponto de partida: 10 células, como Factorio).
+- **Trabalho manual:** coleta madeira e pedra e fabrica itens simples à mão, devagar. Isso ensina as receitas e deixa claro por que automatizar.
+- **Inventário:** carrega uma mochila; é o "carregador humano" da Era I (seção 4).
+- **Combate:** luta nas noites. No início segura sozinho os goblins; depois fica mais fraco que a horda e passa a liderar, com aura de moral para os soldados próximos.
+- **Equipamento:** usa as mesmas espadas, armaduras e poções da fábrica. Melhorar a fábrica melhora ele também.
+- **Morte:** renasce no Coração da Cidadela depois de alguns segundos, largando o que carregava onde caiu. A derrota continua sendo só a destruição do Coração. No nível Lenda, pode ser permanente.
+- **Andares (seção 12):** o andar ativo acompanha o andar em que o Castelão está.
+
+### Progressão: do herói ao comandante
+
+A liberdade de câmera e de construção é recompensa, seguindo a lógica de Factorio:
+
+| Era | O Castelão ganha |
+| --- | --- |
+| I — Madeira | Só o próprio alcance; carrega e fabrica à mão |
+| II — Ferro | Aprendizes: aldeões que constroem as plantas (blueprints) que ele marca, dentro das muralhas |
+| III — Aço | Estandarte de comando: ordens de posição para as tropas perto dele |
+| IV — Arcana | Olho arcano: visão remota para construir e configurar em qualquer ponto já explorado |
+
+### Regra técnica
+
+A posição e a vida do Castelão são estado da **simulação**, em ticks fixos como o resto. O teclado vira um comando de movimento aplicado no próximo tick; a cena só desenha e interpola, e a câmera segue o desenho.
+
+## 21. Perguntas em aberto
 
 - [x] Decidido: 3D com câmera top-down inclinada (estilo Albion), fábricas de até 3 andares.
 - [ ] Campanha com mapas fixos, mapa procedural ou os dois?
-- [ ] O jogador controla um herói/lorde no mapa ou é só uma câmera?
+- [x] Decidido: o jogador controla o Castelão, um personagem com WASD e câmera que o segue (seção 20).
 - [ ] Aldeões podem morrer de vez (permadeath) ou voltam feridos?
 - [ ] Vai ter multiplayer cooperativo?
 - [ ] Qual o total de noites da campanha: 50 é bom ou prefere mais curto?
@@ -643,3 +696,13 @@ Adicionadas em 25/09/2026 (seções 13 a 16):
 - [BuildMVPFast — IA para modelagem 3D](https://www.buildmvpfast.com/articles/best-llms-2026-guide/3d-modeling-ai)
 - [Viggle — software de animação 3D com IA](https://viggle.ai/blog/best-ai-animation-software-3d-character-work)
 - [Uthana — texto para movimento](https://uthana.com/product/text-to-motion)
+
+Adicionadas em 25/09/2026 (seção 20):
+
+- [Push to Talk — entrevista com o criador de Factorio](https://www.pushtotalk.gg/p/factorio-claude-code)
+- [Wiki oficial de Factorio — Player](https://wiki.factorio.com/player)
+- [Factorio Friday Facts #380 — Remote view](https://factorio.com/blog/post/fff-380)
+- [Wikipedia — The Riftbreaker](https://en.wikipedia.org/wiki/The_Riftbreaker)
+- [Necesse Wiki — Settlements](https://necessewiki.com/Settlements)
+- [Mindustry Encyclopedia — Mindustry](https://mindustry.miraheze.org/wiki/Mindustry)
+- [Wikipedia — Core Keeper](https://en.wikipedia.org/wiki/Core_Keeper)

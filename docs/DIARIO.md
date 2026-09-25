@@ -53,3 +53,28 @@ onde errou, correções manuais e quanto tempo levou.
 - **Correções manuais (o quê e quanto tempo):** nenhuma no código. O humano moveu o GDD para `docs/` à mão.
 - **Tempo:** cerca de 15 min de trabalho do agente (20:14–20:29), sem contar a revisão do plano.
 - **Commits:** `a250651` (regras e diário) e o commit do marco 1.
+
+---
+
+## 2026-09-25 — GDD: personagem principal (o Castelão)
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, editando o GDD vivo no Claude Docs.
+- **Pedido:** colocar no GDD um personagem principal que anda com WASD, com a câmera seguindo, e
+  centrar o jogo nele. Pesquisar como Factorio e outros jogos de automação fazem isso.
+- **O que foi feito:**
+  - Nova seção 20 no GDD (Claude Docs + reexport em `docs/GDD.md`): o Castelão. Traz por que ter um
+    personagem, a tabela de referências (Factorio, Factorio 2.0, The Riftbreaker, Necesse, Mindustry, Core Keeper),
+    as regras (movimento, câmera, alcance de 10 células, trabalho manual, combate, morte, andares), a progressão
+    por era (aprendizes → estandarte → olho arcano) e a regra técnica (posição na simulação).
+  - Ajustes em outras seções: pilar 6, loop curto, controles de câmera (seção 12), item no MVP e pergunta em
+    aberto marcada como decidida. "Perguntas em aberto" virou a seção 21.
+  - `CLAUDE.md` / `AGENTS.md` passam a citar a seção 20.
+- **O que deu errado:**
+  - Duas páginas (Mindustry e Core Keeper no Fandom) deram erro 402 no fetch. As linhas da tabela foram reescritas
+    para dizer só o que as páginas abertas confirmam, e a fonte da Mindustry trocou para a Miraheze.
+  - O export do Claude Docs veio grande demais para a resposta da ferramenta (62 mil caracteres); decodificado do
+    arquivo salvo com Python.
+- **Correções manuais:** nenhuma.
+- **Tempo:** cerca de 10 min.
+- **Impacto no código:** o marco 1 tem câmera livre com WASD. Isso muda: WASD passa a mover o Castelão
+  e a câmera o segue. Fica como próxima tarefa.
