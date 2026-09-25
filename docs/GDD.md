@@ -318,7 +318,7 @@ Câmera 3D em perspectiva, de cima e inclinada (cerca de 50° a 60°), como em A
 
 - **Mover:** WASD move o Castelão e a câmera o segue (seção 20). Não há câmera livre no início; a visão remota vem na Era IV.
 - **Zoom:** roda do mouse, em torno do Castelão, de visão de rua até visão ampla da base.
-- **Girar:** Q/E em passos de 90° (girar livre confunde a leitura das esteiras).
+- **Girar:** segurar o botão do meio do mouse e arrastar para os lados, em passos de 90° (girar livre confunde a leitura das esteiras). A câmera é toda no mouse; o teclado fica para o Castelão.
 - **Inclinação:** ajusta levemente com o zoom (mais vertical de longe, mais inclinada de perto).
 
 ### Como a câmera lida com os andares
@@ -640,7 +640,7 @@ No nosso jogo isso encaixa nos pilares: o Castelão é o primeiro trabalhador da
 
 ### Regras do Castelão
 
-- **Movimento:** WASD relativo à câmera; Q/E continuam girando a câmera em 90°. A velocidade inicial é um número de balanceamento em JSON (Factorio usa 8,9 células/s como referência).
+- **Movimento:** WASD relativo à câmera; a câmera gira e dá zoom só pelo mouse (seção 12). A velocidade inicial é um número de balanceamento em JSON (Factorio usa 8,9 células/s como referência).
 - **Câmera:** segue o Castelão com um leve atraso suave. A roda do mouse faz zoom em torno dele. Não há arrastar a câmera para longe no começo.
 - **Alcance:** constrói, coleta e abre máquinas só num raio em volta dele (ponto de partida: 10 células, como Factorio).
 - **Trabalho manual:** coleta madeira e pedra e fabrica itens simples à mão, devagar. Isso ensina as receitas e deixa claro por que automatizar.

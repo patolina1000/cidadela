@@ -104,3 +104,24 @@ onde errou, correções manuais e quanto tempo levou.
 - **Correções manuais:** nenhuma.
 - **Tempo:** cerca de 3 min de relógio (20:36–20:38), segundo o `date` do terminal.
 - **Fica para depois:** colisão com recursos e máquinas (hoje ele atravessa), alcance de 10 células, coleta.
+
+---
+
+## 2026-09-25 — Câmera toda no mouse
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** tirar o controle da câmera do teclado e deixar tudo no mouse.
+- **O que foi feito:**
+  - Giro: segurar o botão do meio e arrastar para os lados; cada 60 px (`RotateDragPixels`) dá um passo de 90°,
+    mantendo a regra do GDD. Arrastar para a direita gira o mundo para a direita. O zoom continua na roda.
+  - Removidas as ações `camera_rotate_left/right` (Q/E). O teclado fica só para o Castelão (WASD).
+  - GDD atualizado (seções 12 e 20) no Claude Docs e reexportado.
+  - Verificado: arrasto de 24 px não gira; arrasto de 70 px gira exatamente um passo.
+- **O que deu errado:**
+  - A primeira versão usava `motion.Relative`, que vem zerado nos eventos sintéticos do MCP; o teste não girava.
+    Troquei para a diferença de posição do mouse, que funciona com mouse real e sintético.
+  - Durante um teste, a câmera girou 6 passos e o Castelão andou cerca de 8 células sem comando meu: provavelmente
+    o humano mexendo na janela do jogo ao mesmo tempo. O teste controlado seguinte deu o resultado esperado.
+  - Tentei exportar o GDD com `maxBytes: 1` para forçar salvar em arquivo; foi recusado. Sem `maxBytes`, funcionou.
+- **Correções manuais:** nenhuma.
+- **Tempo:** cerca de 3 min de relógio (20:41–20:43).

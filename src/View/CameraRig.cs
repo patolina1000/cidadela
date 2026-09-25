@@ -5,7 +5,8 @@ namespace Cidadela.View;
 /// <summary>
 /// Câmera estilo Albion (GDD, seções 12 e 20) que segue o Castelão.
 /// O nó fica no chão, no ponto que a câmera olha; o giro é o do próprio nó e a câmera
-/// filha orbita a uma distância e inclinação. Roda do mouse dá zoom, Q/E giram 90°.
+/// filha orbita a uma distância e inclinação. Tudo no mouse: roda dá zoom; segurar o
+/// botão do meio e arrastar para os lados gira em passos de 90°.
 /// </summary>
 public partial class CameraRig : Node3D
 {
@@ -17,6 +18,9 @@ public partial class CameraRig : Node3D
     /// <summary>Inclinação em graus acima do horizonte: mais inclinada de perto, mais vertical de longe.</summary>
     [Export] public float PitchNear = 50f;
     [Export] public float PitchFar = 65f;
+
+    /// <summary>Quantos pixels de arrasto com o botão do meio valem um passo de 90°.</summary>
+    [Export] public float RotateDragPixels = 60f;
 
     /// <summary>Quão rápido zoom e giro alcançam o alvo (maior = mais rápido).</summary>
     [Export] public float Smoothing = 12f;
@@ -35,6 +39,9 @@ public partial class CameraRig : Node3D
     private float _targetDistance;
     private float _yaw;
     private float _targetYaw;
+    private bool _rotateDragging;
+    private float _rotateDragAccum;
+    private float _rotateDragLastX;
 
     public override void _Ready()
     {
@@ -54,20 +61,35 @@ public partial class CameraRig : Node3D
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        if (@event is InputEventMouseButton { Pressed: true } mouse)
+        if (@event is InputEventMouseButton mouse)
         {
-            if (mouse.ButtonIndex == MouseButton.WheelUp)
+            if (mouse.ButtonIndex == MouseButton.Middle)
+            {
+                _rotateDragging = mouse.Pressed;
+                _rotateDragAccum = 0f;
+                _rotateDragLastX = mouse.Position.X;
+            }
+            else if (mouse.Pressed && mouse.ButtonIndex == MouseButton.WheelUp)
+            {
                 Zoom(ZoomStep);
-            else if (mouse.ButtonIndex == MouseButton.WheelDown)
+            }
+            else if (mouse.Pressed && mouse.ButtonIndex == MouseButton.WheelDown)
+            {
                 Zoom(1f / ZoomStep);
+            }
         }
-        else if (@event.IsActionPressed("camera_rotate_left"))
+        else if (@event is InputEventMouseMotion motion && _rotateDragging)
         {
-            _targetYaw += Mathf.Pi / 2f;
-        }
-        else if (@event.IsActionPressed("camera_rotate_right"))
-        {
-            _targetYaw -= Mathf.Pi / 2f;
+            // Como agarrar o mundo: arrastar para a direita gira o mundo para a direita.
+            // Diferença de posição em vez de Relative: funciona também com eventos sintéticos.
+            _rotateDragAccum += motion.Position.X - _rotateDragLastX;
+            _rotateDragLastX = motion.Position.X;
+            while (Mathf.Abs(_rotateDragAccum) >= RotateDragPixels)
+            {
+                float step = Mathf.Sign(_rotateDragAccum);
+                _targetYaw -= step * Mathf.Pi / 2f;
+                _rotateDragAccum -= step * RotateDragPixels;
+            }
         }
     }
 
