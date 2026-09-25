@@ -3,9 +3,12 @@ using Godot;
 namespace Cidadela.View;
 
 /// <summary>
-/// Câmera no estilo do Factorio (GDD, seções 12 e 20), em 3D inclinado:
-/// travada no Castelão (sempre no centro, sem atraso), sem giro (norte sempre para cima),
-/// inclinação fixa e só o zoom na roda do mouse.
+/// Câmera top-down (GDD, seções 12 e 20), tudo no mouse:
+/// - Seguindo: presa no Castelão, mas espia na direção do cursor (estilo Nuclear Throne /
+///   Enter the Gungeon), sem deixar o Castelão sair da tela.
+/// - Solta: segurar o botão do meio arrasta o mundo (o ponto agarrado fica sob o cursor)
+///   e a câmera para exatamente onde foi solta. Volta a seguir quando o Castelão anda.
+/// - Zoom na roda, sem giro e com inclinação fixa (estilo Factorio).
 /// O nó fica no chão, no ponto que a câmera olha; a câmera filha fica a uma distância e inclinação.
 /// </summary>
 public partial class CameraRig : Node3D
@@ -28,12 +31,27 @@ public partial class CameraRig : Node3D
     /// <summary>Quão rápido o zoom alcança o alvo (maior = mais rápido).</summary>
     [Export] public float ZoomSmoothing = 15f;
 
+    /// <summary>Quanto a câmera espia com o cursor na borda da tela, em células, no zoom 1.</summary>
+    [Export] public float LookAheadCells = 4f;
+
+    /// <summary>Quão rápido o espiar (e a volta ao Castelão) alcança o alvo.</summary>
+    [Export] public float LookAheadSmoothing = 6f;
+
     /// <summary>O que a câmera segue.</summary>
     public Node3D? Target { get; set; }
 
     private Camera3D _camera = null!;
     private float _zoom = 1f;
     private float _targetZoom = 1f;
+
+    // Seguindo: foco = alvo + deslocamento suavizado.
+    private Vector3 _offset;
+
+    // Solta: foco livre, controlado pelo arrasto.
+    private bool _free;
+    private bool _dragging;
+    private Vector3 _grabPoint;
+    private Rect2 _bounds = new(new Vector2(-1e6f, -1e6f), new Vector2(2e6f, 2e6f));
 
     public override void _Ready()
     {
@@ -42,27 +60,111 @@ public partial class CameraRig : Node3D
         ApplyTransform();
     }
 
+    /// <summary>Limita o foco da câmera solta a uma área do mapa (em X/Z).</summary>
+    public void SetBounds(Rect2 bounds) => _bounds = bounds;
+
+    /// <summary>Volta a seguir o Castelão, suavemente, a partir de onde a câmera está.</summary>
+    public void ReturnToTarget()
+    {
+        if (!_free || _dragging || Target is null)
+            return;
+        _free = false;
+        _offset = Position - GroundPoint(Target);
+    }
+
     public override void _UnhandledInput(InputEvent @event)
     {
-        if (@event is not InputEventMouseButton { Pressed: true } mouse)
-            return;
-
-        if (mouse.ButtonIndex == MouseButton.WheelUp)
-            _targetZoom = Mathf.Min(_targetZoom * ZoomStep, MaxZoom);
-        else if (mouse.ButtonIndex == MouseButton.WheelDown)
-            _targetZoom = Mathf.Max(_targetZoom / ZoomStep, MinZoom);
+        if (@event is InputEventMouseButton mouse)
+        {
+            if (mouse.ButtonIndex == MouseButton.Middle)
+            {
+                if (mouse.Pressed && GroundUnder(mouse.Position) is Vector3 grab)
+                {
+                    _dragging = true;
+                    _free = true;
+                    _grabPoint = grab;
+                }
+                else
+                {
+                    _dragging = false;
+                }
+            }
+            else if (mouse.Pressed && mouse.ButtonIndex == MouseButton.WheelUp)
+            {
+                _targetZoom = Mathf.Min(_targetZoom * ZoomStep, MaxZoom);
+            }
+            else if (mouse.Pressed && mouse.ButtonIndex == MouseButton.WheelDown)
+            {
+                _targetZoom = Mathf.Max(_targetZoom / ZoomStep, MinZoom);
+            }
+        }
+        else if (@event is InputEventMouseMotion motion && _dragging)
+        {
+            DragTo(motion.Position);
+        }
     }
 
     public override void _Process(double delta)
     {
-        _zoom = Mathf.Lerp(_zoom, _targetZoom, 1f - Mathf.Exp(-ZoomSmoothing * (float)delta));
+        float dt = (float)delta;
+        _zoom = Mathf.Lerp(_zoom, _targetZoom, 1f - Mathf.Exp(-ZoomSmoothing * dt));
 
-        // Travada: o desenho do Castelão já é interpolado entre ticks, então seguir sem atraso fica suave.
-        if (Target is not null)
-            Position = new Vector3(Target.GlobalPosition.X, 0f, Target.GlobalPosition.Z);
+        if (!_free && Target is not null)
+        {
+            // O Castelão fica travado; só o deslocamento de espiar é suavizado.
+            float blend = 1f - Mathf.Exp(-LookAheadSmoothing * dt);
+            _offset = _offset.Lerp(LookAheadOffset(), blend);
+            Position = GroundPoint(Target) + _offset;
+        }
 
         ApplyTransform();
     }
+
+    /// <summary>
+    /// Cursor no centro = 0; na borda = <see cref="LookAheadCells"/>, maior quanto mais afastado o zoom.
+    /// Usa a posição do cursor na tela, não no chão, para a câmera não correr atrás de si mesma.
+    /// </summary>
+    private Vector3 LookAheadOffset()
+    {
+        Rect2 view = GetViewport().GetVisibleRect();
+        if (view.Size.X <= 0f || view.Size.Y <= 0f)
+            return Vector3.Zero;
+
+        Vector2 half = view.Size / 2f;
+        Vector2 fromCenter = (GetViewport().GetMousePosition() - half) / half;
+        fromCenter = fromCenter.Clamp(new Vector2(-1f, -1f), new Vector2(1f, 1f));
+        // A câmera não gira: direita da tela = +X, baixo da tela = +Z.
+        return new Vector3(fromCenter.X, 0f, fromCenter.Y) * (LookAheadCells / _zoom);
+    }
+
+    /// <summary>Move o foco para que o ponto agarrado volte a ficar sob o cursor.</summary>
+    private void DragTo(Vector2 screenPos)
+    {
+        if (GroundUnder(screenPos) is not Vector3 current)
+            return;
+
+        Position = ClampToBounds(Position + (_grabPoint - current));
+        ApplyTransform();
+    }
+
+    /// <summary>Ponto do chão (y = 0) sob uma posição da tela, ou null se o raio não chega ao chão.</summary>
+    private Vector3? GroundUnder(Vector2 screenPos)
+    {
+        Vector3 origin = _camera.ProjectRayOrigin(screenPos);
+        Vector3 dir = _camera.ProjectRayNormal(screenPos);
+        if (dir.Y >= -0.0001f)
+            return null;
+        float t = -origin.Y / dir.Y;
+        return origin + dir * t;
+    }
+
+    private Vector3 ClampToBounds(Vector3 p) => new(
+        Mathf.Clamp(p.X, _bounds.Position.X, _bounds.End.X),
+        0f,
+        Mathf.Clamp(p.Z, _bounds.Position.Y, _bounds.End.Y));
+
+    private static Vector3 GroundPoint(Node3D target) =>
+        new(target.GlobalPosition.X, 0f, target.GlobalPosition.Z);
 
     private void ApplyTransform()
     {

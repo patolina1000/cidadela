@@ -147,3 +147,31 @@ onde errou, correções manuais e quanto tempo levou.
   base; os valores de zoom vêm da descrição de um mod, que cita os valores do jogo base.
 - **Correções manuais:** nenhuma.
 - **Tempo:** cerca de 3 min de relógio (20:47–20:49), mais a pesquisa antes.
+
+---
+
+## 2026-09-25 — Câmera: espiar com o cursor e arrastar o mundo
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** a câmera travada podia atrapalhar a construção da base. Deixar o jogador mover a câmera
+  pelo mouse, do jeito mais fluido que os jogos top-down usam.
+- **O que foi pesquisado:** Nuclear Throne e Enter the Gungeon puxam a câmera para o cursor sem perder
+  o personagem de vista; o mapa do Factorio se arrasta com o mouse; o guia "Scroll Back" (Itay Keren,
+  GDC 2015) recomenda suavização contínua e nada de saltos.
+- **O que foi feito:**
+  - Espiar: a câmera se desloca na direção do cursor, até 4 células com o cursor na borda (mais com zoom
+    afastado), suavizado. O Castelão continua travado; só o deslocamento é suavizado. O cálculo usa a
+    posição do cursor na tela, não no chão, para a câmera não correr atrás de si mesma.
+  - Arrastar: botão do meio agarra o ponto do chão sob o cursor e o mantém lá (raio da câmera até y = 0).
+    A câmera fica solta, presa aos limites do mapa, e volta suavemente ao Castelão quando ele anda.
+  - GDD (seções 12 e 20) atualizado e reexportado.
+  - Verificado: cursor na borda direita → câmera 4 células a leste; arrasto de 200 px → 4,09 células,
+    igual ao valor calculado para esse zoom; a câmera parou onde foi solta; W trouxe ela de volta ao Castelão.
+- **O que deu errado:**
+  - A primeira versão tinha inércia ao soltar (como mapas de celular). A velocidade era calculada pelo tempo
+    do frame e os eventos chegavam em rajada, e a câmera deslizou até a borda do mapa. Corrigi a medição, mas
+    decidi tirar a inércia: para construir, a câmera precisa parar onde foi solta.
+  - Os eventos sintéticos do MCP e a posição real do cursor se misturam na primeira leitura; foi preciso
+    esperar a suavização assentar antes de medir.
+- **Correções manuais:** nenhuma.
+- **Tempo:** cerca de 3 min de relógio (20:53–20:56), mais a pesquisa antes.

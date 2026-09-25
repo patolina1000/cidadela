@@ -316,10 +316,12 @@ Câmera 3D em perspectiva, de cima e inclinada (cerca de 50° a 60°), como em A
 
 ### Controles da câmera
 
-- **Estilo Factorio:** a câmera fica travada no Castelão, sempre no centro da tela, sem atraso. Não gira e não arrasta; o norte fica sempre para cima ([controles do Factorio](https://wiki.factorio.com/Controls)).
-- **Mover:** WASD move o Castelão, e W é sempre o norte. Não há câmera livre no início; a visão remota vem na Era IV.
-- **Zoom:** roda do mouse, o único controle de câmera do jogador. Cada clique multiplica o zoom por 1,1 e o afastamento máximo é 0,4 do zoom padrão, os valores do Factorio segundo o mod [Zooming Reinvented](https://mods.factorio.com/mod/ZoomingReinvented).
-- **Inclinação:** fixa em 55°, para a leitura das esteiras nunca mudar.
+- **Seguindo o Castelão:** o Castelão fica sempre na tela. A câmera espia na direção do cursor, até 4 células com o cursor na borda, como em [Nuclear Throne](https://stevensplint.com/nuclear-throne-style-camera-system/) e Enter the Gungeon. Basta apontar o mouse para ver além.
+- **Arrastar o mundo:** segurar o botão do meio agarra o chão, que fica preso sob o cursor, como no mapa do Factorio ([controles](https://wiki.factorio.com/Controls)). A câmera para exatamente onde foi solta, sem deslizar, para construir com precisão. Ela não sai do mapa.
+- **Voltar:** andar com WASD traz a câmera de volta ao Castelão, com suavidade.
+- **Zoom:** roda do mouse. Cada clique multiplica o zoom por 1,1 e o afastamento máximo é 0,4 do zoom padrão, os valores do Factorio segundo o mod [Zooming Reinvented](https://mods.factorio.com/mod/ZoomingReinvented).
+- **Sem giro e inclinação fixa em 55°:** o norte fica sempre para cima e W é sempre o norte, para a leitura das esteiras nunca mudar.
+- **Suavidade:** toda mudança de câmera se aproxima do alvo aos poucos, sem saltos, como recomenda o guia [Scroll Back](https://www.gamedeveloper.com/design/scroll-back-the-theory-and-practice-of-cameras-in-side-scrollers). O teclado fica só para o Castelão, e os botões esquerdo e direito ficam livres para construir e remover.
 
 ### Como a câmera lida com os andares
 
@@ -616,7 +618,7 @@ Mesmo o autor de um desses servidores MCP avisa, no [fórum do Godot](https://fo
 
 ## 20. Personagem principal: o Castelão
 
-**Decidido: o jogador controla um personagem, o Castelão, que anda com WASD e fica sempre no centro da câmera.** Tudo passa por ele: coletar, construir, lutar e comandar. É a mesma escolha de Factorio, em que o engenheiro está sempre no centro da tela.
+**Decidido: o jogador controla um personagem, o Castelão, que anda com WASD e é seguido pela câmera.** Tudo passa por ele: coletar, construir, lutar e comandar. É a mesma escolha de Factorio, em que o engenheiro está sempre no centro da tela.
 
 ### Por que um personagem, e não uma câmera livre
 
@@ -641,7 +643,7 @@ No nosso jogo isso encaixa nos pilares: o Castelão é o primeiro trabalhador da
 ### Regras do Castelão
 
 - **Movimento:** WASD, com W sempre para o norte, porque a câmera não gira (seção 12). A velocidade inicial é um número de balanceamento em JSON (Factorio usa 8,9 células/s como referência).
-- **Câmera:** travada no Castelão, sempre no centro e sem atraso, como no Factorio. O jogador só controla o zoom, na roda do mouse.
+- **Câmera:** segue o Castelão e espia na direção do cursor; o botão do meio arrasta o mundo para construir longe, e andar traz a câmera de volta (seção 12).
 - **Alcance:** constrói, coleta e abre máquinas só num raio em volta dele (ponto de partida: 10 células, como Factorio).
 - **Trabalho manual:** coleta madeira e pedra e fabrica itens simples à mão, devagar. Isso ensina as receitas e deixa claro por que automatizar.
 - **Inventário:** carrega uma mochila; é o "carregador humano" da Era I (seção 4).
@@ -652,7 +654,7 @@ No nosso jogo isso encaixa nos pilares: o Castelão é o primeiro trabalhador da
 
 ### Progressão: do herói ao comandante
 
-A liberdade de câmera e de construção é recompensa, seguindo a lógica de Factorio:
+Olhar longe é livre desde o início; construir longe é recompensa, seguindo a lógica de Factorio:
 
 | Era | O Castelão ganha |
 | --- | --- |
@@ -708,3 +710,5 @@ Adicionadas em 25/09/2026 (seção 20):
 - [Wikipedia — Core Keeper](https://en.wikipedia.org/wiki/Core_Keeper)
 - [Wiki oficial de Factorio — Controls](https://wiki.factorio.com/Controls)
 - [Factorio Mods — Zooming Reinvented](https://mods.factorio.com/mod/ZoomingReinvented)
+- [Steven Splint — câmera estilo Nuclear Throne](https://stevensplint.com/nuclear-throne-style-camera-system/)
+- [Game Developer — Scroll Back: The Theory and Practice of Cameras in Side-Scrollers](https://www.gamedeveloper.com/design/scroll-back-the-theory-and-practice-of-cameras-in-side-scrollers)

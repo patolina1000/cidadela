@@ -15,6 +15,7 @@ public partial class GameRoot : Node3D
     private SimWorld _world = null!;
     private readonly SimClock _clock = new();
     private WorldView _view = null!;
+    private CameraRig _camera = null!;
     private Label _debugLabel = null!;
 
     private System.Numerics.Vector2 _lastMoveSent;
@@ -29,7 +30,9 @@ public partial class GameRoot : Node3D
         _view = GetNode<WorldView>("WorldView");
         _view.Build(_world);
 
-        GetNode<CameraRig>("CameraRig").Target = _view.CastellanNode;
+        _camera = GetNode<CameraRig>("CameraRig");
+        _camera.Target = _view.CastellanNode;
+        _camera.SetBounds(new Rect2(0f, 0f, _world.Grid.Width, _world.Grid.Height));
 
         _debugLabel = GetNode<Label>("DebugHud/DebugLabel");
     }
@@ -54,6 +57,10 @@ public partial class GameRoot : Node3D
     {
         Vector2 input = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
         var direction = new System.Numerics.Vector2(input.X, input.Y);
+
+        // Andar traz a câmera solta de volta para o Castelão.
+        if (direction != System.Numerics.Vector2.Zero)
+            _camera.ReturnToTarget();
 
         if (direction == _lastMoveSent)
             return;
