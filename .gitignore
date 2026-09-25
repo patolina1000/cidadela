@@ -1,0 +1,7 @@
+# Godot
+.godot/
+*.tmp
+
+# .NET
+bin/
+obj/
