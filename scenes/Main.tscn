@@ -1,0 +1,42 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/View/GameRoot.cs" id="1_root"]
+[ext_resource type="Script" path="res://src/View/WorldView.cs" id="2_world"]
+[ext_resource type="Script" path="res://src/View/CameraRig.cs" id="3_camera"]
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 1
+background_color = Color(0.118, 0.165, 0.227, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.788, 0.702, 0.541, 1)
+ambient_light_energy = 0.45
+tonemap_mode = 2
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_root")
+
+[node name="WorldView" type="Node3D" parent="."]
+script = ExtResource("2_world")
+
+[node name="CameraRig" type="Node3D" parent="."]
+script = ExtResource("3_camera")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.321394, 0.383022, 0, 0.766044, 0.642788, -0.5, -0.55667, 0.663414, 0, 10, 0)
+light_color = Color(1, 0.94, 0.85, 1)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="DebugHud" type="CanvasLayer" parent="."]
+
+[node name="DebugLabel" type="Label" parent="DebugHud"]
+offset_left = 12.0
+offset_top = 8.0
+offset_right = 700.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(0.929, 0.902, 0.839, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Tick 0"
