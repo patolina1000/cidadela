@@ -642,4 +642,4 @@ Adicionadas em 25/09/2026 (seções 13 a 16):
 - [Trify3D — geradores 3D ranqueados](https://trify3d.com/blog/best-ai-3d-model-generators)
 - [BuildMVPFast — IA para modelagem 3D](https://www.buildmvpfast.com/articles/best-llms-2026-guide/3d-modeling-ai)
 - [Viggle — software de animação 3D com IA](https://viggle.ai/blog/best-ai-animation-software-3d-character-work)
-- [Uthana — texto para movimento](https://uthana.com/product/text-to-motion)pbpaste > ~/Projetos/cidadela/docs/GDD.md && head -3 ~/Projetos/cidadela/docs/GDD.md
+- [Uthana — texto para movimento](https://uthana.com/product/text-to-motion)
