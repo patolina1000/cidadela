@@ -923,3 +923,24 @@ onde errou, correções manuais e quanto tempo levou.
   calçamento, rúnico) ainda estão na paleta antiga.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 04:50–05:20 de relógio.
+
+---
+
+## 2026-09-26 — Chão: grama ainda viva no jogo; ajuste de cor só no chão
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na branch `arte`.
+- **Pedido:** "ainda tô achando essa grama muito verde, muito viva."
+- **Medição (antes de mexer):** a textura estava na paleta (média #555648, saturação 0,16), mas **na tela**
+  a grama saía #6A6144, com saturação 0,36 (o dobro) e matiz puxado para o amarelo (63° → 47°); a terra ia de
+  0,20 para 0,39. A causa é a luz da cena (`scenes/Main.tscn`): ambiente cor de trigo (#C9B38A), sol
+  amarelado e tonemap Filmic, que esquentam e saturam tudo. Isso combina com o "dia terroso e acolhedor" da
+  seção 17, mas briga com a paleta fria do chão.
+- **O que foi feito (0 créditos):** ajuste de cor só no chão, em `TerrainGround.gdshader` (saturação 0,65,
+  tom frio 0,90 / 0,96 / 1,02, brilho 0,85), calibrado medindo a tela. A primeira tentativa (0,45 e tom mais
+  azul) deixou a grama cinza-marrom (saturação 0,09, matiz 18°), longe do musgo. Resultado: grama na tela
+  #555444 (matiz 57°, saturação 0,20, brilho 0,34), praticamente a "grama morta" da paleta (#5A5847); terra
+  #322A26; areia #49483B. A luz dos personagens e construções não mudou.
+- **Decisão em aberto para o humano:** esfriar a luz da cena inteira (crepúsculo) mudaria o visual de tudo,
+  não só do chão; por isso ficou só no chão.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 05:25–05:40 de relógio.

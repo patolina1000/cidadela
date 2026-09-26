@@ -19,6 +19,12 @@ uniform float blend_width = 0.35;     // largura da mistura entre dois terrenos,
 uniform float macro_strength = 0.12;  // manchas de luz em grande escala
 uniform float macro_scale = 0.045;
 
+// Ajuste de cor do chão: a luz da cena (ambiente cor de trigo, sol amarelado) esquenta e satura tudo;
+// o chão segue a paleta fria do chão (GDD, seção 17), então é compensado aqui, só nele.
+uniform float ground_saturation = 0.65;
+uniform vec3 ground_tint : source_color = vec3(0.90, 0.96, 1.02);
+uniform float ground_brightness = 0.85;
+
 uniform float grid_strength = 0.0;
 uniform vec4 line_color : source_color = vec4(0.0, 0.0, 0.0, 0.35);
 uniform float line_width = 0.02;
@@ -72,6 +78,9 @@ void fragment() {
 	// Manchas grandes de luz: a mesma textura repetida não forma xadrez.
 	float macro = texture(noise, p * macro_scale + vec2(0.5, 0.2)).r * 2.0 - 1.0;
 	color *= 1.0 + macro * macro_strength;
+
+	float gray = dot(color, vec3(0.299, 0.587, 0.114));
+	color = mix(vec3(gray), color, ground_saturation) * ground_tint * ground_brightness;
 
 	// Grade nas bordas das células (só no modo construção).
 	vec2 g = fract(p);
