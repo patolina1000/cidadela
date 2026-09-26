@@ -13,6 +13,7 @@ public static class Palette
     public static readonly Color Midnight = new("1E2A3A");
     public static readonly Color Pumpkin = new("E07B2E");
     public static readonly Color Bone = new("EDE6D6");
+    public static readonly Color Sickly = new("9BC53D");
 
     /// <summary>Fora da paleta do GDD: só para avisos de interface (ex.: fora do alcance).</summary>
     public static readonly Color Warning = new("C8402F");

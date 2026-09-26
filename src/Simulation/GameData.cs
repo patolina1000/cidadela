@@ -20,18 +20,33 @@ public sealed class GameData
     public IReadOnlyDictionary<string, ResourceType> Resources { get; }
     public CastellanStats Castellan { get; }
 
-    private GameData(IReadOnlyDictionary<string, ResourceType> resources, CastellanStats castellan)
+    /// <summary>Construções na ordem do arquivo (a ordem da barra de construção).</summary>
+    public IReadOnlyList<BuildingType> Buildings { get; }
+
+    private readonly Dictionary<string, BuildingType> _buildingByKind;
+
+    private GameData(IReadOnlyDictionary<string, ResourceType> resources, CastellanStats castellan,
+        List<BuildingType> buildings)
     {
         Resources = resources;
         Castellan = castellan;
+        Buildings = buildings;
+        _buildingByKind = new Dictionary<string, BuildingType>();
+        foreach (BuildingType b in buildings)
+            _buildingByKind[b.Kind] = b;
     }
+
+    public BuildingType Building(string kind) =>
+        _buildingByKind.TryGetValue(kind, out BuildingType? type)
+            ? type
+            : throw new FormatException($"Construção desconhecida: \"{kind}\".");
 
     public ResourceType Resource(string kind) =>
         Resources.TryGetValue(kind, out ResourceType? type)
             ? type
             : throw new FormatException($"Recurso desconhecido: \"{kind}\".");
 
-    public static GameData Parse(string resourcesJson, string castellanJson)
+    public static GameData Parse(string resourcesJson, string castellanJson, string buildingsJson)
     {
         var raw = JsonSerializer.Deserialize<Dictionary<string, ResourceData>>(resourcesJson, JsonOptions)
             ?? throw new FormatException("resources.json vazio.");
@@ -48,7 +63,33 @@ public sealed class GameData
             ?? throw new FormatException("castellan.json vazio.");
         var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius);
 
-        return new GameData(resources, stats);
+        // Lido como lista de pares para manter a ordem do arquivo.
+        using JsonDocument doc = JsonDocument.Parse(buildingsJson, new JsonDocumentOptions
+        {
+            CommentHandling = JsonCommentHandling.Skip,
+            AllowTrailingCommas = true,
+        });
+        var buildings = new List<BuildingType>();
+        foreach (JsonProperty prop in doc.RootElement.EnumerateObject())
+        {
+            BuildingData b = prop.Value.Deserialize<BuildingData>(JsonOptions)
+                ?? throw new FormatException($"Construção \"{prop.Name}\" vazia.");
+            foreach ((string item, int amount) in b.Cost)
+            {
+                if (!resources.ContainsKey(item) || amount <= 0)
+                    throw new FormatException($"Custo inválido em \"{prop.Name}\": {item} × {amount}.");
+            }
+            buildings.Add(new BuildingType(prop.Name, b.Name, b.Cost, b.Solid));
+        }
+
+        return new GameData(resources, stats, buildings);
+    }
+
+    private sealed class BuildingData
+    {
+        public string Name { get; set; } = "";
+        public Dictionary<string, int> Cost { get; set; } = new();
+        public bool Solid { get; set; } = true;
     }
 
     private sealed class ResourceData

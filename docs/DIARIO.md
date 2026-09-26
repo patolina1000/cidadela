@@ -288,3 +288,31 @@ onde errou, correções manuais e quanto tempo levou.
   espiava seguindo o mouse real do humano, e os screenshots congelavam com a janela em segundo plano.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:31–21:33 de relógio.
+
+---
+
+## 2026-09-25 — Marco 3: construir
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** marco 3 aprovado: gastar itens para construir esteiras, baú e máquinas; prévia fantasma;
+  R gira; desmontar devolve o custo; efeitos; testes.
+- **O que foi feito:**
+  - `data/buildings.json` (ordem = barra): esteira (1 madeira, não bloqueia), baú (4 madeira), serraria,
+    fundição, forja. As máquinas do mapa viraram construções desse tipo (`Machine` saiu).
+  - Simulação: `Building`, `Direction`, `BuildCheck` (fora do mapa, fora do alcance, ocupado — inclusive
+    pelo corpo do Castelão para construções sólidas —, itens insuficientes), `BuildCommand` e
+    `DeconstructCommand` (devolve 100%), `Inventory.Has/TryRemove`. 35 testes (12 novos).
+  - Cena: modelos com silhueta própria por tipo (esteira com seta), prévia translúcida verde/vermelha,
+    barra de construção clicável (teclas 1–9, borda verde no escolhido, apagada quando não dá para pagar),
+    R gira, segurar e arrastar faz fileira, clique direito cancela ou desmonta, Esc cancela.
+    Construção "brota" com poeira e "-1 Madeira"; desmontar estoura e mostra "+4 Madeira".
+  - A câmera ganhou o evento de clique direito sem arrasto (o arrasto continua girando).
+  - GDD (seção 20, regra "Construir") atualizado e reexportado.
+  - Verificado no jogo: coletou 30 madeiras (a árvore esgotou), prévia verde com seta, R virou para leste,
+    arrastar fez 3 esteiras, baú construído (-4), clique direito cancelou e o seguinte desmontou (+4).
+- **O que deu errado:**
+  - Erro de compilação: `Key - Key` dá `long` em C#; faltava um cast.
+  - O botão escolhido na barra quase não se destacava com o tema padrão; ganhou borda e texto verdes.
+  - Guiar o Castelão pelo MCP até a árvore levou várias tentativas (tempo variável entre comandos).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:38–21:43 de relógio.

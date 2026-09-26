@@ -14,7 +14,8 @@
     { "kind": "iron",  "x": 25, "z": 26 },
     { "kind": "iron",  "x": 26, "z": 26 }
   ],
-  "machines": [
+  // Construções já presentes no início (tipos de data/buildings.json). direction: north, east, south, west.
+  "buildings": [
     { "kind": "sawmill", "x": 12, "z": 14 },
     { "kind": "smelter", "x": 18, "z": 14 },
     { "kind": "forge",   "x": 18, "z": 18 }

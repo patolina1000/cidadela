@@ -647,6 +647,7 @@ No nosso jogo isso encaixa nos pilares: o Castelão é o primeiro trabalhador da
 - **Câmera:** segue o Castelão e espia na direção do cursor; o botão do meio arrasta o mundo para construir longe, e andar traz a câmera de volta (seção 12).
 - **Alcance:** constrói e abre máquinas só num raio em volta dele (ponto de partida: 10 células, como Factorio). Para coletar, precisa estar encostado no recurso, de lado ou na diagonal: é trabalho físico, feito de perto.
 - **Trabalho manual:** coleta madeira e pedra e fabrica itens simples à mão, devagar. Isso ensina as receitas e deixa claro por que automatizar.
+- **Construir:** escolhe na barra do pé da tela (ou teclas 1–9, como no Factorio); uma prévia translúcida fica verde onde dá e vermelha onde não dá; R gira; segurar e arrastar faz uma fileira. Clique direito sem nada escolhido desmonta e devolve 100% do custo. Custos e tipos ficam em `data/buildings.json`; esteiras deixam passar por cima, o resto bloqueia.
 - **Inventário:** carrega uma mochila; é o "carregador humano" da Era I (seção 4).
 - **Combate:** luta nas noites. No início segura sozinho os goblins; depois fica mais fraco que a horda e passa a liderar, com aura de moral para os soldados próximos.
 - **Equipamento:** usa as mesmas espadas, armaduras e poções da fábrica. Melhorar a fábrica melhora ele também.

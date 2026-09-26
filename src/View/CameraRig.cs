@@ -61,6 +61,9 @@ public partial class CameraRig : Node3D
     /// <summary>Giro atual em radianos, para converter o WASD em direção no mundo.</summary>
     public float Yaw => _yaw;
 
+    /// <summary>Clique direito sem arrastar (não virou giro), na posição da tela. Livre para outras ações.</summary>
+    public event System.Action<Vector2>? RightClicked;
+
     /// <summary>Último cursor dentro do jogo, ou null se o mouse saiu da janela.</summary>
     public Vector2? Cursor => _cursor;
 
@@ -123,12 +126,17 @@ public partial class CameraRig : Node3D
             }
             else if (mouse.ButtonIndex == MouseButton.Right)
             {
+                bool wasPressed = _rotatePressed;
                 _rotatePressed = mouse.Pressed;
                 _rotatePressX = mouse.Position.X;
                 if (!mouse.Pressed && _rotating)
                 {
                     _rotating = false;
                     _targetYaw = SnapToQuarter(_yaw);
+                }
+                else if (!mouse.Pressed && wasPressed)
+                {
+                    RightClicked?.Invoke(mouse.Position);
                 }
             }
             else if (mouse.Pressed && mouse.ButtonIndex == MouseButton.WheelUp)

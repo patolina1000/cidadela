@@ -26,8 +26,8 @@ public static class MapLoader
         foreach (PlacedData r in data.Resources)
             world.AddResource(r.Kind, Checked(world, r.X, r.Z));
 
-        foreach (PlacedData m in data.Machines)
-            world.AddMachine(m.Kind, Checked(world, m.X, m.Z));
+        foreach (PlacedData b in data.Buildings)
+            world.AddBuilding(gameData.Building(b.Kind), Checked(world, b.X, b.Z), DirectionExtensions.Parse(b.Direction));
 
         foreach (VillagerData v in data.Villagers)
         {
@@ -54,7 +54,7 @@ public static class MapLoader
         public int Height { get; set; }
         public CastellanData? Castellan { get; set; }
         public List<PlacedData> Resources { get; set; } = new();
-        public List<PlacedData> Machines { get; set; } = new();
+        public List<PlacedData> Buildings { get; set; } = new();
         public List<VillagerData> Villagers { get; set; } = new();
     }
 
@@ -63,6 +63,7 @@ public static class MapLoader
         public string Kind { get; set; } = "";
         public int X { get; set; }
         public int Z { get; set; }
+        public string? Direction { get; set; }
     }
 
     private sealed class CastellanData

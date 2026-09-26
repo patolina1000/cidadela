@@ -16,14 +16,22 @@ internal static class TestWorlds
 
     public const string CastellanStats = """{ "speed": 6.0, "reach": 10.0, "gatherReach": 1.0, "radius": 0.3 }""";
 
-    public static GameData Data() => GameData.Parse(Resources, CastellanStats);
+    public const string Buildings = """
+        {
+          "belt":  { "name": "Esteira", "cost": { "wood": 1 }, "solid": false },
+          "chest": { "name": "Baú",     "cost": { "wood": 4 }, "solid": true }
+        }
+        """;
 
-    /// <summary>Mapa 20×20 com o Castelão em (x, z) e os recursos dados como JSON.</summary>
-    public static SimWorld Open(int x = 3, int z = 3, string resources = "[]") =>
+    public static GameData Data() => GameData.Parse(Resources, CastellanStats, Buildings);
+
+    /// <summary>Mapa 20×20 com o Castelão em (x, z) e os recursos e construções dados como JSON.</summary>
+    public static SimWorld Open(int x = 3, int z = 3, string resources = "[]", string buildings = "[]") =>
         MapLoader.Parse($$"""
             { "width": 20, "height": 20,
               "castellan": { "x": {{x}}, "z": {{z}} },
-              "resources": {{resources}} }
+              "resources": {{resources}},
+              "buildings": {{buildings}} }
             """, Data());
 
     public static void Move(SimWorld world, float x, float z, int ticks)

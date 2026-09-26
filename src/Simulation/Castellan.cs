@@ -99,6 +99,15 @@ public sealed class Castellan
         Facing = Vector2.Normalize(_moveDirection);
     }
 
+    /// <summary>Se o corpo, onde está agora, invade a célula (para não construir em cima dele).</summary>
+    public bool BodyOverlaps(GridPos cell) => CircleHitsCell(Position + new Vector2(0.5f, 0.5f), cell);
+
+    private bool CircleHitsCell(Vector2 center, GridPos cell)
+    {
+        var nearest = new Vector2(Math.Clamp(center.X, cell.X, cell.X + 1), Math.Clamp(center.Y, cell.Z, cell.Z + 1));
+        return Vector2.DistanceSquared(center, nearest) < Stats.Radius * Stats.Radius;
+    }
+
     /// <summary>Círculo do corpo contra os quadrados das células sólidas em volta.</summary>
     private bool Collides(SimWorld world, Vector2 position)
     {
@@ -108,10 +117,8 @@ public sealed class Castellan
         for (int x = (int)MathF.Floor(center.X - r); x <= (int)MathF.Floor(center.X + r); x++)
         for (int z = (int)MathF.Floor(center.Y - r); z <= (int)MathF.Floor(center.Y + r); z++)
         {
-            if (!world.IsSolid(new GridPos(x, z)))
-                continue;
-            var nearest = new Vector2(Math.Clamp(center.X, x, x + 1), Math.Clamp(center.Y, z, z + 1));
-            if (Vector2.DistanceSquared(center, nearest) < r * r)
+            var cell = new GridPos(x, z);
+            if (world.IsSolid(cell) && CircleHitsCell(center, cell))
                 return true;
         }
         return false;

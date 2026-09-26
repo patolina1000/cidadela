@@ -16,6 +16,12 @@ public partial class WorldView : Node3D
     private SimWorld _world = null!;
     private readonly Dictionary<Villager, Node3D> _villagerNodes = new();
     private readonly Dictionary<ResourceNode, ResourceVisual> _resourceVisuals = new();
+    private readonly Dictionary<Building, Node3D> _buildingNodes = new();
+    private int _buildingsVersion = -1;
+    private Node3D? _ghost;
+    private string? _ghostKind;
+    private Direction _ghostDirection;
+    private StandardMaterial3D _ghostMaterial = null!;
     private MeshInstance3D _hover = null!;
     private StandardMaterial3D _hoverMaterial = null!;
     private CastellanVisual _castellan = null!;
@@ -47,11 +53,6 @@ public partial class WorldView : Node3D
             _resourceVisuals[resource] = new ResourceVisual { Root = root, LastRemaining = resource.Remaining };
         }
 
-        foreach (Machine machine in world.Machines)
-        {
-            var mesh = new CylinderMesh { TopRadius = 0.4f, BottomRadius = 0.4f, Height = 1.0f };
-            AddShape($"Machine_{machine.Kind}_{machine.Id}", mesh, Palette.Pumpkin, CellCenter(machine.Cell, 0.5f));
-        }
 
         foreach (Villager villager in world.Villagers)
         {
@@ -64,6 +65,12 @@ public partial class WorldView : Node3D
         _effects = new Effects { Name = "Effects" };
         AddChild(_effects);
         BuildHover();
+        _ghostMaterial = new StandardMaterial3D
+        {
+            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+            ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+        };
+        SyncBuildings(withEffects: false);
 
         Render(0.0, 0.0);
     }
@@ -74,6 +81,8 @@ public partial class WorldView : Node3D
         float dt = (float)delta;
         foreach ((ResourceNode resource, ResourceVisual visual) in _resourceVisuals)
             RenderResource(resource, visual, dt);
+        if (_world.BuildingsVersion != _buildingsVersion)
+            SyncBuildings(withEffects: true);
 
         foreach ((Villager villager, Node3D node) in _villagerNodes)
         {
@@ -83,6 +92,87 @@ public partial class WorldView : Node3D
         }
 
         _castellan.UpdateFrom(_world.Castellan, (float)alpha, dt);
+    }
+
+    /// <summary>
+    /// Deixa os nós iguais às construções da simulação. Construção nova "brota" com poeira e o custo
+    /// saindo ("-4 Madeira"); construção tirada estoura e devolve o custo ("+4 Madeira").
+    /// </summary>
+    private void SyncBuildings(bool withEffects)
+    {
+        _buildingsVersion = _world.BuildingsVersion;
+        var current = new HashSet<Building>(_world.Buildings);
+
+        foreach (Building gone in new List<Building>(_buildingNodes.Keys))
+        {
+            if (current.Contains(gone))
+                continue;
+            Node3D node = _buildingNodes[gone];
+            _buildingNodes.Remove(gone);
+            if (withEffects)
+            {
+                _effects.Burst(node.Position + new Vector3(0f, 0.3f, 0f), Palette.Wheat, amount: 16, speed: 3f);
+                _effects.FloatingText(node.Position + new Vector3(0f, 1.1f, 0f), CostText(gone.Type, "+"), Palette.Bone);
+            }
+            node.QueueFree();
+        }
+
+        foreach (Building building in current)
+        {
+            if (_buildingNodes.ContainsKey(building))
+                continue;
+            Node3D node = BuildingModels.Create(building.Kind, building.Direction);
+            node.Name = $"Building_{building.Kind}_{building.Id}";
+            node.Position = CellCenter(building.Cell, 0f);
+            AddChild(node);
+            _buildingNodes[building] = node;
+            if (withEffects)
+            {
+                _effects.Burst(node.Position + new Vector3(0f, 0.1f, 0f), Palette.Wheat, amount: 12, speed: 2f);
+                _effects.FloatingText(node.Position + new Vector3(0f, 1.1f, 0f), CostText(building.Type, "-"), Palette.Bone);
+                node.Scale = new Vector3(0.3f, 0.3f, 0.3f);
+                node.CreateTween().TweenProperty(node, "scale", Vector3.One, 0.35)
+                    .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+            }
+        }
+    }
+
+    private string CostText(BuildingType type, string sign)
+    {
+        var parts = new List<string>();
+        foreach ((string item, int amount) in type.Cost)
+            parts.Add($"{sign}{amount} {_world.Data.Resource(item).Name}");
+        return string.Join("  ", parts);
+    }
+
+    /// <summary>
+    /// Prévia translúcida da construção escolhida na célula do cursor: verde se dá para construir,
+    /// vermelha se não. null em qualquer argumento esconde.
+    /// </summary>
+    public void ShowGhost(BuildingType? type, GridPos? cell, Direction direction)
+    {
+        if (type is null || cell is not GridPos c || !_world.Grid.InBounds(c))
+        {
+            if (_ghost is not null)
+                _ghost.Visible = false;
+            return;
+        }
+
+        if (_ghost is null || _ghostKind != type.Kind || _ghostDirection != direction)
+        {
+            _ghost?.QueueFree();
+            _ghost = BuildingModels.Create(type.Kind, direction);
+            _ghost.Name = "Ghost";
+            BuildingModels.OverrideMaterial(_ghost, _ghostMaterial);
+            AddChild(_ghost);
+            _ghostKind = type.Kind;
+            _ghostDirection = direction;
+        }
+
+        _ghost.Visible = true;
+        _ghost.Position = CellCenter(c, 0.01f);
+        bool ok = _world.CanBuild(type, c) == BuildCheck.Ok;
+        _ghostMaterial.AlbedoColor = (ok ? Palette.Sickly : Palette.Warning) with { A = 0.5f };
     }
 
     /// <summary>

@@ -15,14 +15,16 @@ public sealed class SimWorld
     public Castellan Castellan { get; private set; } = null!;
 
     public IReadOnlyList<ResourceNode> Resources => _resources;
-    public IReadOnlyList<Machine> Machines => _machines;
+    public IReadOnlyCollection<Building> Buildings => _buildingByCell.Values;
+
+    /// <summary>Muda a cada construção colocada ou tirada; a cena usa para saber quando redesenhar.</summary>
+    public int BuildingsVersion { get; private set; }
     public IReadOnlyList<Villager> Villagers => _villagers;
 
     private readonly List<ResourceNode> _resources = new();
-    private readonly List<Machine> _machines = new();
     private readonly List<Villager> _villagers = new();
     private readonly Dictionary<GridPos, ResourceNode> _resourceByCell = new();
-    private readonly HashSet<GridPos> _machineCells = new();
+    private readonly Dictionary<GridPos, Building> _buildingByCell = new();
     private readonly Queue<ISimCommand> _commands = new();
     private int _nextId = 1;
 
@@ -50,9 +52,44 @@ public sealed class SimWorld
     public ResourceNode? ResourceAt(GridPos cell) =>
         _resourceByCell.TryGetValue(cell, out ResourceNode? node) && !node.IsDepleted ? node : null;
 
-    /// <summary>Se a célula bloqueia a passagem (fora do mapa, recurso ou máquina).</summary>
+    public Building? BuildingAt(GridPos cell) => _buildingByCell.GetValueOrDefault(cell);
+
+    /// <summary>Se a célula bloqueia a passagem (fora do mapa, recurso ou construção sólida).</summary>
     public bool IsSolid(GridPos cell) =>
-        !Grid.InBounds(cell) || ResourceAt(cell) is not null || _machineCells.Contains(cell);
+        !Grid.InBounds(cell) || ResourceAt(cell) is not null || BuildingAt(cell) is { Type.Solid: true };
+
+    /// <summary>Se o Castelão pode construir esse tipo nessa célula agora, e por que não.</summary>
+    public BuildCheck CanBuild(BuildingType type, GridPos cell)
+    {
+        if (!Grid.InBounds(cell))
+            return BuildCheck.OutOfBounds;
+        if (!Castellan.CanReach(cell))
+            return BuildCheck.OutOfReach;
+        if (ResourceAt(cell) is not null || BuildingAt(cell) is not null)
+            return BuildCheck.Occupied;
+        if (type.Solid && Castellan.BodyOverlaps(cell))
+            return BuildCheck.Occupied;
+        if (!Castellan.Inventory.Has(type.Cost))
+            return BuildCheck.NotEnoughItems;
+        return BuildCheck.Ok;
+    }
+
+    internal void TryBuild(string kind, GridPos cell, Direction direction)
+    {
+        BuildingType type = Data.Building(kind);
+        if (CanBuild(type, cell) != BuildCheck.Ok || !Castellan.Inventory.TryRemove(type.Cost))
+            return;
+        AddBuilding(type, cell, direction);
+    }
+
+    internal void TryDeconstruct(GridPos cell)
+    {
+        if (BuildingAt(cell) is not Building building || !Castellan.CanReach(cell))
+            return;
+        _buildingByCell.Remove(cell);
+        BuildingsVersion++;
+        Castellan.Inventory.Add(building.Type.Cost);
+    }
 
     internal void SetCastellan(Vector2 position)
     {
@@ -67,12 +104,12 @@ public sealed class SimWorld
         return node;
     }
 
-    internal Machine AddMachine(string kind, GridPos cell)
+    internal Building AddBuilding(BuildingType type, GridPos cell, Direction direction)
     {
-        var machine = new Machine(_nextId++, kind, cell);
-        _machines.Add(machine);
-        _machineCells.Add(cell);
-        return machine;
+        var building = new Building(_nextId++, type, cell, direction);
+        _buildingByCell[cell] = building;
+        BuildingsVersion++;
+        return building;
     }
 
     internal Villager AddVillager(IReadOnlyList<GridPos> path, float cellsPerSecond)
