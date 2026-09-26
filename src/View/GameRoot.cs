@@ -33,6 +33,7 @@ public partial class GameRoot : Node3D
     private CinematicOverlay _cinematicOverlay = null!;
     private FocusTarget? _focus;
     private Label _debugLabel = null!;
+    private PerfOverlay _perf = null!;
     private Label _inventoryLabel = null!;
 
     // Modo de construção: o que está escolhido, para onde aponta e a última célula do arrasto.
@@ -83,6 +84,11 @@ public partial class GameRoot : Node3D
         _cinematicOverlay = new CinematicOverlay { Name = "CinematicOverlay" };
         GetNode("DebugHud").AddChild(_cinematicOverlay);
 
+        _perf = new PerfOverlay { Name = "PerfOverlay" };
+        GetNode("DebugHud").AddChild(_perf);
+        _perf.Setup(_view, GetNode<WorldEnvironment>("WorldEnvironment"), GetNode<DirectionalLight3D>("Sun"),
+            GetNode<CanvasItem>("DebugHud/Vignette"));
+
         // A linha de status desce para baixo dos botões do inventário.
         _inventoryLabel.OffsetTop = 72f;
         _inventoryLabel.OffsetBottom = 98f;
@@ -105,6 +111,8 @@ public partial class GameRoot : Node3D
     private void HandleKey(InputEventKey key)
     {
         Key k = key.PhysicalKeycode;
+        if (_perf.HandleKey(k))
+            return;
         if (k >= Key.Key1 && k <= Key.Key9)
         {
             int index = (int)(k - Key.Key1);
@@ -202,6 +210,7 @@ public partial class GameRoot : Node3D
 
     public override void _Process(double delta)
     {
+        long started = System.Diagnostics.Stopwatch.GetTimestamp();
         SendMoveInput();
 
         Vector2? cursor = CursorOverWorld();
@@ -216,6 +225,7 @@ public partial class GameRoot : Node3D
             _world.Tick();
 
         _view.Render(_clock.Alpha, delta);
+        _perf.GameCpuMs = System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
 
         // Na cinematográfica, a interface some e só ficam as faixas com a legenda ao vivo.
         bool cinematic = _camera.IsCinematic;

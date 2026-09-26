@@ -1169,3 +1169,46 @@ onde errou, correções manuais e quanto tempo levou.
   `directional_shadow_max_distance = 40`); o resto voltou ao commit anterior.
 - **Lição:** não trocar o visual (densidade e forma da grama) para ganhar desempenho sem perguntar antes.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados (rodado durante a tentativa; sem mudança na simulação).
+
+---
+
+## 2026-09-26 — Desempenho, passo 0: medição (painel F3 e teclas de A/B)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Pedido:** análise completa de desempenho; meta 60 FPS estáveis em tela cheia na Retina (3024×1890) sem
+  reduzir grama nem mudar o visual aprovado. Plano aprovado em 4 passos: medir, cortes sem mudança visual,
+  trocas visuais só com aprovação, teste de estresse + arquitetura para escala.
+- **O que foi feito:** `src/View/PerfOverlay.cs`, painel na tecla **F3** com FPS, ms por quadro, ms de CPU do
+  jogo (cronometrado no GameRoot em volta de simulação + view), draw calls, primitivos, objetos, nós, VRAM e
+  resolução 3D. Teclas **F4** grama, **F5** brilho, **F6** névoa, **F7** sombra do sol, **F8** chão,
+  **F9** escala 3D (1 → 0,77 → 0,67 → 0,5 com FSR 2), **F10** pós-processo (ajuste de cor + vinheta).
+- **Cuidados de medição:** no Metal não há profiler de GPU e o monitor `TIME_PROCESS` inclui a espera pela
+  GPU (marcava 32 ms de "CPU"); por isso o painel mede a CPU do jogo por conta própria. O contador de
+  primitivos do Godot não conta instâncias de MultiMesh (mostra 0,04 M com 8,6 M de triângulos de grama).
+- **Números (mapa de teste 32×32, 85.881 tufos, 3024×1890, tudo ligado = base):**
+
+  | Cena | FPS | ms/quadro |
+  |---|---|---|
+  | Base | 38–42 | 25–26 |
+  | Sem grama | 63 | 15,9 |
+  | Sem brilho | 37 | 27,0 |
+  | Sem névoa | 35 | 28,6 |
+  | Sem sombra do sol | 62 | 16,1 |
+  | Sem chão | 63 | 15,9 |
+  | Sem pós-processo | 37 | 27,0 |
+  | Escala 3D 0,67 (FSR 2) | 40 | 25,0 |
+  | Escala 3D 0,50 (FSR 2) | 49 | 20,4 |
+  | Sem grama + sem sombra | 120 | 8,3 |
+  | Sem grama + sem chão | 106 | 9,4 |
+  | Sem sombra + sem chão (grama ligada) | 75 | 13,3 |
+
+  CPU do jogo: 0,1–0,2 ms em todos os casos. O gargalo é 100% renderização.
+- **Leitura:** os custos somam. Grama ≈ 10 ms com sombra e ≈ 5 ms sem (o custo é o número de fragmentos das
+  8,6 M de triângulos minúsculos, cada um amostrando a sombra suave); sombra do sol ≈ 8 ms, quase tudo na
+  filtragem suave por pixel dos receptores (sem grama, só o chão como receptor, tirar a sombra economiza 7,6 ms);
+  chão ≈ 7 ms (shader pesado por pixel). Brilho, névoa e pós-processo custam ~0. Reduzir a resolução ajuda
+  pouco (0,5 → 6 ms) porque o custo dominante não é por pixel e o FSR 2 tem custo próprio nessa resolução.
+- **Próximos alvos, nesta ordem:** shader do chão (mesma imagem, menos amostras), filtragem da sombra
+  (tamanho do atlas e qualidade do filtro, conferindo o visual), LOD da grama (malha simples quando o tufo
+  tem poucos pixels; aprovado).
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados (sem mudança na simulação).
