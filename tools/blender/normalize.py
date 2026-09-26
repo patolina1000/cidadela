@@ -13,13 +13,14 @@ Uso:
 """
 
 import json
+import math
 import re
 import sys
 from pathlib import Path
 
 import bpy
 import numpy as np
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 ROOT = Path(__file__).resolve().parents[2]
 TEXTURE_SIZE = 512
@@ -125,15 +126,93 @@ def matte_materials() -> None:
                 node.inputs["Specular Tint"].default_value = (1, 1, 1, 1)
 
 
+def use_rig_walk(raw: Path) -> None:
+    """Troca o walk da biblioteca pela caminhada grátis que veio com o rig (mesmos ossos)."""
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=str(raw / "caminhada_basica.glb"), disable_bone_shape=True)
+    imported = [o for o in bpy.data.objects if o not in before]
+    source = next(o for o in imported if o.type == "ARMATURE")
+    walk = source.animation_data.action
+    for obj in imported:
+        bpy.data.objects.remove(obj)
+    if "walk" in bpy.data.actions:
+        bpy.data.actions.remove(bpy.data.actions["walk"])
+    walk.name = "walk"
+    walk.use_fake_user = True
+    print("  walk trocado pela caminhada do rig")
+
+
+def close_arms(clip: str, degrees: float) -> None:
+    """Gira os ombros para baixo, em volta do eixo frente-trás, em todos os quadros do clipe."""
+    armature = next(o for o in bpy.data.objects if o.type == "ARMATURE")
+    armature.data.pose_position = "POSE"
+    armature.animation_data_create()
+    action = bpy.data.actions[clip]
+    armature.animation_data.action = action
+    if action.slots:
+        armature.animation_data.action_slot = action.slots[0]
+    scene = bpy.context.scene
+    # Eixo frente-trás do mundo, no espaço do esqueleto (onde vivem as matrizes dos ossos).
+    axis = (armature.matrix_world.inverted().to_3x3() @ Vector((0, 1, 0))).normalized()
+    for side in ("Left", "Right"):
+        bone = armature.pose.bones[f"{side}Arm"]
+        bone.rotation_mode = "QUATERNION"
+        path = f'pose.bones["{bone.name}"].rotation_quaternion'
+        curves = [c for bag in channelbags(action) for c in bag.fcurves if c.data_path == path]
+        # As chaves podem estar em tempos fracionados (a caminhada do rig começa em 0,8):
+        # regravar nos mesmos tempos, senão a curva alterna entre chave corrigida e original.
+        times = sorted({k.co.x for c in curves for k in c.keyframe_points})
+        original = {}
+        for time in times:
+            set_time(scene, time)
+            original[time] = bone.matrix.copy()
+        # O sinal que abaixa a mão depende do lado: testa na primeira chave.
+        set_time(scene, times[0])
+        best = None
+        for sign in (1, -1):
+            turned = rotate_about_head(original[times[0]], axis, sign * math.radians(degrees))
+            tail_z = (armature.matrix_world @ (turned @ Vector((0, bone.bone.length, 0)))).z
+            if best is None or tail_z < best[1]:
+                best = (sign, tail_z)
+        angle = best[0] * math.radians(degrees)
+        corrected = {}
+        for time in times:
+            set_time(scene, time)
+            bone.matrix = rotate_about_head(original[time], axis, angle)
+            bpy.context.view_layer.update()
+            corrected[time] = bone.rotation_quaternion.copy()
+        for curve in curves:
+            index = curve.array_index
+            curve.keyframe_points.clear()
+            for time in times:
+                curve.keyframe_points.insert(time, corrected[time][index], options={"FAST"})
+    armature.animation_data.action = None
+    armature.data.pose_position = "REST"
+    scene.frame_set(0)
+    print(f"  braços fechados em {degrees:g}° no {clip}")
+
+
+def channelbags(action: bpy.types.Action) -> list:
+    return [bag for layer in action.layers for strip in layer.strips for bag in strip.channelbags]
+
+
+def set_time(scene: bpy.types.Scene, time: float) -> None:
+    scene.frame_set(int(math.floor(time)), subframe=time - math.floor(time))
+
+
+def rotate_about_head(matrix: Matrix, axis: Vector, angle: float) -> Matrix:
+    head = matrix.to_translation()
+    return (Matrix.Translation(head) @ Matrix.Rotation(angle, 4, axis)
+            @ Matrix.Translation(-head) @ matrix)
+
+
 def remove_bone_scale_tracks() -> None:
     """Ossos não mudam de tamanho. O idle 0 da Meshy escala o quadril em 1,176, e a personagem
     parecia encolher ao sair do idle para o walk."""
     for action in bpy.data.actions:
-        for layer in action.layers:
-            for strip in layer.strips:
-                for bag in strip.channelbags:
-                    for curve in [c for c in bag.fcurves if c.data_path.endswith(".scale")]:
-                        bag.fcurves.remove(curve)
+        for bag in channelbags(action):
+            for curve in [c for c in bag.fcurves if c.data_path.endswith(".scale")]:
+                bag.fcurves.remove(curve)
 
 
 def measure_stride(clip: str) -> float:
@@ -299,7 +378,11 @@ def main() -> None:
     matte_materials()
     if character:
         rename_clips(raw)
+        if asset.get("walk_do_rig"):
+            use_rig_walk(raw)
         remove_bone_scale_tracks()
+        if asset.get("fechar_bracos_graus"):
+            close_arms("walk", asset["fechar_bracos_graus"])
     if asset.get("cristal_emissivo"):
         make_crystal_material(name)
     shrink_textures()

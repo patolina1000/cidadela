@@ -582,3 +582,34 @@ onde errou, correções manuais e quanto tempo levou.
     funcionou.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 23:11–23:15 de relógio.
+
+---
+
+## 2026-09-25 — Arte: caminhada da protagonista sem pernas cruzando e com braços mais fechados
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte` (já com a câmera
+  cinematográfica da `master`).
+- **Pedido:** na caminhada, os braços ficavam muito separados do corpo (robótico) e as pernas passavam uma
+  por dentro da outra.
+- **Medição (Blender, antes de mexer):**
+  - Casual Walk (id 30): os pés cruzam a linha do meio (−0,058 da altura; negativo = cruzou).
+  - Caminhada básica que vem grátis com o rig: pés separados (+0,141), mas braços ainda mais abertos
+    (abertura lateral média de 28°, máximo de 44°).
+  - Os braços abertos vêm do retarget: o clipe foi feito para um corpo mais largo que o dela.
+- **O que foi feito (0 créditos):**
+  - `tools/assets.json`: `walk_do_rig: true` e `fechar_bracos_graus: 18` na protagonista.
+  - `normalize.py`: `use_rig_walk` troca o walk pela caminhada do rig (mesmos 24 ossos, no lugar);
+    `close_arms` gira os ombros 18° para baixo, em volta do eixo frente-trás, em todas as chaves do walk.
+    O sinal é escolhido pelo lado que abaixa a mão.
+  - `pipeline.py`: baixa também a caminhada e a corrida grátis do rig (`bruto/`).
+  - Resultado: pés +0,141 (não cruzam); abertura lateral média de 11° (máximo de 26°). Passada nova: 0,81 m/s
+    (ciclo de 1,04 s), então `data/castellan.json` → `speed: 0.8`.
+  - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 75 aprovados.
+- **O que deu errado:**
+  - As chaves da caminhada do rig ficam em tempos fracionados (0,8; 1,8; ...). Na primeira versão eu gravei
+    as chaves corrigidas em quadros inteiros, e a curva alternava entre chave corrigida e original (o braço
+    tremeria). Agora regravo exatamente nos tempos originais.
+  - A primeira métrica do braço (ângulo com a vertical) misturava o balanço para a frente com a abertura
+    lateral; troquei pela abertura lateral.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 23:40–23:58 de relógio.

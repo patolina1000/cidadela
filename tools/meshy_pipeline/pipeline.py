@@ -257,6 +257,11 @@ def download(meshy: Meshy, asset: dict, results: dict) -> None:
     if not is_character(asset):
         return
     fetch(results["rig"]["result"]["rigged_character_glb_url"], raw / "rig.glb")
+    # Caminhada e corrida grátis que o rig devolve (walk_do_rig e o futuro estado de corrida).
+    basic = results["rig"]["result"].get("basic_animations", {})
+    for key, file in (("walking_glb_url", "caminhada_basica.glb"), ("running_glb_url", "corrida.glb")):
+        if basic.get(key):
+            fetch(basic[key], raw / file)
     fetch(results["animacoes"]["result"]["animation_glb_url"], raw / "animacoes.glb")
     # Os clipes vêm com o nome da biblioteca; o Blender troca pelos nossos (idle, walk...).
     ids = ",".join(str(i) for i in asset["animacoes"].values())
