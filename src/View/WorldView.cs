@@ -11,7 +11,9 @@ namespace Cidadela.View;
 /// </summary>
 public partial class WorldView : Node3D
 {
-    private const string GridShaderPath = "res://src/View/GridGround.gdshader";
+    private const string GroundShaderPath = "res://src/View/TerrainGround.gdshader";
+    private const int TerrainTextureSize = 512;
+    private const int GroundNoiseSize = 256;
 
     private SimWorld _world = null!;
     private readonly Dictionary<Villager, VillagerVisual> _villagerNodes = new();
@@ -25,6 +27,7 @@ public partial class WorldView : Node3D
     private float _time;
     private int _buildingsVersion = -1;
     private Node3D? _ghost;
+    private ShaderMaterial? _groundMaterial;
     private string? _ghostKind;
     private Direction _ghostDirection;
     private StandardMaterial3D _ghostMaterial = null!;
@@ -47,7 +50,7 @@ public partial class WorldView : Node3D
     public void Build(SimWorld world)
     {
         _world = world;
-        BuildGround(world.Grid);
+        BuildGround(world.Grid, world.Data);
 
         foreach (ResourceNode resource in world.Resources)
         {
@@ -464,6 +467,9 @@ public partial class WorldView : Node3D
     /// </summary>
     public void ShowGhost(BuildingType? type, GridPos? cell, Direction direction)
     {
+        // A grade do chão só aparece com uma construção escolhida (GDD, seção 17).
+        _groundMaterial?.SetShaderParameter("grid_strength", type is null ? 0f : 1f);
+
         if (type is null || cell is not GridPos c || !_world.Grid.InBounds(c))
         {
             if (_ghost is not null)
@@ -561,20 +567,67 @@ public partial class WorldView : Node3D
         AddChild(_hover);
     }
 
-    private void BuildGround(WorldGrid grid)
+    private void BuildGround(WorldGrid grid, GameData data)
     {
-        var material = new ShaderMaterial { Shader = GD.Load<Shader>(GridShaderPath) };
-        material.SetShaderParameter("base_color", Palette.Moss);
-        material.SetShaderParameter("line_color", Palette.Moss.Darkened(0.25f));
+        // Um pixel por célula com o índice do terreno; o shader lê sem filtro.
+        Image map = Image.CreateEmpty(grid.Width, grid.Height, false, Image.Format.R8);
+        for (int z = 0; z < grid.Height; z++)
+            for (int x = 0; x < grid.Width; x++)
+                map.SetPixel(x, z, new Color(grid.TerrainAt(new GridPos(x, z)) / 255f, 0f, 0f));
+
+        var layers = new Godot.Collections.Array<Image>();
+        foreach (TerrainType terrain in data.Terrains)
+            layers.Add(TerrainLayer(terrain));
+        var textures = new Texture2DArray();
+        textures.CreateFromImages(layers);
+
+        var noise = new NoiseTexture2D
+        {
+            Width = GroundNoiseSize,
+            Height = GroundNoiseSize,
+            Seamless = true,
+            Noise = new FastNoiseLite { NoiseType = FastNoiseLite.NoiseTypeEnum.SimplexSmooth, Frequency = 0.02f, Seed = 7 },
+        };
+
+        _groundMaterial = new ShaderMaterial { Shader = GD.Load<Shader>(GroundShaderPath) };
+        _groundMaterial.SetShaderParameter("terrain_textures", textures);
+        _groundMaterial.SetShaderParameter("terrain_map", ImageTexture.CreateFromImage(map));
+        _groundMaterial.SetShaderParameter("noise", noise);
+        _groundMaterial.SetShaderParameter("map_size", new Vector2(grid.Width, grid.Height));
 
         var ground = new MeshInstance3D
         {
             Name = "Ground",
             Mesh = new PlaneMesh { Size = new Vector2(grid.Width, grid.Height) },
-            MaterialOverride = material,
+            MaterialOverride = _groundMaterial,
             Position = new Vector3(grid.Width / 2f, 0f, grid.Height / 2f),
         };
         AddChild(ground);
+    }
+
+    /// <summary>
+    /// Textura de um terreno como camada da pilha: todas no mesmo tamanho e formato, com mipmaps.
+    /// Sem textura (ou arquivo faltando), vira uma cor lisa de musgo.
+    /// </summary>
+    private static Image TerrainLayer(TerrainType terrain)
+    {
+        Image? image = !string.IsNullOrEmpty(terrain.Texture) && ResourceLoader.Exists(terrain.Texture)
+            ? GD.Load<Texture2D>(terrain.Texture).GetImage()
+            : null;
+        if (image is null)
+        {
+            GD.PushWarning($"Terreno \"{terrain.Kind}\" sem textura; usando cor lisa.");
+            image = Image.CreateEmpty(TerrainTextureSize, TerrainTextureSize, false, Image.Format.Rgba8);
+            image.Fill(Palette.Moss);
+        }
+        if (image.IsCompressed())
+            image.Decompress();
+        image.ClearMipmaps();
+        image.Convert(Image.Format.Rgba8);
+        if (image.GetWidth() != TerrainTextureSize || image.GetHeight() != TerrainTextureSize)
+            image.Resize(TerrainTextureSize, TerrainTextureSize, Image.Interpolation.Lanczos);
+        image.GenerateMipmaps();
+        return image;
     }
 
     private MeshInstance3D AddShape(string name, PrimitiveMesh mesh, Color color, Vector3 position)

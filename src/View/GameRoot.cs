@@ -22,6 +22,7 @@ public partial class GameRoot : Node3D
     [Export(PropertyHint.File, "*.json")] public string VillagersPath = "res://data/villagers.json";
     [Export(PropertyHint.File, "*.json")] public string BuildingsPath = "res://data/buildings.json";
     [Export(PropertyHint.File, "*.json")] public string RecipesPath = "res://data/recipes.json";
+    [Export(PropertyHint.File, "*.json")] public string TerrainPath = "res://data/terrain.json";
 
     private SimWorld _world = null!;
     private readonly SimClock _clock = new();
@@ -54,7 +55,8 @@ public partial class GameRoot : Node3D
             FileAccess.GetFileAsString(CastellanPath),
             FileAccess.GetFileAsString(VillagersPath),
             FileAccess.GetFileAsString(BuildingsPath),
-            FileAccess.GetFileAsString(RecipesPath));
+            FileAccess.GetFileAsString(RecipesPath),
+            FileAccess.GetFileAsString(TerrainPath));
         _world = MapLoader.Parse(FileAccess.GetFileAsString(MapPath), data);
 
         _view = GetNode<WorldView>("WorldView");

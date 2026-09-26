@@ -27,13 +27,17 @@ public sealed class GameData
     /// <summary>Construções na ordem do arquivo (a ordem da barra de construção).</summary>
     public IReadOnlyList<BuildingType> Buildings { get; }
 
+    /// <summary>Terrenos do chão natural na ordem do arquivo (o índice guardado em cada célula).</summary>
+    public IReadOnlyList<TerrainType> Terrains { get; }
+
     private readonly Dictionary<string, BuildingType> _buildingByKind = new();
     private readonly Dictionary<string, ItemType> _itemByKind = new();
     private readonly Dictionary<string, RecipeType> _recipeByMachine = new();
 
     private GameData(List<ItemType> items, IReadOnlyDictionary<string, ResourceType> resources, CastellanStats castellan,
-        VillagerStats villagers, List<BuildingType> buildings, List<RecipeType> recipes)
+        VillagerStats villagers, List<BuildingType> buildings, List<RecipeType> recipes, List<TerrainType> terrains)
     {
+        Terrains = terrains;
         Villagers = villagers;
         Items = items;
         Resources = resources;
@@ -60,13 +64,18 @@ public sealed class GameData
             ? type
             : throw new FormatException($"Construção desconhecida: \"{kind}\".");
 
+    public TerrainType Terrain(string kind) =>
+        ((List<TerrainType>)Terrains).Find(t => t.Kind == kind)
+            ?? throw new FormatException($"Terreno desconhecido: \"{kind}\".");
+
     public ResourceType Resource(string kind) =>
         Resources.TryGetValue(kind, out ResourceType? type)
             ? type
             : throw new FormatException($"Recurso desconhecido: \"{kind}\".");
 
+    /// <summary>Sem <paramref name="terrainJson"/>, o chão é um terreno só ("grass", sem textura).</summary>
     public static GameData Parse(string itemsJson, string resourcesJson, string castellanJson,
-        string villagersJson, string buildingsJson, string recipesJson)
+        string villagersJson, string buildingsJson, string recipesJson, string? terrainJson = null)
     {
         var items = new List<ItemType>();
         foreach ((string kind, ItemData i) in Ordered<ItemData>(itemsJson, "items.json"))
@@ -130,7 +139,16 @@ public sealed class GameData
             throw new FormatException("villagers.json: speed, gatherMultiplier e carry precisam ser positivos.");
         var villagers = new VillagerStats(v.Speed, v.GatherMultiplier, v.Carry);
 
-        return new GameData(items, resources, stats, villagers, buildings, recipes);
+        var terrains = new List<TerrainType>();
+        if (terrainJson is null)
+            terrains.Add(new TerrainType("grass", "Grama", "", 0));
+        else
+            foreach ((string kind, TerrainData t) in Ordered<TerrainData>(terrainJson, "terrain.json"))
+                terrains.Add(new TerrainType(kind, t.Name, t.Texture, terrains.Count));
+        if (terrains.Count is 0 or > byte.MaxValue + 1)
+            throw new FormatException("terrain.json precisa de 1 a 256 terrenos.");
+
+        return new GameData(items, resources, stats, villagers, buildings, recipes, terrains);
     }
 
     private static int SecondsToTicks(float seconds) =>
@@ -191,6 +209,12 @@ public sealed class GameData
         public string Resource { get; set; } = "";
         public float Radius { get; set; }
         public int Capacity { get; set; }
+    }
+
+    private sealed class TerrainData
+    {
+        public string Name { get; set; } = "";
+        public string Texture { get; set; } = "";
     }
 
     private sealed class VillagerData

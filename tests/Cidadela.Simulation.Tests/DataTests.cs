@@ -14,7 +14,8 @@ public class DataTests
             TestWorlds.DataFile("castellan.json"),
             TestWorlds.DataFile("villagers.json"),
             TestWorlds.DataFile("buildings.json"),
-            TestWorlds.DataFile("recipes.json"));
+            TestWorlds.DataFile("recipes.json"),
+            TestWorlds.DataFile("terrain.json"));
         SimWorld world = MapLoader.Parse(TestWorlds.DataFile("maps/mapa_teste.json"), data);
 
         Assert.Contains("wood", data.Resources.Keys);
@@ -24,6 +25,8 @@ public class DataTests
         Assert.NotNull(data.RecipeFor("sawmill"));
         Assert.Contains(world.Buildings, b => b.Machine is not null); // máquinas do mapa já trabalham
         Assert.False(world.IsSolid(new GridPos((int)world.Castellan.Position.X, (int)world.Castellan.Position.Y)));
+        Assert.Equal("grass", data.Terrains[0].Kind); // o primeiro terreno é o padrão
+        Assert.Equal(data.Terrain("dirt").Index, world.Grid.TerrainAt(new GridPos(15, 16))); // pátio da base
     }
 
     [Fact]

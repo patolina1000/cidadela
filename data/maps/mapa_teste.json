@@ -20,6 +20,24 @@
     { "kind": "smelter", "x": 18, "z": 14 },
     { "kind": "forge",   "x": 18, "z": 18 }
   ],
+  // Terreno (tipos de data/terrain.json): um padrão e manchas por cima, na ordem (a última vence).
+  // Mancha com radius é um círculo em volta da célula; com width e height, um retângulo a partir dela.
+  "terrain": {
+    "default": "grass",
+    "patches": [
+      // Margem de rio a oeste, com a borda recortada, e lama perto dela.
+      { "kind": "sand",  "x": 0,  "z": 0,  "width": 3, "height": 32 },
+      { "kind": "sand",  "x": 3,  "z": 9,  "radius": 2.5 },
+      { "kind": "sand",  "x": 2,  "z": 21, "radius": 3 },
+      { "kind": "mud",   "x": 6,  "z": 26, "radius": 3 },
+      // Pátio de terra batida da base.
+      { "kind": "dirt",  "x": 15, "z": 16, "radius": 5.5 },
+      { "kind": "dirt",  "x": 11, "z": 19, "radius": 2.5 },
+      // Chão de pedra em volta das rochas e do veio de ferro.
+      { "kind": "stone", "x": 26, "z": 4,  "radius": 3.5 },
+      { "kind": "stone", "x": 25, "z": 26, "radius": 3 }
+    ]
+  },
   // Aldeões livres no início; cada cabana de trabalho construída chama o mais próximo.
   "villagers": [
     { "x": 13, "z": 18 },

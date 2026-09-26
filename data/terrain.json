@@ -1,0 +1,10 @@
+{
+  // Terrenos do chão natural (GDD, seção 17, "Piso e chão"). A ordem importa: é o número guardado em
+  // cada célula e a camada da textura no chão. O primeiro é o padrão de mapas sem "terrain".
+  // texture: textura repetível de 512 px (gerada em tools/meshy_pipeline/textures.py).
+  "grass": { "name": "Grama escura", "texture": "res://assets/texturas/chao/grama_escura.png" },
+  "dirt":  { "name": "Terra",        "texture": "res://assets/texturas/chao/terra.png" },
+  "stone": { "name": "Pedra",        "texture": "res://assets/texturas/chao/pedra.png" },
+  "mud":   { "name": "Lama",         "texture": "res://assets/texturas/chao/lama.png" },
+  "sand":  { "name": "Areia de rio", "texture": "res://assets/texturas/chao/areia_rio.png" }
+}

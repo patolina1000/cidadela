@@ -858,3 +858,35 @@ onde errou, correções manuais e quanto tempo levou.
   para 2×2 células, ou gerar variações.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 02:50–03:50 de relógio.
+
+---
+
+## 2026-09-26 — Chão com texturas no mundo (terrenos por célula, bordas orgânicas)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na branch `arte`, levado para a `master` a pedido.
+- **Pedido:** "implementa no master e no mundo para que eu possa ver, faça um design bonito".
+- **O que foi feito:**
+  - Simulação (o terreno é estado do mundo; o GDD prevê pisos mudando a velocidade):
+    - `data/terrain.json`: 5 terrenos (grama escura, terra, pedra, lama, areia de rio) com a textura de cada
+      um; a ordem é o índice guardado na célula.
+    - `TerrainType`; `GameData.Terrains` e `Terrain(kind)` (o parâmetro é opcional: sem ele, o mapa é todo
+      grama, e os testes antigos não mudam); `WorldGrid.TerrainAt`.
+    - `MapLoader`: seção `terrain` do mapa, com um padrão e manchas por cima (círculo com `radius` ou
+      retângulo com `width` e `height`; a última vence). `mapa_teste.json`: grama; margem de areia a oeste com
+      lama perto; pátio de terra batida na base; chão de pedra em volta das rochas e do ferro.
+    - 4 testes novos (sem terreno, círculo e retângulo com sobreposição, padrão, tipo desconhecido) e o
+      teste dos dados reais conferindo o pátio. `dotnet test`: 80 aprovados.
+  - Cena: `TerrainGround.gdshader` (substitui o `GridGround`):
+    - as 5 texturas numa pilha (`Texture2DArray`) e um mapa de 1 pixel por célula com o índice;
+    - fronteira orgânica: o terreno é procurado num ponto entortado por ruído repetível, com mistura curta
+      entre as 4 células vizinhas;
+    - contra a repetição: duas amostras de cada textura em escalas diferentes, alternadas por regiões de
+      ruído, e manchas grandes de luz. Uma repetição da textura cobre 3 m;
+    - grade só no modo construção (com uma construção escolhida), como diz o GDD.
+  - `dotnet build`: 0 erros, 0 avisos. Visto numa gravação do jogo.
+- **O que deu errado:** na primeira versão (textura a cada 2 m, amostra única), as manchas claras da terra
+  formavam uma grade visível; resolvido com a segunda amostra e a escala de 3 m.
+- **Fora desta tarefa:** os pisos construídos (tábuas, calçamento, rúnico) ainda não são construíveis; eles
+  pedem uma camada de piso na simulação (convivendo com construções e esteiras) e o efeito na velocidade.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 04:00–04:40 de relógio.
