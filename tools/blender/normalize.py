@@ -126,20 +126,20 @@ def matte_materials() -> None:
                 node.inputs["Specular Tint"].default_value = (1, 1, 1, 1)
 
 
-def use_rig_walk(raw: Path) -> None:
-    """Troca o walk da biblioteca pela caminhada grátis que veio com o rig (mesmos ossos)."""
+def use_rig_clip(raw: Path, clip: str, file: str) -> None:
+    """Usa um clipe grátis que veio com o rig (mesmos ossos) como <clip>, trocando o que houver."""
     before = set(bpy.data.objects)
-    bpy.ops.import_scene.gltf(filepath=str(raw / "caminhada_basica.glb"), disable_bone_shape=True)
+    bpy.ops.import_scene.gltf(filepath=str(raw / file), disable_bone_shape=True)
     imported = [o for o in bpy.data.objects if o not in before]
     source = next(o for o in imported if o.type == "ARMATURE")
-    walk = source.animation_data.action
+    action = source.animation_data.action
     for obj in imported:
         bpy.data.objects.remove(obj)
-    if "walk" in bpy.data.actions:
-        bpy.data.actions.remove(bpy.data.actions["walk"])
-    walk.name = "walk"
-    walk.use_fake_user = True
-    print("  walk trocado pela caminhada do rig")
+    if clip in bpy.data.actions:
+        bpy.data.actions.remove(bpy.data.actions[clip])
+    action.name = clip
+    action.use_fake_user = True
+    print(f"  {clip}: clipe do rig ({file})")
 
 
 def close_arms(clip: str, degrees: float) -> None:
@@ -378,22 +378,25 @@ def main() -> None:
     matte_materials()
     if character:
         rename_clips(raw)
-        if asset.get("walk_do_rig"):
-            use_rig_walk(raw)
+        for clip, file in asset.get("clipes_do_rig", {}).items():
+            use_rig_clip(raw, clip, file)
         remove_bone_scale_tracks()
-        if asset.get("fechar_bracos_graus"):
-            close_arms("walk", asset["fechar_bracos_graus"])
+        for clip, degrees in asset.get("fechar_bracos_graus", {}).items():
+            close_arms(clip, degrees)
     if asset.get("cristal_emissivo"):
         make_crystal_material(name)
     shrink_textures()
     root = add_root(name)
     fit(root, asset)
-    if character and "walk" in asset["animacoes"]:
-        # O jogo lê isto para tocar o walk no ritmo da velocidade real, sem deslizar.
-        stride = measure_stride("walk")
-        info = {"passada_walk_m_s": round(stride, 3)}
+    if character:
+        # O jogo lê isto para tocar walk e run no ritmo da velocidade real, sem deslizar.
+        info = {}
+        for clip in ("walk", "run"):
+            if clip in bpy.data.actions:
+                stride = measure_stride(clip)
+                info[f"passada_{clip}_m_s"] = round(stride, 3)
+                print(f"  passada do {clip}: {stride:.3f} m/s")
         (folder / f"{name}.json").write_text(json.dumps(info, indent=2, ensure_ascii=False) + "\n")
-        print(f"  passada do walk: {stride:.3f} m/s")
     for obj in bpy.data.objects:
         if obj.type == "ARMATURE":
             obj.data.pose_position = "POSE"

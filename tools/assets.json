@@ -1,5 +1,5 @@
 {
-  "_comentario": "Lista de assets do pipeline Meshy (tools/meshy_pipeline). [OBJETO] no estilo é trocado pelo campo 'objeto' de cada asset (GDD, seção 17). Alturas em metros na escala do jogo: 1 célula = 1 m, construções cabem em 1x1 (opção A, 25/09/2026). Animações são action_id da biblioteca da Meshy. walk_do_rig: usa a caminhada grátis que vem com o rig no lugar do walk da biblioteca (o Casual Walk cruzava as pernas). fechar_bracos_graus: gira os ombros para baixo no walk (o retarget deixa os braços abertos num corpo magro).",
+  "_comentario": "Lista de assets do pipeline Meshy (tools/meshy_pipeline). [OBJETO] no estilo é trocado pelo campo 'objeto' de cada asset (GDD, seção 17). Alturas em metros na escala do jogo: 1 célula = 1 m, construções cabem em 1x1 (opção A, 25/09/2026). Animações são action_id da biblioteca da Meshy. clipes_do_rig: clipes grátis que vêm com o rig (bruto/), no lugar ou além dos da biblioteca (o Casual Walk cruzava as pernas; run é a corrida). fechar_bracos_graus: por clipe, gira os ombros para baixo (o retarget deixa os braços abertos num corpo magro).",
   "estilo": "low-poly stylized 3D game asset, [OBJETO], medieval dark whimsical style, crooked exaggerated shapes, spiral details, hand-painted texture, muted earthy palette with pumpkin orange accents, readable from top-down view, clean silhouette, no text, plain background",
   "limite_creditos": 450,
   "assets": [
@@ -11,8 +11,8 @@
       "altura_m": 0.8,
       "polycount": 3000,
       "animacoes": { "idle": 0, "walk": 30, "attack": 97, "work": 237 },
-      "walk_do_rig": true,
-      "fechar_bracos_graus": 18,
+      "clipes_do_rig": { "walk": "caminhada_basica.glb", "run": "corrida.glb" },
+      "fechar_bracos_graus": { "walk": 18, "run": 13 },
       "cristal_emissivo": true
     },
     {

@@ -613,3 +613,29 @@ onde errou, correções manuais e quanto tempo levou.
     lateral; troquei pela abertura lateral.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 23:40–23:58 de relógio.
+
+---
+
+## 2026-09-25 — Arte: animação de corrida da protagonista (clipe `run`)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** o humano aprovou a caminhada ("agora sim ficaram perfeitas") e pediu a animação de correr,
+  já disponível para o agente do jogo criar o estado de corrida e o botão.
+- **O que foi feito (0 créditos):**
+  - A corrida é a grátis que veio com o rig (`bruto/corrida.glb`): no lugar, mesmos 24 ossos,
+    ciclo de 0,67 s.
+  - `tools/assets.json`: `clipes_do_rig` (walk e run) e `fechar_bracos_graus` por clipe (walk 18°, run 13°;
+    na corrida os braços vão levantados para a frente, e fechar demais os enfiaria no peito).
+  - `normalize.py`: `use_rig_clip` genérico; a passada de cada clipe vai para `protagonista.json`.
+  - Medições: pés sem cruzar (+0,112 da altura); abertura lateral do braço média de 18° (era 24° na
+    corrida bruta); passada de 2,525 m/s. A caminhada não mudou (11°, +0,141, 0,81 m/s).
+  - A métrica do braço mudou para "quanto o braço sai do plano do corpo" (asin de x). A anterior quebrava
+    com o braço levantado para a frente e dava 174°.
+- **Para o agente do jogo:**
+  - `assets/modelos/protagonista/protagonista.glb` tem os clipes `idle`, `walk`, `run`, `attack` e `work`.
+    O `CastellanVisual` coloca em laço só idle, walk e work; o `run` precisa entrar nessa lista.
+  - `protagonista.json`: `passada_walk_m_s` 0,81 e `passada_run_m_s` 2,525. Para não deslizar, o run deve
+    tocar com `SpeedScale` = velocidade no chão ÷ 2,525, como o walk já faz com 0,81. A velocidade de corrida
+    que casa com a animação a 1,0× é cerca de 2,5 células/s.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 00:00–00:10 de relógio.
