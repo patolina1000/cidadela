@@ -90,9 +90,9 @@ public sealed class GameData
 
         var c = JsonSerializer.Deserialize<CastellanData>(castellanJson, JsonOptions)
             ?? throw new FormatException("castellan.json vazio.");
-        if (c.Speed <= 0f || c.RunSpeed < c.Speed)
-            throw new FormatException("castellan.json: speed precisa ser positivo e runSpeed não pode ser menor que speed.");
-        var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius, c.RunSpeed);
+        if (c.Speed <= 0f)
+            throw new FormatException("castellan.json: speed precisa ser positivo.");
+        var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius);
 
         var buildings = new List<BuildingType>();
         foreach ((string kind, BuildingData b) in Ordered<BuildingData>(buildingsJson, "buildings.json"))
@@ -209,7 +209,6 @@ public sealed class GameData
     private sealed class CastellanData
     {
         public float Speed { get; set; } = 6f;
-        public float RunSpeed { get; set; } = 6f;
         public float Reach { get; set; } = 10f;
         public float GatherReach { get; set; } = 1f;
         public float Radius { get; set; } = 0.3f;

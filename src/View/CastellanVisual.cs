@@ -5,7 +5,7 @@ namespace Cidadela.View;
 
 /// <summary>
 /// Desenho do Castelão: o modelo da protagonista (assets/modelos/protagonista) com os clipes
-/// idle, walk, run e work; sem o modelo, cápsula escura com "nariz" laranja. Anima só a partir do
+/// idle, run e work (ela só corre); sem o modelo, cápsula escura com "nariz" laranja. Anima só a partir do
 /// estado da simulação: vira suave para a direção e, na cápsula, quica ao andar e dá golpes
 /// sincronizados com a coleta (o golpe acerta quando o item cai).
 /// </summary>
@@ -28,8 +28,7 @@ public partial class CastellanVisual : Node3D
     private System.Numerics.Vector2 _lastDrawn;
     private bool _hasLast;
     private AnimationPlayer? _animations;
-    private float _jogStride;    // m/s em que o jog (corrida moderada) não desliza (medido no Blender); 0 = desconhecido
-    private float _sprintStride; // idem para o sprint (corrida muito rápida, com Shift)
+    private float _runStride; // m/s em que o run não desliza (medido no Blender); 0 = desconhecido
 
     public override void _Ready()
     {
@@ -46,15 +45,14 @@ public partial class CastellanVisual : Node3D
             _animations = model.FindChild("AnimationPlayer", recursive: true, owned: false) as AnimationPlayer;
             if (_animations is not null)
             {
-                foreach (string clip in new[] { "idle", "jog", "sprint", "work" })
+                foreach (string clip in new[] { "idle", "run", "work" })
                 {
                     if (_animations.HasAnimation(clip))
                         _animations.GetAnimation(clip).LoopMode = Animation.LoopModeEnum.Linear;
                 }
                 _animations.Play("idle");
             }
-            _jogStride = ReadStride("passada_jog_m_s");
-            _sprintStride = ReadStride("passada_sprint_m_s");
+            _runStride = ReadStride("passada_run_m_s");
             return;
         }
 
@@ -94,14 +92,13 @@ public partial class CastellanVisual : Node3D
         if (_animations is not null)
         {
             bool moving = walked > 0.0001f;
-            bool sprinting = moving && castellan.IsRunning && _animations.HasAnimation("sprint");
-            string clip = castellan.GatherTarget is not null ? "work" : sprinting ? "sprint" : moving ? "jog" : "idle";
+            string clip = castellan.GatherTarget is not null ? "work" : moving ? "run" : "idle";
             if (_animations.CurrentAnimation != clip && _animations.HasAnimation(clip))
                 _animations.Play(clip, ClipBlendSeconds);
 
-            // Walk e run tocam no ritmo da velocidade real no chão, para os pés não deslizarem
+            // O run toca no ritmo da velocidade real no chão, para os pés não deslizarem
             // (inclusive ao frear numa parede).
-            float stride = clip == "sprint" ? _sprintStride : clip == "jog" ? _jogStride : 0f;
+            float stride = clip == "run" ? _runStride : 0f;
             float targetScale = 1f;
             if (stride > 0f && dt > 0f)
                 targetScale = walked / dt / stride;

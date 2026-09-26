@@ -42,6 +42,7 @@ COST_SMART_TOPOLOGY_PREVIEW = 5
 COST_REFINE = 10
 COST_RIG = 5
 COST_PER_ACTION = 3
+COST_MOTION = {"prime": 10, "swift": 3}
 
 # Altura aproximada informada ao rig: o rig acerta melhor com a proporção de uma pessoa;
 # a escala do jogo é aplicada depois, no Blender.
@@ -125,6 +126,8 @@ def plan_steps(asset: dict) -> list[tuple[str, int]]:
         steps += [("rig", COST_RIG), ("animacoes", COST_PER_ACTION * len(asset["animacoes"]))]
         if asset.get("animacoes_extra"):
             steps.append(("animacoes_extra", COST_PER_ACTION * len(asset["animacoes_extra"])))
+        for clip, motion in asset.get("movimentos_texto", {}).items():
+            steps += [(f"movimento_{clip}", COST_MOTION[motion["modo"]]), (f"aplicar_{clip}", COST_PER_ACTION)]
     return steps
 
 
@@ -177,6 +180,18 @@ class Runner:
             return "/v1/rigging", {
                 "input_task_id": done["modelo"]["task_id"],
                 "height_meters": RIG_HEIGHT_METERS,
+            }
+        if step.startswith("movimento_"):
+            motion = asset["movimentos_texto"][step.removeprefix("movimento_")]
+            return "/v1/text-to-motion", {
+                "prompt": motion["prompt"],
+                "mode": motion["modo"],
+                "duration": motion["duracao_s"],
+            }
+        if step.startswith("aplicar_"):
+            return "/v1/animations", {
+                "rig_task_id": done["rig"]["task_id"],
+                "motion_task_id": done["movimento_" + step.removeprefix("aplicar_")]["task_id"],
             }
         if step in ("animacoes", "animacoes_extra"):
             return "/v1/animations", {
@@ -264,6 +279,10 @@ def download(meshy: Meshy, asset: dict, results: dict) -> None:
     for key, file in (("walking_glb_url", "caminhada_basica.glb"), ("running_glb_url", "corrida.glb")):
         if basic.get(key):
             fetch(basic[key], raw / file)
+    for clip in asset.get("movimentos_texto", {}):
+        step = f"aplicar_{clip}"
+        if step in results:
+            fetch(results[step]["result"]["animation_glb_url"], raw / f"movimento_{clip}.glb")
     # Animações extras: pedidas depois, sobre o mesmo rig, sem refazer as primeiras.
     for step in ("animacoes", "animacoes_extra"):
         if step not in results:

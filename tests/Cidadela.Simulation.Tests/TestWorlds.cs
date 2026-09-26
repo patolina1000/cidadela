@@ -30,7 +30,7 @@ internal static class TestWorlds
     /// <summary>Aldeão de teste: 5 células/s, coleta no mesmo tempo que o Castelão, carrega 2.</summary>
     public const string VillagerStats = """{ "speed": 5.0, "gatherMultiplier": 1.0, "carry": 2 }""";
 
-    public const string CastellanStats = """{ "speed": 6.0, "runSpeed": 9.0, "reach": 10.0, "gatherReach": 1.0, "radius": 0.3 }""";
+    public const string CastellanStats = """{ "speed": 6.0, "reach": 10.0, "gatherReach": 1.0, "radius": 0.3 }""";
 
     public const string Buildings = """
         {
@@ -55,9 +55,9 @@ internal static class TestWorlds
               "villagers": {{villagers}} }
             """, Data());
 
-    public static void Move(SimWorld world, float x, float z, int ticks, bool run = false)
+    public static void Move(SimWorld world, float x, float z, int ticks)
     {
-        world.Enqueue(new MoveCommand(new Vector2(x, z), run));
+        world.Enqueue(new MoveCommand(new Vector2(x, z)));
         for (int i = 0; i < ticks; i++)
             world.Tick();
     }

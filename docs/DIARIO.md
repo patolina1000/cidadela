@@ -776,3 +776,33 @@ onde errou, correções manuais e quanto tempo levou.
   chegavam ao rosto; resolvido mantendo a orientação dos ombros.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:30–01:55 de relógio.
+
+---
+
+## 2026-09-26 — A protagonista só corre: saem o andar, a corrida moderada e o botão de correr
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte` (com permissão do humano para
+  mexer no código do jogo).
+- **Pedido:** o humano achou as duas corridas muito iguais. Tentei um trote novo (abaixo), e ele decidiu:
+  "vamos esquecer o estado de andar, agora o personagem só corre, apague o estado de andar e retire o
+  botão de correr".
+- **Tentativa que não deu certo antes da decisão (13 créditos):** um trote gerado pela Text to Motion
+  (`prime`, 6 s), aplicado no rig e cortado num laço no lugar no Blender (1,42 s; diferença de pose de
+  menos de 1 cm por osso). Saiu um passo arrastado, não uma corrida: joelho a 18°, calcanhar a 0,21× a perna,
+  passo de 0,23 m, braços parados na frente da barriga. Descartado. O pipeline ganhou `movimentos_texto`
+  (Text to Motion + aplicação no rig) e o `normalize.py` o `import_motion_clip` (acha o ciclo, fecha o laço
+  e tira o avanço do quadril), que ficam para outros usos.
+- **O que foi feito:**
+  - Arte: o GLB tem `idle`, `run`, `attack` e `work`. O `run` é a corrida aprovada (clipe do rig, braços
+    fechados 13°, tronco 16°). `protagonista.json`: `passada_run_m_s` 2,421. `tools/assets.json` sem os
+    clipes de trote.
+  - Jogo (desfaz a corrida com Shift do commit `fb9b871`): sem a ação `run` no `project.godot`, sem
+    `IsRunning`, `RunCellsPerSecond` e `runSpeed`, `MoveCommand` só com a direção. `CastellanVisual` toca
+    `run` sempre que ela se move. `data/castellan.json`: `speed` 2.4 (a passada da corrida). GDD (seção 20)
+    atualizado.
+  - Testes: saíram os 3 da corrida com Shift e entrou `SpeedMustBePositive`. `dotnet build`: 0 erros,
+    0 avisos. `dotnet test`: 76 aprovados.
+- **Créditos:** 13 nesta etapa (total do lote: 66; saldo: 3.034).
+- **Pendência:** o GDD foi editado aqui, mas não reexportado (o agente do jogo costuma reexportar).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 02:00–02:40 de relógio.

@@ -30,7 +30,6 @@ public sealed class Castellan
     public float GatherProgress => GatherTarget is null ? 0f : (float)_gatherTicks / GatherTarget.Type.GatherTicks;
 
     private Vector2 _moveDirection;
-    private bool _run;
     private int _gatherTicks;
 
     public Castellan(int id, Vector2 position, CastellanStats stats)
@@ -56,12 +55,8 @@ public sealed class Castellan
         return Vector2.Distance(center, nearest) <= Stats.GatherReach;
     }
 
-    /// <summary>Se está andando com a corrida pedida (parado com Shift não conta).</summary>
-    public bool IsRunning => _run && _moveDirection != Vector2.Zero;
-
-    internal void SetMoveDirection(Vector2 direction, bool run = false)
+    internal void SetMoveDirection(Vector2 direction)
     {
-        _run = run;
         // Diagonal não pode ser mais rápida; entrada analógica menor que 1 anda mais devagar.
         _moveDirection = direction.LengthSquared() > 1f ? Vector2.Normalize(direction) : direction;
         // Como no Factorio: andar interrompe o trabalho manual.
@@ -90,8 +85,7 @@ public sealed class Castellan
 
     private void Move(SimWorld world)
     {
-        float speed = _run ? Stats.RunCellsPerSecond : Stats.CellsPerSecond;
-        Vector2 step = _moveDirection * (speed / SimClock.TicksPerSecond);
+        Vector2 step = _moveDirection * (Stats.CellsPerSecond / SimClock.TicksPerSecond);
         var max = new Vector2(world.Grid.Width - 1, world.Grid.Height - 1);
 
         // Um eixo por vez: bater numa parede num eixo ainda deixa deslizar no outro.

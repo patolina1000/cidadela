@@ -28,8 +28,13 @@ FOOTPRINT = 0.9  # base máxima de construções e recursos, para caber em 1 cé
 CRYSTAL_MATERIAL = "Cristal"
 CRYSTAL_EMISSION_STRENGTH = 3.0
 STRIDE_BONES = ("LeftToeBase", "RightToeBase")
-LOCOMOTION_CLIPS = ("jog", "sprint")
+LOCOMOTION_CLIPS = ("run",)  # clipes com passada medida para protagonista.json
 LEAN_TOLERANCE = 0.5  # graus
+# Laço dos movimentos por texto: ossos comparados, margem ignorada nas pontas e duração do ciclo.
+LOOP_BONES = ("LeftFoot", "RightFoot", "LeftHand", "RightHand", "Head")
+LOOP_EDGE = 12  # quadros: o começo e o fim do clipe gerado costumam ter arrancada e parada
+LOOP_MIN_FRAMES = 20
+LOOP_MAX_FRAMES = 60
 LEAN_MAX_PASSES = 6  # clipes com passada medida para protagonista.json
 IDLE_KEY_STEP = 3  # quadros entre as chaves do idle feito à mão
 MATTE_ROUGHNESS = 0.8  # fosco, como textura pintada à mão
@@ -115,6 +120,71 @@ def import_extra_clips(raw: Path) -> None:
         print(f"  clipe {action.name} -> {ours} (extra)")
         action.name = ours
         action.use_fake_user = True
+
+
+def import_motion_clip(raw: Path, clip: str) -> None:
+    """Traz um movimento da Text to Motion como <clip> num laço no lugar.
+
+    O movimento gerado anda para a frente e não fecha em laço. Procura dois instantes com a mesma
+    pose (pés, mãos e cabeça em relação ao quadril) separados por um a três ciclos, corta esse trecho
+    e distribui em linha reta a diferença entre o fim e o começo em cada canal. Isso fecha o laço e
+    tira o avanço do quadril (fica no lugar).
+    """
+    before_objects, before_actions = set(bpy.data.objects), set(bpy.data.actions)
+    bpy.ops.import_scene.gltf(filepath=str(raw / f"movimento_{clip}.glb"), disable_bone_shape=True)
+    imported = [o for o in bpy.data.objects if o not in before_objects]
+    source_armature = next(o for o in imported if o.type == "ARMATURE")
+    source = source_armature.animation_data.action
+    start, end = source.frame_range
+    scene = bpy.context.scene
+
+    def pose_at(time: float) -> list:
+        set_time(scene, time)
+        hips = source_armature.pose.bones["Hips"].head
+        return [source_armature.pose.bones[b].head - hips for b in LOOP_BONES] + [Vector((0, 0, hips.z))]
+
+    times = [start + LOOP_EDGE + i for i in range(int(end - start - 2 * LOOP_EDGE) + 1)]
+    poses = {t: pose_at(t) for t in times}
+    best = None
+    for t0 in times:
+        for t1 in times:
+            if not LOOP_MIN_FRAMES <= t1 - t0 <= LOOP_MAX_FRAMES:
+                continue
+            error = sum((a - b).length for a, b in zip(poses[t0], poses[t1]))
+            if best is None or error < best[0]:
+                best = (error, t0, t1)
+    _, t0, t1 = best
+    length = int(round(t1 - t0))
+
+    looped = bpy.data.actions.new(clip)
+    looped.use_fake_user = True
+    slot = looped.slots.new("OBJECT", source_armature.name)
+    layer = looped.layers.new("loop")
+    bag = layer.strips.new(type="KEYFRAME").channelbag(slot, ensure=True)
+    for curve in channelbags(source)[0].fcurves:
+        values = [curve.evaluate(t0 + i) for i in range(length + 1)]
+        target = values[0]
+        if curve.data_path.endswith("rotation_quaternion"):
+            # q e -q são a mesma rotação: fecha no sinal mais próximo do fim.
+            quat = [c for c in channelbags(source)[0].fcurves if c.data_path == curve.data_path]
+            q0 = [c.evaluate(t0) for c in sorted(quat, key=lambda c: c.array_index)]
+            q1 = [c.evaluate(t1) for c in sorted(quat, key=lambda c: c.array_index)]
+            if sum(a * b for a, b in zip(q0, q1)) < 0:
+                target = -values[0]
+        drift = values[-1] - target
+        new = bag.fcurves.new(curve.data_path, index=curve.array_index, group_name=curve.group.name if curve.group else "")
+        for i, value in enumerate(values):
+            new.keyframe_points.insert(i, value - drift * i / length, options={"FAST"})
+    for obj in imported:
+        bpy.data.objects.remove(obj)
+    for action in [a for a in bpy.data.actions if a not in before_actions and a is not looped]:
+        bpy.data.actions.remove(action)
+    if clip in bpy.data.actions and bpy.data.actions[clip] is not looped:
+        bpy.data.actions.remove(bpy.data.actions[clip])
+    looped.name = clip
+    fps = scene.render.fps / scene.render.fps_base
+    print(f"  {clip}: movimento por texto, laço de {length / fps:.2f} s (quadros {t0:.1f}-{t1:.1f}, "
+          f"diferença de pose {best[0]:.1f})")
 
 
 def discard_clips(names: list) -> None:
@@ -596,6 +666,8 @@ def main() -> None:
         discard_clips(asset.get("descartar_clipes", []))
         if asset.get("animacoes_extra"):
             import_extra_clips(raw)
+        for clip in asset.get("movimentos_texto", {}):
+            import_motion_clip(raw, clip)
         for clip, file in asset.get("clipes_do_rig", {}).items():
             use_rig_clip(raw, clip, file)
         if asset.get("idle_respirando"):

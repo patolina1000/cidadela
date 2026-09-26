@@ -15,31 +15,10 @@ public class CastellanMovementTests
     }
 
     [Fact]
-    public void RunsAtRunSpeedAndWalksAgainWhenReleased()
-    {
-        SimWorld world = TestWorlds.Open(x: 1, z: 3);
-        TestWorlds.Move(world, 1f, 0f, ticks: 20, run: true);
-        Assert.Equal(10f, world.Castellan.Position.X, 3); // 1 + 9 células/s
-        Assert.True(world.Castellan.IsRunning);
-
-        TestWorlds.Move(world, 1f, 0f, ticks: 10);
-        Assert.Equal(13f, world.Castellan.Position.X, 3); // + 6 células/s × 0,5 s
-        Assert.False(world.Castellan.IsRunning);
-    }
-
-    [Fact]
-    public void StandingStillWithRunHeldIsNotRunning()
-    {
-        SimWorld world = TestWorlds.Open();
-        TestWorlds.Move(world, 0f, 0f, ticks: 5, run: true);
-        Assert.False(world.Castellan.IsRunning);
-    }
-
-    [Fact]
-    public void RunSpeedCannotBeSlowerThanWalking()
+    public void SpeedMustBePositive()
     {
         Assert.Throws<System.FormatException>(() => GameData.Parse(TestWorlds.Items, TestWorlds.Resources,
-            """{ "speed": 3.0, "runSpeed": 1.0 }""", TestWorlds.VillagerStats, TestWorlds.Buildings, TestWorlds.Recipes));
+            """{ "speed": 0.0 }""", TestWorlds.VillagerStats, TestWorlds.Buildings, TestWorlds.Recipes));
     }
 
     [Fact]
