@@ -19,11 +19,11 @@ uniform float blend_width = 0.35;     // largura da mistura entre dois terrenos,
 uniform float macro_strength = 0.12;  // manchas de luz em grande escala
 uniform float macro_scale = 0.045;
 
-// Ajuste de cor do chão: a luz da cena (ambiente cor de trigo, sol amarelado) esquenta e satura tudo;
-// o chão segue a paleta fria do chão (GDD, seção 17), então é compensado aqui, só nele.
-uniform float ground_saturation = 0.65;
-uniform vec3 ground_tint : source_color = vec3(0.90, 0.96, 1.02);
-uniform float ground_brightness = 0.85;
+// Ajuste de cor só do chão (neutro = 1). Serviu para compensar a luz quente antiga; com o crepúsculo
+// eterno da cena (26/09/2026) a luz já é fria, e o chão segue a paleta sem correção.
+uniform float ground_saturation = 1.0;
+uniform vec3 ground_tint : source_color = vec3(1.0, 1.0, 1.0);
+uniform float ground_brightness = 1.0;
 
 uniform float grid_strength = 0.0;
 uniform vec4 line_color : source_color = vec4(0.0, 0.0, 0.0, 0.35);

@@ -27,6 +27,10 @@ public partial class CastellanVisual : Node3D
     private float _bob;
     private System.Numerics.Vector2 _lastDrawn;
     private bool _hasLast;
+    private const string ChestBone = "Spine";
+    private const float CrystalEmissionBoost = 3f;
+    private static readonly Color CrystalLightColor = new(0.35f, 0.55f, 1f);
+
     private AnimationPlayer? _animations;
     private float _runStride; // m/s em que o run não desliza (medido no Blender); 0 = desconhecido
 
@@ -53,6 +57,7 @@ public partial class CastellanVisual : Node3D
                 _animations.Play("idle");
             }
             _runStride = ReadStride("passada_run_m_s");
+            AddCrystalGlow(model);
             return;
         }
 
@@ -116,6 +121,50 @@ public partial class CastellanVisual : Node3D
 
         _pivot.Position = new Vector3(0f, _bob, 0f);
         _pivot.Rotation = new Vector3(Mathf.DegToRad(_swing), 0f, 0f);
+    }
+
+    /// <summary>
+    /// No crepúsculo (GDD, seção 17) a protagonista some no chão escuro: o cristal do peito brilha mais
+    /// e acende uma luz azul suave em volta dela, presa ao osso do peito para acompanhar a corrida.
+    /// Sem sombra: a luz sai "de dentro" do corpo e só clareia o chão e o que está perto.
+    /// </summary>
+    private static void AddCrystalGlow(Node3D model)
+    {
+        foreach (Node node in model.FindChildren("*", nameof(MeshInstance3D), recursive: true, owned: false))
+        {
+            var mesh = (MeshInstance3D)node;
+            for (int i = 0; i < mesh.GetSurfaceOverrideMaterialCount(); i++)
+            {
+                if (mesh.Mesh.SurfaceGetMaterial(i) is StandardMaterial3D { ResourceName: "Cristal" } crystal)
+                {
+                    var brighter = (StandardMaterial3D)crystal.Duplicate();
+                    brighter.EmissionEnergyMultiplier = crystal.EmissionEnergyMultiplier * CrystalEmissionBoost;
+                    mesh.SetSurfaceOverrideMaterial(i, brighter);
+                }
+            }
+        }
+
+        var light = new OmniLight3D
+        {
+            Name = "CrystalLight",
+            LightColor = CrystalLightColor,
+            LightEnergy = 0.85f,
+            OmniRange = 2.3f,
+            OmniAttenuation = 1.4f,
+            ShadowEnabled = false,
+        };
+        if (model.FindChild("Skeleton3D", recursive: true, owned: false) is Skeleton3D skeleton &&
+            skeleton.FindBone(ChestBone) >= 0)
+        {
+            var chest = new BoneAttachment3D { Name = "Chest", BoneName = ChestBone };
+            skeleton.AddChild(chest);
+            chest.AddChild(light);
+        }
+        else
+        {
+            light.Position = new Vector3(0f, 0.55f, 0f);
+            model.AddChild(light);
+        }
     }
 
     /// <summary>Passada (m/s) de um clipe, medida no Blender e gravada no JSON do modelo; 0 se não houver.</summary>

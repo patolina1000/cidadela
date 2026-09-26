@@ -3,14 +3,49 @@
 [ext_resource type="Script" path="res://src/View/GameRoot.cs" id="1_root"]
 [ext_resource type="Script" path="res://src/View/WorldView.cs" id="2_world"]
 [ext_resource type="Script" path="res://src/View/CameraRig.cs" id="3_camera"]
+[ext_resource type="Shader" path="res://src/View/Vignette.gdshader" id="4_vignette"]
+
+[sub_resource type="ShaderMaterial" id="Vignette_material"]
+shader = ExtResource("4_vignette")
+
+[sub_resource type="ProceduralSkyMaterial" id="Sky_crepusculo"]
+sky_top_color = Color(0.2, 0.17, 0.27, 1)
+sky_horizon_color = Color(0.4, 0.37, 0.46, 1)
+sky_curve = 0.12
+ground_bottom_color = Color(0.13, 0.11, 0.17, 1)
+ground_horizon_color = Color(0.4, 0.37, 0.46, 1)
+sun_angle_max = 12.0
+sun_curve = 0.3
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("Sky_crepusculo")
 
 [sub_resource type="Environment" id="Environment_main"]
-background_mode = 1
-background_color = Color(0.118, 0.165, 0.227, 1)
+background_mode = 2
+sky = SubResource("Sky_main")
 ambient_light_source = 2
-ambient_light_color = Color(0.788, 0.702, 0.541, 1)
-ambient_light_energy = 0.45
+ambient_light_color = Color(0.52, 0.49, 0.6, 1)
+ambient_light_energy = 1.0
 tonemap_mode = 2
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(0.2, 0.16, 0.27, 1)
+fog_light_energy = 1.0
+fog_sun_scatter = 0.05
+fog_density = 0.22
+fog_sky_affect = 0.5
+fog_depth_curve = 1.6
+fog_depth_begin = 22.0
+fog_depth_end = 90.0
+glow_enabled = true
+glow_intensity = 0.7
+glow_strength = 0.9
+glow_bloom = 0.0
+glow_hdr_threshold = 1.0
+adjustment_enabled = true
+adjustment_brightness = 1.0
+adjustment_contrast = 1.15
+adjustment_saturation = 0.7
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_root")
@@ -22,14 +57,27 @@ script = ExtResource("2_world")
 script = ExtResource("3_camera")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866025, -0.321394, 0.383022, 0, 0.766044, 0.642788, -0.5, -0.55667, 0.663414, 0, 10, 0)
-light_color = Color(1, 0.94, 0.85, 1)
+transform = Transform3D(-0.707107, 0.000000, -0.707107, -0.218508, 0.951057, 0.218508, 0.672499, 0.309017, -0.672499, 0, 10, 0)
+light_color = Color(0.72, 0.78, 0.9, 1)
+light_energy = 0.85
+light_angular_distance = 4.0
 shadow_enabled = true
+shadow_opacity = 0.75
+shadow_blur = 1.6
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_main")
 
 [node name="DebugHud" type="CanvasLayer" parent="."]
+
+[node name="Vignette" type="ColorRect" parent="DebugHud"]
+material = SubResource("Vignette_material")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="DebugLabel" type="Label" parent="DebugHud"]
 offset_left = 12.0
