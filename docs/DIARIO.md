@@ -993,3 +993,22 @@ onde errou, correções manuais e quanto tempo levou.
   `ground_brightness` do shader ou pela textura, se o humano quiser.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados.
 - **Tempo:** 05:45–06:00 de relógio.
+
+---
+
+## 2026-09-26 — Luz do cristal não ilumina mais o cabelo da protagonista
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na branch `arte` (código do agente do jogo, a pedido do humano).
+- **Pedido:** o humano gostou do efeito de luz do crepúsculo, mas a luz estava "refletindo muito no
+  personagem, no cabelo".
+- **Causa:** a luz azul do cristal (`OmniLight3D` presa ao osso do peito, do commit do crepúsculo) fica a
+  poucos centímetros do cabelo, que passa na frente do peito: iluminava e dava brilho especular forte no
+  próprio cabelo e corpo.
+- **O que foi feito:** a malha da protagonista vai para uma camada de render só dela (camada 20), e a luz do
+  cristal ignora essa camada (`LightCullMask`); o reflexo especular dessa luz caiu para 0,1. Ela continua
+  clareando o chão e o que está em volta; sol, ambiente e câmera continuam vendo a protagonista normalmente.
+- **Medido na gravação do jogo (recorte centrado nela):** pixels muito claros no corpo de 3,0% para 1,6% (o
+  que sobra é o cristal), tom azul no corpo de 0,113 para 0,089; o brilho azul no chão em volta continua.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 06:05–06:20 de relógio.

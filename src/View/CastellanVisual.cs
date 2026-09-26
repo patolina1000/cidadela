@@ -30,6 +30,10 @@ public partial class CastellanVisual : Node3D
     private const string ChestBone = "Spine";
     private const float CrystalEmissionBoost = 3f;
     private static readonly Color CrystalLightColor = new(0.35f, 0.55f, 1f);
+    // Camada de render só da protagonista: a luz do cristal ignora essa camada (clareia o chão e o que
+    // está em volta, não o próprio cabelo e corpo). Sol, ambiente e câmera continuam vendo todas.
+    private const uint SelfLayer = 1u << 19;
+    private const float CrystalLightSpecular = 0.1f;
 
     private AnimationPlayer? _animations;
     private float _runStride; // m/s em que o run não desliza (medido no Blender); 0 = desconhecido
@@ -126,13 +130,16 @@ public partial class CastellanVisual : Node3D
     /// <summary>
     /// No crepúsculo (GDD, seção 17) a protagonista some no chão escuro: o cristal do peito brilha mais
     /// e acende uma luz azul suave em volta dela, presa ao osso do peito para acompanhar a corrida.
-    /// Sem sombra: a luz sai "de dentro" do corpo e só clareia o chão e o que está perto.
+    /// Sem sombra: a luz sai "de dentro" do corpo e só clareia o chão e o que está perto. Ela não
+    /// ilumina a própria protagonista (camada <see cref="SelfLayer"/>): colada ao peito, deixava o
+    /// cabelo e o corpo brilhando demais.
     /// </summary>
     private static void AddCrystalGlow(Node3D model)
     {
         foreach (Node node in model.FindChildren("*", nameof(MeshInstance3D), recursive: true, owned: false))
         {
             var mesh = (MeshInstance3D)node;
+            mesh.Layers = SelfLayer;
             for (int i = 0; i < mesh.GetSurfaceOverrideMaterialCount(); i++)
             {
                 if (mesh.Mesh.SurfaceGetMaterial(i) is StandardMaterial3D { ResourceName: "Cristal" } crystal)
@@ -152,6 +159,8 @@ public partial class CastellanVisual : Node3D
             OmniRange = 2.3f,
             OmniAttenuation = 1.4f,
             ShadowEnabled = false,
+            LightSpecular = CrystalLightSpecular,
+            LightCullMask = ~SelfLayer,
         };
         if (model.FindChild("Skeleton3D", recursive: true, owned: false) is Skeleton3D skeleton &&
             skeleton.FindBone(ChestBone) >= 0)
