@@ -375,6 +375,8 @@ A solução mais usada em jogos com andares (The Sims, Prison Architect, Oxygen 
 
 A simulação da fábrica (itens, receitas, esteiras) roda **separada dos gráficos**, em ticks fixos (ex.: 20 por segundo). Os modelos 3D só "desenham" o estado. Isso é o que permite a Factorio mover milhares de itens, e é a instrução nº 1 para a IA que for programar.
 
+**Arquitetura para escala (medido em 26/09/2026, detalhes em `docs/ARQUITETURA_ESCALA.md`):** a simulação é orientada a dados (um array por componente, sem objeto nem nó por entidade; 15.500 entidades custam menos de 1 ms por tick). Na tela, o que é estático e numeroso (grama, pisos, muros, itens em esteiras) vai em MultiMesh por tipo e por pedaço do mapa, com LOD por distância; entidades móveis com malha simples ficam como um nó por entidade com malha compartilhada até \~30 mil (o Forward+ instancia sozinho e o culling é exato; medido mais rápido que MultiMesh refeito por quadro); multidões animadas usam texturas de animação de vértices (VAT) para a animação custar zero de CPU. O gargalo real é a GPU: nada pequeno projeta sombra, sombra só na cascata perto e sem penumbra, LOD em tudo, malhas longe com poucos triângulos grandes (triângulo minúsculo é caro no Mac).
+
 **Quando trocar para Unity:** se os testes de desempenho da fase 1 mostrarem que o Godot não aguenta a escala das eras IV e V.
 
 ## 14. IA para programar
