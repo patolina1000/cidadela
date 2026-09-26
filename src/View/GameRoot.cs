@@ -280,7 +280,7 @@ public partial class GameRoot : Node3D
         System.Numerics.Vector2 p = castellan.Position;
         _debugLabel.Text =
             $"Tick {_world.TickCount}  |  {_measuredTicksPerSecond} ticks/s (alvo {SimClock.TicksPerSecond})  |  " +
-            $"{Engine.GetFramesPerSecond()} FPS  |  Castelão ({p.X:0.0}, {p.Y:0.0})";
+            $"{Engine.GetFramesPerSecond()} FPS  |  Castelão ({p.X:0.0}, {p.Y:0.0})  |  grama: {_view.GrassTufts} tufos";
 
         _inventoryLabel.Text = _selected is not null
             ? $"Construindo {_selected.Name} ({DirectionName(_buildDirection)}) — R gira, botão direito cancela"

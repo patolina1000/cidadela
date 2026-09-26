@@ -28,6 +28,10 @@ public partial class WorldView : Node3D
     private int _buildingsVersion = -1;
     private Node3D? _ghost;
     private ShaderMaterial? _groundMaterial;
+    private GrassField _grass = null!;
+
+    /// <summary>Quantos tufos de grama estão desenhados (para o texto de desempenho).</summary>
+    public int GrassTufts => _grass.TuftCount;
     private string? _ghostKind;
     private Direction _ghostDirection;
     private StandardMaterial3D _ghostMaterial = null!;
@@ -51,6 +55,10 @@ public partial class WorldView : Node3D
     {
         _world = world;
         BuildGround(world.Grid, world.Data);
+        _grass = new GrassField { Name = "Grass" };
+        AddChild(_grass);
+        // Sem grama embaixo de construções e de recursos (árvores, pedras e veios ainda de pé).
+        _grass.Build(world.Grid, world.Data, cell => world.BuildingAt(cell) is not null || world.ResourceAt(cell) is not null);
 
         foreach (ResourceNode resource in world.Resources)
         {
@@ -132,6 +140,7 @@ public partial class WorldView : Node3D
             Node3D node = _buildingNodes[gone];
             _buildingNodes.Remove(gone);
             _chestSnapshots.Remove(gone);
+            _grass.MarkDirty(gone.Cell); // a grama volta onde a construção saiu
             if (withEffects)
                 AnimateDeconstruct(gone, node);
             else
@@ -147,6 +156,7 @@ public partial class WorldView : Node3D
             node.Position = CellCenter(building.Cell, 0f);
             AddChild(node);
             _buildingNodes[building] = node;
+            _grass.MarkDirty(building.Cell); // a grama some embaixo do que foi construído
             if (withEffects)
             {
                 _effects.Burst(node.Position + new Vector3(0f, 0.1f, 0f), Palette.Wheat, amount: 12, speed: 2f);
@@ -517,6 +527,7 @@ public partial class WorldView : Node3D
         {
             _effects.Burst(visual.Root.Position + new Vector3(0f, 0.4f, 0f), color, amount: 24, speed: 3.5f);
             visual.Root.Visible = false;
+            _grass.MarkDirty(resource.Cell); // a grama volta onde o recurso acabou
             return;
         }
 
