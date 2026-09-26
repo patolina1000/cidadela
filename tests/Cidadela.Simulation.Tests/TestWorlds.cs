@@ -14,7 +14,7 @@ internal static class TestWorlds
         }
         """;
 
-    public const string CastellanStats = """{ "speed": 6.0, "reach": 10.0, "radius": 0.3 }""";
+    public const string CastellanStats = """{ "speed": 6.0, "reach": 10.0, "gatherReach": 1.0, "radius": 0.3 }""";
 
     public static GameData Data() => GameData.Parse(Resources, CastellanStats);
 

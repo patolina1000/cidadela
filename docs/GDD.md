@@ -645,7 +645,7 @@ No nosso jogo isso encaixa nos pilares: o Castelão é o primeiro trabalhador da
 
 - **Movimento:** WASD relativo à câmera, que gira em passos de 90° pelo botão direito (seção 12). A velocidade inicial é um número de balanceamento em JSON (Factorio usa 8,9 células/s como referência).
 - **Câmera:** segue o Castelão e espia na direção do cursor; o botão do meio arrasta o mundo para construir longe, e andar traz a câmera de volta (seção 12).
-- **Alcance:** constrói, coleta e abre máquinas só num raio em volta dele (ponto de partida: 10 células, como Factorio).
+- **Alcance:** constrói e abre máquinas só num raio em volta dele (ponto de partida: 10 células, como Factorio). Para coletar, precisa estar encostado no recurso, de lado ou na diagonal: é trabalho físico, feito de perto.
 - **Trabalho manual:** coleta madeira e pedra e fabrica itens simples à mão, devagar. Isso ensina as receitas e deixa claro por que automatizar.
 - **Inventário:** carrega uma mochila; é o "carregador humano" da Era I (seção 4).
 - **Combate:** luta nas noites. No início segura sozinho os goblins; depois fica mais fraco que a horda e passa a liderar, com aura de moral para os soldados próximos.

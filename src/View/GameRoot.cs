@@ -47,7 +47,7 @@ public partial class GameRoot : Node3D
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        // Clique esquerdo: coletar o recurso da célula (a simulação confere alcance e se há recurso).
+        // Clique esquerdo: coletar o recurso da célula (a simulação confere se está encostado e se há recurso).
         if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } click
             && CellUnder(click.Position) is GridPos cell)
         {

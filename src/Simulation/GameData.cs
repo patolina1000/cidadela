@@ -46,7 +46,7 @@ public sealed class GameData
 
         var c = JsonSerializer.Deserialize<CastellanData>(castellanJson, JsonOptions)
             ?? throw new FormatException("castellan.json vazio.");
-        var stats = new CastellanStats(c.Speed, c.Reach, c.Radius);
+        var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius);
 
         return new GameData(resources, stats);
     }
@@ -62,6 +62,7 @@ public sealed class GameData
     {
         public float Speed { get; set; } = 6f;
         public float Reach { get; set; } = 10f;
+        public float GatherReach { get; set; } = 1f;
         public float Radius { get; set; } = 0.3f;
     }
 }

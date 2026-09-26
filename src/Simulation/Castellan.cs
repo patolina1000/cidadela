@@ -6,7 +6,7 @@ namespace Cidadela.Simulation;
 /// <summary>
 /// O personagem principal (GDD, seção 20). Anda na direção pedida pelo último
 /// <see cref="MoveCommand"/>, sem atravessar recursos e máquinas, e coleta à mão
-/// o recurso pedido por <see cref="GatherCommand"/> enquanto estiver parado e no alcance.
+/// o recurso pedido por <see cref="GatherCommand"/> enquanto estiver parado e encostado nele.
 /// </summary>
 public sealed class Castellan
 {
@@ -40,9 +40,20 @@ public sealed class Castellan
         Stats = stats;
     }
 
-    /// <summary>Se a célula está dentro do alcance (distância entre centros).</summary>
+    /// <summary>Se a célula está dentro do alcance de construir (distância entre centros).</summary>
     public bool CanReach(GridPos cell) =>
         Vector2.Distance(Position, new Vector2(cell.X, cell.Z)) <= Stats.Reach;
+
+    /// <summary>
+    /// Se está perto o bastante para coletar a célula: do centro do corpo até a borda da célula.
+    /// Encostado de lado ou na diagonal conta; uma célula de folga já não.
+    /// </summary>
+    public bool CanGather(GridPos cell)
+    {
+        Vector2 center = Position + new Vector2(0.5f, 0.5f);
+        var nearest = new Vector2(Math.Clamp(center.X, cell.X, cell.X + 1), Math.Clamp(center.Y, cell.Z, cell.Z + 1));
+        return Vector2.Distance(center, nearest) <= Stats.GatherReach;
+    }
 
     internal void SetMoveDirection(Vector2 direction)
     {
@@ -56,7 +67,7 @@ public sealed class Castellan
     internal void StartGathering(SimWorld world, GridPos cell)
     {
         ResourceNode? node = world.ResourceAt(cell);
-        if (node is null || !CanReach(cell))
+        if (node is null || !CanGather(cell))
             return;
         if (node != GatherTarget)
             _gatherTicks = 0;
@@ -111,7 +122,7 @@ public sealed class Castellan
         ResourceNode? node = GatherTarget;
         if (node is null)
             return;
-        if (node.IsDepleted || !CanReach(node.Cell))
+        if (node.IsDepleted || !CanGather(node.Cell))
         {
             StopGathering();
             return;

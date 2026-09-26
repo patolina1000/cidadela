@@ -119,8 +119,9 @@ public partial class WorldView : Node3D
     }
 
     /// <summary>
-    /// Quadrado na célula sob o cursor: claro no alcance (mais forte sobre um recurso),
-    /// vermelho fora do alcance; null esconde.
+    /// Quadrado na célula sob o cursor: forte sobre um recurso que dá para coletar daqui,
+    /// claro numa célula no alcance de construir, vermelho sobre recurso longe ou fora do alcance;
+    /// null esconde.
     /// </summary>
     public void ShowHover(GridPos? cell)
     {
@@ -132,12 +133,15 @@ public partial class WorldView : Node3D
 
         _hover.Visible = true;
         _hover.Position = CellCenter(c, 0.02f);
-        if (!_world.Castellan.CanReach(c))
-            _hoverMaterial.AlbedoColor = Palette.Warning with { A = 0.45f };
-        else if (_world.ResourceAt(c) is not null)
-            _hoverMaterial.AlbedoColor = Palette.Bone with { A = 0.55f };
-        else
+        Castellan castellan = _world.Castellan;
+        if (_world.ResourceAt(c) is not null)
+            _hoverMaterial.AlbedoColor = castellan.CanGather(c)
+                ? Palette.Bone with { A = 0.55f }
+                : Palette.Warning with { A = 0.45f };
+        else if (castellan.CanReach(c))
             _hoverMaterial.AlbedoColor = Palette.Bone with { A = 0.25f };
+        else
+            _hoverMaterial.AlbedoColor = Palette.Warning with { A = 0.45f };
     }
 
     private void BuildHover()

@@ -269,3 +269,22 @@ onde errou, correções manuais e quanto tempo levou.
   movendo (espiar com o cursor); acertei mirando pelo screenshot. Sem screenshot em movimento para o diário.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:23–21:25 de relógio.
+
+---
+
+## 2026-09-25 — Coletar só encostado no recurso
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** o Castelão precisa estar perto do recurso para coletar.
+- **O que foi feito:**
+  - Dois alcances separados em `data/castellan.json`: `reach` (10, construir e abrir máquinas) e
+    `gatherReach` (1,0 do centro do corpo até a borda do recurso = encostado, de lado ou na diagonal).
+  - `Castellan.CanGather`; a coleta começa e continua só com o Castelão encostado.
+  - Destaque do cursor: recurso longe fica vermelho, recurso encostado fica claro forte.
+  - Testes: 23 (novos: coletar de lado e na diagonal, longe demais mesmo dentro do alcance de construir,
+    andar até a árvore e coletar). GDD (seção 20, "Alcance") atualizado e reexportado.
+  - Verificado no jogo: a ~3 células o clique não coletou e o destaque ficou vermelho; encostado, coletou.
+- **O que deu errado:** para o teste no jogo foi preciso recalcular o pixel da árvore várias vezes: a câmera
+  espiava seguindo o mouse real do humano, e os screenshots congelavam com a janela em segundo plano.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:31–21:33 de relógio.

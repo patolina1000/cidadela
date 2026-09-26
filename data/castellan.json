@@ -1,8 +1,12 @@
 {
   // Castelão (GDD, seção 20).
-  // speed: células por segundo. reach: alcance para coletar e construir, em células.
+  // speed: células por segundo.
+  // reach: alcance para construir e abrir máquinas, em células (centro a centro).
+  // gatherReach: para coletar, distância máxima do centro do corpo até a borda do recurso;
+  //   1.0 = precisa estar encostado, de lado ou na diagonal.
   // radius: raio do corpo para colisão, em células.
   "speed": 6.0,
   "reach": 10.0,
+  "gatherReach": 1.0,
   "radius": 0.3
 }
