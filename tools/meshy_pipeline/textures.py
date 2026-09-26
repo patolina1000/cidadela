@@ -198,6 +198,19 @@ def emission_mask(texture: np.ndarray, hex_color: str) -> np.ndarray:
     return np.clip(mask / np.percentile(lit, 90), 0, 1) if lit.size else mask
 
 
+def recolor(texture: np.ndarray, dark_hex: str, light_hex: str) -> np.ndarray:
+    """Repinta a textura com um degradê entre duas cores, mantendo as pinceladas (o claro e escuro).
+
+    O brilho de cada pixel (normalizado entre os percentis 2 e 98) escolhe a cor no degradê.
+    """
+    def rgb(hex_color: str) -> np.ndarray:
+        return np.array([int(hex_color[i:i + 2], 16) for i in (1, 3, 5)], dtype=np.float32) / 255
+    lum = luminance(texture)
+    low, high = np.percentile(lum, (2, 98))
+    t = np.clip((lum - low) / max(high - low, 1e-6), 0, 1)[..., None]
+    return rgb(dark_hex) * (1 - t) + rgb(light_hex) * t
+
+
 def save_png(array: np.ndarray, path: Path, mode: str = "RGB") -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray(np.clip(array * 255, 0, 255).round().astype(np.uint8), mode).save(path)
@@ -229,6 +242,10 @@ def process(entry: dict, raw_path: Path, size: int) -> tuple[Image.Image, dict]:
     seamless = image if keep else make_seamless(image, seed)
     small = Image.fromarray(np.clip(seamless * 255, 0, 255).round().astype(np.uint8), "RGB")
     small = small.resize((size, size), Image.LANCZOS)
+    if "recolorir" in entry:
+        colors = entry["recolorir"]
+        array = recolor(np.asarray(small, dtype=np.float32) / 255, colors["escuro"], colors["claro"])
+        small = Image.fromarray(np.clip(array * 255, 0, 255).round().astype(np.uint8), "RGB")
     metrics = seam_metrics(np.asarray(small, dtype=np.float32) / 255)
     if entry.get("modo") == "placa":
         metrics["placa"] = True  # laje com borda própria: a borda é desenho, não emenda

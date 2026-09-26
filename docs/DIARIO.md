@@ -1012,3 +1012,23 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 06:05–06:20 de relógio.
+
+---
+
+## 2026-09-26 — Grama roxa (mais clara que a terra)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na branch `arte`.
+- **Pedido:** "esquece essa grama verde, deixa ela em tom de roxo mais claro que aquele roxo que o personagem
+  principal tá pisando de começo" (a terra arroxeada do pátio).
+- **O que foi feito (0 créditos):** em vez de gerar outra imagem, `textures.py` ganhou `recolorir`: repinta a
+  textura com um degradê entre duas cores, e o brilho de cada pixel escolhe a cor (as pinceladas e o
+  contraste baixo continuam). Grama: de terra arroxeada #3F3342 (escuro) a um roxo acinzentado #5E5268
+  (claro). A primeira tentativa usou o líquen roxo #6B4F7C no claro e saiu roxo vivo demais na tela
+  (saturação 0,50, pinceladas chamando atenção).
+- **Medido na tela (câmera normal):** grama #251C33, brilho 0,20; terra do pátio #120B12, brilho 0,07 (a
+  grama fica bem mais clara que a terra, como pedido). A névoa e a correção de cor da cena puxam tudo
+  para o roxo; na tela a saturação da grama fica em 0,44.
+- **Observação:** numa gravação o jogo apareceu na câmera cinematográfica sem ninguém apertar C; na seguinte,
+  não. Não investiguei (é do agente do jogo); fica o registro.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 06:25–06:40 de relógio.
