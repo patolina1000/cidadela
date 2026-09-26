@@ -197,3 +197,26 @@ onde errou, correções manuais e quanto tempo levou.
   "armou" o giro). Com um movimento a mais, funcionou. Com o mouse real isso não acontece.
 - **Correções manuais:** nenhuma.
 - **Tempo:** cerca de 2 min de relógio (20:58–21:00), segundo o `date` do terminal.
+
+---
+
+## 2026-09-25 — Espiar com o cursor mais contido
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** a câmera se mexia demais com o mouse; mover só quando o jogador claramente quer ver mais
+  para um lado, e só um pouco.
+- **O que foi feito:**
+  - Zona morta: com o cursor nos 60% centrais da tela (`LookAheadDeadZone = 0.6`), a câmera não se mexe.
+  - Da zona morta até a borda, o deslocamento sobe com curva suave (smoothstep) até 2,5 células
+    (antes 4, linear desde o centro). Suavização mais lenta (4, antes 6).
+  - O cursor passou a vir dos eventos de movimento dentro do jogo; se o mouse sai da janela ou o jogo perde
+    o foco, a câmera para de espiar e volta ao Castelão.
+  - GDD (seção 12) atualizado e reexportado.
+  - Verificado: cursor na zona morta → câmera exatamente sobre o Castelão.
+- **O que deu errado:**
+  - A câmera lia a posição global do mouse; com o cursor fora do jogo (o humano estava usando o mouse em
+    outro lugar), ela ficava presa no máximo para um lado. Corrigido.
+  - O teste da borda não pôde ser medido: o mouse real do humano, dentro do jogo, sobrescrevia o cursor
+    simulado. **Pendente:** confirmar no uso real que a borda espia só um pouco.
+- **Correções manuais:** nenhuma.
+- **Tempo:** cerca de 21:03–21:04 de relógio.

@@ -4,8 +4,8 @@ namespace Cidadela.View;
 
 /// <summary>
 /// Câmera top-down (GDD, seções 12 e 20), tudo no mouse:
-/// - Seguindo: presa no Castelão, mas espia na direção do cursor (estilo Nuclear Throne /
-///   Enter the Gungeon), sem deixar o Castelão sair da tela.
+/// - Seguindo: presa no Castelão. Com o cursor perto da borda, espia um pouco naquela direção
+///   (estilo Nuclear Throne / Enter the Gungeon); no meio da tela, não se mexe.
 /// - Solta: segurar o botão do meio arrasta o mundo (o ponto agarrado fica sob o cursor)
 ///   e a câmera para exatamente onde foi solta. Volta a seguir quando o Castelão anda.
 /// - Girar: segurar o botão direito e arrastar para os lados gira livre; ao soltar, encaixa
@@ -35,10 +35,16 @@ public partial class CameraRig : Node3D
     [Export] public float ZoomSmoothing = 15f;
 
     /// <summary>Quanto a câmera espia com o cursor na borda da tela, em células, no zoom 1.</summary>
-    [Export] public float LookAheadCells = 4f;
+    [Export] public float LookAheadCells = 2.5f;
+
+    /// <summary>
+    /// Fração central da tela (0..1, de cada lado a partir do centro) em que o cursor não move a câmera.
+    /// 0,6 = só os 40% mais perto de cada borda fazem espiar.
+    /// </summary>
+    [Export] public float LookAheadDeadZone = 0.6f;
 
     /// <summary>Quão rápido o espiar (e a volta ao Castelão) alcança o alvo.</summary>
-    [Export] public float LookAheadSmoothing = 6f;
+    [Export] public float LookAheadSmoothing = 4f;
 
     /// <summary>Graus de giro por pixel arrastado com o botão direito.</summary>
     [Export] public float RotateDegreesPerPixel = 0.3f;
@@ -66,6 +72,9 @@ public partial class CameraRig : Node3D
 
     // Seguindo: foco = alvo + deslocamento suavizado.
     private Vector3 _offset;
+
+    // Último cursor visto dentro do jogo; sem cursor (saiu da janela ou perdeu o foco), não espia.
+    private Vector2? _cursor;
 
     // Solta: foco livre, controlado pelo arrasto.
     private bool _free;
@@ -130,11 +139,18 @@ public partial class CameraRig : Node3D
         }
         else if (@event is InputEventMouseMotion motion)
         {
+            _cursor = motion.Position;
             if (_dragging)
                 DragTo(motion.Position);
             if (_rotatePressed)
                 RotateTo(motion.Position.X);
         }
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationWMMouseExit || what == NotificationApplicationFocusOut)
+            _cursor = null;
     }
 
     public override void _Process(double delta)
@@ -156,20 +172,28 @@ public partial class CameraRig : Node3D
     }
 
     /// <summary>
-    /// Cursor no centro = 0; na borda = <see cref="LookAheadCells"/>, maior quanto mais afastado o zoom.
+    /// Cursor dentro da zona morta = 0; da zona morta até a borda cresce com curva suave até
+    /// <see cref="LookAheadCells"/> (maior quanto mais afastado o zoom).
     /// Usa a posição do cursor na tela, não no chão, para a câmera não correr atrás de si mesma.
     /// </summary>
     private Vector3 LookAheadOffset()
     {
         Rect2 view = GetViewport().GetVisibleRect();
-        if (view.Size.X <= 0f || view.Size.Y <= 0f)
+        if (_cursor is not Vector2 cursor || view.Size.X <= 0f || view.Size.Y <= 0f)
             return Vector3.Zero;
 
         Vector2 half = view.Size / 2f;
-        Vector2 fromCenter = (GetViewport().GetMousePosition() - half) / half;
-        fromCenter = fromCenter.Clamp(new Vector2(-1f, -1f), new Vector2(1f, 1f));
+        Vector2 fromCenter = (cursor - half) / half;
+        fromCenter = new Vector2(EdgeAmount(fromCenter.X), EdgeAmount(fromCenter.Y));
         // Direita e baixo da tela, girados pelo giro da câmera.
         return new Vector3(fromCenter.X, 0f, fromCenter.Y).Rotated(Vector3.Up, _yaw) * (LookAheadCells / _zoom);
+    }
+
+    /// <summary>-1..1 do centro à borda → 0 na zona morta, depois sobe suave (smoothstep) até ±1.</summary>
+    private float EdgeAmount(float v)
+    {
+        float t = Mathf.Clamp((Mathf.Abs(v) - LookAheadDeadZone) / (1f - LookAheadDeadZone), 0f, 1f);
+        return Mathf.Sign(v) * t * t * (3f - 2f * t);
     }
 
     /// <summary>Gira livre seguindo o mouse, depois que o arrasto passa do limite de clique.</summary>

@@ -316,7 +316,7 @@ Câmera 3D em perspectiva, de cima e inclinada (cerca de 50° a 60°), como em A
 
 ### Controles da câmera
 
-- **Seguindo o Castelão:** o Castelão fica sempre na tela. A câmera espia na direção do cursor, até 4 células com o cursor na borda, como em [Nuclear Throne](https://stevensplint.com/nuclear-throne-style-camera-system/) e Enter the Gungeon. Basta apontar o mouse para ver além.
+- **Seguindo o Castelão:** o Castelão fica sempre na tela. Com o cursor nos 60% centrais da tela, a câmera não se mexe; perto da borda, espia um pouco naquela direção, com curva suave, até 2,5 células. Se o mouse sai do jogo, ela volta ao centro. A ideia vem de [Nuclear Throne](https://stevensplint.com/nuclear-throne-style-camera-system/) e Enter the Gungeon, mais contida para não balançar a visão enquanto se constrói.
 - **Arrastar o mundo:** segurar o botão do meio agarra o chão, que fica preso sob o cursor, como no mapa do Factorio ([controles](https://wiki.factorio.com/Controls)). A câmera para exatamente onde foi solta, sem deslizar, para construir com precisão. Ela não sai do mapa.
 - **Voltar:** andar com WASD traz a câmera de volta ao Castelão, com suavidade.
 - **Zoom:** roda do mouse. Cada clique multiplica o zoom por 1,1 e o afastamento máximo é 0,4 do zoom padrão, os valores do Factorio segundo o mod [Zooming Reinvented](https://mods.factorio.com/mod/ZoomingReinvented).
