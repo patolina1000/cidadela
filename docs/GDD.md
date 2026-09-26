@@ -1,6 +1,6 @@
 # GDD — Jogo de Automação Medieval com Defesa de Hordas
 
-Exportado do Claude Docs em 25/09/2026. A versão oficial (viva) está no claude.ai; reexporte quando ela mudar.
+Exportado do Claude Docs em 26/09/2026. A versão oficial (viva) está no claude.ai; reexporte quando ela mudar.
 
 ## 1. Visão geral
 
@@ -156,6 +156,12 @@ Aldeões e soldados comem. Trigo → moinho → padaria → pão; animais → a�
 ## 6. Aldeões e educação
 
 Aldeões são a "matéria-prima viva" do jogo: chegam como camponeses e a automação os transforma em especialistas.
+
+**Origem e visual (decidido em 25/09/2026):** os aldeões vêm da mesma origem cristalina da protagonista, mas são uma versão inferior, feita para o trabalho braçal: humanoides pequenos, gordinhos, desajeitados e ingênuos, com um cristal pequeno e opaco no peito. Por trás da aparência boba há potencial: deles saem guerreiros, arqueiros, magos, clérigos, bruxos, cientistas e as demais classes.
+
+**Regra visual das classes:** o cristal do peito é a marca da evolução. Opaco no camponês, ele ganha brilho e uma cor própria quando o aldeão se forma numa classe (ex.: vermelho para guerreiro, verde para arqueiro, roxo para mago). De cima e à noite, o jogador reconhece cada unidade pela cor do cristal.
+
+**Regra técnica:** todas as classes usam o mesmo corpo-base com o mesmo rig e as mesmas animações; muda só roupa, acessórios, arma e cor do cristal. Isso reduz muito o trabalho de 3D e animação.
 
 **Chegada de população:** casas e comida atraem imigrantes a cada amanhecer. Mais conforto (taverna, igreja, banhos) atrai mais gente.
 
@@ -493,13 +499,13 @@ Com R$ 2.000 a 3.000 por mês (cerca de US$ 380 a 570), dá para ter o melhor ag
 2. **Estado visível:** fumaça, rodas girando e brilho mostram se a máquina funciona, falta insumo ou está parada.
 3. **Torto de propósito:** telhados pontudos e inclinados, torres curvas, chaminés em espiral. Imperfeição esconde limitações da IA.
 4. **Fofo-sombrio:** aldeões com cabeça grande (proporção cerca de 1:3), olhos grandes e pele pálida; monstros com olhos enormes e dentes tortos, mais cômicos que nojentos.
-5. **Dia e noite com cara diferente:** dia terroso e acolhedor; noite roxa e azulada, iluminada por tochas laranja.
+5. **Dia e noite com cara diferente:** o dia é um crepúsculo eterno, frio, acinzentado e levemente roxo (revisado em 26/09/2026: o dia claro e ensolarado fugia do tema); noite roxa e azulada, iluminada por tochas laranja.
 
 ### Paleta
 
 | Uso | Cores (hex) |
 | --- | --- |
-| Dia: base | Marrom madeira #6B5B4B · Musgo #7A8B5A · Pedra #A89F91 · Trigo #C9B38A |
+| Dia: base | Terra escura #4A3B3A · Terra arroxeada #3F3342 · Musgo acinzentado #4E5544 · Grama morta #5A5847 · Pedra fria #66636B · Lama #2E2931 · Líquen roxo (destaque) #6B4F7C |
 | Noite: base | Roxo profundo #2B2140 · Azul meia-noite #1E2A3A · Névoa azul-esverdeada #4F7C7A |
 | Destaques | Laranja abóbora (tochas, fornos) #E07B2E · Verde doentio (monstros, magia) #9BC53D · Branco osso (aldeões) #EDE6D6 |
 
@@ -509,6 +515,7 @@ Com R$ 2.000 a 3.000 por mês (cerca de US$ 380 a 570), dá para ter o melhor ag
 - **Texturas:** 512 px pintadas à mão ou atlas de gradientes compartilhado (uma textura para vários modelos).
 - **Shader:** toon (sombras em faixas) com contorno fino escuro, lembrando Castle Crashers em 3D.
 - **Luz:** noite escura de verdade; tochas, fornos e magia são as fontes de luz e viram parte da estratégia.
+- **Crepúsculo do dia (protótipo, 26/09/2026):** sol baixo (18°) e fraco, luz fria azul-acinzentada com sombras suaves; céu e luz ambiente roxo-acinzentados; névoa roxo-escura que começa a \~22 unidades da câmera e engrossa na distância; saturação 0,7 e contraste 1,15; vinheta leve nas bordas; bloom só no que brilha de verdade. O cristal do peito da protagonista brilha e acende uma luz azul suave em volta dela, para ela não sumir no chão escuro. Tudo em `scenes/Main.tscn` (WorldEnvironment e Sun), ajustável no editor.
 - **Modo de informação:** tecla Alt mostra ícones sobre as máquinas (o que produzem e o que falta), como em Factorio.
 
 ### Protótipo versus versão final
@@ -666,7 +673,7 @@ No nosso jogo isso encaixa nos pilares: o Castelão é o primeiro trabalhador da
 
 ### Regras do Castelão
 
-- **Movimento:** WASD relativo à câmera, que gira em passos de 90° pelo botão direito (seção 12). A protagonista só corre: não há andar nem botão de correr. A velocidade fica em JSON, na passada natural da animação de corrida para os pés não deslizarem (2,4 células/s hoje; Factorio usa 8,9 células/s como referência).
+- **Movimento:** WASD relativo à câmera, que gira em passos de 90° pelo botão direito (seção 12). Segurar Shift corre. Andar e correr têm velocidades próprias em JSON, na passada natural de cada animação para os pés não deslizarem (andar 0,8 e correr 2,5 células/s hoje; Factorio usa 8,9 células/s como referência).
 - **Câmera:** segue o Castelão e espia na direção do cursor; o botão do meio arrasta o mundo para construir longe, e andar traz a câmera de volta (seção 12).
 - **Alcance:** constrói e abre máquinas só num raio em volta dele (ponto de partida: 10 células, como Factorio). Para coletar, precisa estar encostado no recurso, de lado ou na diagonal: é trabalho físico, feito de perto.
 - **Trabalho manual:** coleta madeira e pedra e fabrica itens simples à mão, devagar. Isso ensina as receitas e deixa claro por que automatizar.

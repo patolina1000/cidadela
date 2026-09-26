@@ -890,3 +890,31 @@ onde errou, correções manuais e quanto tempo levou.
   pedem uma camada de piso na simulação (convivendo com construções e esteiras) e o efeito na velocidade.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 04:00–04:40 de relógio.
+
+---
+
+## 2026-09-26 — Clima de crepúsculo eterno
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** o dia agora é um crepúsculo eterno, frio, acinzentado e levemente roxo (GDD, seção 17): sol baixo e
+  fraco, luz fria, sombras suaves; céu e ambiente roxo-acinzentados; névoa roxa escura mais densa longe;
+  saturação ~0,7 e contraste maior; vinheta; se a protagonista sumir, luz azul do cristal do peito. Print antes e depois.
+- **O que foi feito:**
+  - `scenes/Main.tscn`: céu procedural roxo-acinzentado; luz ambiente roxo-acinzentada (energia 1,0); sol a 18°,
+    cor (0,72; 0,78; 0,90), energia 0,85, disco angular 4° e blur 1,6 para sombras suaves; névoa por profundidade roxo
+    escura (começa em 22, termina em 90, curva 1,6); ajuste de cor (saturação 0,7, contraste 1,15); bloom só acima de
+    HDR 1,0; vinheta num shader de tela (`src/View/Vignette.gdshader`) por baixo da interface.
+  - A protagonista sumia no chão escuro na visão normal: `CastellanVisual` triplica a emissão do material "Cristal"
+    e prende uma luz azul suave (energia 0,85, alcance 2,3, sem sombra) no osso `Spine` (acompanha a corrida).
+  - Prints em `docs/prints/clima_{antes,depois}_{visao,perto}.png`. GDD (seção 17) atualizado e reexportado.
+- **O que deu errado:**
+  - A cena não carregava: as texturas de chão e pisos da sessão de arte nunca tinham sido importadas por este editor
+    (faltavam em `.godot/imported`); scan e reimportação pelo MCP não resolveram. Resolvido com
+    `Godot --headless --import`. A importação trocou a compressão de 4 texturas dos pisos (detecção de 3D); desfiz
+    nos `.import` para manter as configurações da arte.
+  - A primeira versão ficou escura demais (grama quase preta) e a névoa começava antes da câmera (a 12, com a
+    câmera a 16): subi ambiente e sol e empurrei a névoa para 22.
+  - A primeira luz do cristal era forte demais de perto (chão quase branco); baixei de 1,3 para 0,85.
+  - Screenshots de 1200 px passaram a falhar no transporte do MCP; os de 640 px funcionam.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 00:41–00:44 de relógio (fora a importação).
