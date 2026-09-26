@@ -8,7 +8,10 @@ namespace Cidadela.View;
 ///   Enter the Gungeon), sem deixar o Castelão sair da tela.
 /// - Solta: segurar o botão do meio arrasta o mundo (o ponto agarrado fica sob o cursor)
 ///   e a câmera para exatamente onde foi solta. Volta a seguir quando o Castelão anda.
-/// - Zoom na roda, sem giro e com inclinação fixa (estilo Factorio).
+/// - Girar: segurar o botão direito e arrastar para os lados gira livre; ao soltar, encaixa
+///   no múltiplo de 90° mais próximo (a leitura das esteiras nunca fica torta). Um clique
+///   direito sem arrastar fica livre para outras ações.
+/// - Zoom na roda, com inclinação fixa (estilo Factorio).
 /// O nó fica no chão, no ponto que a câmera olha; a câmera filha fica a uma distância e inclinação.
 /// </summary>
 public partial class CameraRig : Node3D
@@ -37,10 +40,27 @@ public partial class CameraRig : Node3D
     /// <summary>Quão rápido o espiar (e a volta ao Castelão) alcança o alvo.</summary>
     [Export] public float LookAheadSmoothing = 6f;
 
+    /// <summary>Graus de giro por pixel arrastado com o botão direito.</summary>
+    [Export] public float RotateDegreesPerPixel = 0.3f;
+
+    /// <summary>Pixels que o botão direito precisa andar antes de virar giro (abaixo disso é clique).</summary>
+    [Export] public float RotateDragThreshold = 8f;
+
+    /// <summary>Quão rápido o giro encaixa no múltiplo de 90° depois de soltar.</summary>
+    [Export] public float RotateSnapSmoothing = 12f;
+
     /// <summary>O que a câmera segue.</summary>
     public Node3D? Target { get; set; }
 
+    /// <summary>Giro atual em radianos, para converter o WASD em direção no mundo.</summary>
+    public float Yaw => _yaw;
+
     private Camera3D _camera = null!;
+    private float _yaw;
+    private float _targetYaw;
+    private bool _rotatePressed;
+    private bool _rotating;
+    private float _rotatePressX;
     private float _zoom = 1f;
     private float _targetZoom = 1f;
 
@@ -89,6 +109,16 @@ public partial class CameraRig : Node3D
                     _dragging = false;
                 }
             }
+            else if (mouse.ButtonIndex == MouseButton.Right)
+            {
+                _rotatePressed = mouse.Pressed;
+                _rotatePressX = mouse.Position.X;
+                if (!mouse.Pressed && _rotating)
+                {
+                    _rotating = false;
+                    _targetYaw = SnapToQuarter(_yaw);
+                }
+            }
             else if (mouse.Pressed && mouse.ButtonIndex == MouseButton.WheelUp)
             {
                 _targetZoom = Mathf.Min(_targetZoom * ZoomStep, MaxZoom);
@@ -98,9 +128,12 @@ public partial class CameraRig : Node3D
                 _targetZoom = Mathf.Max(_targetZoom / ZoomStep, MinZoom);
             }
         }
-        else if (@event is InputEventMouseMotion motion && _dragging)
+        else if (@event is InputEventMouseMotion motion)
         {
-            DragTo(motion.Position);
+            if (_dragging)
+                DragTo(motion.Position);
+            if (_rotatePressed)
+                RotateTo(motion.Position.X);
         }
     }
 
@@ -108,6 +141,8 @@ public partial class CameraRig : Node3D
     {
         float dt = (float)delta;
         _zoom = Mathf.Lerp(_zoom, _targetZoom, 1f - Mathf.Exp(-ZoomSmoothing * dt));
+        if (!_rotating)
+            _yaw = Mathf.Lerp(_yaw, _targetYaw, 1f - Mathf.Exp(-RotateSnapSmoothing * dt));
 
         if (!_free && Target is not null)
         {
@@ -133,9 +168,30 @@ public partial class CameraRig : Node3D
         Vector2 half = view.Size / 2f;
         Vector2 fromCenter = (GetViewport().GetMousePosition() - half) / half;
         fromCenter = fromCenter.Clamp(new Vector2(-1f, -1f), new Vector2(1f, 1f));
-        // A câmera não gira: direita da tela = +X, baixo da tela = +Z.
-        return new Vector3(fromCenter.X, 0f, fromCenter.Y) * (LookAheadCells / _zoom);
+        // Direita e baixo da tela, girados pelo giro da câmera.
+        return new Vector3(fromCenter.X, 0f, fromCenter.Y).Rotated(Vector3.Up, _yaw) * (LookAheadCells / _zoom);
     }
+
+    /// <summary>Gira livre seguindo o mouse, depois que o arrasto passa do limite de clique.</summary>
+    private void RotateTo(float mouseX)
+    {
+        float dx = mouseX - _rotatePressX;
+        if (!_rotating)
+        {
+            if (Mathf.Abs(dx) < RotateDragThreshold)
+                return;
+            _rotating = true;
+            _rotatePressX = mouseX;
+            return;
+        }
+
+        // Como agarrar o mundo: arrastar para a direita gira o mundo para a direita.
+        _yaw -= Mathf.DegToRad(dx * RotateDegreesPerPixel);
+        _targetYaw = _yaw;
+        _rotatePressX = mouseX;
+    }
+
+    private static float SnapToQuarter(float yaw) => Mathf.Round(yaw / (Mathf.Pi / 2f)) * (Mathf.Pi / 2f);
 
     /// <summary>Move o foco para que o ponto agarrado volte a ficar sob o cursor.</summary>
     private void DragTo(Vector2 screenPos)
@@ -168,6 +224,7 @@ public partial class CameraRig : Node3D
 
     private void ApplyTransform()
     {
+        Rotation = new Vector3(0f, _yaw, 0f);
         float distance = DefaultDistance / _zoom;
         float pitch = Mathf.DegToRad(Pitch);
         _camera.Position = new Vector3(0f, Mathf.Sin(pitch) * distance, Mathf.Cos(pitch) * distance);

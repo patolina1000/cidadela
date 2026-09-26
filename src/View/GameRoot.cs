@@ -50,13 +50,14 @@ public partial class GameRoot : Node3D
     }
 
     /// <summary>
-    /// A câmera não gira, então W é sempre o norte (-Z) do mundo.
+    /// WASD é relativo à câmera; a simulação quer direção no mundo.
     /// Só manda comando quando a direção muda, para não encher a fila.
     /// </summary>
     private void SendMoveInput()
     {
         Vector2 input = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
-        var direction = new System.Numerics.Vector2(input.X, input.Y);
+        Vector3 world = new Vector3(input.X, 0f, input.Y).Rotated(Vector3.Up, _camera.Yaw);
+        var direction = new System.Numerics.Vector2(world.X, world.Z);
 
         // Andar traz a câmera solta de volta para o Castelão.
         if (direction != System.Numerics.Vector2.Zero)

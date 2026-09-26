@@ -175,3 +175,25 @@ onde errou, correções manuais e quanto tempo levou.
     esperar a suavização assentar antes de medir.
 - **Correções manuais:** nenhuma.
 - **Tempo:** cerca de 3 min de relógio (20:53–20:56), mais a pesquisa antes.
+
+---
+
+## 2026-09-25 — Giro da câmera no mouse + tela cheia
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** girar a câmera também pelo mouse e fazer o jogo ocupar sempre a tela toda.
+- **O que foi feito:**
+  - Giro no botão direito arrastado: gira livre seguindo o mouse (0,3° por pixel) e, ao soltar, encaixa
+    suavemente no múltiplo de 90° mais próximo (regra do GDD sobre a leitura das esteiras). Só vira giro
+    depois de 8 px de arrasto, para um clique direito simples ficar livre para "remover" no futuro.
+  - O espiar com o cursor e o WASD voltaram a ser relativos ao giro da câmera.
+  - Tela cheia (`display/window/size/mode = 3`) e interface que escala com a resolução
+    (`stretch/mode = canvas_items`, `aspect = expand`).
+  - GDD (seções 12 e 20) atualizado e reexportado.
+  - Verificado: jogo em 3024×1890 (tela inteira do MacBook); arrasto curto girou livre até -41° e voltou a 0°
+    ao soltar; arrasto longo encaixou em -90°; com -90°, W levou o Castelão para +X.
+- **O que deu errado:** o primeiro teste de giro não girou. Com a escala da interface, os pixels dos eventos
+  sintéticos viram menos pixels no jogo, e o primeiro movimento de 10 px ficou abaixo do limite de 8 px (só
+  "armou" o giro). Com um movimento a mais, funcionou. Com o mouse real isso não acontece.
+- **Correções manuais:** nenhuma.
+- **Tempo:** cerca de 2 min de relógio (20:58–21:00), segundo o `date` do terminal.

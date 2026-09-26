@@ -320,8 +320,9 @@ Câmera 3D em perspectiva, de cima e inclinada (cerca de 50° a 60°), como em A
 - **Arrastar o mundo:** segurar o botão do meio agarra o chão, que fica preso sob o cursor, como no mapa do Factorio ([controles](https://wiki.factorio.com/Controls)). A câmera para exatamente onde foi solta, sem deslizar, para construir com precisão. Ela não sai do mapa.
 - **Voltar:** andar com WASD traz a câmera de volta ao Castelão, com suavidade.
 - **Zoom:** roda do mouse. Cada clique multiplica o zoom por 1,1 e o afastamento máximo é 0,4 do zoom padrão, os valores do Factorio segundo o mod [Zooming Reinvented](https://mods.factorio.com/mod/ZoomingReinvented).
-- **Sem giro e inclinação fixa em 55°:** o norte fica sempre para cima e W é sempre o norte, para a leitura das esteiras nunca mudar.
-- **Suavidade:** toda mudança de câmera se aproxima do alvo aos poucos, sem saltos, como recomenda o guia [Scroll Back](https://www.gamedeveloper.com/design/scroll-back-the-theory-and-practice-of-cameras-in-side-scrollers). O teclado fica só para o Castelão, e os botões esquerdo e direito ficam livres para construir e remover.
+- **Girar:** segurar o botão direito e arrastar para os lados gira a câmera livremente, seguindo o mouse. Ao soltar, ela encaixa com suavidade no múltiplo de 90° mais próximo, para a leitura das esteiras nunca ficar torta. Só conta como giro depois de 8 px de arrasto; um clique direito simples fica livre para remover. O WASD é relativo à câmera: W é sempre "para cima na tela".
+- **Inclinação:** fixa em 55°.
+- **Suavidade:** toda mudança de câmera se aproxima do alvo aos poucos, sem saltos, como recomenda o guia [Scroll Back](https://www.gamedeveloper.com/design/scroll-back-the-theory-and-practice-of-cameras-in-side-scrollers). O teclado fica só para o Castelão, e o botão esquerdo fica livre para construir. O jogo roda em tela cheia.
 
 ### Como a câmera lida com os andares
 
@@ -642,7 +643,7 @@ No nosso jogo isso encaixa nos pilares: o Castelão é o primeiro trabalhador da
 
 ### Regras do Castelão
 
-- **Movimento:** WASD, com W sempre para o norte, porque a câmera não gira (seção 12). A velocidade inicial é um número de balanceamento em JSON (Factorio usa 8,9 células/s como referência).
+- **Movimento:** WASD relativo à câmera, que gira em passos de 90° pelo botão direito (seção 12). A velocidade inicial é um número de balanceamento em JSON (Factorio usa 8,9 células/s como referência).
 - **Câmera:** segue o Castelão e espia na direção do cursor; o botão do meio arrasta o mundo para construir longe, e andar traz a câmera de volta (seção 12).
 - **Alcance:** constrói, coleta e abre máquinas só num raio em volta dele (ponto de partida: 10 células, como Factorio).
 - **Trabalho manual:** coleta madeira e pedra e fabrica itens simples à mão, devagar. Isso ensina as receitas e deixa claro por que automatizar.
