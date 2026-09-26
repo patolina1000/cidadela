@@ -1293,3 +1293,49 @@ onde errou, correções manuais e quanto tempo levou.
 - **Sobre a diferença de brilho que o humano notou no LOD:** a folha achatada tem menos vértices, e o degradê
   do shader (UV.y) e as normais são interpolados entre menos pontos, então a folha fica um pouco mais uniforme.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados (sem mudança na simulação).
+
+---
+
+## 2026-09-26 — Desempenho 4: cena de teste de estresse (5.000 inimigos, 500 máquinas, 10.000 itens)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:**
+  - `src/Simulation/StressWorld.cs` (C# puro, orientado a dados: um array por componente, sem objeto por
+    entidade; RNG xorshift próprio, determinístico). Inimigos andam para pontos aleatórios do campo (1,6
+    células/s); itens correm em 50 circuitos retangulares de esteira (1,875 células/s); máquinas paradas com
+    um progresso. Campo 80×80. Testes em `tests/.../StressWorldTests.cs` (5 novos; total 85 aprovados).
+  - `scenes/Stress.tscn` + `src/View/StressRoot.cs`: mesma luz, névoa e pós do jogo, chão liso, grama do
+    `GrassField` no campo inteiro (468.000 tufos, esteiras e máquinas bloqueiam). Dois modos de desenho
+    trocados pela tecla M: **nós** (um MeshInstance3D por entidade, malhas e materiais compartilhados,
+    posicionado a cada quadro) e **MultiMesh** (um por tipo de malha e por pedaço de 8×8 células; a cada
+    quadro só o buffer de transformações de cada pedaço é reescrito, com caixa justa por quadro para o
+    culling). G esconde a grama, F2 V-Sync, F11 captura, roda aproxima, WASD anda.
+- **Números (V-Sync desligado, 3024×1890, grama ligada; janela sem foco, o humano estava usando a máquina;
+  as leituras se repetiram em duas rodadas):**
+
+  | Câmera | Modo | ms/quadro | CPU simulação | CPU view | draw calls | objetos |
+  |---|---|---|---|---|---|---|
+  | distância 16 (a do jogo) | nós | 15,2 | 0,13 | 2,6 | 156 | 7.158 |
+  | distância 16 | MultiMesh | 16,7 | 0,38 | 3,8 | 552 | 1.194 |
+  | distância 28 | nós | 26,3 | 0,24 | 2,6 | 191 | 12.988 |
+  | distância 28 | MultiMesh | 28,6 | 0,92 | 5,6 | 920 | 1.562 |
+
+  (Com pedaços de 16×16, primeira rodada: MultiMesh 18,5 ms contra nós 14,9 a distância 16; sem grama, a
+  distância 28: nós 16,4, MultiMesh 21,3.)
+- **Leitura:**
+  - A simulação orientada a dados custa 0,4–0,9 ms por tick para 15.500 entidades; sobra muito.
+  - **Para entidades móveis com malhas simples, um nó por entidade é hoje o melhor dos dois:** o Forward+
+    já agrupa MeshInstance3D iguais numa chamada instanciada (156 draw calls para 15.500 entidades) e faz
+    culling exato por objeto, inclusive na sombra. O MultiMesh dinâmico paga o rebucketing e a cópia dos
+    buffers na CPU (3,8–5,6 ms) e desenha instâncias fora da tela nos pedaços parcialmente visíveis.
+  - Mover 15.500 nós custa 2,6 ms de CPU (~0,17 µs por entidade); esse custo cresce linear e passa a mandar
+    perto de 40–60 mil entidades móveis. Aí o MultiMesh (ou o RenderingServer direto) volta a valer, mas com
+    buffers escritos sem cópia e por pedaço só quando algo muda.
+  - **O limite real é a GPU:** a distância 28, com ~13 mil objetos na tela, os dois modos ficam em 26–29 ms.
+    Reduzir isso é LOD/impostor para inimigos longe, sombra só na cascata perto e menos fragmentos, não
+    trocar de API.
+  - Onde o MultiMesh ganha com folga é no que é **estático e numeroso**: grama (468 mil tufos em ~200 draw
+    calls), pisos, muros, itens parados em esteiras.
+- **Prints:** `docs/prints/estresse_perto.png`, `docs/prints/estresse_visao.png`.
+- **Pendência:** repetir a tabela com a janela em foco (basta o humano abrir a cena e apertar F2 e M).
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 85 aprovados.
