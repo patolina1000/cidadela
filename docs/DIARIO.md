@@ -1212,3 +1212,18 @@ onde errou, correções manuais e quanto tempo levou.
   (tamanho do atlas e qualidade do filtro, conferindo o visual), LOD da grama (malha simples quando o tufo
   tem poucos pixels; aprovado).
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados (sem mudança na simulação).
+
+---
+
+## 2026-09-26 — Desempenho 1: atlas da sombra do sol 4096 → 2048
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `rendering/lights_and_shadows/directional_shadow/size=2048` em `project.godot`. Com 2
+  cascatas e alcance de 40, cada cascata ainda tem ~40 texels por célula, e o desfoque de 1,6 já suaviza a
+  borda: sem diferença visível.
+- **Medição (base tudo ligado, 3024×1890):** 25,5 ms (38–42 FPS) → **22,2 ms (45 FPS)**. Ganho ≈ 3 ms:
+  a filtragem suave lê menos memória de sombra por pixel.
+- **Medido, aguardando decisão do humano:** `light_angular_distance` do sol de 4° para 0° (desliga a
+  penumbra que cresce com a distância, PCSS; o desfoque fixo de 1,6 continua): 22,2 → **17,9 ms (56 FPS)**,
+  ganho ≈ 4,3 ms. Prints: `docs/prints/perf_sombra_com_penumbra.png` e `perf_sombra_sem_penumbra.png`.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
