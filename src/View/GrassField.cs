@@ -145,7 +145,10 @@ public partial class GrassField : Node3D
     private static Color PickColor(RandomNumberGenerator rng)
     {
         float roll = rng.Randf();
-        Color c = roll < 0.46f ? Palette.DeadGrass : roll < 0.92f ? Palette.GrayMoss : Palette.PurpleLichen;
+        // Mesmos roxos da textura da grama (a grama ficou roxa em 26/09/2026), com um pouco de líquen de destaque.
+        Color c = roll < 0.5f ? Palette.GrassPurple
+            : roll < 0.85f ? Palette.PurpleEarth.Lerp(Palette.GrassPurple, 0.5f)
+            : Palette.PurpleLichen;
         float shade = rng.RandfRange(0.9f, 1.1f);
         // Cor de instância chega crua ao shader (sem a conversão que as cores de material têm): passa para linear.
         return new Color(c.R * shade, c.G * shade, c.B * shade).SrgbToLinear();

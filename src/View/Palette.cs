@@ -20,6 +20,9 @@ public static class Palette
     public static readonly Color DeadGrass = new("5A5847");
     public static readonly Color GrayMoss = new("4E5544");
     public static readonly Color PurpleLichen = new("6B4F7C");
+    // Grama roxa (26/09/2026): o degradê da textura da grama, de terra arroxeada a roxo acinzentado.
+    public static readonly Color PurpleEarth = new("3F3342");
+    public static readonly Color GrassPurple = new("5E5268");
 
     /// <summary>Fora da paleta do GDD: só para avisos de interface (ex.: fora do alcance).</summary>
     public static readonly Color Warning = new("C8402F");

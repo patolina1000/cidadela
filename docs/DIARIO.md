@@ -1065,3 +1065,18 @@ onde errou, correções manuais e quanto tempo levou.
 - **GDD:** nota da grama na seção 17. A "Paleta do chão" da sessão de arte só existia no arquivo local; levei
   para o documento vivo também.
 - `dotnet build`: 0 erros. `dotnet test`: 80 aprovados.
+
+---
+
+## 2026-09-26 — Junção na `master`: tufos de grama na cor da grama roxa
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na branch `arte`.
+- **Pedido:** "junte todas as mudanças no principal".
+- **O que foi feito:** a `master` tinha os tufos de grama 3D com vento do agente do jogo (`GrassField`), com
+  cores da paleta antiga da grama (46% grama morta, 46% musgo acinzentado, 8% líquen roxo), que trariam o
+  verde-oliva de volta sobre o chão roxo. Juntei a `master` na `arte` (conflito só no diário, mantido; o
+  `Vignette.gdshader.uid` gerado aqui deu lugar ao da `master`) e alinhei os tufos à grama roxa: 50% roxo
+  acinzentado (#5E5268), 35% o meio do degradê da textura, 15% líquen roxo. `Palette` ganhou `PurpleEarth` e
+  `GrassPurple`. Depois, `master` avançada até a `arte`.
+- **Medido na tela:** grama #251D34, terra #120B12. `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80.
+- **Tempo:** 06:45–07:00 de relógio.
