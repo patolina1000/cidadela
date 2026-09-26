@@ -1339,3 +1339,16 @@ onde errou, correções manuais e quanto tempo levou.
 - **Prints:** `docs/prints/estresse_perto.png`, `docs/prints/estresse_visao.png`.
 - **Pendência:** repetir a tabela com a janela em foco (basta o humano abrir a cena e apertar F2 e M).
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 85 aprovados.
+
+---
+
+## 2026-09-26 — Desempenho 5: proposta de arquitetura para escala
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `docs/ARQUITETURA_ESCALA.md`: o que as medições dizem, simulação orientada a dados
+  (arrays por componente, slots estáveis, grade espacial, flow field para hordas, esteiras como corredores),
+  o que desenha cada coisa (MultiMesh por pedaço para o estático e numeroso; nó por entidade com malha
+  compartilhada para móveis até ~30 mil; VAT para multidões animadas; RenderingServer direto acima de ~40
+  mil), regras gerais (sem sombra de coisa pequena, LOD em tudo, triângulo pequeno é caro, chão barato),
+  passos concretos em ordem e o que não fazer. Parágrafo-resumo na seção 13 do GDD apontando para o arquivo.
+- Sem mudança de código.
