@@ -1115,3 +1115,28 @@ onde errou, correções manuais e quanto tempo levou.
   da protagonista dentro do gramado (ela ficou no pátio de terra); o gramado aparece ao fundo.
 - **GDD:** parágrafo da grama na seção 17 reescrito com a referência ao BotW e as cores roxas atuais.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-26 — Grama trocada pelo asset "Stylized Grass Shader" (StayAtHomeDev) e 5× mais tufos
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** "esqueça essa grama e use essa https://stayathomedev.itch.io/stylized-grass-shader"; no meio da
+  tarefa: "aumente a quantidade em 5x de gramas."
+- **O que foi feito:**
+  - Baixei os dois pacotes do itch.io (grátis, "pague quanto quiser", licença MIT) e guardei em
+    `assets/grama_stylized/` o shader, as malhas `grass.glb` e `grass2.glb` e a licença.
+  - `GrassField` agora usa as malhas e o shader do asset (sem mudanças no shader): um MultiMeshInstance3D por
+    malha em cada bloco de 8×8. Ficaram a densidade por terreno, a grama sumindo sob construções e as manchas
+    de altura. Cores: ponta #C4B3D6, base #6A5B7C, manchas de ruído a cada 12 células.
+  - Apaguei o nosso `Grass.gdshader` (vento BotW, afastar da protagonista): o shader do asset não tem vento.
+  - Altura 0,08–0,13 (×0,75–1,2 nas manchas); com a nossa altura antiga a malha do asset virava pontinhos.
+  - Até 120 tufos por célula (24 × 5, a pedido).
+- **Desempenho (3024×1890):** 24/célula: ~17 mil tufos, 54–87 FPS (leituras instáveis; o humano estava
+  jogando ao mesmo tempo). 120/célula: 85.881 tufos, ~33 FPS. A touceira `grass.glb` tem muitas folhas.
+- **Problemas:** os `.res` do asset apontam para `res://grass.gdshader` (caminho do autor) e usam formato antigo
+  de malha; troquei pelos `.glb`. O download pelo itch.io precisou do endpoint de download grátis.
+  Um script headless do Godot para inspecionar as malhas travou; medi pelo jogo com um print temporário.
+- **Prints:** `docs/prints/grama_stylized_visao.png`, `docs/prints/grama_stylized_perto.png`.
+- **GDD:** parágrafo da grama na seção 17 reescrito para o asset.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
