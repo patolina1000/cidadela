@@ -161,6 +161,8 @@ Aldeões são a "matéria-prima viva" do jogo: chegam como camponeses e a automa
 
 **Atributos de cada aldeão:** Força, Destreza, Intelecto, Fé e Moral. Eles definem em qual classe o aldeão rende melhor.
 
+**Trabalho básico (protótipo, 25/09/2026):** cabanas de trabalho dão ofício aos aldeões livres. Cabana do Lenhador (madeira), do Pedreiro (pedra) e do Mineiro (ferro): ao construir uma, o aldeão livre mais perto vira o trabalhador. Ele acha sozinho o recurso mais perto dentro do raio da cabana (12 células), anda até ele desviando de obstáculos, coleta até 5 itens e volta para entregar. A cabana guarda até 50 e solta na esteira ou baú à sua frente, então os aldeões alimentam a fábrica. Desmontar a cabana libera o aldeão. Números em `data/villagers.json` e `data/buildings.json`.
+
 ### Educação como linha de produção
 
 Escolas funcionam como máquinas: recebem um aldeão + insumos + tempo e "produzem" um especialista.

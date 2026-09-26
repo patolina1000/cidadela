@@ -20,6 +20,9 @@ public sealed class Building
     /// <summary>Estado da receita, ou null se não é máquina.</summary>
     public MachineState? Machine { get; }
 
+    /// <summary>Estado da cabana de trabalho, ou null se não é cabana.</summary>
+    public Workplace? Workplace { get; }
+
     public string Kind => Type.Kind;
 
     public Building(int id, BuildingType type, GridPos cell, Direction direction, RecipeType? recipe = null)
@@ -34,5 +37,7 @@ public sealed class Building
             Storage = new Inventory();
         if (recipe is not null)
             Machine = new MachineState(recipe);
+        if (type.Job is not null)
+            Workplace = new Workplace(type.Job);
     }
 }

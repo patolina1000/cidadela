@@ -17,6 +17,7 @@ public partial class GameRoot : Node3D
     [Export(PropertyHint.File, "*.json")] public string ItemsPath = "res://data/items.json";
     [Export(PropertyHint.File, "*.json")] public string ResourcesPath = "res://data/resources.json";
     [Export(PropertyHint.File, "*.json")] public string CastellanPath = "res://data/castellan.json";
+    [Export(PropertyHint.File, "*.json")] public string VillagersPath = "res://data/villagers.json";
     [Export(PropertyHint.File, "*.json")] public string BuildingsPath = "res://data/buildings.json";
     [Export(PropertyHint.File, "*.json")] public string RecipesPath = "res://data/recipes.json";
 
@@ -47,6 +48,7 @@ public partial class GameRoot : Node3D
             FileAccess.GetFileAsString(ItemsPath),
             FileAccess.GetFileAsString(ResourcesPath),
             FileAccess.GetFileAsString(CastellanPath),
+            FileAccess.GetFileAsString(VillagersPath),
             FileAccess.GetFileAsString(BuildingsPath),
             FileAccess.GetFileAsString(RecipesPath));
         _world = MapLoader.Parse(FileAccess.GetFileAsString(MapPath), data);
@@ -122,7 +124,7 @@ public partial class GameRoot : Node3D
             _world.Enqueue(new BuildCommand(_selected.Kind, cell, _buildDirection));
         else if (_heldItem is not null)
             _world.Enqueue(new InsertItemCommand(cell, _heldItem));
-        else if (_world.BuildingAt(cell) is { } b && (b.Storage is not null || b.Machine is not null))
+        else if (_world.BuildingAt(cell) is { } b && (b.Storage is not null || b.Machine is not null || b.Workplace is not null))
             _world.Enqueue(new TakeAllCommand(cell));
         else
             _world.Enqueue(new GatherCommand(cell));

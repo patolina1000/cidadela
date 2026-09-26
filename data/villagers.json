@@ -1,0 +1,8 @@
+{
+  // Aldeões trabalhadores (GDD, seção 6).
+  // speed: células por segundo. gatherMultiplier: quanto mais devagar coletam que o Castelão (1.5 = 50% mais lento).
+  // carry: quantos itens levam por viagem.
+  "speed": 3.0,
+  "gatherMultiplier": 1.5,
+  "carry": 5
+}

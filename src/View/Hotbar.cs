@@ -57,9 +57,9 @@ public partial class Hotbar : HBoxContainer
                 Text = $"{i + 1}  {type.Name}\n{string.Join(", ", costs)}",
                 ToggleMode = true,
                 FocusMode = FocusModeEnum.None,
-                CustomMinimumSize = new Vector2(118f, 62f),
+                CustomMinimumSize = new Vector2(104f, 62f),
             };
-            button.AddThemeFontSizeOverride("font_size", 12);
+            button.AddThemeFontSizeOverride("font_size", 11);
             // O tema padrão quase não diferencia o botão escolhido: borda e texto verdes deixam claro.
             button.AddThemeStyleboxOverride("pressed", SelectedStyle);
             button.AddThemeStyleboxOverride("hover_pressed", SelectedStyle);

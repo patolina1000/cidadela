@@ -29,13 +29,12 @@ public static class MapLoader
         foreach (PlacedData b in data.Buildings)
             world.AddBuilding(gameData.Building(b.Kind), Checked(world, b.X, b.Z), DirectionExtensions.Parse(b.Direction));
 
-        foreach (VillagerData v in data.Villagers)
+        foreach (PlacedData v in data.Villagers)
         {
-            if (v.Path.Count == 0)
-                throw new FormatException("Aldeão sem rota.");
-            List<GridPos> path = v.Path.Select(p => Checked(world, p[0], p[1])).ToList();
-            world.AddVillager(path, v.Speed);
+            GridPos cell = Checked(world, v.X, v.Z);
+            world.AddVillager(new System.Numerics.Vector2(cell.X, cell.Z));
         }
+        world.AssignIdleWorkers();
 
         return world;
     }
@@ -55,7 +54,7 @@ public static class MapLoader
         public CastellanData? Castellan { get; set; }
         public List<PlacedData> Resources { get; set; } = new();
         public List<PlacedData> Buildings { get; set; } = new();
-        public List<VillagerData> Villagers { get; set; } = new();
+        public List<PlacedData> Villagers { get; set; } = new();
     }
 
     private sealed class PlacedData
@@ -70,11 +69,5 @@ public static class MapLoader
     {
         public int X { get; set; }
         public int Z { get; set; }
-    }
-
-    private sealed class VillagerData
-    {
-        public float Speed { get; set; } = 1f;
-        public List<int[]> Path { get; set; } = new();
     }
 }

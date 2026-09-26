@@ -22,6 +22,7 @@ public sealed class GameData
 
     public IReadOnlyDictionary<string, ResourceType> Resources { get; }
     public CastellanStats Castellan { get; }
+    public VillagerStats Villagers { get; }
 
     /// <summary>Construções na ordem do arquivo (a ordem da barra de construção).</summary>
     public IReadOnlyList<BuildingType> Buildings { get; }
@@ -31,8 +32,9 @@ public sealed class GameData
     private readonly Dictionary<string, RecipeType> _recipeByMachine = new();
 
     private GameData(List<ItemType> items, IReadOnlyDictionary<string, ResourceType> resources, CastellanStats castellan,
-        List<BuildingType> buildings, List<RecipeType> recipes)
+        VillagerStats villagers, List<BuildingType> buildings, List<RecipeType> recipes)
     {
+        Villagers = villagers;
         Items = items;
         Resources = resources;
         Castellan = castellan;
@@ -64,7 +66,7 @@ public sealed class GameData
             : throw new FormatException($"Recurso desconhecido: \"{kind}\".");
 
     public static GameData Parse(string itemsJson, string resourcesJson, string castellanJson,
-        string buildingsJson, string recipesJson)
+        string villagersJson, string buildingsJson, string recipesJson)
     {
         var items = new List<ItemType>();
         foreach ((string kind, ItemData i) in Ordered<ItemData>(itemsJson, "items.json"))
@@ -96,7 +98,14 @@ public sealed class GameData
             CheckItems(itemKinds, b.Cost, $"custo de \"{kind}\"");
             if (b.BeltSpeed < 0f)
                 throw new FormatException($"beltSpeed negativo em \"{kind}\".");
-            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage));
+            JobType? job = null;
+            if (b.Job is JobData j)
+            {
+                if (!resources.ContainsKey(j.Resource) || j.Radius <= 0f || j.Capacity <= 0)
+                    throw new FormatException($"Ofício inválido em \"{kind}\": precisa de um recurso, radius e capacity positivos.");
+                job = new JobType(j.Name, j.Resource, j.Radius, j.Capacity);
+            }
+            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job));
         }
 
         var recipes = new List<RecipeType>();
@@ -113,7 +122,13 @@ public sealed class GameData
             recipes.Add(new RecipeType(id, r.Machine, r.Inputs, r.Outputs, SecondsToTicks(r.Seconds)));
         }
 
-        return new GameData(items, resources, stats, buildings, recipes);
+        var v = JsonSerializer.Deserialize<VillagerData>(villagersJson, JsonOptions)
+            ?? throw new FormatException("villagers.json vazio.");
+        if (v.Speed <= 0f || v.GatherMultiplier <= 0f || v.Carry <= 0)
+            throw new FormatException("villagers.json: speed, gatherMultiplier e carry precisam ser positivos.");
+        var villagers = new VillagerStats(v.Speed, v.GatherMultiplier, v.Carry);
+
+        return new GameData(items, resources, stats, villagers, buildings, recipes);
     }
 
     private static int SecondsToTicks(float seconds) =>
@@ -165,6 +180,22 @@ public sealed class GameData
         public bool Solid { get; set; } = true;
         public float BeltSpeed { get; set; }
         public bool Storage { get; set; }
+        public JobData? Job { get; set; }
+    }
+
+    private sealed class JobData
+    {
+        public string Name { get; set; } = "";
+        public string Resource { get; set; } = "";
+        public float Radius { get; set; }
+        public int Capacity { get; set; }
+    }
+
+    private sealed class VillagerData
+    {
+        public float Speed { get; set; } = 3f;
+        public float GatherMultiplier { get; set; } = 1.5f;
+        public int Carry { get; set; } = 5;
     }
 
     private sealed class ResourceData

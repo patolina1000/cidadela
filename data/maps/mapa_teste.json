@@ -20,8 +20,10 @@
     { "kind": "smelter", "x": 18, "z": 14 },
     { "kind": "forge",   "x": 18, "z": 18 }
   ],
+  // Aldeões livres no início; cada cabana de trabalho construída chama o mais próximo.
   "villagers": [
-    { "speed": 2.0, "path": [[6, 6], [12, 13], [18, 13], [18, 17]] },
-    { "speed": 1.5, "path": [[24, 25], [19, 19], [19, 15]] }
+    { "x": 13, "z": 18 },
+    { "x": 15, "z": 19 },
+    { "x": 17, "z": 17 }
   ]
 }

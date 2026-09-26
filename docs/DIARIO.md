@@ -381,3 +381,34 @@ onde errou, correções manuais e quanto tempo levou.
   Recolher da máquina não tinha retorno visual; ganhou os itens voando.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:55–22:00 de relógio.
+
+---
+
+## 2026-09-25 — Marco 6: aldeões trabalhando (lenhador, pedreiro, mineiro)
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** o humano redirecionou o marco 6 (eu tinha sugerido dia/noite e hordas): aldeões trabalhando como
+  lenhador, pedreiro e minerador de ferro. Plano aprovado.
+- **O que foi feito:**
+  - Dados: 3 cabanas de trabalho em `data/buildings.json` (campo `job`: ofício, recurso, raio 12, capacidade 50)
+    e `data/villagers.json` (velocidade 3, coleta 1,5× mais lenta, carga 5). O mapa começa com 3 aldeões livres.
+  - Simulação: `GridPath` (A* em 8 direções, sem cortar quina, vários objetivos), `Villager` reescrito com
+    tarefas (sem emprego, esperando, indo ao recurso, coletando, voltando), `Workplace` (trabalhador + guardado),
+    atribuição automática do aldeão livre mais perto, cabana solta na esteira/baú da frente (código de
+    "empurrar para frente" agora compartilhado com as máquinas), recolher e desmontar devolvem o guardado e a carga.
+    75 testes (16 novos: caminho, ciclo de trabalho, carga, obstáculos, raio, cabana cheia, esteira, liberar e
+    reatribuir).
+  - Cena: aldeão com chapéu da cor do ofício, carga nas costas, golpe ao coletar, quicar e virar suave; cabanas
+    com telhado da cor do recurso; etiqueta com guardado e o que o trabalhador está fazendo. Barra com 8 construções.
+  - GDD (seção 6, "Trabalho básico") atualizado e reexportado.
+  - Verificado no jogo: cabana do lenhador a meio caminho das árvores; o aldeão mais perto ganhou chapéu, foi,
+    coletou ("+1 Madeira" nas árvores) e entregou ("Guardado: 10/50"); recolhi 10 madeiras da cabana.
+- **O que deu errado:**
+  - **Bug do marco 5 encontrado:** recolher a produção de uma máquina também esvaziava a entrada e o ciclo em
+    andamento. Causa: um `str.replace` do meu script de edição trocou duas ocorrências do mesmo trecho no marco 5.
+    Os testes não pegaram (o de recolher só olhava a saída). Corrigido, com teste de regressão; os scripts de
+    edição agora exigem que cada trecho apareça uma única vez.
+  - Clicar na cabana não recolhia: o `GameRoot` só recolhia de baús e máquinas. A simulação estava certa; o erro
+    estava só na ligação com a entrada. Corrigido e verificado no jogo.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:08–22:14 de relógio.

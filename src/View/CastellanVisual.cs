@@ -78,7 +78,7 @@ public partial class CastellanVisual : Node3D
     /// Graus de inclinação ao longo de um item: puxa para trás (positivo), bate para a frente
     /// (negativo) no fim e segura até o item cair.
     /// </summary>
-    private static float SwingAngle(float p)
+    internal static float SwingAngle(float p)
     {
         const float back = 14f;
         const float strike = -28f;

@@ -9,13 +9,24 @@ namespace Cidadela.View;
 /// </summary>
 public static class BuildingModels
 {
-    public static Node3D Create(string kind, Direction direction)
+    public static Node3D Create(BuildingType type, Direction direction, GameData data)
     {
         var root = new Node3D();
         var model = new Node3D { Name = "Model", Rotation = new Vector3(0f, YawOf(direction), 0f) };
         root.AddChild(model);
 
-        switch (kind)
+        // Cabanas de trabalho: casinha com telhado da cor do recurso do ofício.
+        if (type.Job is JobType job)
+        {
+            Add(model, new BoxMesh { Size = new Vector3(0.7f, 0.45f, 0.6f) }, Palette.Wood, new Vector3(0f, 0.225f, 0f));
+            var roof = Add(model, new PrismMesh { Size = new Vector3(0.84f, 0.38f, 0.72f) },
+                Palette.ForItem(data, job.Resource), new Vector3(0f, 0.64f, 0f));
+            roof.Rotation = new Vector3(0f, Mathf.Pi / 2f, 0f);
+            AddOutputArrow(model);
+            return root;
+        }
+
+        switch (type.Kind)
         {
             case "belt":
                 Add(model, new BoxMesh { Size = new Vector3(0.94f, 0.08f, 0.94f) }, Palette.Wood.Darkened(0.35f), new Vector3(0f, 0.04f, 0f));

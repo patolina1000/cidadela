@@ -14,7 +14,7 @@ public partial class WorldView : Node3D
     private const string GridShaderPath = "res://src/View/GridGround.gdshader";
 
     private SimWorld _world = null!;
-    private readonly Dictionary<Villager, Node3D> _villagerNodes = new();
+    private readonly Dictionary<Villager, VillagerVisual> _villagerNodes = new();
     private readonly Dictionary<ResourceNode, ResourceVisual> _resourceVisuals = new();
     private readonly Dictionary<Building, Node3D> _buildingNodes = new();
     private readonly Dictionary<int, MeshInstance3D> _itemNodes = new();
@@ -62,8 +62,9 @@ public partial class WorldView : Node3D
 
         foreach (Villager villager in world.Villagers)
         {
-            var mesh = new CapsuleMesh { Radius = 0.2f, Height = 0.8f };
-            _villagerNodes[villager] = AddShape($"Villager_{villager.Id}", mesh, Palette.Bone, Vector3.Zero);
+            var visual = new VillagerVisual { Name = $"Villager_{villager.Id}" };
+            AddChild(visual);
+            _villagerNodes[villager] = visual;
         }
 
         _castellan = new CastellanVisual { Name = "Castellan" };
@@ -106,12 +107,8 @@ public partial class WorldView : Node3D
         RenderChestTakes();
         RenderMachines(dt);
 
-        foreach ((Villager villager, Node3D node) in _villagerNodes)
-        {
-            System.Numerics.Vector2 p = System.Numerics.Vector2.Lerp(
-                villager.PreviousPosition, villager.Position, (float)alpha);
-            node.Position = new Vector3(p.X + 0.5f, 0.4f, p.Y + 0.5f);
-        }
+        foreach ((Villager villager, VillagerVisual visual) in _villagerNodes)
+            visual.UpdateFrom(villager, _world.Data, (float)alpha, dt);
 
         _castellan.UpdateFrom(_world.Castellan, (float)alpha, dt);
     }
@@ -142,7 +139,7 @@ public partial class WorldView : Node3D
         {
             if (_buildingNodes.ContainsKey(building))
                 continue;
-            Node3D node = BuildingModels.Create(building.Kind, building.Direction);
+            Node3D node = BuildingModels.Create(building.Type, building.Direction, _world.Data);
             node.Name = $"Building_{building.Kind}_{building.Id}";
             node.Position = CellCenter(building.Cell, 0f);
             AddChild(node);
@@ -190,15 +187,16 @@ public partial class WorldView : Node3D
     }
 
     /// <summary>
-    /// Quando um baú ou a saída de uma máquina perde itens (o Castelão recolheu), os itens voam até ele,
-    /// como no desmontar. Compara com o que cada um tinha no frame anterior. A máquina que empurra
-    /// para uma esteira também perde itens, mas 1 por tick: só grupos de 2 ou mais contam como recolher.
+    /// Quando um baú, a saída de uma máquina ou uma cabana perde itens (o Castelão recolheu), os itens
+    /// voam até ele, como no desmontar. Compara com o que cada um tinha no frame anterior. Máquinas e
+    /// cabanas que empurram para uma esteira também perdem itens, mas 1 por tick: só grupos de 2 ou mais
+    /// contam como recolher.
     /// </summary>
     private void RenderChestTakes()
     {
         foreach (Building building in _buildingNodes.Keys)
         {
-            if ((building.Storage ?? building.Machine?.Output) is not Inventory storage)
+            if ((building.Storage ?? building.Machine?.Output ?? building.Workplace?.Stored) is not Inventory storage)
                 continue;
             if (!_chestSnapshots.TryGetValue(building, out Dictionary<string, int>? before))
             {
@@ -211,7 +209,7 @@ public partial class WorldView : Node3D
             foreach ((string kind, int had) in before)
             {
                 int taken = had - storage.Count(kind);
-                if (building.Machine is not null && taken < 2)
+                if (building.Storage is null && taken < 2)
                     continue;
                 for (int i = 0; i < System.Math.Min(taken, 6); i++)
                 {
@@ -262,6 +260,7 @@ public partial class WorldView : Node3D
         {
             { Storage: Inventory storage } => ChestLines(building, storage),
             { Machine: MachineState machine } => MachineLines(building, machine),
+            { Workplace: Workplace work } => WorkplaceLines(building, work),
             _ => null,
         };
         if (building is null || lines is null)
@@ -301,6 +300,30 @@ public partial class WorldView : Node3D
             null => $"Trabalhando {machine.Progress:P0}",
             MachineWait.OutputFull => "Parada: saída cheia",
             _ => "Esperando " + ItemsText(recipe.Inputs),
+        });
+        return lines;
+    }
+
+    private List<string> WorkplaceLines(Building building, Workplace work)
+    {
+        string resource = _world.Data.Item(work.Job.Resource).Name;
+        var lines = new List<string>
+        {
+            building.Type.Name,
+            $"Guardado: {work.Stored.Count(work.Job.Resource)}/{work.Job.Capacity} {resource}",
+        };
+        if (work.Worker is not Villager worker)
+        {
+            lines.Add("Sem trabalhador: nenhum aldeão livre");
+            return lines;
+        }
+        lines.Add($"{work.Job.Name}: " + worker.Task switch
+        {
+            VillagerTask.GoingToResource => $"indo buscar {resource}",
+            VillagerTask.Gathering => $"coletando ({worker.CarryingCount}/{worker.Stats.Carry})",
+            VillagerTask.ReturningHome => $"levando {worker.CarryingCount} {resource}",
+            _ when work.Free <= 0 => "parado: cabana cheia",
+            _ => $"parado: sem {resource} no raio de {work.Job.Radius:0} células",
         });
         return lines;
     }
@@ -376,7 +399,7 @@ public partial class WorldView : Node3D
         if (_ghost is null || _ghostKind != type.Kind || _ghostDirection != direction)
         {
             _ghost?.QueueFree();
-            _ghost = BuildingModels.Create(type.Kind, direction);
+            _ghost = BuildingModels.Create(type, direction, _world.Data);
             _ghost.Name = "Ghost";
             BuildingModels.OverrideMaterial(_ghost, _ghostMaterial);
             AddChild(_ghost);

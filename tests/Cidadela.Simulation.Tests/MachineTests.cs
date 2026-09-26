@@ -122,6 +122,23 @@ public class MachineTests
     }
 
     [Fact]
+    public void TakingTheOutputLeavesInputsAndTheCycleInTheMachine()
+    {
+        SimWorld world = World(wood: 3);
+        Insert(world, Mill);
+        TestWorlds.Run(world, 20);           // 1º ciclo pronto: 2 hastes
+        Insert(world, Mill);                 // 2º ciclo começa
+        Insert(world, Mill);                 // 1 madeira esperando
+        world.Enqueue(new TakeAllCommand(Mill));
+        world.Tick();
+
+        Assert.Equal(2, world.Castellan.Inventory.Count("shaft"));
+        Assert.Equal(0, world.Castellan.Inventory.Count("wood"));
+        Assert.True(Machine(world).IsWorking);
+        Assert.Equal(1, Machine(world).Input.Count("wood"));
+    }
+
+    [Fact]
     public void DeconstructingReturnsInputsOutputsAndTheCycleInProgress()
     {
         SimWorld world = World(wood: 3);
