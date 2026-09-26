@@ -35,6 +35,33 @@ public partial class Effects : Node3D
         GetTree().CreateTimer(particles.Lifetime + 0.2).Timeout += particles.QueueFree;
     }
 
+    /// <summary>
+    /// Um cubinho que voa em arco de <paramref name="from"/> até o alvo (seguindo o alvo se ele andar)
+    /// e some ao chegar. Mostra itens voltando para o Castelão.
+    /// </summary>
+    public void FlyTo(Vector3 from, Node3D target, Color color, double delay)
+    {
+        var cube = new BoxMesh { Size = new Vector3(0.14f, 0.14f, 0.14f) };
+        cube.Material = new StandardMaterial3D { AlbedoColor = color, Roughness = 0.9f };
+        var node = new MeshInstance3D { Mesh = cube, Position = from, Visible = false };
+        node.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
+        AddChild(node);
+
+        Tween tween = CreateTween();
+        tween.TweenInterval(delay);
+        tween.TweenCallback(Callable.From(() => node.Visible = true));
+        tween.TweenMethod(Callable.From<float>(t =>
+        {
+            Vector3 to = target.GlobalPosition + new Vector3(0f, 0.9f, 0f);
+            Vector3 mid = (from + to) / 2f + new Vector3(0f, 1.3f, 0f);
+            // Curva de Bézier quadrática: sobe, faz a volta e desce no Castelão.
+            node.Position = from.Lerp(mid, t).Lerp(mid.Lerp(to, t), t);
+            node.Rotation = new Vector3(t * 9f, t * 7f, 0f);
+            node.Scale = Vector3.One * (1f - 0.6f * t * t);
+        }), 0f, 1f, 0.5).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
+        tween.TweenCallback(Callable.From(node.QueueFree));
+    }
+
     /// <summary>Texto que sobe e some, sempre virado para a câmera e por cima de tudo.</summary>
     public void FloatingText(Vector3 position, string text, Color color)
     {

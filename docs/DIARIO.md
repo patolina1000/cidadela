@@ -316,3 +316,17 @@ onde errou, correções manuais e quanto tempo levou.
   - Guiar o Castelão pelo MCP até a árvore levou várias tentativas (tempo variável entre comandos).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:38–21:43 de relógio.
+
+---
+
+## 2026-09-25 — Animação de desmontar
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** uma pequena animação ao destruir (desmontar) as construções.
+- **O que foi feito (só na cena):** a construção sacode (achata e estica), encolhe para dentro com um puxão
+  e estoura em poeira; os itens devolvidos voam em arco (Bézier) até o Castelão, um cubinho da cor de cada
+  recurso (até 4 por recurso), seguindo ele se andar. O texto "+8 Madeira +4 Pedra" continua.
+- **Verificado no jogo:** desmontei a serraria do mapa; screenshots pegaram o achatamento e depois a poeira
+  com os cubinhos saindo; inventário recebeu 8 madeiras e 4 pedras.
+- **O que deu errado:** nada.
+- **Tempo:** 21:47–21:48 de relógio.

@@ -110,11 +110,9 @@ public partial class WorldView : Node3D
             Node3D node = _buildingNodes[gone];
             _buildingNodes.Remove(gone);
             if (withEffects)
-            {
-                _effects.Burst(node.Position + new Vector3(0f, 0.3f, 0f), Palette.Wheat, amount: 16, speed: 3f);
-                _effects.FloatingText(node.Position + new Vector3(0f, 1.1f, 0f), CostText(gone.Type, "+"), Palette.Bone);
-            }
-            node.QueueFree();
+                AnimateDeconstruct(gone, node);
+            else
+                node.QueueFree();
         }
 
         foreach (Building building in current)
@@ -133,6 +131,38 @@ public partial class WorldView : Node3D
                 node.Scale = new Vector3(0.3f, 0.3f, 0.3f);
                 node.CreateTween().TweenProperty(node, "scale", Vector3.One, 0.35)
                     .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Desmontar: sacode (achata e volta), encolhe para dentro do chão e estoura em poeira;
+    /// os itens devolvidos voam em arco até o Castelão, um cubinho da cor de cada recurso.
+    /// </summary>
+    private void AnimateDeconstruct(Building building, Node3D node)
+    {
+        Vector3 center = node.Position + new Vector3(0f, 0.35f, 0f);
+        _effects.FloatingText(node.Position + new Vector3(0f, 1.1f, 0f), CostText(building.Type, "+"), Palette.Bone);
+
+        Tween tween = node.CreateTween();
+        tween.TweenProperty(node, "scale", new Vector3(1.2f, 0.75f, 1.2f), 0.07);
+        tween.TweenProperty(node, "scale", new Vector3(0.9f, 1.15f, 0.9f), 0.07);
+        tween.TweenProperty(node, "scale", Vector3.Zero, 0.22)
+            .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.In);
+        tween.TweenCallback(Callable.From(() =>
+        {
+            _effects.Burst(center, Palette.Wheat, amount: 14, speed: 2.5f);
+            node.QueueFree();
+        }));
+
+        // Até 4 cubinhos por recurso, em sequência, para dar a ideia da quantidade sem virar enxame.
+        double delay = 0.25;
+        foreach ((string item, int amount) in building.Type.Cost)
+        {
+            for (int i = 0; i < System.Math.Min(amount, 4); i++)
+            {
+                _effects.FlyTo(center, _castellan, Palette.ForResource(item), delay);
+                delay += 0.06;
             }
         }
     }
