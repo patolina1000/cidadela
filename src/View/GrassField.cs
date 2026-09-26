@@ -13,6 +13,11 @@ namespace Cidadela.View;
 /// bordas não ficarem quadradas. O mapa é dividido em blocos de <see cref="ChunkCells"/>×<see cref="ChunkCells"/>
 /// células, com um MultiMeshInstance3D por malha em cada bloco: blocos fora da tela não são desenhados e, quando
 /// algo é construído, só o bloco daquela célula é refeito (sem os tufos das células ocupadas).
+/// LOD: cada bloco existe em duas versões com os mesmos tufos nos mesmos lugares, a malha completa do asset
+/// (perto) e uma simplificada gerada na carga (longe, a partir de <see cref="LodDistance"/> da câmera). A
+/// câmera normal fica a 16 do chão, então no jogo quase sempre se vê a versão simplificada; a completa aparece
+/// na cinematográfica e no zoom máximo. O nó de cada bloco fica no centro dele, porque o Godot mede a
+/// distância do LOD à origem do nó.
 /// </summary>
 public partial class GrassField : Node3D
 {
@@ -36,19 +41,43 @@ public partial class GrassField : Node3D
     private static readonly Color TipColor = new("C4B3D6");
     private static readonly Color BaseColor = new("6A5B7C");
     private const float NoiseScale = 12f; // tamanho das manchas de cor, em células
+    // A partir desta distância do centro do bloco a grama usa a malha simplificada (o tufo tem poucos pixels).
+    private const float LodDistance = 11f;
+    private const float LodMargin = 2f;
 
     private WorldGrid _grid = null!;
     private GameData _data = null!;
     private Func<GridPos, bool> _blocked = null!;
     private Mesh[] _meshes = null!;
+    private Mesh[] _farMeshes = null!;
     private float[] _meshHeights = null!;
     private ShaderMaterial _material = null!;
     private MultiMeshInstance3D[,,] _chunks = null!;
+    private MultiMeshInstance3D[,,] _farChunks = null!;
     private readonly HashSet<Vector2I> _dirty = new();
     private readonly FastNoiseLite _clumps = new() { Frequency = 0.35f, Seed = 7 };
 
     /// <summary>Quantos tufos estão desenhados agora (para medir desempenho).</summary>
     public int TuftCount { get; private set; }
+
+    private bool _lodEnabled = true;
+
+    /// <summary>Desliga o LOD (malha completa em qualquer distância) para comparar visual e custo.</summary>
+    public bool LodEnabled
+    {
+        get => _lodEnabled;
+        set
+        {
+            _lodEnabled = value;
+            foreach (MultiMeshInstance3D near in _chunks)
+            {
+                near.VisibilityRangeEnd = value ? LodDistance : 0f;
+                near.VisibilityRangeEndMargin = value ? LodMargin : 0f;
+            }
+            foreach (MultiMeshInstance3D far in _farChunks)
+                far.Visible = value;
+        }
+    }
 
     public void Build(WorldGrid grid, GameData data, Func<GridPos, bool> blocked)
     {
@@ -56,28 +85,27 @@ public partial class GrassField : Node3D
         _data = data;
         _blocked = blocked;
         _meshes = Array.ConvertAll(MeshFiles, f => LoadMesh(AssetDir + f));
+        _farMeshes = Array.ConvertAll(_meshes, SimplifyMesh);
         _meshHeights = Array.ConvertAll(_meshes, m => Mathf.Max(m.GetAabb().Size.Y, 0.001f));
         ShaderMaterial material = _material = BuildMaterial();
 
         int cx = (grid.Width + ChunkCells - 1) / ChunkCells;
         int cz = (grid.Height + ChunkCells - 1) / ChunkCells;
         _chunks = new MultiMeshInstance3D[cx, cz, _meshes.Length];
+        _farChunks = new MultiMeshInstance3D[cx, cz, _meshes.Length];
         for (int x = 0; x < cx; x++)
         for (int z = 0; z < cz; z++)
         {
+            Vector3 center = ChunkCenter(x, z);
             for (int m = 0; m < _meshes.Length; m++)
             {
-                var node = new MultiMeshInstance3D
-                {
-                    Name = $"Grass_{x}_{z}_{m}",
-                    MaterialOverride = material,
-                    CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-                };
-                AddChild(node);
-                _chunks[x, z, m] = node;
+                _chunks[x, z, m] = AddChunkNode($"Grass_{x}_{z}_{m}", center, material, near: true);
+                _farChunks[x, z, m] = AddChunkNode($"GrassFar_{x}_{z}_{m}", center, material, near: false);
             }
             RebuildChunk(x, z);
         }
+        // Ligado por padrão; o painel de desempenho (F12) desliga para comparar.
+        LodEnabled = true;
     }
 
     /// <summary>Onde está a protagonista: a grama em volta dela se inclina para longe. Chamado a cada quadro.</summary>
@@ -91,6 +119,110 @@ public partial class GrassField : Node3D
         foreach (Vector2I c in _dirty)
             RebuildChunk(c.X, c.Y);
         _dirty.Clear();
+    }
+
+    private MultiMeshInstance3D AddChunkNode(string name, Vector3 center, Material material, bool near)
+    {
+        var node = new MultiMeshInstance3D
+        {
+            Name = name,
+            Position = center,
+            MaterialOverride = material,
+            CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+            VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self,
+        };
+        if (near)
+        {
+            node.VisibilityRangeEnd = LodDistance;
+            node.VisibilityRangeEndMargin = LodMargin;
+        }
+        else
+        {
+            node.VisibilityRangeBegin = LodDistance;
+            node.VisibilityRangeBeginMargin = LodMargin;
+        }
+        AddChild(node);
+        return node;
+    }
+
+    private Vector3 ChunkCenter(int cx, int cz) => new(
+        (cx * ChunkCells + Math.Min((cx + 1) * ChunkCells, _grid.Width)) / 2f, 0f,
+        (cz * ChunkCells + Math.Min((cz + 1) * ChunkCells, _grid.Height)) / 2f);
+
+    /// <summary>
+    /// Versão simplificada da malha para longe: as mesmas folhas, nos mesmos lugares, com a mesma largura e
+    /// altura, mas cada folha curva (uma tira de ~13 triângulos) vira 3 triângulos (base em quad + ponta).
+    /// Vista de cima, a folha tem poucos pixels e a curva não aparece; de perto a malha completa continua.
+    /// (Os simplificadores por colapso de arestas não servem: ou não mudam nada ou viram uma mancha.)
+    /// Uma folha é um grupo de triângulos ligados por vértices acima da raiz (na raiz as folhas se encostam).
+    /// </summary>
+    private static Mesh SimplifyMesh(Mesh mesh)
+    {
+        var st = new SurfaceTool();
+        st.CreateFrom(mesh, 0);
+        st.Index();
+        Godot.Collections.Array arrays = st.CommitToArrays();
+        Vector3[] vertices = arrays[(int)Mesh.ArrayType.Vertex].AsVector3Array();
+        int[] indices = arrays[(int)Mesh.ArrayType.Index].AsInt32Array();
+        int triangles = indices.Length / 3;
+
+        float minY = float.MaxValue, maxY = float.MinValue;
+        foreach (Vector3 v in vertices) { minY = Mathf.Min(minY, v.Y); maxY = Mathf.Max(maxY, v.Y); }
+        float rootY = minY + (maxY - minY) * 0.12f;
+
+        // Union-find dos triângulos pelos vértices acima da raiz.
+        int[] parent = new int[triangles];
+        for (int t = 0; t < triangles; t++) parent[t] = t;
+        int Find(int t) { while (parent[t] != t) t = parent[t] = parent[parent[t]]; return t; }
+        var owner = new Dictionary<int, int>();
+        for (int t = 0; t < triangles; t++)
+        for (int k = 0; k < 3; k++)
+        {
+            int v = indices[t * 3 + k];
+            if (vertices[v].Y <= rootY) continue;
+            if (owner.TryGetValue(v, out int other)) parent[Find(t)] = Find(other);
+            else owner[v] = t;
+        }
+        var blades = new Dictionary<int, HashSet<int>>();
+        for (int t = 0; t < triangles; t++)
+        {
+            int root = Find(t);
+            if (!blades.TryGetValue(root, out HashSet<int>? set)) blades[root] = set = new HashSet<int>();
+            for (int k = 0; k < 3; k++) set.Add(indices[t * 3 + k]);
+        }
+
+        var kept = new List<int>();
+        foreach (HashSet<int> blade in blades.Values)
+        {
+            var byHeight = new List<int>(blade);
+            if (byHeight.Count < 5)
+                continue; // folha pequena demais para simplificar: fica como está (abaixo)
+            byHeight.Sort((a, b) => vertices[a].Y.CompareTo(vertices[b].Y));
+            int r0 = byHeight[0], r1 = byHeight[1], tip = byHeight[^1];
+            float midY = (vertices[r0].Y + vertices[tip].Y) * 0.5f;
+            // Os dois vértices mais perto do meio da altura; m0 é o que fica do lado de r0, para a tira não torcer.
+            var mids = byHeight.GetRange(2, byHeight.Count - 3);
+            mids.Sort((a, b) => Mathf.Abs(vertices[a].Y - midY).CompareTo(Mathf.Abs(vertices[b].Y - midY)));
+            int m0 = mids[0], m1 = mids[1];
+            if (vertices[m0].DistanceSquaredTo(vertices[r0]) > vertices[m1].DistanceSquaredTo(vertices[r0]))
+                (m0, m1) = (m1, m0);
+            kept.AddRange(new[] { r0, r1, m1, r0, m1, m0, m0, m1, tip });
+        }
+        foreach (HashSet<int> blade in blades.Values)
+        {
+            if (blade.Count >= 5) continue;
+            for (int t = 0; t < triangles; t++)
+                if (blade.Contains(indices[t * 3]))
+                    for (int k = 0; k < 3; k++) kept.Add(indices[t * 3 + k]);
+        }
+        if (kept.Count < 3 || blades.Count < 2)
+            return mesh;
+
+        arrays[(int)Mesh.ArrayType.Index] = kept.ToArray();
+        var simplified = new ArrayMesh();
+        simplified.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+        GD.Print($"[grama] LOD: {blades.Count} folhas, {triangles} → {kept.Count / 3} triângulos");
+        return simplified;
     }
 
     /// <summary>O .glb importa como cena; a malha do tufo é a do primeiro MeshInstance3D dela.</summary>
@@ -121,6 +253,7 @@ public partial class GrassField : Node3D
 
     private void RebuildChunk(int cx, int cz)
     {
+        Vector3 center = ChunkCenter(cx, cz);
         var transforms = new List<Transform3D>[_meshes.Length];
         for (int m = 0; m < _meshes.Length; m++)
             transforms[m] = new List<Transform3D>();
@@ -144,25 +277,30 @@ public partial class GrassField : Node3D
                 float clump = Mathf.Lerp(ClumpMin, ClumpMax, _clumps.GetNoise2D(px, pz) * 0.5f + 0.5f);
                 float scale = rng.RandfRange(MinHeight, MaxHeight) * clump / _meshHeights[m];
                 var basis = new Basis(Vector3.Up, rng.Randf() * Mathf.Tau).Scaled(Vector3.One * scale);
-                transforms[m].Add(new Transform3D(basis, new Vector3(px, 0f, pz)));
+                transforms[m].Add(new Transform3D(basis, new Vector3(px, 0f, pz) - center));
             }
         }
 
         for (int m = 0; m < _meshes.Length; m++)
         {
-            var mm = new MultiMesh
-            {
-                TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
-                Mesh = _meshes[m],
-                InstanceCount = transforms[m].Count,
-            };
-            for (int i = 0; i < transforms[m].Count; i++)
-                mm.SetInstanceTransform(i, transforms[m][i]);
-
             MultiMeshInstance3D node = _chunks[cx, cz, m];
             TuftCount += transforms[m].Count - (node.Multimesh?.InstanceCount ?? 0);
-            node.Multimesh = mm;
+            node.Multimesh = BuildMultiMesh(_meshes[m], transforms[m]);
+            _farChunks[cx, cz, m].Multimesh = BuildMultiMesh(_farMeshes[m], transforms[m]);
         }
+    }
+
+    private static MultiMesh BuildMultiMesh(Mesh mesh, List<Transform3D> transforms)
+    {
+        var mm = new MultiMesh
+        {
+            TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
+            Mesh = mesh,
+            InstanceCount = transforms.Count,
+        };
+        for (int i = 0; i < transforms.Count; i++)
+            mm.SetInstanceTransform(i, transforms[i]);
+        return mm;
     }
 
     /// <summary>

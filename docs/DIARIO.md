@@ -1227,3 +1227,44 @@ onde errou, correções manuais e quanto tempo levou.
   penumbra que cresce com a distância, PCSS; o desfoque fixo de 1,6 continua): 22,2 → **17,9 ms (56 FPS)**,
   ganho ≈ 4,3 ms. Prints: `docs/prints/perf_sombra_com_penumbra.png` e `perf_sombra_sem_penumbra.png`.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-26 — Desempenho 2: LOD da grama por folha achatada; painel com V-Sync, penumbra e captura
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Medição corrigida:** o V-Sync travava o quadro em múltiplos de 1/120 s e escondia a folga real; o painel
+  ganhou **F2** (V-Sync), **F1** (penumbra PCSS do sol), **F11** (captura em resolução total em
+  `docs/prints/captura_N.png`, porque o MCP só transporta 640 px), **F12** (LOD da grama) e um aviso
+  "[JANELA SEM FOCO]" (em segundo plano o macOS reduz o jogo e as leituras não valem).
+- **Números reais (V-Sync desligado, 3024×1890, atlas 2048, mapa de teste, 85.881 tufos):**
+
+  | Cena | ms/quadro | FPS |
+  |---|---|---|
+  | Base (tudo ligado) | 22,2 | 45 |
+  | Sem penumbra (PCSS) | 18,9 | 53 |
+  | Sem grama | 11,1 | 90 |
+  | Sem grama, sem sombra | 7,4 | 136 |
+  | Sem grama, sem sombra, sem chão | 5,3 | 189 |
+  | Nada (nem brilho, névoa, pós) | 3,7 | 273 |
+
+  Custos: grama **11,1 ms**; sombra do sol no chão 3,7; shader do chão 2,1; brilho+névoa+pós 1,6; piso 3,7.
+  CPU do jogo 0,1–0,2 ms. A grama é cara porque são 8,6 M de triângulos minúsculos: cada um ocupa pelo menos
+  um bloco de 2×2 pixels na GPU e roda a filtragem de sombra por pixel.
+- **LOD da grama, três tentativas:**
+  1. Nível do import (130 → 13 triângulos): a touceira vira uma mancha. Reprovado (prints
+     `perf_lod_13tris*.png`, apagados depois).
+  2. Metade das folhas (130 → 65): 22,2 → 16,4 ms, mas o tapete fica visivelmente mais ralo a 50% de escala.
+     Reprovado.
+  3. **Folha achatada** (130 → 30, 72 → 26): todas as folhas ficam, nos mesmos lugares, largura e altura;
+     cada tira curva de ~13 triângulos vira 3 (quad na base + ponta). De cima, a curva de uma folha de poucos
+     pixels não aparece; a malha completa segue a menos de 11 unidades da câmera (cinematográfica e zoom
+     máximo). Prints: `perf_lod_folha3.png` (câmera normal, 1:1), `perf_lod_folha3_meia.png` (50%),
+     `perf_lod_folha3_perto.png` (cinematográfica, malha completa). Ligado por padrão; F12 desliga.
+     Ainda sem medição limpa: o humano estava usando o jogo e a janela perdia o foco. Pela contagem de
+     triângulos (menos que a tentativa 2) a estimativa é ≤ 16 ms (≥ 62 FPS) na cena base.
+- **Implementação:** dois conjuntos de MultiMesh por bloco (perto/longe) com os mesmos tufos; o nó de cada
+  bloco fica no centro dele porque o `VisibilityRange` mede a distância à origem do nó; troca com fade de 2.
+- **Aguardando decisão:** penumbra PCSS (−3,3 ms; prints `perf_sombra_com_penumbra.png` /
+  `perf_sombra_sem_penumbra.png`).
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados (sem mudança na simulação).
