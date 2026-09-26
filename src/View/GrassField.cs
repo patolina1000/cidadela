@@ -15,15 +15,18 @@ namespace Cidadela.View;
 public partial class GrassField : Node3D
 {
     private const int ChunkCells = 8;
-    private const int MaxTuftsPerCell = 36;
+    private const int MaxTuftsPerCell = 64;
     private const string ShaderPath = "res://src/View/Grass.gdshader";
 
     // Grama densa e miúda: muitos tufos pequenos em vez de poucos grandes. A protagonista tem ~0,75 de altura,
-    // então a grama fica em 5% a 9% dela; itens nas esteiras ficam acima (e embaixo de esteira nem há grama).
+    // então a grama fica em 3% a 12% dela (com as manchas); itens nas esteiras ficam acima (e embaixo de esteira nem há grama).
     private const float MinHeight = 0.035f;
     private const float MaxHeight = 0.07f;
     private const float MinWidth = 0.4f;
     private const float MaxWidth = 0.65f;
+    // Manchas de altura (como os campos de BotW): um ruído largo deixa trechos mais altos e outros mais baixos.
+    private const float ClumpMin = 0.7f;
+    private const float ClumpMax = 1.25f;
 
     private WorldGrid _grid = null!;
     private GameData _data = null!;
@@ -32,6 +35,7 @@ public partial class GrassField : Node3D
     private ShaderMaterial _material = null!;
     private MultiMeshInstance3D[,] _chunks = null!;
     private readonly HashSet<Vector2I> _dirty = new();
+    private readonly FastNoiseLite _clumps = new() { Frequency = 0.35f, Seed = 7 };
 
     /// <summary>Quantos tufos estão desenhados agora (para medir desempenho).</summary>
     public int TuftCount { get; private set; }
@@ -61,6 +65,9 @@ public partial class GrassField : Node3D
             RebuildChunk(x, z);
         }
     }
+
+    /// <summary>Onde está quem empurra a grama (a protagonista); chamado a cada quadro.</summary>
+    public void SetPusher(Vector3 position) => _material.SetShaderParameter("pusher_pos", position);
 
     /// <summary>A célula mudou (construiu, desmontou, recurso esgotou): refaz o bloco dela no próximo frame.</summary>
     public void MarkDirty(GridPos cell) => _dirty.Add(new Vector2I(cell.X / ChunkCells, cell.Z / ChunkCells));
@@ -93,7 +100,8 @@ public partial class GrassField : Node3D
                 if (rng.Randf() >= DensityAt(px, pz))
                     continue;
 
-                float height = rng.RandfRange(MinHeight, MaxHeight);
+                float clump = Mathf.Lerp(ClumpMin, ClumpMax, _clumps.GetNoise2D(px, pz) * 0.5f + 0.5f);
+                float height = rng.RandfRange(MinHeight, MaxHeight) * clump;
                 float width = rng.RandfRange(MinWidth, MaxWidth);
                 var basis = new Basis(Vector3.Up, rng.Randf() * Mathf.Tau).Scaled(new Vector3(width, height, width));
                 transforms.Add(new Transform3D(basis, new Vector3(px, 0f, pz)));
@@ -188,7 +196,8 @@ public partial class GrassField : Node3D
             AddVertex(st, a, 0f); AddVertex(st, e, 0.55f); AddVertex(st, d, 0.55f);
             AddVertex(st, d, 0.55f); AddVertex(st, e, 0.55f); AddVertex(st, tip, 1f);
         }
-        st.GenerateNormals();
+        // Junta vértices repetidos (36 → 20 por tufo): o shader de vento roda menos vezes.
+        st.Index();
         return st.Commit();
     }
 

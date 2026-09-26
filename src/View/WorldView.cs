@@ -122,6 +122,7 @@ public partial class WorldView : Node3D
             visual.UpdateFrom(villager, _world.Data, (float)alpha, dt);
 
         _castellan.UpdateFrom(_world.Castellan, (float)alpha, dt);
+        _grass.SetPusher(_castellan.GlobalPosition);
     }
 
     /// <summary>

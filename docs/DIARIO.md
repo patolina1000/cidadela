@@ -1093,3 +1093,25 @@ onde errou, correções manuais e quanto tempo levou.
 - **Print:** `docs/prints/grama_densa.png`. O print de perto não saiu: a janela do jogo estava em segundo plano
   e o MCP só devolvia o último quadro.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-26 — Grama no estilo Breath of the Wild
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** "sabe a grama do zelda: The Legend of Zelda: Breath of the Wild? pronto." (depois de pedir grama
+  densa e pequena).
+- **O que foi feito** (o que marca a grama do BotW, trazido para o nosso crepúsculo e mantendo a grama baixa):
+  - Tapete mais denso: até 64 tufos por célula (eram 36); ~45.700 tufos no mapa de teste.
+  - Base escura (0,55) que some no chão e ponta clara (1,5): o campo parece contínuo.
+  - Faixas de vento: ruído que desliza na direção do vento; onde passa, a grama deita e a ponta clareia.
+    O tremor por tufo continua, mais fraco.
+  - Manchas de altura por ruído (`FastNoiseLite`, 0,7× a 1,25×): trechos mais altos e mais baixos.
+  - A grama se afasta e abaixa em volta da protagonista (a view passa a posição dela ao shader a cada quadro).
+  - Malha do tufo indexada (36 → 20 vértices): o shader de vento roda menos vezes.
+- **Desempenho (3024×1890):** sem grama 72 FPS; grama nova 49–55 FPS antes de indexar, ~58 depois.
+  Não medi o mapa 96×96 cheio desta vez (seriam ~590 mil tufos; vai pedir corte por distância).
+- **Prints:** `docs/prints/grama_botw_visao.png`, `docs/prints/grama_botw_perto.png`. Não consegui um print
+  da protagonista dentro do gramado (ela ficou no pátio de terra); o gramado aparece ao fundo.
+- **GDD:** parágrafo da grama na seção 17 reescrito com a referência ao BotW e as cores roxas atuais.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
