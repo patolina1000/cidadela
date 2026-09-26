@@ -673,7 +673,7 @@ No nosso jogo isso encaixa nos pilares: o Castelão é o primeiro trabalhador da
 
 ### Regras do Castelão
 
-- **Movimento:** WASD relativo à câmera, que gira em passos de 90° pelo botão direito (seção 12). Segurar Shift corre. Andar e correr têm velocidades próprias em JSON, na passada natural de cada animação para os pés não deslizarem (andar 0,8 e correr 2,5 células/s hoje; Factorio usa 8,9 células/s como referência).
+- **Movimento:** WASD relativo à câmera, que gira em passos de 90° pelo botão direito (seção 12). A protagonista só corre: não há andar nem botão de correr. A velocidade fica em JSON, na passada natural da animação de corrida para os pés não deslizarem (2,4 células/s hoje; Factorio usa 8,9 células/s como referência).
 - **Câmera:** segue o Castelão e espia na direção do cursor; o botão do meio arrasta o mundo para construir longe, e andar traz a câmera de volta (seção 12).
 - **Alcance:** constrói e abre máquinas só num raio em volta dele (ponto de partida: 10 células, como Factorio). Para coletar, precisa estar encostado no recurso, de lado ou na diagonal: é trabalho físico, feito de perto.
 - **Trabalho manual:** coleta madeira e pedra e fabrica itens simples à mão, devagar. Isso ensina as receitas e deixa claro por que automatizar.

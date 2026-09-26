@@ -918,3 +918,7 @@ onde errou, correções manuais e quanto tempo levou.
   - Screenshots de 1200 px passaram a falhar no transporte do MCP; os de 640 px funcionam.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 00:41–00:44 de relógio (fora a importação).
+- **Correção no mesmo dia:** o export do GDD trouxe de volta a linha "Movimento" com o Shift, porque a sessão de
+  arte tinha mudado essa linha só no `docs/GDD.md` local (não no documento vivo). Levei a decisão dela ("a
+  protagonista só corre") para o documento vivo e reexportei. Lição: antes de exportar, comparar o GDD local com o
+  último commit para não apagar mudanças feitas só no arquivo.
