@@ -4,9 +4,10 @@ using Godot;
 namespace Cidadela.View;
 
 /// <summary>
-/// Desenho do Castelão: cápsula escura com "nariz" laranja. Anima só a partir do estado da
-/// simulação: vira suave para a direção, quica ao andar e dá golpes sincronizados com a coleta
-/// (o golpe acerta quando o item cai).
+/// Desenho do Castelão: o modelo da protagonista (assets/modelos/protagonista) com os clipes
+/// idle, walk e work; sem o modelo, cápsula escura com "nariz" laranja. Anima só a partir do
+/// estado da simulação: vira suave para a direção e, na cápsula, quica ao andar e dá golpes
+/// sincronizados com a coleta (o golpe acerta quando o item cai).
 /// </summary>
 public partial class CastellanVisual : Node3D
 {
@@ -14,6 +15,8 @@ public partial class CastellanVisual : Node3D
     private const float SwingSmoothing = 30f;
     private const float BobHeight = 0.08f;
     private const float BobStepsPerCell = 1.1f;
+    private const string ModelPath = "res://assets/modelos/protagonista/protagonista.glb";
+    private const float ClipBlendSeconds = 0.15f;
 
     private Node3D _pivot = null!;
     private float _yaw;
@@ -22,12 +25,32 @@ public partial class CastellanVisual : Node3D
     private float _bob;
     private System.Numerics.Vector2 _lastDrawn;
     private bool _hasLast;
+    private AnimationPlayer? _animations;
 
     public override void _Ready()
     {
         // Pivô nos pés: inclinar gira em volta do chão, não do meio do corpo.
         _pivot = new Node3D { Name = "Pivot" };
         AddChild(_pivot);
+
+        if (ResourceLoader.Exists(ModelPath) && GD.Load<PackedScene>(ModelPath) is PackedScene scene)
+        {
+            // O modelo olha para +Z (frente de modelo do glTF); o Castelão olha para -Z.
+            var model = scene.Instantiate<Node3D>();
+            model.RotationDegrees = new Vector3(0f, 180f, 0f);
+            _pivot.AddChild(model);
+            _animations = model.FindChild("AnimationPlayer", recursive: true, owned: false) as AnimationPlayer;
+            if (_animations is not null)
+            {
+                foreach (string clip in new[] { "idle", "walk", "work" })
+                {
+                    if (_animations.HasAnimation(clip))
+                        _animations.GetAnimation(clip).LoopMode = Animation.LoopModeEnum.Linear;
+                }
+                _animations.Play("idle");
+            }
+            return;
+        }
 
         var body = new CapsuleMesh { Radius = 0.3f, Height = 1.2f };
         body.Material = new StandardMaterial3D { AlbedoColor = Palette.DeepPurple, Roughness = 0.8f };
@@ -60,6 +83,14 @@ public partial class CastellanVisual : Node3D
         else
         {
             _bob = Mathf.Lerp(_bob, 0f, 1f - Mathf.Exp(-12f * dt));
+        }
+
+        if (_animations is not null)
+        {
+            string clip = castellan.GatherTarget is not null ? "work" : walked > 0.0001f ? "walk" : "idle";
+            if (_animations.CurrentAnimation != clip && _animations.HasAnimation(clip))
+                _animations.Play(clip, ClipBlendSeconds);
+            return;
         }
 
         float targetSwing = 0f;

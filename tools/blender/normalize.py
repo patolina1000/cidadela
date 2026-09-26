@@ -26,6 +26,7 @@ TEXTURE_SIZE = 512
 FOOTPRINT = 0.9  # base máxima de construções e recursos, para caber em 1 célula com folga
 CRYSTAL_MATERIAL = "Cristal"
 CRYSTAL_EMISSION_STRENGTH = 3.0
+MATTE_ROUGHNESS = 0.8  # fosco, como textura pintada à mão
 # O cristal fica no peito: faixa de altura (fração da altura total) e perto do eixo central.
 CHEST_BAND = (0.50, 0.85)
 CHEST_HALF_WIDTH = 0.15  # fração da altura
@@ -103,15 +104,24 @@ def rename_clips(raw: Path) -> None:
         action.use_fake_user = True
 
 
-def clear_emission() -> None:
-    """A Meshy liga a textura de cor na emissão; sem isso, o modelo brilharia inteiro à noite."""
+def matte_materials() -> None:
+    """Corrige os materiais da Meshy para o estilo pintado do jogo.
+
+    - A Meshy liga a textura de cor na emissão: o modelo brilharia inteiro à noite.
+    - Ela não informa metalicidade, e no glTF isso vale 1: no jogo, sem reflexos, o modelo fica preto.
+    - O reflexo especular vem dobrado (fator 2).
+    """
     for material in bpy.data.materials:
         for node in material.node_tree.nodes if material.node_tree else []:
             if node.type == "BSDF_PRINCIPLED":
-                for link in list(node.inputs["Emission Color"].links):
-                    material.node_tree.links.remove(link)
+                for name in ("Emission Color", "Metallic", "Roughness", "Specular Tint"):
+                    for link in list(node.inputs[name].links):
+                        material.node_tree.links.remove(link)
                 node.inputs["Emission Color"].default_value = (0, 0, 0, 1)
                 node.inputs["Emission Strength"].default_value = 0.0
+                node.inputs["Metallic"].default_value = 0.0
+                node.inputs["Roughness"].default_value = MATTE_ROUGHNESS
+                node.inputs["Specular Tint"].default_value = (1, 1, 1, 1)
 
 
 def shrink_textures() -> None:
@@ -241,7 +251,7 @@ def main() -> None:
             obj.data.pose_position = "REST"  # medidas e cristal na pose de repouso
     bpy.context.view_layer.update()
 
-    clear_emission()
+    matte_materials()
     if character:
         rename_clips(raw)
     if asset.get("cristal_emissivo"):

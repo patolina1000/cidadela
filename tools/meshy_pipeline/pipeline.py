@@ -251,6 +251,8 @@ def fetch(url: str, path: Path) -> None:
 
 def download(meshy: Meshy, asset: dict, results: dict) -> None:
     raw = MODELS_DIR / asset["nome"] / "bruto"
+    raw.mkdir(parents=True, exist_ok=True)
+    (raw / ".gdignore").touch()  # o Godot importa só o GLB padronizado, não os brutos
     fetch(results["modelo"]["model_urls"]["glb"], raw / "modelo.glb")
     if not is_character(asset):
         return

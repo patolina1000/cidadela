@@ -494,3 +494,28 @@ onde errou, correções manuais e quanto tempo levou.
 - **Tempo:** 22:24–22:53 de relógio (plano, documentação da Meshy, recorte, geração e padronização).
 - **Pendente:** resto do lote 1 (aldeão, goblin, 6 construções, 3 recursos: cerca de 199 créditos) e a folha
   `assets/previews/lote1.png`, esperando aprovação da protagonista.
+
+---
+
+## 2026-09-25 — Arte: protagonista dentro do jogo (troca visual do Castelão)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** "consegue colocar dentro do game? para eu ver visualmente." Isso abre uma exceção à regra de
+  não mexer no código do jogo.
+- **O que foi feito:**
+  - `src/View/CastellanVisual.cs`: se `assets/modelos/protagonista/protagonista.glb` existe, o Castelão é
+    desenhado com o modelo (girado 180°, porque a frente de modelo é +Z e o Castelão olha para −Z) e toca
+    `idle` parado, `walk` andando e `work` coletando, com transição de 0,15 s e os três em laço. Sem o modelo,
+    continua a cápsula. A simulação não foi tocada.
+  - Rodado pelo binário do Godot desta worktree (`--import` e `--write-movie`), sem o MCP/editor do outro
+    agente. `dotnet build`: 0 erros, 0 avisos.
+- **O que deu errado:**
+  - No jogo ela apareceu quase preta. A Meshy não informa metalicidade, e no glTF a ausência vale 1 (metal).
+    No Blender o fundo branco refletia e escondia o problema. `normalize.py` agora deixa todos os materiais
+    foscos: metálico 0, rugosidade 0,8, reflexo neutro (vinha com fator 2), e continua sem emissão fora do
+    `Cristal`.
+  - O Godot importava também os GLB brutos: o pipeline agora cria `.gdignore` em `bruto/`.
+- **Atenção para o merge:** esta branch mexe em `src/View/CastellanVisual.cs`, que é do agente do jogo.
+  Os `.uid` que o Godot gerou em `src/Simulation/` ficaram fora do commit.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:55–23:05 de relógio.
