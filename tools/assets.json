@@ -1,0 +1,42 @@
+{
+  "_comentario": "Lista de assets do pipeline Meshy (tools/meshy_pipeline). [OBJETO] no estilo é trocado pelo campo 'objeto' de cada asset (GDD, seção 17). Alturas em metros na escala do jogo: 1 célula = 1 m, construções cabem em 1x1 (opção A, 25/09/2026). Animações são action_id da biblioteca da Meshy.",
+  "estilo": "low-poly stylized 3D game asset, [OBJETO], medieval dark whimsical style, crooked exaggerated shapes, spiral details, hand-painted texture, muted earthy palette with pumpkin orange accents, readable from top-down view, clean silhouette, no text, plain background",
+  "limite_creditos": 450,
+  "assets": [
+    {
+      "nome": "protagonista",
+      "tipo": "personagem",
+      "fonte": "multi_imagem",
+      "imagens": ["assets/conceitos/protagonista_frente.png", "assets/conceitos/protagonista_costas.png"],
+      "altura_m": 0.8,
+      "polycount": 3000,
+      "animacoes": { "idle": 0, "walk": 30, "attack": 97, "work": 237 },
+      "cristal_emissivo": true
+    },
+    {
+      "nome": "aldeao",
+      "tipo": "personagem",
+      "objeto": "medieval villager peasant with big head (1:3 proportion), big round eyes, pale skin, simple patched bone-white tunic and brown trousers, T-pose",
+      "altura_m": 0.8,
+      "polycount": 3000,
+      "animacoes": { "idle": 0, "walk": 30, "attack": 97, "work": 237 }
+    },
+    {
+      "nome": "goblin",
+      "tipo": "personagem",
+      "objeto": "small goblin raider with huge eyes and crooked teeth, sickly green skin, ragged loincloth, comical not gross, T-pose",
+      "altura_m": 0.7,
+      "polycount": 3000,
+      "animacoes": { "idle": 0, "walk": 119, "attack": 4, "work": 237 }
+    },
+    { "nome": "serraria", "tipo": "construcao", "objeto": "small sawmill with a big circular saw blade cutting a log under a crooked pointed roof, compact square base", "altura_m": 1.2, "polycount": 4000 },
+    { "nome": "fundicao", "tipo": "construcao", "objeto": "small stone smelting furnace with glowing orange mouth and a spiral chimney, compact square base", "altura_m": 1.4, "polycount": 4000 },
+    { "nome": "forja", "tipo": "construcao", "objeto": "blacksmith forge with bellows, anvil and glowing coals under a crooked little roof, compact square base", "altura_m": 1.2, "polycount": 4000 },
+    { "nome": "cabana_trabalho", "tipo": "construcao", "objeto": "small crooked worker hut with a tilted pointed roof and a tool rack with axe and pickaxe by the door, compact square base", "altura_m": 1.3, "polycount": 4000 },
+    { "nome": "bau", "tipo": "construcao", "objeto": "wooden storage chest with crooked iron bands and a big lock", "altura_m": 0.6, "polycount": 2000 },
+    { "nome": "torre_arqueiros", "tipo": "construcao", "objeto": "tall crooked wooden archer watchtower with a pointed roof and a small lookout platform, compact square base", "altura_m": 2.5, "polycount": 5000 },
+    { "nome": "arvore", "tipo": "recurso", "objeto": "twisted crooked tree with a spiral trunk and a round muted green canopy", "altura_m": 1.8, "polycount": 2000 },
+    { "nome": "rocha", "tipo": "recurso", "objeto": "cluster of chunky grey boulders", "altura_m": 0.7, "polycount": 1500 },
+    { "nome": "veio_ferro", "tipo": "recurso", "objeto": "rock outcrop with rusty orange-red iron ore veins and chunks", "altura_m": 0.7, "polycount": 1500 }
+  ]
+}

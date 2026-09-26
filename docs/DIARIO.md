@@ -412,3 +412,85 @@ onde errou, correções manuais e quanto tempo levou.
     estava só na ligação com a entrada. Corrigido e verificado no jogo.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 22:08–22:14 de relógio.
+
+---
+
+## 2026-09-25 — Arte: pipeline Meshy + protagonista (conceito → modelo com rig e animações)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte` (só `assets/` e `tools/`,
+  sem Godot). Blender 5.1.1 em modo headless, uv 0.12, API da Meshy (documentação lida em docs.meshy.ai:
+  llms-full.txt e openapi.yaml).
+- **Pedido:**
+  1. Pipeline em Python/uv (`tools/meshy_pipeline/`) que lê `tools/assets.json` e, por asset, gera em
+     low-poly, texturiza, faz rig e animações (personagens) e baixa GLB; padronizar no Blender; folha de prévia.
+  2. No meio do plano, o humano trocou o protagonista: sai o Castelão robusto, entra a personagem do conceito
+     `assets/conceitos/protagonista.jpg`. Recortar frente e costas com Pillow, mostrar antes de gastar,
+     gerar com Multi-Image to 3D em T-pose, rig + idle/walk/attack/work, cristal do peito como material
+     emissivo separado.
+  3. Decisões do humano: espelhar a mão que falta, apagar o cristal das costas, escala do jogo (opção A:
+     aldeão e protagonista 0,8 m, construções 0,9 × 0,9 m de base, 1 célula = 1 m) e gerar só a
+     protagonista antes do resto do lote.
+- **O que foi feito:**
+  - `.env` no `.gitignore` antes de tudo; a chave nunca foi impressa. Também ignorados: `.venv`, `state.json`
+    e `assets/modelos/*/bruto/` (arquivos brutos da Meshy; lá eles expiram em 3 dias).
+  - `tools/meshy_pipeline/crop_concept.py`: máscara por cor (a personagem é fria, o pergaminho é quente),
+    maior região conectada por vista (some com cabeças isoladas, textos, setas e ícones), sem o brilho do
+    cristal no papel. Correções no conceito: mão direita espelhada (com a faixa do pulso) colada no braço
+    esquerdo nas duas vistas; cristal das costas coberto com o cabelo ao lado.
+  - `tools/meshy_pipeline/pipeline.py`: saldo e estimativa sem gastar (padrão), `--run` para gerar, estado
+    retomável, no máximo uma nova tentativa por etapa, trava de 450 créditos no código.
+  - `tools/blender/normalize.py`: escala do jogo num nó raiz com o nome do asset (as animações não são
+    tocadas), pivô no centro da base, frente em +Z do glTF, clipes renomeados, texturas em 512 px, material
+    `Cristal` separado. `tools/blender/render_views.py` + `compare_sheet.py`: folha de comparação.
+  - Resultado: `assets/modelos/protagonista/protagonista.glb` (984 KB): 2.974 faces, 1 malha com esqueleto,
+    clipes `idle`, `walk`, `attack`, `work`, materiais `Material_1` (corpo) e `Cristal` (4 faces, textura de
+    emissão só com os pixels do cristal, `emissiveStrength` 3). Tamanho em T-pose: 0,75 × 0,22 × 0,80 m.
+    Prévia: `assets/previews/protagonista_comparacao.png`.
+- **Chamadas e prompts usados:**
+  - Multi-Image to 3D, sem prompt de texto (a textura vem das imagens): `image_urls` = frente, costas;
+    `ai_model: latest` (Meshy 7.1), `pose_mode: t-pose`, `should_remesh: true`, `topology: triangle`,
+    `target_polycount: 3000`, `image_enhancement: false` (para não reinterpretar o conceito),
+    `remove_lighting: true`, textura 2k.
+  - Rig: `input_task_id` do modelo, `height_meters: 1.4`. Animações num só GLB com `action_ids`
+    [0 Idle, 30 Casual Walk, 97 Left Slash, 237 Charged Axe Chop].
+  - Prompt-modelo da seção 17 guardado em `tools/assets.json` para o resto do lote (ainda não usado).
+- **Créditos:** 47 (30 modelo + 5 rig + 12 animações), exatamente a estimativa. Saldo: 3.100 → 3.053.
+- **Comparação conceito × modelo:**
+  - ✅ Corpo pequeno e frágil: magra, membros finos, cabeça um pouco grande.
+  - ✅ Pele azul-pálida.
+  - ✅ Cabelo longo e liso azul-acinzentado, até a cintura nas costas; em cima fica mais "capacete" que no desenho.
+  - ✅ Olhos grandes e vazios (brancos, sem pupila); a expressão triste sobreviveu.
+  - ✅ Cristal azul no peito, no lugar certo; à noite só ele brilha. Em low-poly ele vira pintura sobre
+    4 faces, não uma pedra em relevo.
+  - ✅ Túnica e calça rasgadas cinza-azuladas, com a faixa na cintura. Os rasgos da barra ficaram mais
+    simples; há um triângulo claro na frente da túnica (artefato da textura).
+  - ✅ Faixas nos pulsos (na textura, visíveis de perto).
+  - ✅ Pés descalços.
+  - Diferenças: a pose três-quartos do conceito virou uma T-pose simétrica e mais ereta (sem a postura curvada).
+    Não há contorno escuro, que vai ser trabalho do shader toon do jogo.
+  - Animações: o walk ficou limpo e no lugar. O idle 0 é um balanço cansado que se curva bastante: combina
+    com "frágil", mas é exagerado. Trocar custa 3 créditos (ex.: 11 "Idle 1" ou 12 "Idle 2"). O attack é um
+    golpe com o braço e o work um golpe de machado agachado; ela não segura ferramenta.
+- **O que deu errado:**
+  - A Meshy mudou desde o GDD: `model_type: lowpoly` está obsoleto (agora é Smart Topology, `meshy-t2`), e o
+    Multi-Image to 3D nem tem Smart Topology. Nele, low-poly é `should_remesh` + `target_polycount`.
+  - O conceito é `.jpg`, não `.png`. Ele tinha dois defeitos que a Meshy copiaria: nas duas vistas falta a mão
+    esquerda (na frente o braço termina num ícone), e o cristal aparece também nas costas. Corrigidos no recorte,
+    com aprovação.
+  - Recorte: a primeira máscara pegou o brilho do cristal no papel e perdeu o antebraço claro. O cabelo que
+    cobre o cristal das costas saiu errado duas vezes: copiado de cima deixou uma mancha escura, e de baixo
+    trouxe a ponta de uma mecha. Pegando do lado ficou natural.
+  - Blender: a primeira exportação saiu minúscula e sem cristal. Culpei uma "Icosphere solta da Meshy", mas
+    era o formato de osso que o **importador glTF do Blender** cria; resolvido com `disable_bone_shape=True`.
+    O `bound_box` ignora a deformação do esqueleto (agora uso os vértices avaliados).
+  - Cristal: amostrar só os vértices das faces achou 1 face (as faces são grandes e o cristal é pequeno).
+    Agora amostro o interior de cada triângulo no UV.
+  - A Meshy liga a textura de cor na emissão do material: o corpo inteiro brilharia à noite. A padronização
+    agora desliga a emissão de todos os materiais importados; só o `Cristal` emite.
+- **Para o agente do jogo:** a frente do modelo é +Z (`MODEL_FRONT` do Godot); os provisórios atuais olham
+  para −Z. A escala está no nó raiz `protagonista` (0,57), não aplicada na malha. O brilho noturno sai de
+  `Cristal` → `emission_energy_multiplier`.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:24–22:53 de relógio (plano, documentação da Meshy, recorte, geração e padronização).
+- **Pendente:** resto do lote 1 (aldeão, goblin, 6 construções, 3 recursos: cerca de 199 créditos) e a folha
+  `assets/previews/lote1.png`, esperando aprovação da protagonista.

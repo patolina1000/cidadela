@@ -5,3 +5,12 @@
 # .NET
 bin/
 obj/
+
+# Segredos
+.env
+
+# Pipeline de arte: ambiente, estado e arquivos brutos da Meshy (expiram em 3 dias lá)
+tools/meshy_pipeline/.venv/
+tools/meshy_pipeline/state.json
+assets/modelos/*/bruto/
+__pycache__/
