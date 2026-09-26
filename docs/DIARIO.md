@@ -993,3 +993,36 @@ onde errou, correções manuais e quanto tempo levou.
   `ground_brightness` do shader ou pela textura, se o humano quiser.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados.
 - **Tempo:** 05:45–06:00 de relógio.
+
+---
+
+## 2026-09-26 — Grama low-poly com vento
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** tufos low-poly por código espalhados com MultiMesh, cores da paleta (grama morta, musgo
+  acinzentado, alguns em líquen roxo, pontas mais claras), densidade por terreno, vento por shader com
+  variação, grama some sob construções, baixa o bastante para não esconder a protagonista nem itens; conferir
+  desempenho com o mapa cheio e mostrar print.
+- **O que foi feito:**
+  - `grassDensity` por terreno em `data/terrain.json` (grama 1; terra 0,15; pedra, lama e areia 0), lido e
+    validado (0 a 1) em `GameData`.
+  - `src/View/GrassField.cs`: um tufo de 4 folhas curvas (12 triângulos) gerado por código; um
+    `MultiMeshInstance3D` por pedaço de 8×8 células, sem sombra. Até 9 tufos por célula, sorteio com semente
+    por célula (o tufo volta igual), densidade interpolada entre células vizinhas para a borda não ficar
+    quadrada. Cores 46% grama morta, 46% musgo, 8% líquen roxo, ±10% de brilho.
+  - `src/View/Grass.gdshader`: balanço de rajada + tremor, fase pela posição e por um valor sorteado por tufo;
+    a ponta mexe mais que a base. Pontas 1,6× mais claras.
+  - Construção, remoção e recurso esgotado marcam o pedaço como sujo e ele é refeito no quadro seguinte.
+  - Contagem de tufos no rótulo de depuração. `docs/.gdignore` para o Godot não importar os prints.
+- **Desempenho (3024×1890):** sem grama 63–67 FPS; mapa de teste com 6.415 tufos 62–66 FPS; mapa 96×96 todo
+  de grama (82.944 tufos, temporário, apagado) 59–61 FPS estáveis. A queda antiga de ~120 FPS vem do chão v2,
+  névoa e brilho, não da grama.
+- **Prints:** `docs/prints/grama_visao.png`, `docs/prints/grama_perto.png`.
+- **Problemas:** cores lavadas (cor por instância precisa de `SrgbToLinear`); tufos pareciam estrelas vistos de
+  cima (folhas mais em pé e finas); grama escura demais (clareei o shader); alta demais perto da protagonista
+  (altura baixada para 0,05–0,1).
+- **Fora do escopo por enquanto:** trilhas, pisos construídos e terreno de musgo ainda não existem; cada um só
+  precisa do seu `grassDensity` no JSON.
+- **GDD:** nota da grama na seção 17. A "Paleta do chão" da sessão de arte só existia no arquivo local; levei
+  para o documento vivo também.
+- `dotnet build`: 0 erros. `dotnet test`: 80 aprovados.

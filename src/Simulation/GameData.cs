@@ -141,10 +141,14 @@ public sealed class GameData
 
         var terrains = new List<TerrainType>();
         if (terrainJson is null)
-            terrains.Add(new TerrainType("grass", "Grama", "", 0));
+            terrains.Add(new TerrainType("grass", "Grama", "", 0, 1f));
         else
             foreach ((string kind, TerrainData t) in Ordered<TerrainData>(terrainJson, "terrain.json"))
-                terrains.Add(new TerrainType(kind, t.Name, t.Texture, terrains.Count));
+            {
+                if (t.GrassDensity is < 0f or > 1f)
+                    throw new FormatException($"terrain.json: grassDensity de \"{kind}\" precisa estar entre 0 e 1.");
+                terrains.Add(new TerrainType(kind, t.Name, t.Texture, terrains.Count, t.GrassDensity));
+            }
         if (terrains.Count is 0 or > byte.MaxValue + 1)
             throw new FormatException("terrain.json precisa de 1 a 256 terrenos.");
 
@@ -215,6 +219,7 @@ public sealed class GameData
     {
         public string Name { get; set; } = "";
         public string Texture { get; set; } = "";
+        public float GrassDensity { get; set; }
     }
 
     private sealed class VillagerData

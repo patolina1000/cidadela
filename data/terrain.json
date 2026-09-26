@@ -2,9 +2,11 @@
   // Terrenos do chão natural (GDD, seção 17, "Piso e chão"). A ordem importa: é o número guardado em
   // cada célula e a camada da textura no chão. O primeiro é o padrão de mapas sem "terrain".
   // texture: textura repetível de 512 px (gerada em tools/meshy_pipeline/textures.py).
-  "grass": { "name": "Grama escura", "texture": "res://assets/texturas/chao/grama_escura.png" },
-  "dirt":  { "name": "Terra",        "texture": "res://assets/texturas/chao/terra.png" },
-  "stone": { "name": "Pedra",        "texture": "res://assets/texturas/chao/pedra.png" },
-  "mud":   { "name": "Lama",         "texture": "res://assets/texturas/chao/lama.png" },
-  "sand":  { "name": "Areia de rio", "texture": "res://assets/texturas/chao/areia_rio.png" }
+  // grassDensity: quanto tufo de grama nasce nesse chão, de 0 (nenhum) a 1 (cheio). Pedra, lama, trilhas e
+  //   pisos construídos ficam em 0; musgo, quando existir como terreno, vai perto de 1.
+  "grass": { "name": "Grama escura", "texture": "res://assets/texturas/chao/grama_escura.png", "grassDensity": 1.0 },
+  "dirt":  { "name": "Terra",        "texture": "res://assets/texturas/chao/terra.png",        "grassDensity": 0.15 },
+  "stone": { "name": "Pedra",        "texture": "res://assets/texturas/chao/pedra.png",        "grassDensity": 0.0 },
+  "mud":   { "name": "Lama",         "texture": "res://assets/texturas/chao/lama.png",         "grassDensity": 0.0 },
+  "sand":  { "name": "Areia de rio", "texture": "res://assets/texturas/chao/areia_rio.png",    "grassDensity": 0.0 }
 }

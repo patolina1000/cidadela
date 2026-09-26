@@ -16,6 +16,11 @@ public static class Palette
     public static readonly Color Bone = new("EDE6D6");
     public static readonly Color Sickly = new("9BC53D");
 
+    // Grama do crepúsculo (GDD, seção 17, paleta do dia revisada em 26/09/2026).
+    public static readonly Color DeadGrass = new("5A5847");
+    public static readonly Color GrayMoss = new("4E5544");
+    public static readonly Color PurpleLichen = new("6B4F7C");
+
     /// <summary>Fora da paleta do GDD: só para avisos de interface (ex.: fora do alcance).</summary>
     public static readonly Color Warning = new("C8402F");
 
