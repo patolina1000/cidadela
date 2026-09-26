@@ -14,6 +14,9 @@ public partial class WorldView : Node3D
 
     private SimWorld _world = null!;
     private readonly Dictionary<Villager, Node3D> _villagerNodes = new();
+    private readonly Dictionary<ResourceNode, Node3D> _resourceNodes = new();
+    private MeshInstance3D _hover = null!;
+    private StandardMaterial3D _hoverMaterial = null!;
     private Node3D _castellanNode = null!;
 
     /// <summary>Nó desenhado do Castelão, para a câmera seguir.</summary>
@@ -27,8 +30,8 @@ public partial class WorldView : Node3D
         foreach (ResourceNode resource in world.Resources)
         {
             var mesh = new BoxMesh { Size = new Vector3(0.8f, 0.8f, 0.8f) };
-            AddShape($"Resource_{resource.Kind}_{resource.Id}", mesh, Palette.ForResource(resource.Kind),
-                CellCenter(resource.Cell, 0.4f));
+            _resourceNodes[resource] = AddShape($"Resource_{resource.Kind}_{resource.Id}", mesh,
+                Palette.ForResource(resource.Kind), CellCenter(resource.Cell, 0.4f));
         }
 
         foreach (Machine machine in world.Machines)
@@ -44,13 +47,17 @@ public partial class WorldView : Node3D
         }
 
         _castellanNode = BuildCastellan();
+        BuildHover();
 
         Render(0.0);
     }
 
-    /// <summary>Atualiza o que se move, interpolando entre o tick anterior e o atual.</summary>
+    /// <summary>Atualiza o que muda, interpolando o que se move entre o tick anterior e o atual.</summary>
     public void Render(double alpha)
     {
+        foreach ((ResourceNode resource, Node3D node) in _resourceNodes)
+            node.Visible = !resource.IsDepleted;
+
         foreach ((Villager villager, Node3D node) in _villagerNodes)
         {
             System.Numerics.Vector2 p = System.Numerics.Vector2.Lerp(
@@ -65,6 +72,42 @@ public partial class WorldView : Node3D
         // Basis.LookingAt olha para -Z; o "nariz" do Castelão fica em -Z local.
         var facing = new Vector3(castellan.Facing.X, 0f, castellan.Facing.Y);
         _castellanNode.Basis = Basis.LookingAt(facing, Vector3.Up);
+    }
+
+    /// <summary>
+    /// Quadrado na célula sob o cursor: claro no alcance (mais forte sobre um recurso),
+    /// vermelho fora do alcance; null esconde.
+    /// </summary>
+    public void ShowHover(GridPos? cell)
+    {
+        if (cell is not GridPos c || !_world.Grid.InBounds(c))
+        {
+            _hover.Visible = false;
+            return;
+        }
+
+        _hover.Visible = true;
+        _hover.Position = CellCenter(c, 0.02f);
+        if (!_world.Castellan.CanReach(c))
+            _hoverMaterial.AlbedoColor = Palette.Warning with { A = 0.45f };
+        else if (_world.ResourceAt(c) is not null)
+            _hoverMaterial.AlbedoColor = Palette.Bone with { A = 0.55f };
+        else
+            _hoverMaterial.AlbedoColor = Palette.Bone with { A = 0.25f };
+    }
+
+    private void BuildHover()
+    {
+        _hoverMaterial = new StandardMaterial3D
+        {
+            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+            ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+            AlbedoColor = Palette.Bone with { A = 0.25f },
+        };
+        var mesh = new PlaneMesh { Size = new Vector2(0.96f, 0.96f), Material = _hoverMaterial };
+        _hover = new MeshInstance3D { Name = "HoverCell", Mesh = mesh, Visible = false };
+        _hover.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
+        AddChild(_hover);
     }
 
     /// <summary>Cápsula maior e escura, com um "nariz" que mostra para onde está virado.</summary>

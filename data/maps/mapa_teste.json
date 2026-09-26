@@ -3,8 +3,8 @@
   // Coordenadas em células; x cresce para leste, z para sul.
   "width": 32,
   "height": 32,
-  // Personagem principal (GDD, seção 20). speed em células por segundo.
-  "castellan": { "x": 15, "z": 16, "speed": 6.0 },
+  // Onde o Castelão nasce. Os atributos dele ficam em data/castellan.json.
+  "castellan": { "x": 15, "z": 16 },
   "resources": [
     { "kind": "wood",  "x": 4,  "z": 5 },
     { "kind": "wood",  "x": 5,  "z": 5 },

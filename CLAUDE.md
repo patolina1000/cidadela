@@ -19,7 +19,7 @@ se algo não está no GDD nem no pedido, pergunte ou escolha o mais simples e di
 ## Regra nº 1: simulação separada dos gráficos
 
 - A simulação (mundo, itens, receitas, esteiras, aldeões, inimigos) roda em **ticks fixos de 20 por segundo** (50 ms), independente do FPS.
-- O código de simulação fica em `src/Simulation/` e é **C# puro: nunca `using Godot`**. Isso o mantém testável sem abrir o jogo e rápido para milhares de itens.
+- O código de simulação fica em `src/Simulation/` e é **C# puro: nunca `using Godot`**. Isso o mantém testável sem abrir o jogo e rápido para milhares de itens. O projeto `tests/` só compila essa pasta, então um `using Godot` ali quebra os testes.
 - Os nós do Godot (`src/View/`) **só leem** o estado da simulação e desenham. Eles podem interpolar entre ticks para suavizar o movimento, mas nunca alteram o estado diretamente.
 - A entrada do jogador que muda o mundo (construir, remover etc.) vira um comando entregue à simulação, que o aplica no próximo tick.
 
@@ -32,6 +32,7 @@ se algo não está no GDD nem no pedido, pergunte ou escolha o mais simples e di
 
 1. **Tarefas pequenas.** Uma tarefa = uma coisa bem descrita ("esteira que move itens entre dois pontos", não "sistema de automação"). Se o pedido for grande, proponha a divisão antes de começar.
 2. **Rode `dotnet build` depois de cada mudança em C#** e corrija todos os erros (e avisos novos) antes de seguir. O godot-ai não compila C# nem mostra erros de compilação.
+   Mudou algo em `src/Simulation/`? **Rode também `dotnet test`** e escreva ou ajuste os testes em `tests/`.
 3. Depois de compilar, rode o jogo pelo MCP e confira os logs; tire screenshot quando a mudança for visual.
 4. **Um commit por tarefa concluída**, com mensagem em português descrevendo o que mudou.
 5. **Registre cada tarefa em `docs/DIARIO.md`:** o que foi pedido, o que foi feito, o que deu errado, correções manuais e tempo gasto.
@@ -42,6 +43,7 @@ se algo não está no GDD nem no pedido, pergunte ou escolha o mais simples e di
 ```
 src/Simulation/   C# puro: estado e regras do jogo (sem Godot)
 src/View/         nós Godot que desenham o estado e leem a entrada
+tests/            testes xUnit da simulação (compilam só src/Simulation, sem Godot)
 scenes/           cenas .tscn
 data/             JSON de receitas, mapas, inimigos, balanceamento
 docs/             GDD, diário do experimento

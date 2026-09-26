@@ -1,0 +1,8 @@
+{
+  // Castelão (GDD, seção 20).
+  // speed: células por segundo. reach: alcance para coletar e construir, em células.
+  // radius: raio do corpo para colisão, em células.
+  "speed": 6.0,
+  "reach": 10.0,
+  "radius": 0.3
+}

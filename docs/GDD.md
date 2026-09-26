@@ -537,7 +537,7 @@ Troque \[OBJETO\] pelo item (ex.: "blacksmith forge with bellows", "villager arc
 | Agente de código | Claude Code e Codex (terminal) | Escreve e edita o C#, cenas e configs |
 | Ponte com o editor | [godot-ai](https://pypi.org/project/godot-ai) (MCP) | Dá à IA acesso ao editor aberto: cenas, nós, scripts; funciona com Claude Code, Codex, Cursor, Gemini CLI e outros |
 | Rodar e checar | [godot-test-mcp](https://pypi.org/project/godot-test-mcp/) ou [gda](https://github.com/aigengame/godot-agent/wiki) | Roda o jogo por N segundos e devolve PASSOU/FALHOU com os erros; o gda também tira screenshots do jogo rodando |
-| Testes automáticos | GdUnit4 (tem suporte a C#) | Testa a simulação da fábrica sem abrir o jogo |
+| Testes automáticos | xUnit com dotnet test (decidido em 25/09/2026: a simulação é C# puro, então não precisa do Godot; GdUnit4 fica para testar cenas) | Testa a simulação da fábrica sem abrir o jogo |
 | Versões | Git + GitHub | Toda mudança da IA vira um commit; dá para desfazer qualquer erro |
 | Assets 3D | Meshy / Tripo → GLB → Blender (scripts) → pasta do projeto | A IA de código escreve scripts Python do Blender para padronizar escala, pivô e polígonos |
 | Leitura de código | VS Code ou Rider | Para você revisar o que a IA escreveu |

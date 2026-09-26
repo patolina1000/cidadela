@@ -1,22 +1,26 @@
+using System.Linq;
 using Cidadela.Simulation;
 using Godot;
 
 namespace Cidadela.View;
 
 /// <summary>
-/// Liga a simulação à cena: carrega o mapa, transforma o WASD em comandos,
-/// avança o <see cref="SimClock"/> a cada frame, roda os ticks e pede para a
+/// Liga a simulação à cena: carrega os dados e o mapa, transforma a entrada do jogador
+/// em comandos, avança o <see cref="SimClock"/> a cada frame, roda os ticks e pede para a
 /// <see cref="WorldView"/> desenhar.
 /// </summary>
 public partial class GameRoot : Node3D
 {
     [Export(PropertyHint.File, "*.json")] public string MapPath = "res://data/maps/mapa_teste.json";
+    [Export(PropertyHint.File, "*.json")] public string ResourcesPath = "res://data/resources.json";
+    [Export(PropertyHint.File, "*.json")] public string CastellanPath = "res://data/castellan.json";
 
     private SimWorld _world = null!;
     private readonly SimClock _clock = new();
     private WorldView _view = null!;
     private CameraRig _camera = null!;
     private Label _debugLabel = null!;
+    private Label _inventoryLabel = null!;
 
     private System.Numerics.Vector2 _lastMoveSent;
     private long _ticksAtLastSample;
@@ -25,7 +29,10 @@ public partial class GameRoot : Node3D
 
     public override void _Ready()
     {
-        _world = MapLoader.Parse(FileAccess.GetFileAsString(MapPath));
+        GameData data = GameData.Parse(
+            FileAccess.GetFileAsString(ResourcesPath),
+            FileAccess.GetFileAsString(CastellanPath));
+        _world = MapLoader.Parse(FileAccess.GetFileAsString(MapPath), data);
 
         _view = GetNode<WorldView>("WorldView");
         _view.Build(_world);
@@ -35,6 +42,17 @@ public partial class GameRoot : Node3D
         _camera.SetBounds(new Rect2(0f, 0f, _world.Grid.Width, _world.Grid.Height));
 
         _debugLabel = GetNode<Label>("DebugHud/DebugLabel");
+        _inventoryLabel = GetNode<Label>("DebugHud/InventoryLabel");
+    }
+
+    public override void _UnhandledInput(InputEvent @event)
+    {
+        // Clique esquerdo: coletar o recurso da célula (a simulação confere alcance e se há recurso).
+        if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } click
+            && CellUnder(click.Position) is GridPos cell)
+        {
+            _world.Enqueue(new GatherCommand(cell));
+        }
     }
 
     public override void _Process(double delta)
@@ -46,7 +64,8 @@ public partial class GameRoot : Node3D
             _world.Tick();
 
         _view.Render(_clock.Alpha);
-        UpdateDebug(delta);
+        _view.ShowHover(_camera.Cursor is Vector2 cursor ? CellUnder(cursor) : null);
+        UpdateHud(delta);
     }
 
     /// <summary>
@@ -69,7 +88,13 @@ public partial class GameRoot : Node3D
         _lastMoveSent = direction;
     }
 
-    private void UpdateDebug(double delta)
+    /// <summary>Célula do chão sob uma posição da tela. A célula x ocupa [x, x+1] no mundo.</summary>
+    private GridPos? CellUnder(Vector2 screenPos) =>
+        _camera.GroundUnder(screenPos) is Vector3 p
+            ? new GridPos(Mathf.FloorToInt(p.X), Mathf.FloorToInt(p.Z))
+            : null;
+
+    private void UpdateHud(double delta)
     {
         _sampleTime += delta;
         if (_sampleTime >= 1.0)
@@ -78,9 +103,17 @@ public partial class GameRoot : Node3D
             _ticksAtLastSample = _world.TickCount;
             _sampleTime -= 1.0;
         }
-        System.Numerics.Vector2 p = _world.Castellan.Position;
+        Castellan castellan = _world.Castellan;
+        System.Numerics.Vector2 p = castellan.Position;
         _debugLabel.Text =
             $"Tick {_world.TickCount}  |  {_measuredTicksPerSecond} ticks/s (alvo {SimClock.TicksPerSecond})  |  " +
             $"{Engine.GetFramesPerSecond()} FPS  |  Castelão ({p.X:0.0}, {p.Y:0.0})";
+
+        string items = string.Join("   ", _world.Data.Resources.Values.Select(
+            r => $"{r.Name}: {castellan.Inventory.Count(r.Kind)}"));
+        string gathering = castellan.GatherTarget is ResourceNode node
+            ? $"   |   Coletando {node.Type.Name} {castellan.GatherProgress:P0} (restam {node.Remaining})"
+            : "";
+        _inventoryLabel.Text = items + gathering;
     }
 }

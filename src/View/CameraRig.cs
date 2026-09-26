@@ -61,6 +61,9 @@ public partial class CameraRig : Node3D
     /// <summary>Giro atual em radianos, para converter o WASD em direção no mundo.</summary>
     public float Yaw => _yaw;
 
+    /// <summary>Último cursor dentro do jogo, ou null se o mouse saiu da janela.</summary>
+    public Vector2? Cursor => _cursor;
+
     private Camera3D _camera = null!;
     private float _yaw;
     private float _targetYaw;
@@ -228,7 +231,7 @@ public partial class CameraRig : Node3D
     }
 
     /// <summary>Ponto do chão (y = 0) sob uma posição da tela, ou null se o raio não chega ao chão.</summary>
-    private Vector3? GroundUnder(Vector2 screenPos)
+    public Vector3? GroundUnder(Vector2 screenPos)
     {
         Vector3 origin = _camera.ProjectRayOrigin(screenPos);
         Vector3 dir = _camera.ProjectRayNormal(screenPos);

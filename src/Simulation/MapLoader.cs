@@ -11,24 +11,17 @@ namespace Cidadela.Simulation;
 /// </summary>
 public static class MapLoader
 {
-    private static readonly JsonSerializerOptions Options = new()
+    public static SimWorld Parse(string json, GameData gameData)
     {
-        PropertyNameCaseInsensitive = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        AllowTrailingCommas = true,
-    };
-
-    public static SimWorld Parse(string json)
-    {
-        MapData data = JsonSerializer.Deserialize<MapData>(json, Options)
+        MapData data = JsonSerializer.Deserialize<MapData>(json, GameData.JsonOptions)
             ?? throw new FormatException("Mapa vazio.");
 
-        var world = new SimWorld(new WorldGrid(data.Width, data.Height));
+        var world = new SimWorld(new WorldGrid(data.Width, data.Height), gameData);
 
         if (data.Castellan is null)
             throw new FormatException("Mapa sem o Castelão.");
         GridPos start = Checked(world, data.Castellan.X, data.Castellan.Z);
-        world.SetCastellan(new System.Numerics.Vector2(start.X, start.Z), data.Castellan.Speed);
+        world.SetCastellan(new System.Numerics.Vector2(start.X, start.Z));
 
         foreach (PlacedData r in data.Resources)
             world.AddResource(r.Kind, Checked(world, r.X, r.Z));
@@ -76,7 +69,6 @@ public static class MapLoader
     {
         public int X { get; set; }
         public int Z { get; set; }
-        public float Speed { get; set; } = 6f;
     }
 
     private sealed class VillagerData

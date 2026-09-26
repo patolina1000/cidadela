@@ -220,3 +220,31 @@ onde errou, correções manuais e quanto tempo levou.
     simulado. **Pendente:** confirmar no uso real que a borda espia só um pouco.
 - **Correções manuais:** nenhuma.
 - **Tempo:** cerca de 21:03–21:04 de relógio.
+
+---
+
+## 2026-09-25 — Marco 2: o Castelão trabalha
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** próximo marco. Plano aprovado: testes da simulação, colisão, célula sob o cursor com alcance,
+  coleta à mão com clique e inventário na tela.
+- **O que foi feito:**
+  - Testes: projeto xUnit em `tests/` (net10.0) que compila só `src/Simulation/`; ligado à solução, então
+    `dotnet build` e `dotnet test` na raiz cobrem tudo. O jogo exclui `tests/**` da compilação. 20 testes:
+    relógio, movimento, colisão, deslizar na parede, alcance, coleta, esgotar, JSON reais.
+  - Dados: `data/resources.json` (nome, segundos por item, quantidade por nó) e `data/castellan.json`
+    (velocidade, alcance 10, raio). O mapa guarda só onde o Castelão nasce.
+  - Simulação: colisão círculo × célula, um eixo por vez (desliza nas paredes); `GatherCommand`; coleta 1 item
+    por vez enquanto parado e no alcance; andar interrompe (como no Factorio); nó esgotado some e libera a célula;
+    inventário por tipo.
+  - Cena: destaque da célula sob o cursor (claro no alcance, mais forte sobre recurso, vermelho fora);
+    clique esquerdo coleta; recursos esgotados somem; inventário e progresso na tela.
+  - CLAUDE.md/AGENTS.md: `dotnet test` obrigatório ao mexer na simulação; GDD (seção 18): xUnit no lugar do GdUnit4.
+  - Verificado no jogo: andar até as árvores, clicar → "Coletando Madeira", 15 madeiras em ~15 s; andar parou a
+    coleta; o Castelão encostou nas árvores sem atravessar; destaque claro na árvore e vermelho longe.
+- **O que deu errado:**
+  - Nada quebrou. Os 20 testes passaram na primeira execução.
+  - Para clicar na árvore pelo MCP, foi preciso calcular à mão a projeção da câmera até o pixel da tela.
+  - Os aldeões ainda atravessam tudo (inclusive o Castelão); ficou fora do escopo.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:17–21:21 de relógio.

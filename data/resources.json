@@ -1,0 +1,8 @@
+{
+  // Recursos brutos do MVP (GDD, seções 4 e 10).
+  // gatherSeconds: tempo para o Castelão coletar 1 item à mão.
+  // amount: quantos itens cada nó tem antes de se esgotar.
+  "wood":  { "name": "Madeira", "gatherSeconds": 1.0, "amount": 30 },
+  "stone": { "name": "Pedra",   "gatherSeconds": 1.5, "amount": 30 },
+  "iron":  { "name": "Ferro",   "gatherSeconds": 2.0, "amount": 20 }
+}

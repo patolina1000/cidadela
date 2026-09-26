@@ -4,4 +4,8 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- Os testes têm projeto próprio; o jogo não compila essa pasta. -->
+    <Compile Remove="tests/**" />
+  </ItemGroup>
 </Project>
