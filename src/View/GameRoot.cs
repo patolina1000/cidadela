@@ -7,6 +7,7 @@ namespace Cidadela.View;
 /// Liga a simulação à cena: carrega os dados e o mapa, transforma a entrada do jogador
 /// em comandos, avança o <see cref="SimClock"/> a cada frame, roda os ticks e pede para a
 /// <see cref="WorldView"/> desenhar.
+/// WASD anda; Shift segurado corre.
 /// Mouse: esquerdo coleta, recolhe de um baú, constrói (com uma construção escolhida) ou põe o item da mão
 /// numa esteira ou baú (com um item segurado); segurar e arrastar repete célula a célula.
 /// Direito sem arrastar solta o que está escolhido ou desmonta. Teclado: WASD anda, 1–9 escolhem, R gira, Esc solta,
@@ -41,6 +42,7 @@ public partial class GameRoot : Node3D
     private GridPos? _lastBuildCell;
 
     private System.Numerics.Vector2 _lastMoveSent;
+    private bool _lastRunSent;
     private long _ticksAtLastSample;
     private double _sampleTime;
     private int _measuredTicksPerSecond;
@@ -239,8 +241,8 @@ public partial class GameRoot : Node3D
         GetViewport().GuiGetHoveredControl() is null ? _camera.Cursor : null;
 
     /// <summary>
-    /// WASD é relativo à câmera; a simulação quer direção no mundo.
-    /// Só manda comando quando a direção muda, para não encher a fila.
+    /// WASD é relativo à câmera; a simulação quer direção no mundo. Shift segurado corre.
+    /// Só manda comando quando a direção ou a corrida mudam, para não encher a fila.
     /// </summary>
     private void SendMoveInput()
     {
@@ -252,10 +254,12 @@ public partial class GameRoot : Node3D
         if (direction != System.Numerics.Vector2.Zero)
             _camera.ReturnToTarget();
 
-        if (direction == _lastMoveSent)
+        bool run = Input.IsActionPressed("run");
+        if (direction == _lastMoveSent && run == _lastRunSent)
             return;
-        _world.Enqueue(new MoveCommand(direction));
+        _world.Enqueue(new MoveCommand(direction, run));
         _lastMoveSent = direction;
+        _lastRunSent = run;
     }
 
     /// <summary>Célula do chão sob uma posição da tela. A célula x ocupa [x, x+1] no mundo.</summary>

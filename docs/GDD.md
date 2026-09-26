@@ -531,6 +531,24 @@ clean silhouette, no text, plain background
 
 Troque \[OBJETO\] pelo item (ex.: "blacksmith forge with bellows", "villager archer with big head"). Salvar os prompts que funcionarem no diário do projeto para manter o estilo consistente.
 
+### Piso e chão (decidido em 25/09/2026)
+
+**Chão natural:** plano onde se constrói; relevo só nas bordas. Cada célula tem um tipo de terreno (grama escura, terra, pedra, lama, areia de rio; minério aparece como mancha no chão). Um shader por pedaço do mapa (32×32 células) mistura as texturas pelo tipo de cada célula, com transições orgânicas por ruído. Grade visível só no modo construção. Trilhas de terra batida surgem onde se anda muito.
+
+**Pisos construídos:** trilha (Era I), tábuas (I), calçamento de pedra (II) e piso rúnico (IV, runas brilham à noite). Cada um aumenta a velocidade de quem anda sobre ele, como o concreto do Factorio.
+
+**Como os assets são feitos:**
+
+| Asset | Como a IA faz |
+| --- | --- |
+| Texturas do chão natural | IA de imagem gera textura vista de cima, pintada à mão; script em Python garante que ela se repete sem emenda e reduz para 512 px |
+| Transições entre terrenos | Nenhum asset: o shader mistura com ruído |
+| Pisos construídos | Placa de 1×1 célula gerada por script no Blender (não no Meshy, que faz geometria bagunçada para peças planas) + textura de IA no topo |
+| Brilho do piso rúnico | Máscara de emissão extraída por script das partes claras da textura |
+| Manchas de minério | Tipo de terreno + pedrinhas 3D do Meshy espalhadas por cima |
+
+Toda textura passa por um teste: uma prévia repetida em 4×4 para achar emendas e repetição visível.
+
 ## 18. Integração das IAs com o Godot
 
 **Plano: os agentes de código (Claude Code e Codex) rodam no terminal dentro da pasta do projeto e se conectam ao editor Godot por um servidor MCP.** Com isso a IA enxerga as cenas reais, roda o jogo, lê os erros e corrige sozinha. Os assets 3D entram como arquivos GLB numa pasta que o Godot importa automaticamente.
@@ -648,7 +666,7 @@ No nosso jogo isso encaixa nos pilares: o Castelão é o primeiro trabalhador da
 
 ### Regras do Castelão
 
-- **Movimento:** WASD relativo à câmera, que gira em passos de 90° pelo botão direito (seção 12). A velocidade inicial é um número de balanceamento em JSON (Factorio usa 8,9 células/s como referência).
+- **Movimento:** WASD relativo à câmera, que gira em passos de 90° pelo botão direito (seção 12). Segurar Shift corre. Andar e correr têm velocidades próprias em JSON, na passada natural de cada animação para os pés não deslizarem (andar 0,8 e correr 2,5 células/s hoje; Factorio usa 8,9 células/s como referência).
 - **Câmera:** segue o Castelão e espia na direção do cursor; o botão do meio arrasta o mundo para construir longe, e andar traz a câmera de volta (seção 12).
 - **Alcance:** constrói e abre máquinas só num raio em volta dele (ponto de partida: 10 células, como Factorio). Para coletar, precisa estar encostado no recurso, de lado ou na diagonal: é trabalho físico, feito de perto.
 - **Trabalho manual:** coleta madeira e pedra e fabrica itens simples à mão, devagar. Isso ensina as receitas e deixa claro por que automatizar.

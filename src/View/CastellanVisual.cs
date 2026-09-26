@@ -5,7 +5,7 @@ namespace Cidadela.View;
 
 /// <summary>
 /// Desenho do Castelão: o modelo da protagonista (assets/modelos/protagonista) com os clipes
-/// idle, walk e work; sem o modelo, cápsula escura com "nariz" laranja. Anima só a partir do
+/// idle, walk, run e work; sem o modelo, cápsula escura com "nariz" laranja. Anima só a partir do
 /// estado da simulação: vira suave para a direção e, na cápsula, quica ao andar e dá golpes
 /// sincronizados com a coleta (o golpe acerta quando o item cai).
 /// </summary>
@@ -29,6 +29,7 @@ public partial class CastellanVisual : Node3D
     private bool _hasLast;
     private AnimationPlayer? _animations;
     private float _walkStride; // m/s em que o walk não desliza (medido no Blender); 0 = desconhecido
+    private float _runStride;  // idem para o run
 
     public override void _Ready()
     {
@@ -45,14 +46,15 @@ public partial class CastellanVisual : Node3D
             _animations = model.FindChild("AnimationPlayer", recursive: true, owned: false) as AnimationPlayer;
             if (_animations is not null)
             {
-                foreach (string clip in new[] { "idle", "walk", "work" })
+                foreach (string clip in new[] { "idle", "walk", "run", "work" })
                 {
                     if (_animations.HasAnimation(clip))
                         _animations.GetAnimation(clip).LoopMode = Animation.LoopModeEnum.Linear;
                 }
                 _animations.Play("idle");
             }
-            _walkStride = ReadWalkStride();
+            _walkStride = ReadStride("passada_walk_m_s");
+            _runStride = ReadStride("passada_run_m_s");
             return;
         }
 
@@ -91,15 +93,18 @@ public partial class CastellanVisual : Node3D
 
         if (_animations is not null)
         {
-            string clip = castellan.GatherTarget is not null ? "work" : walked > 0.0001f ? "walk" : "idle";
+            bool moving = walked > 0.0001f;
+            bool running = moving && castellan.IsRunning && _animations.HasAnimation("run");
+            string clip = castellan.GatherTarget is not null ? "work" : running ? "run" : moving ? "walk" : "idle";
             if (_animations.CurrentAnimation != clip && _animations.HasAnimation(clip))
                 _animations.Play(clip, ClipBlendSeconds);
 
-            // O walk toca no ritmo da velocidade real no chão, para os pés não deslizarem
+            // Walk e run tocam no ritmo da velocidade real no chão, para os pés não deslizarem
             // (inclusive ao frear numa parede).
+            float stride = clip == "run" ? _runStride : clip == "walk" ? _walkStride : 0f;
             float targetScale = 1f;
-            if (clip == "walk" && _walkStride > 0f && dt > 0f)
-                targetScale = walked / dt / _walkStride;
+            if (stride > 0f && dt > 0f)
+                targetScale = walked / dt / stride;
             _animations.SpeedScale = Mathf.Lerp(_animations.SpeedScale, targetScale, 1f - Mathf.Exp(-StrideSmoothing * dt));
             return;
         }
@@ -116,12 +121,13 @@ public partial class CastellanVisual : Node3D
         _pivot.Rotation = new Vector3(Mathf.DegToRad(_swing), 0f, 0f);
     }
 
-    private static float ReadWalkStride()
+    /// <summary>Passada (m/s) de um clipe, medida no Blender e gravada no JSON do modelo; 0 se não houver.</summary>
+    private static float ReadStride(string key)
     {
         if (!FileAccess.FileExists(ModelInfoPath))
             return 0f;
         var info = Json.ParseString(FileAccess.GetFileAsString(ModelInfoPath)).AsGodotDictionary();
-        return info.TryGetValue("passada_walk_m_s", out Variant stride) ? stride.AsSingle() : 0f;
+        return info.TryGetValue(key, out Variant stride) ? stride.AsSingle() : 0f;
     }
 
     /// <summary>
