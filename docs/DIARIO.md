@@ -709,3 +709,35 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** aspas duplas dentro do comentário do `assets.json` quebraram o JSON; troquei o texto.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 00:45–00:55 de relógio.
+
+---
+
+## 2026-09-26 — Arte: sai a caminhada; corrida moderada (jog) e corrida muito rápida (sprint)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** a caminhada não tem motivo no jogo (é lenta). Ficam dois estados: correndo (moderado) e
+  correndo muito rápido (gasta estamina; o agente do jogo vai fazer a estamina). A corrida atual vira a
+  muito rápida; criar uma corrida moderada.
+- **Escolha da corrida moderada:** o catálogo não tem "jog". Pelas prévias públicas (gratuitas), Run 2 (14)
+  e Run 3 (15) são mais eretas, com braços baixos e passadas curtas. Gerei as duas sobre o rig existente
+  (**6 créditos**) e medi:
+  - Run 2: pés cruzam (−0,020 da altura), braço 23°, ciclo de 0,71 s;
+  - **Run 3 (escolhida):** pés na linha, sem cruzar (−0,003), braço 29° → 19° depois de fechar 18°, ciclo de
+    0,79 s.
+- **O que foi feito:**
+  - Pipeline: etapa `animacoes_extra` (animações pedidas depois sobre o mesmo rig, sem refazer as primeiras).
+    O mapeamento dos clipes passou a usar o `key` da biblioteca (`Run_02`), que é o nome da ação no GLB; o
+    `name` ("Run 2") não batia.
+  - `normalize.py`: `import_extra_clips`, `descartar_clipes` (sai o `walk`) e passadas medidas para `jog` e
+    `sprint`.
+  - `protagonista.glb`: `idle`, `jog`, `sprint`, `attack`, `work`. `protagonista.json`:
+    `passada_jog_m_s` 1,593 e `passada_sprint_m_s` 2,421. (A passada do sprint mediu 2,421, contra 2,525
+    antes; vale a medição atual.)
+  - Para o jogo continuar funcionando, a troca mínima: `CastellanVisual` usa `jog` no movimento normal e
+    `sprint` com Shift; `data/castellan.json`: `speed` 1.6 e `runSpeed` 2.4 (as passadas).
+  - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 78 aprovados.
+- **Créditos:** 6 (total do lote: 53; saldo: 3.047).
+- **Para o agente do jogo:** a estamina e o nome dos estados ficam com ele. Os clipes são `jog` e `sprint`, e
+  as passadas estão em `protagonista.json`.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 01:00–01:25 de relógio.

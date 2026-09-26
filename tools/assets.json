@@ -1,5 +1,5 @@
 {
-  "_comentario": "Lista de assets do pipeline Meshy (tools/meshy_pipeline). [OBJETO] no estilo é trocado pelo campo 'objeto' de cada asset (GDD, seção 17). Alturas em metros na escala do jogo: 1 célula = 1 m, construções cabem em 1x1 (opção A, 25/09/2026). Animações são action_id da biblioteca da Meshy. clipes_do_rig: clipes grátis que vêm com o rig (bruto/), no lugar ou além dos da biblioteca (o Casual Walk cruzava as pernas; run é a corrida). fechar_bracos_graus: por clipe, gira os ombros para baixo (o retarget deixa os braços abertos num corpo magro). idle_respirando: troca o idle da biblioteca por um feito no Blender: pernas endireitadas (a malha vem inclinada para a frente), braços baixados da T-pose, cabeça levantada cabeca_graus, respiração lenta no peito e nos ombros; o clipe tem respiracoes ciclos e, nele, o tronco balança uma vez de um lado ao outro (balanco_graus), a cabeça inclina junto e acena com a respiração, e braços e pulsos acompanham o ar.",
+  "_comentario": "Lista de assets do pipeline Meshy (tools/meshy_pipeline). [OBJETO] no estilo é trocado pelo campo 'objeto' de cada asset (GDD, seção 17). Alturas em metros na escala do jogo: 1 célula = 1 m, construções cabem em 1x1 (opção A, 25/09/2026). Animações são action_id da biblioteca da Meshy. animacoes_extra: pedidas depois sobre o mesmo rig (jog = Run 3, corrida moderada; Run 2 foi testada e cruzava os pés). descartar_clipes: clipes gerados que não vão para o jogo (a caminhada saiu em 26/09/2026). clipes_do_rig: clipes grátis que vêm com o rig (bruto/); sprint é a corrida muito rápida. fechar_bracos_graus: por clipe, gira os ombros para baixo (o retarget deixa os braços abertos num corpo magro). idle_respirando: troca o idle da biblioteca por um feito no Blender: pernas endireitadas (a malha vem inclinada para a frente), braços baixados da T-pose, cabeça levantada cabeca_graus, respiração lenta no peito e nos ombros; o clipe tem respiracoes ciclos e, nele, o tronco balança uma vez de um lado ao outro (balanco_graus), a cabeça inclina junto e acena com a respiração, e braços e pulsos acompanham o ar.",
   "estilo": "low-poly stylized 3D game asset, [OBJETO], medieval dark whimsical style, crooked exaggerated shapes, spiral details, hand-painted texture, muted earthy palette with pumpkin orange accents, readable from top-down view, clean silhouette, no text, plain background",
   "limite_creditos": 450,
   "assets": [
@@ -11,8 +11,10 @@
       "altura_m": 0.8,
       "polycount": 3000,
       "animacoes": { "idle": 0, "walk": 30, "attack": 97, "work": 237 },
-      "clipes_do_rig": { "walk": "caminhada_basica.glb", "run": "corrida.glb" },
-      "fechar_bracos_graus": { "walk": 18, "run": 13 },
+      "animacoes_extra": { "jog": 15 },
+      "descartar_clipes": ["walk"],
+      "clipes_do_rig": { "sprint": "corrida.glb" },
+      "fechar_bracos_graus": { "jog": 18, "sprint": 13 },
       "idle_respirando": { "periodo_s": 3.5, "respiracoes": 2, "peito_graus": 6, "ombros_graus": 7, "bracos_graus": 73, "cotovelo_graus": 12, "cabeca_graus": 8, "balanco_graus": 1.5, "cabeca_inclina_graus": 3, "cabeca_aceno_graus": 1.5, "bracos_balanco_graus": 3, "pulso_graus": 5 },
       "cristal_emissivo": true
     },

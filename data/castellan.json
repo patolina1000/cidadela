@@ -1,16 +1,16 @@
 {
   // Castelão (GDD, seção 20).
-  // speed: células por segundo. 0.8 = passada natural da animação walk da protagonista
-  //   (0,81 m/s medido pelo Blender em assets/modelos/protagonista/protagonista.json), para os pés
-  //   não deslizarem. Era 6.0.
-  // runSpeed: células por segundo segurando Shift. 2.5 = passada natural da animação run
-  //   (2,525 m/s, mesmo arquivo). Subir mais faz a animação tocar mais rápido (os pés acompanham).
+  // speed: células por segundo, correndo moderado (movimento normal; a caminhada saiu em 26/09/2026).
+  //   1.6 = passada natural da animação jog da protagonista (1,593 m/s medido pelo Blender em
+  //   assets/modelos/protagonista/protagonista.json), para os pés não deslizarem.
+  // runSpeed: células por segundo segurando Shift (corrida muito rápida). 2.4 = passada natural da
+  //   animação sprint (2,421 m/s, mesmo arquivo). Subir mais faz a animação tocar mais rápido.
   // reach: alcance para construir e abrir máquinas, em células (centro a centro).
   // gatherReach: para coletar, distância máxima do centro do corpo até a borda do recurso;
   //   1.0 = precisa estar encostado, de lado ou na diagonal.
   // radius: raio do corpo para colisão, em células.
-  "speed": 0.8,
-  "runSpeed": 2.5,
+  "speed": 1.6,
+  "runSpeed": 2.4,
   "reach": 10.0,
   "gatherReach": 1.0,
   "radius": 0.3

@@ -123,6 +123,8 @@ def plan_steps(asset: dict) -> list[tuple[str, int]]:
         steps = [("malha", COST_SMART_TOPOLOGY_PREVIEW), ("modelo", COST_REFINE)]
     if is_character(asset):
         steps += [("rig", COST_RIG), ("animacoes", COST_PER_ACTION * len(asset["animacoes"]))]
+        if asset.get("animacoes_extra"):
+            steps.append(("animacoes_extra", COST_PER_ACTION * len(asset["animacoes_extra"])))
     return steps
 
 
@@ -176,10 +178,10 @@ class Runner:
                 "input_task_id": done["modelo"]["task_id"],
                 "height_meters": RIG_HEIGHT_METERS,
             }
-        if step == "animacoes":
+        if step in ("animacoes", "animacoes_extra"):
             return "/v1/animations", {
                 "rig_task_id": done["rig"]["task_id"],
-                "action_ids": list(asset["animacoes"].values()),
+                "action_ids": list(asset[step].values()),
             }
         raise ValueError(step)
 
@@ -262,12 +264,17 @@ def download(meshy: Meshy, asset: dict, results: dict) -> None:
     for key, file in (("walking_glb_url", "caminhada_basica.glb"), ("running_glb_url", "corrida.glb")):
         if basic.get(key):
             fetch(basic[key], raw / file)
-    fetch(results["animacoes"]["result"]["animation_glb_url"], raw / "animacoes.glb")
-    # Os clipes vêm com o nome da biblioteca; o Blender troca pelos nossos (idle, walk...).
-    ids = ",".join(str(i) for i in asset["animacoes"].values())
-    library = {a["action_id"]: a["name"] for a in meshy.get("/v1/animations/library", action_ids=ids)}
-    clips = {library[action_id]: ours for ours, action_id in asset["animacoes"].items()}
-    (raw / "animacoes.json").write_text(json.dumps(clips, indent=2, ensure_ascii=False))
+    # Animações extras: pedidas depois, sobre o mesmo rig, sem refazer as primeiras.
+    for step in ("animacoes", "animacoes_extra"):
+        if step not in results:
+            continue
+        fetch(results[step]["result"]["animation_glb_url"], raw / f"{step}.glb")
+        # Os clipes vêm com o nome da biblioteca; o Blender troca pelos nossos (idle, jog...).
+        ids = ",".join(str(i) for i in asset[step].values())
+        # "key" é o nome que a ação recebe no GLB ("Run_02"); "name" é só rótulo ("Run 2").
+        library = {a["action_id"]: a["key"] for a in meshy.get("/v1/animations/library", action_ids=ids)}
+        clips = {library[action_id]: ours for ours, action_id in asset[step].items()}
+        (raw / f"{step}.json").write_text(json.dumps(clips, indent=2, ensure_ascii=False))
 
 
 def main() -> None:

@@ -28,6 +28,7 @@ FOOTPRINT = 0.9  # base máxima de construções e recursos, para caber em 1 cé
 CRYSTAL_MATERIAL = "Cristal"
 CRYSTAL_EMISSION_STRENGTH = 3.0
 STRIDE_BONES = ("LeftToeBase", "RightToeBase")
+LOCOMOTION_CLIPS = ("jog", "sprint")  # clipes com passada medida para protagonista.json
 IDLE_KEY_STEP = 3  # quadros entre as chaves do idle feito à mão
 MATTE_ROUGHNESS = 0.8  # fosco, como textura pintada à mão
 # O cristal fica no peito: faixa de altura (fração da altura total) e perto do eixo central.
@@ -93,6 +94,32 @@ def fit(root: bpy.types.Object, asset: dict) -> None:
     bpy.context.view_layer.update()
     low, high = world_bounds()
     print(f"  tamanho final: {high.x - low.x:.2f} x {high.y - low.y:.2f} x {high.z - low.z:.2f} m")
+
+
+def import_extra_clips(raw: Path) -> None:
+    """Traz os clipes de animacoes_extra.glb (mesmo rig) e descarta o resto do arquivo."""
+    before_objects, before_actions = set(bpy.data.objects), set(bpy.data.actions)
+    bpy.ops.import_scene.gltf(filepath=str(raw / "animacoes_extra.glb"), disable_bone_shape=True)
+    for obj in [o for o in bpy.data.objects if o not in before_objects]:
+        bpy.data.objects.remove(obj)
+    clips = json.loads((raw / "animacoes_extra.json").read_text())
+    for action in [a for a in bpy.data.actions if a not in before_actions]:
+        ours = clips.get(action.name)
+        if ours is None:
+            bpy.data.actions.remove(action)
+            continue
+        if ours in bpy.data.actions:
+            bpy.data.actions.remove(bpy.data.actions[ours])
+        print(f"  clipe {action.name} -> {ours} (extra)")
+        action.name = ours
+        action.use_fake_user = True
+
+
+def discard_clips(names: list) -> None:
+    for name in names:
+        if name in bpy.data.actions:
+            bpy.data.actions.remove(bpy.data.actions[name])
+            print(f"  clipe {name} descartado")
 
 
 def rename_clips(raw: Path) -> None:
@@ -479,6 +506,9 @@ def main() -> None:
     matte_materials()
     if character:
         rename_clips(raw)
+        discard_clips(asset.get("descartar_clipes", []))
+        if asset.get("animacoes_extra"):
+            import_extra_clips(raw)
         for clip, file in asset.get("clipes_do_rig", {}).items():
             use_rig_clip(raw, clip, file)
         if asset.get("idle_respirando"):
@@ -492,9 +522,9 @@ def main() -> None:
     root = add_root(name)
     fit(root, asset)
     if character:
-        # O jogo lê isto para tocar walk e run no ritmo da velocidade real, sem deslizar.
+        # O jogo lê isto para tocar as corridas no ritmo da velocidade real, sem deslizar.
         info = {}
-        for clip in ("walk", "run"):
+        for clip in LOCOMOTION_CLIPS:
             if clip in bpy.data.actions:
                 stride = measure_stride(clip)
                 info[f"passada_{clip}_m_s"] = round(stride, 3)
