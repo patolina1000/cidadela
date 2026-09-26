@@ -412,3 +412,31 @@ onde errou, correções manuais e quanto tempo levou.
     estava só na ligação com a entrada. Corrigido e verificado no jogo.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 22:08–22:14 de relógio.
+
+---
+
+## 2026-09-25 — Câmera cinematográfica para analisar animações
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** uma câmera "cinematic" que, ao entrar, foca exclusivamente no personagem, máquina, inimigo ou
+  aldeão, para analisar as animações. (Não havia arquivos de animação novos no repositório; entendi que eram
+  as animações procedurais já feitas: golpe, quique, virar, lâmina, fumaça.)
+- **O que foi feito (só na cena):**
+  - `CameraRig`: modo cinematográfico — perto, ângulo baixo (18°), órbita automática de 14°/s, segue o alvo;
+    roda aproxima, botão direito arrastado gira e muda a altura (retoma a órbita após 3 s); desfoque do fundo
+    (profundidade de campo); distância, inclinação e altura sempre suavizadas, então entrar e sair não corta;
+    ao sair, volta ao ângulo de antes. Sai sozinho se o alvo sumir.
+  - `WorldView.FindFocus`: escolhe o alvo sob o cursor (Castelão/aldeão a menos de ~1 célula, senão construção
+    ou recurso da célula), com legenda ao vivo (ex.: "Fundição — 2 Ferro → 1 Lingote (3 s) — Esperando 2 Ferro").
+  - `CinematicOverlay`: faixas pretas animadas e legenda; a interface some. Tecla C entra/sai, Esc sai.
+  - GDD (seção 12) atualizado e reexportado.
+  - Verificado no jogo: Castelão (inclusive andando, a câmera acompanha), fundição e aldeão; ao sair, o giro
+    voltou a 0 e a interface reapareceu.
+- **O que deu errado:**
+  - A primeira versão, ao sair, encaixava o giro no múltiplo de 90° mais perto de onde a órbita parou, e o
+    mapa ficava virado. Agora devolve o giro de antes.
+  - Um teste de foco no aldeão pegou o Castelão: a câmera ainda estava na transição da saída anterior e o pixel
+    calculado não caiu no aldeão (sem nada sob o cursor, o padrão é o Castelão). Repetido com a câmera parada,
+    funcionou.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 23:11–23:15 de relógio.

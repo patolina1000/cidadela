@@ -9,7 +9,8 @@ namespace Cidadela.View;
 /// <see cref="WorldView"/> desenhar.
 /// Mouse: esquerdo coleta, recolhe de um baú, constrói (com uma construção escolhida) ou põe o item da mão
 /// numa esteira ou baú (com um item segurado); segurar e arrastar repete célula a célula.
-/// Direito sem arrastar solta o que está escolhido ou desmonta. Teclado: WASD anda, 1–9 escolhem, R gira, Esc solta.
+/// Direito sem arrastar solta o que está escolhido ou desmonta. Teclado: WASD anda, 1–9 escolhem, R gira, Esc solta,
+/// C entra/sai da câmera cinematográfica no que está sob o cursor (ou no Castelão).
 /// </summary>
 public partial class GameRoot : Node3D
 {
@@ -27,6 +28,8 @@ public partial class GameRoot : Node3D
     private CameraRig _camera = null!;
     private Hotbar _hotbar = null!;
     private InventoryBar _inventoryBar = null!;
+    private CinematicOverlay _cinematicOverlay = null!;
+    private FocusTarget? _focus;
     private Label _debugLabel = null!;
     private Label _inventoryLabel = null!;
 
@@ -74,6 +77,9 @@ public partial class GameRoot : Node3D
         _inventoryBar.Build(data.Items);
         _inventoryBar.ItemClicked += Hold;
 
+        _cinematicOverlay = new CinematicOverlay { Name = "CinematicOverlay" };
+        GetNode("DebugHud").AddChild(_cinematicOverlay);
+
         // A linha de status desce para baixo dos botões do inventário.
         _inventoryLabel.OffsetTop = 72f;
         _inventoryLabel.OffsetBottom = 98f;
@@ -106,11 +112,38 @@ public partial class GameRoot : Node3D
         {
             _buildDirection = _buildDirection.RotatedClockwise();
         }
+        else if (k == Key.C)
+        {
+            ToggleCinematic();
+        }
         else if (k == Key.Escape)
         {
+            if (_camera.IsCinematic)
+            {
+                ToggleCinematic();
+                return;
+            }
             Select(null);
             Hold(null);
         }
+    }
+
+    /// <summary>
+    /// Entra na câmera cinematográfica no que está sob o cursor (Castelão, aldeão, construção, recurso;
+    /// sem nada, o Castelão) ou sai dela. Solta o que estava escolhido para não construir sem querer.
+    /// </summary>
+    private void ToggleCinematic()
+    {
+        if (_camera.IsCinematic)
+        {
+            _camera.ExitCinematic();
+            return;
+        }
+        Select(null);
+        Hold(null);
+        Vector3? ground = CursorOverWorld() is Vector2 cursor ? _camera.GroundUnder(cursor) : null;
+        _focus = (ground is Vector3 g ? _view.FindFocus(g) : null) ?? _view.CastellanFocus();
+        _camera.EnterCinematic(_focus.Node, _focus.Height, _focus.Distance);
     }
 
     /// <summary>
@@ -180,6 +213,19 @@ public partial class GameRoot : Node3D
             _world.Tick();
 
         _view.Render(_clock.Alpha, delta);
+
+        // Na cinematográfica, a interface some e só ficam as faixas com a legenda ao vivo.
+        bool cinematic = _camera.IsCinematic;
+        if (cinematic && _focus is not null)
+            _cinematicOverlay.SetCaption(_focus.Describe() + "     (C ou Esc sai)");
+        _cinematicOverlay.Show(cinematic);
+        _hotbar.Visible = !cinematic;
+        _inventoryBar.Visible = !cinematic;
+        _inventoryLabel.Visible = !cinematic;
+        _debugLabel.Visible = !cinematic;
+        if (cinematic)
+            hovered = null;
+
         _view.ShowHover(_selected is null ? hovered : null);
         _view.ShowGhost(_selected, hovered, _buildDirection);
         _view.ShowBuildingInfo(hovered);

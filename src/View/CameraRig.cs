@@ -12,7 +12,10 @@ namespace Cidadela.View;
 ///   no múltiplo de 90° mais próximo (a leitura das esteiras nunca fica torta). Um clique
 ///   direito sem arrastar fica livre para outras ações.
 /// - Zoom na roda, com inclinação fixa (estilo Factorio).
+/// - Cinematográfica (<see cref="EnterCinematic"/>): perto e baixa, girando devagar em volta de um alvo
+///   para analisar animações; roda aproxima, botão direito arrastado gira e muda a altura à mão.
 /// O nó fica no chão, no ponto que a câmera olha; a câmera filha fica a uma distância e inclinação.
+/// Distância, inclinação e altura do ponto olhado são sempre suavizadas, então as trocas de modo não cortam.
 /// </summary>
 public partial class CameraRig : Node3D
 {
@@ -55,8 +58,20 @@ public partial class CameraRig : Node3D
     /// <summary>Quão rápido o giro encaixa no múltiplo de 90° depois de soltar.</summary>
     [Export] public float RotateSnapSmoothing = 12f;
 
+    /// <summary>Graus por segundo que a câmera cinematográfica gira sozinha em volta do alvo.</summary>
+    [Export] public float CinematicOrbitSpeed = 14f;
+
+    /// <summary>Segundos sem mexer à mão até a câmera cinematográfica voltar a girar sozinha.</summary>
+    [Export] public float CinematicResumeSeconds = 3f;
+
+    /// <summary>Quão rápido distância, inclinação e altura chegam no alvo (troca de modo).</summary>
+    [Export] public float ModeSmoothing = 5f;
+
     /// <summary>O que a câmera segue.</summary>
     public Node3D? Target { get; set; }
+
+    /// <summary>Se está no modo cinematográfico.</summary>
+    public bool IsCinematic => _cinematic;
 
     /// <summary>Giro atual em radianos, para converter o WASD em direção no mundo.</summary>
     public float Yaw => _yaw;
@@ -88,11 +103,77 @@ public partial class CameraRig : Node3D
     private Vector3 _grabPoint;
     private Rect2 _bounds = new(new Vector2(-1e6f, -1e6f), new Vector2(2e6f, 2e6f));
 
+    // Valores atuais (suavizados) da câmera; os de cada modo são só alvos.
+    private float _distance;
+    private float _pitchDeg;
+    private float _height;
+
+    // Cinematográfica.
+    private bool _cinematic;
+    private Node3D? _cineTarget;
+    private float _cineYaw;
+    private float _yawBeforeCinematic;
+    private float _cineDistance;
+    private float _cinePitch;
+    private float _cineHeight;
+    private float _manualCooldown;
+    private Vector2 _orbitLast;
+    private CameraAttributesPractical? _dof;
+
     public override void _Ready()
     {
         _camera = new Camera3D { Name = "Camera", Fov = 45f, Current = true };
         AddChild(_camera);
+        _distance = DefaultDistance;
+        _pitchDeg = Pitch;
         ApplyTransform();
+    }
+
+    /// <summary>
+    /// Entra no modo cinematográfico focando <paramref name="target"/>: olha para <paramref name="height"/>
+    /// acima do chão, a <paramref name="distance"/> dele, e começa a girar de onde a câmera já está.
+    /// </summary>
+    public void EnterCinematic(Node3D target, float height, float distance)
+    {
+        _cinematic = true;
+        _cineTarget = target;
+        _cineHeight = height;
+        _cineDistance = distance;
+        _cinePitch = 18f;
+        _cineYaw = _yaw;
+        _yawBeforeCinematic = _targetYaw;
+        _manualCooldown = 0f;
+        _dragging = false;
+        _rotating = false;
+        _rotatePressed = false;
+
+        // Fundo desfocado para o alvo saltar aos olhos.
+        _dof = new CameraAttributesPractical
+        {
+            DofBlurFarEnabled = true,
+            DofBlurFarDistance = distance + 1.5f,
+            DofBlurFarTransition = 6f,
+            DofBlurAmount = 0.08f,
+        };
+        _camera.Attributes = _dof;
+    }
+
+    /// <summary>Volta à câmera normal, suavemente, seguindo o Castelão de novo.</summary>
+    public void ExitCinematic()
+    {
+        if (!_cinematic)
+            return;
+        _cinematic = false;
+        _cineTarget = null;
+        _camera.Attributes = null;
+        _dof = null;
+        _rotatePressed = false;
+        // Volta para o giro de antes (a órbita não deve deixar o mapa virado), pelo caminho mais curto.
+        _yaw = _yawBeforeCinematic + Mathf.Wrap(_yaw - _yawBeforeCinematic, -Mathf.Pi, Mathf.Pi);
+        _targetYaw = _yawBeforeCinematic;
+        _free = false;
+        if (Target is not null)
+            _offset = Position - GroundPoint(Target);
     }
 
     /// <summary>Limita o foco da câmera solta a uma área do mapa (em X/Z).</summary>
@@ -109,6 +190,12 @@ public partial class CameraRig : Node3D
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        if (_cinematic)
+        {
+            HandleCinematicInput(@event);
+            return;
+        }
+
         if (@event is InputEventMouseButton mouse)
         {
             if (mouse.ButtonIndex == MouseButton.Middle)
@@ -168,18 +255,81 @@ public partial class CameraRig : Node3D
     {
         float dt = (float)delta;
         _zoom = Mathf.Lerp(_zoom, _targetZoom, 1f - Mathf.Exp(-ZoomSmoothing * dt));
-        if (!_rotating)
-            _yaw = Mathf.Lerp(_yaw, _targetYaw, 1f - Mathf.Exp(-RotateSnapSmoothing * dt));
 
-        if (!_free && Target is not null)
+        // O alvo sumiu (desmontado, esgotado): sai sozinho.
+        if (_cinematic && (_cineTarget is null || !IsInstanceValid(_cineTarget) || !_cineTarget.IsVisibleInTree()))
+            ExitCinematic();
+
+        float targetDistance, targetPitch, targetHeight;
+        if (_cinematic)
         {
-            // O Castelão fica travado; só o deslocamento de espiar é suavizado.
-            float blend = 1f - Mathf.Exp(-LookAheadSmoothing * dt);
-            _offset = _offset.Lerp(LookAheadOffset(), blend);
-            Position = GroundPoint(Target) + _offset;
+            if (_manualCooldown > 0f)
+                _manualCooldown -= dt;
+            else
+                _cineYaw += Mathf.DegToRad(CinematicOrbitSpeed) * dt;
+            _yaw = Mathf.LerpAngle(_yaw, _cineYaw, 1f - Mathf.Exp(-6f * dt));
+            Position = Position.Lerp(GroundPoint(_cineTarget!), 1f - Mathf.Exp(-6f * dt));
+            (targetDistance, targetPitch, targetHeight) = (_cineDistance, _cinePitch, _cineHeight);
+        }
+        else
+        {
+            if (!_rotating)
+                _yaw = Mathf.Lerp(_yaw, _targetYaw, 1f - Mathf.Exp(-RotateSnapSmoothing * dt));
+            if (!_free && Target is not null)
+            {
+                // O Castelão fica travado; só o deslocamento de espiar é suavizado.
+                float blend = 1f - Mathf.Exp(-LookAheadSmoothing * dt);
+                _offset = _offset.Lerp(LookAheadOffset(), blend);
+                Position = GroundPoint(Target) + _offset;
+            }
+            (targetDistance, targetPitch, targetHeight) = (DefaultDistance / _zoom, Pitch, 0f);
         }
 
+        float k = 1f - Mathf.Exp(-ModeSmoothing * dt);
+        _distance = Mathf.Lerp(_distance, targetDistance, _cinematic ? k : Mathf.Max(k, 1f - Mathf.Exp(-ZoomSmoothing * dt)));
+        _pitchDeg = Mathf.Lerp(_pitchDeg, targetPitch, k);
+        _height = Mathf.Lerp(_height, targetHeight, k);
+        if (_dof is not null)
+            _dof.DofBlurFarDistance = _distance + 1.5f;
+
         ApplyTransform();
+    }
+
+    /// <summary>
+    /// Mouse na cinematográfica: roda aproxima/afasta; botão direito arrastado gira (lados) e muda a
+    /// altura (cima/baixo). Tudo aqui é consumido para não construir nem desmontar sem querer.
+    /// </summary>
+    private void HandleCinematicInput(InputEvent @event)
+    {
+        if (@event is InputEventMouseButton mouse)
+        {
+            if (mouse.ButtonIndex == MouseButton.Right)
+            {
+                _rotatePressed = mouse.Pressed;
+                _orbitLast = mouse.Position;
+            }
+            else if (mouse.Pressed && mouse.ButtonIndex == MouseButton.WheelUp)
+            {
+                _cineDistance = Mathf.Max(_cineDistance / ZoomStep, 1.2f);
+            }
+            else if (mouse.Pressed && mouse.ButtonIndex == MouseButton.WheelDown)
+            {
+                _cineDistance = Mathf.Min(_cineDistance * ZoomStep, 14f);
+            }
+            GetViewport().SetInputAsHandled();
+        }
+        else if (@event is InputEventMouseMotion motion)
+        {
+            _cursor = motion.Position;
+            if (_rotatePressed)
+            {
+                Vector2 d = motion.Position - _orbitLast;
+                _orbitLast = motion.Position;
+                _cineYaw -= Mathf.DegToRad(d.X * RotateDegreesPerPixel);
+                _cinePitch = Mathf.Clamp(_cinePitch + d.Y * 0.2f, 3f, 75f);
+                _manualCooldown = CinematicResumeSeconds;
+            }
+        }
     }
 
     /// <summary>
@@ -260,9 +410,8 @@ public partial class CameraRig : Node3D
     private void ApplyTransform()
     {
         Rotation = new Vector3(0f, _yaw, 0f);
-        float distance = DefaultDistance / _zoom;
-        float pitch = Mathf.DegToRad(Pitch);
-        _camera.Position = new Vector3(0f, Mathf.Sin(pitch) * distance, Mathf.Cos(pitch) * distance);
+        float pitch = Mathf.DegToRad(_pitchDeg);
+        _camera.Position = new Vector3(0f, _height + Mathf.Sin(pitch) * _distance, Mathf.Cos(pitch) * _distance);
         _camera.Rotation = new Vector3(-pitch, 0f, 0f);
     }
 }
