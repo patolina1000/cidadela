@@ -28,6 +28,7 @@ FOOTPRINT = 0.9  # base máxima de construções e recursos, para caber em 1 cé
 CRYSTAL_MATERIAL = "Cristal"
 CRYSTAL_EMISSION_STRENGTH = 3.0
 STRIDE_BONES = ("LeftToeBase", "RightToeBase")
+IDLE_KEY_STEP = 3  # quadros entre as chaves do idle feito à mão
 MATTE_ROUGHNESS = 0.8  # fosco, como textura pintada à mão
 # O cristal fica no peito: faixa de altura (fração da altura total) e perto do eixo central.
 CHEST_BAND = (0.50, 0.85)
@@ -190,6 +191,91 @@ def close_arms(clip: str, degrees: float) -> None:
     armature.data.pose_position = "REST"
     scene.frame_set(0)
     print(f"  braços fechados em {degrees:g}° no {clip}")
+
+
+def breathing_idle(settings: dict) -> None:
+    """Idle feito à mão: ereta, olhando para a frente, só respirando.
+
+    Parte da T-pose de repouso. A malha da Meshy fica inclinada para a frente (tornozelos atrás do
+    quadril): endireita coxa e canela, deixa os pés planos e sobe ou desce o quadril para os pés
+    ficarem no chão. Baixa os braços ao lado do corpo com o cotovelo um pouco dobrado e levanta um pouco
+    a cabeça. Num ciclo lento, o peito sobe (a coluna se abre um pouco para trás) e os ombros acompanham;
+    a cabeça não balança. Todos os ossos têm chave, senão o Godot mantém a pose do clipe anterior nos
+    ossos sem trilha (as pernas ficariam no walk).
+    """
+    armature = next(o for o in bpy.data.objects if o.type == "ARMATURE")
+    armature.data.pose_position = "POSE"
+    armature.animation_data_create()
+    if "idle" in bpy.data.actions:
+        bpy.data.actions.remove(bpy.data.actions["idle"])
+    action = bpy.data.actions.new("idle")
+    action.use_fake_user = True
+    armature.animation_data.action = action
+    scene = bpy.context.scene
+    fps = scene.render.fps / scene.render.fps_base
+    frames = round(settings["periodo_s"] * fps)
+    bones = armature.pose.bones
+    for bone in bones:
+        bone.rotation_mode = "QUATERNION"
+    side_axis, front_axis = Vector((1, 0, 0)), Vector((0, 1, 0))  # espaço do esqueleto: Z sobe, frente -Y
+
+    def turn(name: str, axis: Vector, degrees: float) -> None:
+        bone = bones[name]
+        bone.matrix = rotate_about_head(bone.matrix.copy(), axis, math.radians(degrees))
+        bpy.context.view_layer.update()
+
+    def keep_rest_orientation(name: str, extra_degrees: float = 0.0) -> None:
+        bone = bones[name]
+        rest = bone.bone.matrix_local.to_3x3().to_4x4()
+        bone.matrix = Matrix.Translation(bone.matrix.to_translation()) @ rest
+        bpy.context.view_layer.update()
+        if extra_degrees:
+            turn(name, side_axis, extra_degrees)
+
+    def plumb(upper: str, lower: str) -> None:
+        """Gira <upper> em volta do eixo lateral até <lower> ficar logo abaixo dele (mesmo Y)."""
+        top, bottom = bones[upper].head, bones[lower].head
+        turn(upper, side_axis, -math.degrees(math.atan2(bottom.y - top.y, top.z - bottom.z)))
+
+    def stand_up() -> None:
+        for side in ("Left", "Right"):
+            plumb(f"{side}UpLeg", f"{side}Leg")
+            plumb(f"{side}Leg", f"{side}Foot")
+            keep_rest_orientation(f"{side}Foot")
+
+    # Quanto o quadril sobe ou desce para os pés voltarem ao chão depois de endireitar as pernas.
+    ground = min(bones[f"{s}ToeBase"].head.z for s in ("Left", "Right"))
+    stand_up()
+    lift = ground - min(bones[f"{s}ToeBase"].head.z for s in ("Left", "Right"))
+
+    for frame in range(0, frames + 1, IDLE_KEY_STEP):
+        breath = (1 - math.cos(2 * math.pi * frame / frames)) / 2  # 0 = expirado, 1 = inspirado
+        for bone in bones:
+            bone.location = (0, 0, 0)
+            bone.rotation_quaternion = (1, 0, 0, 0)
+        bpy.context.view_layer.update()
+        hips = bones["Hips"]
+        hips.matrix = Matrix.Translation((0, 0, lift)) @ hips.matrix
+        bpy.context.view_layer.update()
+        stand_up()
+        # A coluna se abre para trás ao inspirar (+Y é trás), dividida pelos três ossos.
+        for name in ("Spine02", "Spine01", "Spine"):
+            turn(name, side_axis, -settings["peito_graus"] * breath / 3)
+        # Esquerda fica em +X: girar em volta de +Y abaixa; a direita é o espelho.
+        turn("LeftShoulder", front_axis, -settings["ombros_graus"] * breath)
+        turn("RightShoulder", front_axis, settings["ombros_graus"] * breath)
+        turn("LeftArm", front_axis, settings["bracos_graus"])
+        turn("RightArm", front_axis, -settings["bracos_graus"])
+        turn("LeftForeArm", side_axis, -settings["cotovelo_graus"])
+        turn("RightForeArm", side_axis, -settings["cotovelo_graus"])
+        keep_rest_orientation("Head", -settings.get("cabeca_graus", 0.0))
+        for bone in bones:
+            bone.keyframe_insert("rotation_quaternion", frame=frame)
+            bone.keyframe_insert("location", frame=frame)
+    armature.animation_data.action = None
+    armature.data.pose_position = "REST"
+    scene.frame_set(0)
+    print(f"  idle: respiração de {settings['periodo_s']:g} s feita no Blender")
 
 
 def channelbags(action: bpy.types.Action) -> list:
@@ -380,6 +466,8 @@ def main() -> None:
         rename_clips(raw)
         for clip, file in asset.get("clipes_do_rig", {}).items():
             use_rig_clip(raw, clip, file)
+        if asset.get("idle_respirando"):
+            breathing_idle(asset["idle_respirando"])
         remove_bone_scale_tracks()
         for clip, degrees in asset.get("fechar_bracos_graus", {}).items():
             close_arms(clip, degrees)

@@ -639,3 +639,29 @@ onde errou, correções manuais e quanto tempo levou.
     que casa com a animação a 1,0× é cerca de 2,5 células/s.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 00:00–00:10 de relógio.
+
+---
+
+## 2026-09-26 — Arte: idle da protagonista refeito (ereta, só respirando)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** o idle da Meshy estava exagerado. Fazer um mais simples, "algo como respirar", mais ereta e
+  olhando para a frente.
+- **Decisão:** criar o idle no Blender em vez de testar outros da biblioteca da Meshy (3 créditos cada e
+  sujeitos a defeito de retarget, como a escala de 1,176 do idle 0). Custo: 0 créditos.
+- **O que foi feito:**
+  - `normalize.py` → `breathing_idle`, com os números em `tools/assets.json` (`idle_respirando`):
+    - pernas endireitadas: a malha da Meshy fica inclinada cerca de 12° para a frente (tornozelos atrás
+      do quadril). Coxa e canela vão para a vertical, os pés voltam a ficar planos e o quadril é ajustado
+      para os pés continuarem no chão;
+    - braços baixados da T-pose (73°) com o cotovelo um pouco dobrado (12°): abertura lateral de 8°;
+    - cabeça 8° mais levantada, mantendo a orientação (não balança nem olha para os lados);
+    - respiração num ciclo de 3,5 s: a coluna se abre 4° para trás e os ombros sobem 5°.
+  - Chave em todos os ossos: senão o Godot manteria nas pernas a pose do clipe anterior.
+  - Medido: pés parados no chão durante todo o clipe; o ombro sobe 3,7 mm e a cabeça recua 8,5 mm ao
+    inspirar. Visto no Blender (lado, ar solto e ar cheio) e numa gravação do jogo.
+- **O que deu errado:** a primeira versão, com 1,5°, era sutil demais (o ombro subia 1,1 mm, invisível com
+  a câmera de cima), os braços ficaram colados (3°) e a vista de lado mostrou o corpo inclinado, que vem
+  da malha. As três coisas foram corrigidas com os números acima.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 00:15–00:35 de relógio.
