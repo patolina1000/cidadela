@@ -17,6 +17,10 @@ public partial class WorldView : Node3D
     private readonly Dictionary<Villager, Node3D> _villagerNodes = new();
     private readonly Dictionary<ResourceNode, ResourceVisual> _resourceVisuals = new();
     private readonly Dictionary<Building, Node3D> _buildingNodes = new();
+    private readonly Dictionary<int, MeshInstance3D> _itemNodes = new();
+    private readonly HashSet<int> _seenItems = new();
+    private Label3D _chestLabel = null!;
+    private readonly Dictionary<Building, Dictionary<string, int>> _chestSnapshots = new();
     private int _buildingsVersion = -1;
     private Node3D? _ghost;
     private string? _ghostKind;
@@ -71,6 +75,19 @@ public partial class WorldView : Node3D
             ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
         };
         SyncBuildings(withEffects: false);
+        _chestLabel = new Label3D
+        {
+            Name = "ChestInfo",
+            Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+            NoDepthTest = true,
+            FontSize = 40,
+            PixelSize = 0.006f,
+            OutlineSize = 10,
+            Modulate = Palette.Bone,
+            OutlineModulate = new Color(0f, 0f, 0f, 0.8f),
+            Visible = false,
+        };
+        AddChild(_chestLabel);
 
         Render(0.0, 0.0);
     }
@@ -83,6 +100,8 @@ public partial class WorldView : Node3D
             RenderResource(resource, visual, dt);
         if (_world.BuildingsVersion != _buildingsVersion)
             SyncBuildings(withEffects: true);
+        RenderBeltItems((float)alpha);
+        RenderChestTakes();
 
         foreach ((Villager villager, Node3D node) in _villagerNodes)
         {
@@ -109,6 +128,7 @@ public partial class WorldView : Node3D
                 continue;
             Node3D node = _buildingNodes[gone];
             _buildingNodes.Remove(gone);
+            _chestSnapshots.Remove(gone);
             if (withEffects)
                 AnimateDeconstruct(gone, node);
             else
@@ -133,6 +153,89 @@ public partial class WorldView : Node3D
                     .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
             }
         }
+    }
+
+    /// <summary>
+    /// Um cubinho da cor do recurso por item em esteira, deslizando entre o tick anterior e o atual.
+    /// Item que sumiu (entrou num baú ou voltou ao Castelão) tem o cubinho apagado.
+    /// </summary>
+    private void RenderBeltItems(float alpha)
+    {
+        _seenItems.Clear();
+        foreach (BeltItem item in _world.BeltItems)
+        {
+            _seenItems.Add(item.Id);
+            if (!_itemNodes.TryGetValue(item.Id, out MeshInstance3D? node))
+            {
+                var cube = new BoxMesh { Size = new Vector3(0.24f, 0.24f, 0.24f) };
+                cube.Material = new StandardMaterial3D { AlbedoColor = Palette.ForResource(item.Kind), Roughness = 0.9f };
+                node = new MeshInstance3D { Name = $"Item_{item.Id}", Mesh = cube };
+                AddChild(node);
+                _itemNodes[item.Id] = node;
+            }
+            System.Numerics.Vector2 p = System.Numerics.Vector2.Lerp(item.PreviousPosition, item.Position, alpha);
+            node.Position = new Vector3(p.X + 0.5f, 0.22f, p.Y + 0.5f);
+        }
+
+        foreach (int id in new List<int>(_itemNodes.Keys))
+        {
+            if (_seenItems.Contains(id))
+                continue;
+            _itemNodes[id].QueueFree();
+            _itemNodes.Remove(id);
+        }
+    }
+
+    /// <summary>
+    /// Quando um baú perde itens (o Castelão recolheu), os itens voam até ele, como no desmontar.
+    /// Compara com o que cada baú tinha no frame anterior.
+    /// </summary>
+    private void RenderChestTakes()
+    {
+        foreach (Building building in _buildingNodes.Keys)
+        {
+            if (building.Storage is not Inventory storage)
+                continue;
+            if (!_chestSnapshots.TryGetValue(building, out Dictionary<string, int>? before))
+            {
+                _chestSnapshots[building] = new Dictionary<string, int>(storage.Counts);
+                continue;
+            }
+
+            double delay = 0;
+            Vector3 from = CellCenter(building.Cell, 0.5f);
+            foreach ((string kind, int had) in before)
+            {
+                int taken = had - storage.Count(kind);
+                for (int i = 0; i < System.Math.Min(taken, 6); i++)
+                {
+                    _effects.FlyTo(from, _castellan, Palette.ForResource(kind), delay);
+                    delay += 0.05;
+                }
+            }
+            _chestSnapshots[building] = new Dictionary<string, int>(storage.Counts);
+        }
+    }
+
+    /// <summary>Etiqueta sobre o baú sob o cursor, com o que ele guarda; null esconde.</summary>
+    public void ShowChestInfo(GridPos? cell)
+    {
+        if (cell is not GridPos c || _world.BuildingAt(c) is not { Storage: Inventory storage } chest)
+        {
+            _chestLabel.Visible = false;
+            return;
+        }
+
+        var lines = new List<string> { chest.Type.Name };
+        foreach (ResourceType type in _world.Data.Resources.Values)
+            if (storage.Count(type.Kind) > 0)
+                lines.Add($"{type.Name}: {storage.Count(type.Kind)}");
+        if (lines.Count == 1)
+            lines.Add("vazio");
+
+        _chestLabel.Text = string.Join("\n", lines);
+        _chestLabel.Position = CellCenter(c, 1.3f);
+        _chestLabel.Visible = true;
     }
 
     /// <summary>

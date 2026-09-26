@@ -330,3 +330,27 @@ onde errou, correções manuais e quanto tempo levou.
   com os cubinhos saindo; inventário recebeu 8 madeiras e 4 pedras.
 - **O que deu errado:** nada.
 - **Tempo:** 21:47–21:48 de relógio.
+
+---
+
+## 2026-09-25 — Marco 4: esteiras que movem itens
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** marco 4 aprovado: itens andando nas esteiras até baús; o Castelão põe e recolhe itens.
+- **O que foi feito:**
+  - Simulação: `BeltLane` (fila da frente para trás, espaço mínimo 0,5 = 3 itens por esteira), `BeltItem`
+    (progresso, posição e posição anterior para interpolar), tick das esteiras em duas fases (andar; depois
+    passar para a esteira ou baú à frente; esteira de frente contra não aceita), baú com `Storage`,
+    `InsertItemCommand` e `TakeFromChestCommand`; desmontar devolve o que estava em cima/dentro.
+    `beltSpeed` (1,5) e `storage` em `data/buildings.json`. 46 testes (11 novos).
+  - Cena: cubinhos da cor do recurso deslizando nas esteiras; inventário virou botões para segurar item na mão
+    (borda verde); etiqueta sobre o baú sob o cursor com o conteúdo; clique no baú recolhe e os itens voam até
+    o Castelão; linha de status diz o que está acontecendo.
+  - GDD (seção 20, regra "Alimentar a fábrica") atualizado e reexportado.
+  - Verificado no jogo: desmontei serraria e forja para ter itens; 4 esteiras para leste + baú; segurei madeira,
+    pus 3 na primeira esteira, elas andaram e entraram no baú ("Baú / Madeira: 3"); recolhi e voltaram 3
+    (com os cubinhos voando).
+- **O que deu errado:** nada quebrou; os 46 testes passaram na primeira execução. Recolher do baú não tinha
+  retorno visual; acrescentei os cubinhos voando.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:49–21:53 de relógio.

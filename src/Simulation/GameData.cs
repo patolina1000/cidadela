@@ -79,7 +79,9 @@ public sealed class GameData
                 if (!resources.ContainsKey(item) || amount <= 0)
                     throw new FormatException($"Custo inválido em \"{prop.Name}\": {item} × {amount}.");
             }
-            buildings.Add(new BuildingType(prop.Name, b.Name, b.Cost, b.Solid));
+            if (b.BeltSpeed < 0f)
+                throw new FormatException($"beltSpeed negativo em \"{prop.Name}\".");
+            buildings.Add(new BuildingType(prop.Name, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage));
         }
 
         return new GameData(resources, stats, buildings);
@@ -90,6 +92,8 @@ public sealed class GameData
         public string Name { get; set; } = "";
         public Dictionary<string, int> Cost { get; set; } = new();
         public bool Solid { get; set; } = true;
+        public float BeltSpeed { get; set; }
+        public bool Storage { get; set; }
     }
 
     private sealed class ResourceData

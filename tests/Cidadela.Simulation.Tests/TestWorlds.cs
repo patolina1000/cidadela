@@ -18,8 +18,8 @@ internal static class TestWorlds
 
     public const string Buildings = """
         {
-          "belt":  { "name": "Esteira", "cost": { "wood": 1 }, "solid": false },
-          "chest": { "name": "Baú",     "cost": { "wood": 4 }, "solid": true }
+          "belt":  { "name": "Esteira", "cost": { "wood": 1 }, "solid": false, "beltSpeed": 1.5 },
+          "chest": { "name": "Baú",     "cost": { "wood": 4 }, "solid": true,  "storage": true }
         }
         """;
 

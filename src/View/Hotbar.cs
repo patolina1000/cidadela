@@ -14,7 +14,8 @@ public partial class Hotbar : HBoxContainer
     /// <summary>Índice escolhido pelo clique, ou null se desmarcou.</summary>
     public event Action<int?>? SlotClicked;
 
-    private static readonly StyleBoxFlat SelectedStyle = new()
+    /// <summary>Estilo do botão escolhido (borda verde), compartilhado com a <see cref="InventoryBar"/>.</summary>
+    public static readonly StyleBoxFlat SelectedStyle = new()
     {
         BgColor = new Color(0.12f, 0.16f, 0.08f, 0.92f),
         BorderColor = Palette.Sickly,

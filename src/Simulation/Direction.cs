@@ -15,6 +15,18 @@ public static class DirectionExtensions
 {
     public static Direction RotatedClockwise(this Direction d) => (Direction)(((int)d + 1) % 4);
 
+    public static Direction Opposite(this Direction d) => (Direction)(((int)d + 2) % 4);
+
+    /// <summary>Vetor unitário no plano (X, Z).</summary>
+    public static System.Numerics.Vector2 ToVector(this Direction d) => d switch
+    {
+        Direction.North => new System.Numerics.Vector2(0f, -1f),
+        Direction.East => new System.Numerics.Vector2(1f, 0f),
+        Direction.South => new System.Numerics.Vector2(0f, 1f),
+        Direction.West => new System.Numerics.Vector2(-1f, 0f),
+        _ => throw new ArgumentOutOfRangeException(nameof(d)),
+    };
+
     /// <summary>A célula vizinha nessa direção.</summary>
     public static GridPos Step(this GridPos cell, Direction d) => d switch
     {

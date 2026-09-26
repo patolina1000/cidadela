@@ -1,4 +1,3 @@
-using System.Linq;
 using Cidadela.Simulation;
 using Godot;
 
@@ -8,8 +7,9 @@ namespace Cidadela.View;
 /// Liga a simulação à cena: carrega os dados e o mapa, transforma a entrada do jogador
 /// em comandos, avança o <see cref="SimClock"/> a cada frame, roda os ticks e pede para a
 /// <see cref="WorldView"/> desenhar.
-/// Mouse: esquerdo coleta (ou constrói, com uma construção escolhida; segurar e arrastar faz fileira);
-/// direito sem arrastar cancela a escolha ou desmonta. Teclado: WASD anda, 1–9 escolhem, R gira, Esc cancela.
+/// Mouse: esquerdo coleta, recolhe de um baú, constrói (com uma construção escolhida) ou põe o item da mão
+/// numa esteira ou baú (com um item segurado); segurar e arrastar repete célula a célula.
+/// Direito sem arrastar solta o que está escolhido ou desmonta. Teclado: WASD anda, 1–9 escolhem, R gira, Esc solta.
 /// </summary>
 public partial class GameRoot : Node3D
 {
@@ -23,11 +23,13 @@ public partial class GameRoot : Node3D
     private WorldView _view = null!;
     private CameraRig _camera = null!;
     private Hotbar _hotbar = null!;
+    private InventoryBar _inventoryBar = null!;
     private Label _debugLabel = null!;
     private Label _inventoryLabel = null!;
 
     // Modo de construção: o que está escolhido, para onde aponta e a última célula do arrasto.
     private BuildingType? _selected;
+    private string? _heldItem;
     private Direction _buildDirection = Direction.North;
     private bool _leftHeld;
     private GridPos? _lastBuildCell;
@@ -60,6 +62,15 @@ public partial class GameRoot : Node3D
         GetNode("DebugHud").AddChild(_hotbar);
         _hotbar.Build(data.Buildings, data);
         _hotbar.SlotClicked += Select;
+
+        _inventoryBar = new InventoryBar { Name = "InventoryBar" };
+        GetNode("DebugHud").AddChild(_inventoryBar);
+        _inventoryBar.Build(data.Resources.Values);
+        _inventoryBar.ItemClicked += Hold;
+
+        // A linha de status desce para baixo dos botões do inventário.
+        _inventoryLabel.OffsetTop = 72f;
+        _inventoryLabel.OffsetBottom = 98f;
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -92,35 +103,59 @@ public partial class GameRoot : Node3D
         else if (k == Key.Escape)
         {
             Select(null);
+            Hold(null);
         }
     }
 
-    /// <summary>Clique esquerdo numa célula: constrói (se há escolha) ou coleta. A simulação confere tudo.</summary>
+    /// <summary>
+    /// Clique esquerdo numa célula: constrói, põe o item da mão, recolhe de um baú ou coleta.
+    /// A simulação confere tudo (alcance, itens, espaço).
+    /// </summary>
     private void ActAt(GridPos cell)
     {
+        _lastBuildCell = cell;
         if (_selected is not null)
-        {
             _world.Enqueue(new BuildCommand(_selected.Kind, cell, _buildDirection));
-            _lastBuildCell = cell;
-        }
+        else if (_heldItem is not null)
+            _world.Enqueue(new InsertItemCommand(cell, _heldItem));
+        else if (_world.BuildingAt(cell)?.Storage is not null)
+            _world.Enqueue(new TakeFromChestCommand(cell));
         else
-        {
             _world.Enqueue(new GatherCommand(cell));
-        }
     }
 
     private void OnRightClick(Vector2 screenPos)
     {
-        if (_selected is not null)
+        if (_selected is not null || _heldItem is not null)
+        {
             Select(null);
+            Hold(null);
+        }
         else if (CellUnder(screenPos) is GridPos cell)
+        {
             _world.Enqueue(new DeconstructCommand(cell));
+        }
     }
 
+    /// <summary>Escolhe uma construção da barra (ou nenhuma). Solta o item da mão.</summary>
     private void Select(int? index)
     {
         _selected = index is int i ? _world.Data.Buildings[i] : null;
         _hotbar.ShowSelected(index);
+        if (_selected is not null)
+            Hold(null);
+    }
+
+    /// <summary>Segura um item do inventário na mão (ou nenhum). Desmarca a construção.</summary>
+    private void Hold(string? kind)
+    {
+        _heldItem = kind;
+        _inventoryBar.ShowHeld(kind);
+        if (kind is not null)
+        {
+            _selected = null;
+            _hotbar.ShowSelected(null);
+        }
     }
 
     public override void _Process(double delta)
@@ -130,8 +165,8 @@ public partial class GameRoot : Node3D
         Vector2? cursor = CursorOverWorld();
         GridPos? hovered = cursor is Vector2 c ? CellUnder(c) : null;
 
-        // Segurar o esquerdo e arrastar constrói uma fileira, uma célula de cada vez.
-        if (_leftHeld && _selected is not null && hovered is GridPos cell && cell != _lastBuildCell)
+        // Segurar o esquerdo e arrastar repete a ação célula a célula (fileira de esteiras, itens em várias).
+        if (_leftHeld && (_selected is not null || _heldItem is not null) && hovered is GridPos cell && cell != _lastBuildCell)
             ActAt(cell);
 
         int ticks = _clock.Advance(delta);
@@ -141,7 +176,9 @@ public partial class GameRoot : Node3D
         _view.Render(_clock.Alpha, delta);
         _view.ShowHover(_selected is null ? hovered : null);
         _view.ShowGhost(_selected, hovered, _buildDirection);
+        _view.ShowChestInfo(hovered);
         _hotbar.ShowAffordable(_world.Castellan.Inventory);
+        _inventoryBar.ShowCounts(_world.Castellan.Inventory);
         UpdateHud(delta);
     }
 
@@ -190,14 +227,13 @@ public partial class GameRoot : Node3D
             $"Tick {_world.TickCount}  |  {_measuredTicksPerSecond} ticks/s (alvo {SimClock.TicksPerSecond})  |  " +
             $"{Engine.GetFramesPerSecond()} FPS  |  Castelão ({p.X:0.0}, {p.Y:0.0})";
 
-        string items = string.Join("   ", _world.Data.Resources.Values.Select(
-            r => $"{r.Name}: {castellan.Inventory.Count(r.Kind)}"));
-        string action = _selected is not null
-            ? $"   |   Construindo {_selected.Name} ({DirectionName(_buildDirection)}) — R gira, botão direito cancela"
-            : castellan.GatherTarget is ResourceNode node
-                ? $"   |   Coletando {node.Type.Name} {castellan.GatherProgress:P0} (restam {node.Remaining})"
-                : "";
-        _inventoryLabel.Text = items + action;
+        _inventoryLabel.Text = _selected is not null
+            ? $"Construindo {_selected.Name} ({DirectionName(_buildDirection)}) — R gira, botão direito cancela"
+            : _heldItem is not null
+                ? $"Segurando {_world.Data.Resource(_heldItem).Name} — clique numa esteira ou baú; botão direito solta"
+                : castellan.GatherTarget is ResourceNode node
+                    ? $"Coletando {node.Type.Name} {castellan.GatherProgress:P0} (restam {node.Remaining})"
+                    : "";
     }
 
     private static string DirectionName(Direction d) => d switch
