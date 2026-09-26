@@ -519,3 +519,38 @@ onde errou, correções manuais e quanto tempo levou.
   Os `.uid` que o Godot gerou em `src/Simulation/` ficaram fora do commit.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 22:55–23:05 de relógio.
+
+---
+
+## 2026-09-25 — Arte: protagonista não encolhe e não desliza ao andar
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** ao andar, a personagem ficava menor, e o walk não casava com a velocidade (parecia deslizar).
+  O humano escolheu manter o walk no ritmo natural e baixar a velocidade da personagem até casar com ele;
+  a corrida será outro estado depois.
+- **Causas encontradas:**
+  - O clipe idle da Meshy (id 0) escala o quadril em 1,176, o corpo inteiro. O walk tem escala 1, então
+    ela ficava maior parada e "encolhia" ao andar.
+  - O walk anda naturalmente a 0,396 m/s na escala dela (0,8 m), e o jogo movia o Castelão a 6 m/s: a
+    animação teria de tocar 15× mais rápido para não deslizar. A corrida grátis do rig (medida: 1,8 m/s)
+    ficou para o estado de corrida.
+- **O que foi feito:**
+  - `normalize.py`: remove as trilhas de escala de todos os ossos em todos os clipes, mede a velocidade da
+    passada do walk (mediana da velocidade com que o pé recua, na escala do jogo) e grava
+    `assets/modelos/protagonista/protagonista.json` (`passada_walk_m_s: 0.396`).
+  - `data/castellan.json`: `speed` de 6.0 para 0.4 célula/s, com o motivo no comentário.
+  - `CastellanVisual`: lê a passada e ajusta o ritmo do walk (`SpeedScale`) pela velocidade real no chão,
+    suavizado. A 0,4 fica em cerca de 1,0×, e ao frear numa parede os pés continuam casando com o chão.
+  - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 75 aprovados.
+- **O que deu errado:**
+  - A primeira forma de medir a passada deu valores instáveis (0,32 / 0,40 / 0,52 m/s): contar "pé no
+    chão" pela altura falha porque o dedo sobe quando o calcanhar levanta. A trajetória quadro a quadro
+    mostrou o padrão (pé recua devagar no apoio, avança rápido no ar); a mediana dos quadros de recuo deu
+    0,396, batendo com a leitura feita à mão.
+  - Não consegui simular a tecla W para gravar a caminhada no jogo (o macOS bloqueou o AppleEvent por falta
+    de permissão de acessibilidade). Verifiquei no jogo só o tamanho no idle; a caminhada fica para o humano
+    conferir jogando.
+- **Atenção:** 0,4 célula/s é bem devagar (10 células em cerca de 25 s). Isso muda a jogabilidade até existir
+  a corrida. `data/castellan.json` é do agente do jogo.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 23:08–23:25 de relógio.

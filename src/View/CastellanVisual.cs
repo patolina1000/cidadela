@@ -16,7 +16,9 @@ public partial class CastellanVisual : Node3D
     private const float BobHeight = 0.08f;
     private const float BobStepsPerCell = 1.1f;
     private const string ModelPath = "res://assets/modelos/protagonista/protagonista.glb";
+    private const string ModelInfoPath = "res://assets/modelos/protagonista/protagonista.json";
     private const float ClipBlendSeconds = 0.15f;
+    private const float StrideSmoothing = 10f;
 
     private Node3D _pivot = null!;
     private float _yaw;
@@ -26,6 +28,7 @@ public partial class CastellanVisual : Node3D
     private System.Numerics.Vector2 _lastDrawn;
     private bool _hasLast;
     private AnimationPlayer? _animations;
+    private float _walkStride; // m/s em que o walk não desliza (medido no Blender); 0 = desconhecido
 
     public override void _Ready()
     {
@@ -49,6 +52,7 @@ public partial class CastellanVisual : Node3D
                 }
                 _animations.Play("idle");
             }
+            _walkStride = ReadWalkStride();
             return;
         }
 
@@ -90,6 +94,13 @@ public partial class CastellanVisual : Node3D
             string clip = castellan.GatherTarget is not null ? "work" : walked > 0.0001f ? "walk" : "idle";
             if (_animations.CurrentAnimation != clip && _animations.HasAnimation(clip))
                 _animations.Play(clip, ClipBlendSeconds);
+
+            // O walk toca no ritmo da velocidade real no chão, para os pés não deslizarem
+            // (inclusive ao frear numa parede).
+            float targetScale = 1f;
+            if (clip == "walk" && _walkStride > 0f && dt > 0f)
+                targetScale = walked / dt / _walkStride;
+            _animations.SpeedScale = Mathf.Lerp(_animations.SpeedScale, targetScale, 1f - Mathf.Exp(-StrideSmoothing * dt));
             return;
         }
 
@@ -103,6 +114,14 @@ public partial class CastellanVisual : Node3D
 
         _pivot.Position = new Vector3(0f, _bob, 0f);
         _pivot.Rotation = new Vector3(Mathf.DegToRad(_swing), 0f, 0f);
+    }
+
+    private static float ReadWalkStride()
+    {
+        if (!FileAccess.FileExists(ModelInfoPath))
+            return 0f;
+        var info = Json.ParseString(FileAccess.GetFileAsString(ModelInfoPath)).AsGodotDictionary();
+        return info.TryGetValue("passada_walk_m_s", out Variant stride) ? stride.AsSingle() : 0f;
     }
 
     /// <summary>

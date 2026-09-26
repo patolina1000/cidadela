@@ -26,6 +26,7 @@ TEXTURE_SIZE = 512
 FOOTPRINT = 0.9  # base máxima de construções e recursos, para caber em 1 célula com folga
 CRYSTAL_MATERIAL = "Cristal"
 CRYSTAL_EMISSION_STRENGTH = 3.0
+STRIDE_BONES = ("LeftToeBase", "RightToeBase")
 MATTE_ROUGHNESS = 0.8  # fosco, como textura pintada à mão
 # O cristal fica no peito: faixa de altura (fração da altura total) e perto do eixo central.
 CHEST_BAND = (0.50, 0.85)
@@ -122,6 +123,50 @@ def matte_materials() -> None:
                 node.inputs["Metallic"].default_value = 0.0
                 node.inputs["Roughness"].default_value = MATTE_ROUGHNESS
                 node.inputs["Specular Tint"].default_value = (1, 1, 1, 1)
+
+
+def remove_bone_scale_tracks() -> None:
+    """Ossos não mudam de tamanho. O idle 0 da Meshy escala o quadril em 1,176, e a personagem
+    parecia encolher ao sair do idle para o walk."""
+    for action in bpy.data.actions:
+        for layer in action.layers:
+            for strip in layer.strips:
+                for bag in strip.channelbags:
+                    for curve in [c for c in bag.fcurves if c.data_path.endswith(".scale")]:
+                        bag.fcurves.remove(curve)
+
+
+def measure_stride(clip: str) -> float:
+    """Velocidade (m/s, já na escala do jogo) com que o pé de apoio recua no clipe feito no lugar.
+
+    É a velocidade de chão em que a animação não desliza.
+    """
+    armature = next(o for o in bpy.data.objects if o.type == "ARMATURE")
+    armature.data.pose_position = "POSE"
+    armature.animation_data_create()
+    action = bpy.data.actions[clip]
+    armature.animation_data.action = action
+    if action.slots:
+        armature.animation_data.action_slot = action.slots[0]
+    scene = bpy.context.scene
+    fps = scene.render.fps / scene.render.fps_base
+    start, end = (int(f) for f in action.frame_range)
+    track = []
+    for frame in range(start, end + 1):
+        scene.frame_set(frame)
+        track.append({b: (armature.matrix_world @ armature.pose.bones[b].head).copy() for b in STRIDE_BONES})
+    # A frente é -Y: no apoio o pé recua devagar (+Y); no ar ele avança rápido (-Y).
+    # Altura não serve para achar o apoio, porque o dedo sobe quando o calcanhar levanta.
+    speeds = [
+        (now[b].y - before[b].y) * fps
+        for before, now in zip(track, track[1:])
+        for b in STRIDE_BONES
+        if now[b].y > before[b].y
+    ]
+    armature.animation_data.action = None
+    armature.data.pose_position = "REST"
+    scene.frame_set(0)
+    return float(np.median(speeds))  # mediana: ignora os picos na virada do passo
 
 
 def shrink_textures() -> None:
@@ -254,11 +299,18 @@ def main() -> None:
     matte_materials()
     if character:
         rename_clips(raw)
+        remove_bone_scale_tracks()
     if asset.get("cristal_emissivo"):
         make_crystal_material(name)
     shrink_textures()
     root = add_root(name)
     fit(root, asset)
+    if character and "walk" in asset["animacoes"]:
+        # O jogo lê isto para tocar o walk no ritmo da velocidade real, sem deslizar.
+        stride = measure_stride("walk")
+        info = {"passada_walk_m_s": round(stride, 3)}
+        (folder / f"{name}.json").write_text(json.dumps(info, indent=2, ensure_ascii=False) + "\n")
+        print(f"  passada do walk: {stride:.3f} m/s")
     for obj in bpy.data.objects:
         if obj.type == "ARMATURE":
             obj.data.pose_position = "POSE"

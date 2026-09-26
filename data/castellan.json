@@ -1,11 +1,13 @@
 {
   // Castelão (GDD, seção 20).
-  // speed: células por segundo.
+  // speed: células por segundo. 0.4 = passada natural da animação walk da protagonista
+  //   (0,396 m/s medido pelo Blender em assets/modelos/protagonista/protagonista.json), para os pés
+  //   não deslizarem. Era 6.0; a corrida vai ser outro estado.
   // reach: alcance para construir e abrir máquinas, em células (centro a centro).
   // gatherReach: para coletar, distância máxima do centro do corpo até a borda do recurso;
   //   1.0 = precisa estar encostado, de lado ou na diagonal.
   // radius: raio do corpo para colisão, em células.
-  "speed": 6.0,
+  "speed": 0.4,
   "reach": 10.0,
   "gatherReach": 1.0,
   "radius": 0.3
