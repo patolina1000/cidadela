@@ -213,7 +213,8 @@ def breathing_idle(settings: dict) -> None:
     armature.animation_data.action = action
     scene = bpy.context.scene
     fps = scene.render.fps / scene.render.fps_base
-    frames = round(settings["periodo_s"] * fps)
+    breaths = settings.get("respiracoes", 1)
+    frames = round(settings["periodo_s"] * breaths * fps)
     bones = armature.pose.bones
     for bone in bones:
         bone.rotation_mode = "QUATERNION"
@@ -249,7 +250,9 @@ def breathing_idle(settings: dict) -> None:
     lift = ground - min(bones[f"{s}ToeBase"].head.z for s in ("Left", "Right"))
 
     for frame in range(0, frames + 1, IDLE_KEY_STEP):
-        breath = (1 - math.cos(2 * math.pi * frame / frames)) / 2  # 0 = expirado, 1 = inspirado
+        cycle = frame / frames  # 0..1 no clipe inteiro: o balanço do peso dá uma volta por clipe
+        breath = (1 - math.cos(2 * math.pi * cycle * breaths)) / 2  # 0 = expirado, 1 = inspirado
+        sway = math.sin(2 * math.pi * cycle)  # -1..1: tronco para um lado e para o outro
         for bone in bones:
             bone.location = (0, 0, 0)
             bone.rotation_quaternion = (1, 0, 0, 0)
@@ -261,21 +264,33 @@ def breathing_idle(settings: dict) -> None:
         # A coluna se abre para trás ao inspirar (+Y é trás), dividida pelos três ossos.
         for name in ("Spine02", "Spine01", "Spine"):
             turn(name, side_axis, -settings["peito_graus"] * breath / 3)
+        # Peso do corpo: só o tronco balança (o quadril levaria os pés junto).
+        turn("Spine02", front_axis, settings.get("balanco_graus", 0.0) * sway)
         # Esquerda fica em +X: girar em volta de +Y abaixa; a direita é o espelho.
         turn("LeftShoulder", front_axis, -settings["ombros_graus"] * breath)
         turn("RightShoulder", front_axis, settings["ombros_graus"] * breath)
         turn("LeftArm", front_axis, settings["bracos_graus"])
         turn("RightArm", front_axis, -settings["bracos_graus"])
+        # Ao inspirar, os braços vão um pouco para a frente (-Y) e os pulsos relaxam.
+        swing = settings.get("bracos_balanco_graus", 0.0) * breath
+        turn("LeftArm", side_axis, -swing)
+        turn("RightArm", side_axis, -swing)
         turn("LeftForeArm", side_axis, -settings["cotovelo_graus"])
         turn("RightForeArm", side_axis, -settings["cotovelo_graus"])
-        keep_rest_orientation("Head", -settings.get("cabeca_graus", 0.0))
+        wrist = settings.get("pulso_graus", 0.0) * breath
+        turn("LeftHand", side_axis, -wrist)
+        turn("RightHand", side_axis, -wrist)
+        # Cabeça: levantada, inclina junto com o balanço e acena de leve ao soltar o ar.
+        keep_rest_orientation("Head", -settings.get("cabeca_graus", 0.0)
+                              + settings.get("cabeca_aceno_graus", 0.0) * (1 - breath))
+        turn("Head", front_axis, settings.get("cabeca_inclina_graus", 0.0) * sway)
         for bone in bones:
             bone.keyframe_insert("rotation_quaternion", frame=frame)
             bone.keyframe_insert("location", frame=frame)
     armature.animation_data.action = None
     armature.data.pose_position = "REST"
     scene.frame_set(0)
-    print(f"  idle: respiração de {settings['periodo_s']:g} s feita no Blender")
+    print(f"  idle: {breaths} respirações de {settings['periodo_s']:g} s feitas no Blender")
 
 
 def channelbags(action: bpy.types.Action) -> list:

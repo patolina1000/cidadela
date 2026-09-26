@@ -692,3 +692,20 @@ onde errou, correções manuais e quanto tempo levou.
   resolvido com um scan e reimportação pelo MCP.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 23:29–23:31 de relógio.
+
+---
+
+## 2026-09-26 — Arte: idle da protagonista menos sutil, com detalhes
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** "um pouco menos sutil, coloque alguns detalhes."
+- **O que foi feito (0 créditos):** em `idle_respirando` (`tools/assets.json`) e no `breathing_idle`:
+  - respiração mais forte: peito de 4° para 6°, ombros de 5° para 7° (o ombro sobe 6,8 mm, antes 3,7 mm);
+  - clipe com 2 respirações (7 s), e nele o peso do corpo passa de um lado para o outro uma vez: o tronco
+    balança 1,5° (só o tronco; mexer no quadril levaria os pés junto);
+  - a cabeça inclina 3° junto com o balanço e acena 1,5° ao soltar o ar;
+  - ao inspirar, os braços vão 3° para a frente e os pulsos relaxam 5°.
+  - Medido: pés parados no chão durante todo o clipe; o último quadro é igual ao primeiro (laço sem salto).
+- **O que deu errado:** aspas duplas dentro do comentário do `assets.json` quebraram o JSON; troquei o texto.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 00:45–00:55 de relógio.
