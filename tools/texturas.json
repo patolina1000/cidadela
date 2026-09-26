@@ -1,0 +1,18 @@
+{
+  "_comentario": "Texturas do chão (GDD, seção 17, 'Piso e chão'). [TIPO] no estilo é trocado pelo campo 'tipo' de cada textura; as cores vêm da paleta da seção 17. chao = chão natural (só textura); piso = piso construído (textura + placa 1x1 m no Blender). emissao: gera máscara de emissão pelas cores das runas. nivelar: false mantém manchas grandes (o círculo de runas é o motivo principal). tentativa_escolhida: a imagem usada, escolhida vendo as duas em 2x2 (ver DIARIO, 26/09/2026). modo placa: laje com borda própria, sem mistura para repetir (a borda é desenho; misturar picota as runas).",
+  "estilo": "seamless tileable top-down hand-painted texture, [TIPO], stylized dark whimsical medieval, flat lighting, no shadows, no perspective, no objects, muted earthy palette",
+  "modelo_ia": "nano-banana-2",
+  "limite_creditos": 150,
+  "tentativas": 2,
+  "tamanho_px": 512,
+  "texturas": [
+    { "nome": "grama_escura", "tentativa_escolhida": 2, "grupo": "chao", "tipo": "dark mossy grass ground in deep moss green (#5E6E45 to #7A8B5A) with subtle swirls and small spiral patterns woven into the grass blades" },
+    { "nome": "terra", "tentativa_escolhida": 1, "grupo": "chao", "tipo": "packed bare earth soil in wood brown (#6B5B4B) with fine cracks and faint lighter patches" },
+    { "nome": "pedra", "tentativa_escolhida": 1, "grupo": "chao", "tipo": "flat natural rocky ground in stone grey (#A89F91) with irregular cracks and darker crevices" },
+    { "nome": "lama", "tentativa_escolhida": 2, "grupo": "chao", "tipo": "dark wet mud ground in deep brown with a faint blue-green sheen (#4F7C7A) and shallow smeared streaks" },
+    { "nome": "areia_rio", "tentativa_escolhida": 2, "grupo": "chao", "tipo": "fine river sand in wheat color (#C9B38A) with gentle wave ripples" },
+    { "nome": "piso_tabuas", "tentativa_escolhida": 2, "grupo": "piso", "tipo": "wooden plank floor with slightly crooked boards running horizontally in wood brown (#6B5B4B), visible grain and small nail heads" },
+    { "nome": "piso_pedra", "tentativa_escolhida": 1, "grupo": "piso", "tipo": "cobblestone pavement of rounded irregular stones in stone grey (#A89F91) with dark mortar gaps" },
+    { "nome": "piso_runico", "tentativa_escolhida": 2, "modo": "placa", "grupo": "piso", "nivelar": false, "emissao": { "cor": "#9BC53D" }, "tipo": "dark slate stone floor slab in deep purple grey (#2B2140 to #4A4458) engraved with a single circle of glowing sickly green (#9BC53D) runes in the center, the rest of the slab plain carved stone" }
+  ]
+}

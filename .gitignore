@@ -14,3 +14,5 @@ tools/meshy_pipeline/.venv/
 tools/meshy_pipeline/state.json
 assets/modelos/*/bruto/
 __pycache__/
+assets/texturas/*/bruto/
+tools/meshy_pipeline/textures_state.json

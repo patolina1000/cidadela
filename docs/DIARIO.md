@@ -806,3 +806,55 @@ onde errou, correções manuais e quanto tempo levou.
 - **Pendência:** o GDD foi editado aqui, mas não reexportado (o agente do jogo costuma reexportar).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 02:00–02:40 de relógio.
+
+---
+
+## 2026-09-26 — Arte: texturas do chão e placas dos pisos construídos
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** texturas do chão natural (grama escura, terra, pedra, lama, areia de rio) e dos pisos
+  construídos (tábuas, calçamento, rúnico) com a Text to Image da Meshy; repetíveis sem emenda (Python);
+  512 px; placas de 1×1 m com 5 cm e bordas chanfradas no Blender; máscara de emissão das runas;
+  prévias 4×4 com reprovação automática (até 2 tentativas por textura); limite de 150 créditos.
+- **Prompts:** modelo do pedido ("seamless tileable top-down hand-painted texture, [TIPO], stylized dark
+  whimsical medieval, flat lighting, no shadows, no perspective, no objects, muted earthy palette"), com
+  [TIPO] e as cores da paleta da seção 17 em `tools/texturas.json` (na grama, "subtle swirls and small
+  spiral patterns"; no rúnico, runas #9BC53D). Modelo de IA: `nano-banana-2` (6 créditos a imagem).
+- **Créditos:** estimativa de 48 (máximo de 96); **gastei 96** (16 imagens). Saldo: 3.034 → 2.938.
+- **O que foi feito:**
+  - `tools/meshy_pipeline/textures.py`: gera, baixa (brutas em `assets/texturas/chao/bruto/`, fora do git),
+    processa, mede, reprova, salva, faz a prévia e a máscara; `--reprocess` refaz tudo sem gerar.
+  - Repetição sem emenda: o método "deslocar meia imagem e mesclar a cruz" deixa emendas retas onde a
+    cruz encosta na borda (as duas versões têm emenda ali; o teste sintético mostrou). Troquei pela mistura
+    de 4 cópias (original e deslocadas na horizontal, na vertical e nas duas), cada uma com peso zero
+    exatamente nas suas linhas de emenda: sem emenda em lugar nenhum, com a original no centro. A cor
+    mistura suave; o detalhe fino vem da cópia dominante, com fronteira entortada por ruído repetível.
+    Antes, um nivelamento tira 75% das manchas maiores que 1/4 da imagem (senão a 4×4 forma listras).
+    Se a imagem da IA já vem repetível, ela vai direto (misturar desalinhava as tábuas).
+  - Checagem automática: percentil do degrau na junta entre as linhas da própria imagem (reprova
+    acima de 95), contraste de detalhe na faixa misturada (reprova abaixo de 0,8) e **moldura** (borda
+    lisa ou com brilho muito diferente do interior).
+  - Escolhas (as duas tentativas vistas em 2×2): grama #2, terra #1, pedra #1, lama #2, areia #2, tábuas #2,
+    calçamento #1, rúnico #2. O rúnico fica no modo "placa": é uma laje com borda própria e um círculo de
+    runas, que é o certo para uma placa de 1×1 com chanfro; misturar picotava as runas.
+  - Máscara de emissão: pixels perto do verde das runas e claros, normalizada (runas em 100%, 1,9% da
+    área). No GLB, a emissão é a cor da textura × a máscara (as runas brilham na própria cor), força 3.
+  - `tools/blender/floor_plates.py`: placa de 1 × 1 × 0,05 m, chanfro de 1,2 cm, base aberta (fica no
+    chão), pivô no centro da base, UV de cima (o topo usa a textura inteira e as laterais a borda), fosca.
+    30 triângulos. `--preview` renderiza 3×3 placas na câmera do jogo (e de noite no rúnico).
+  - Saída: `assets/texturas/chao/*.png` (8 texturas + `piso_runico_emissao.png`),
+    `assets/modelos/pisos/*.glb` (3), `assets/previews/piso/*_4x4.jpg` (8) e `*_placas_*.png` (4).
+- **O que deu errado:**
+  - **A primeira métrica de emenda reprovou tudo e custou 48 créditos à toa.** Ela comparava o pior degrau
+    entre colunas com o degrau médio; em textura real, bordas de tábuas, rachaduras e juntas fazem linhas
+    fortes de verdade. Eu a calibrei só numa imagem sintética de ruído antes de ligar a reprovação
+    automática com nova geração. Lição: calibrar a reprovação em imagens reais (ou rodar a primeira
+    tentativa sem regerar) antes de deixar o script gastar sozinho.
+  - 5 das 16 imagens vieram com moldura (placa com borda): a primeira checagem não pegava, porque a
+    moldura "combina consigo mesma" na junta. Virou a checagem de moldura, calibrada nas 16.
+  - O Blender 5.1 avisa que `use_nodes` sai no 6.0: removido deste script e do `render_views.py`.
+- **Atenção:** em 4×4, terra e pedra mostram a repetição do padrão (manchas e rachaduras); no jogo o
+  shader mistura terrenos com ruído, o que disfarça. Se incomodar, dá para gerar em 2k e usar 1 textura
+  para 2×2 células, ou gerar variações.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 02:50–03:50 de relógio.
