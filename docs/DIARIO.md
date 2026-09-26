@@ -1154,3 +1154,18 @@ onde errou, correções manuais e quanto tempo levou.
 - **Verificação:** jogo rodando sem erros; nos prints de câmera cinemática andando, abre uma clareira em volta
   dos pés dela. `docs/prints/grama_empurrao.png`.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-26 — Sombra do sol mais curta (o resto da tentativa de desempenho foi desfeito)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** empurrão da grama só na câmera cinematográfica e jogo travado a 120 FPS com melhorias de desempenho.
+- **O que foi tentado:** limite de 120 FPS, 3D em resolução menor com FSR (0,6), grama com visibilidade por
+  distância, tufos mais largos e menos numerosos (120 → 24 por célula), empurrão só na cinematográfica e sombra
+  do sol com 2 cascatas e alcance de 40. Chegou a ~120 FPS, mas mudou a grama.
+- **Resultado:** o humano pediu para voltar tudo ("a quantidade de grama antes estava perfeita") e manter só a luz,
+  de que gostou mais fraca. Ficou só a sombra do sol em `scenes/Main.tscn` (`directional_shadow_mode = 1`,
+  `directional_shadow_max_distance = 40`); o resto voltou ao commit anterior.
+- **Lição:** não trocar o visual (densidade e forma da grama) para ganhar desempenho sem perguntar antes.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados (rodado durante a tentativa; sem mudança na simulação).

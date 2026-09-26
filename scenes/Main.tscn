@@ -64,6 +64,8 @@ light_angular_distance = 4.0
 shadow_enabled = true
 shadow_opacity = 0.75
 shadow_blur = 1.6
+directional_shadow_mode = 1
+directional_shadow_max_distance = 40.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_main")
