@@ -15,13 +15,15 @@ namespace Cidadela.View;
 public partial class GrassField : Node3D
 {
     private const int ChunkCells = 8;
-    private const int MaxTuftsPerCell = 9;
+    private const int MaxTuftsPerCell = 36;
     private const string ShaderPath = "res://src/View/Grass.gdshader";
 
-    // Tufo baixo: a protagonista tem ~0,75 de altura, então a grama fica em 7% a 13% dela; itens nas esteiras
-    // ficam acima de 0,1 (e embaixo de esteira nem há grama).
-    private const float MinHeight = 0.05f;
-    private const float MaxHeight = 0.1f;
+    // Grama densa e miúda: muitos tufos pequenos em vez de poucos grandes. A protagonista tem ~0,75 de altura,
+    // então a grama fica em 5% a 9% dela; itens nas esteiras ficam acima (e embaixo de esteira nem há grama).
+    private const float MinHeight = 0.035f;
+    private const float MaxHeight = 0.07f;
+    private const float MinWidth = 0.4f;
+    private const float MaxWidth = 0.65f;
 
     private WorldGrid _grid = null!;
     private GameData _data = null!;
@@ -92,7 +94,7 @@ public partial class GrassField : Node3D
                     continue;
 
                 float height = rng.RandfRange(MinHeight, MaxHeight);
-                float width = rng.RandfRange(0.55f, 0.85f);
+                float width = rng.RandfRange(MinWidth, MaxWidth);
                 var basis = new Basis(Vector3.Up, rng.Randf() * Mathf.Tau).Scaled(new Vector3(width, height, width));
                 transforms.Add(new Transform3D(basis, new Vector3(px, 0f, pz)));
                 colors.Add(PickColor(rng));

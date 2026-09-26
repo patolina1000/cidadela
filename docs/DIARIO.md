@@ -1080,3 +1080,16 @@ onde errou, correções manuais e quanto tempo levou.
   `GrassPurple`. Depois, `master` avançada até a `arte`.
 - **Medido na tela:** grama #251D34, terra #120B12. `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80.
 - **Tempo:** 06:45–07:00 de relógio.
+
+---
+
+## 2026-09-26 — Grama mais densa e miúda
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** "estou achando muita pouca grama, queria uma grama densa e pequena."
+- **O que foi feito:** até 36 tufos por célula (eram 9); tufos menores: altura 0,035–0,07 (era 0,05–0,1) e
+  largura 0,4–0,65 (era 0,55–0,85). Cores roxas da sessão de arte mantidas.
+- **Desempenho:** mapa de teste com 25.681 tufos (eram ~6.400) a 145 FPS no rótulo de depuração.
+- **Print:** `docs/prints/grama_densa.png`. O print de perto não saiu: a janela do jogo estava em segundo plano
+  e o MCP só devolvia o último quadro.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
