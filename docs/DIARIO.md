@@ -665,3 +665,30 @@ onde errou, correções manuais e quanto tempo levou.
   da malha. As três coisas foram corrigidas com os números acima.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 00:15–00:35 de relógio.
+
+---
+
+## 2026-09-25 — Estado de corrida (Shift)
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** a animação de corrida (run) já existe na protagonista e o personagem anda devagar demais;
+  criar o estado de corrida com um botão.
+- **Contexto:** na integração da arte (outra sessão, branch `arte` já na `master`), a velocidade do Castelão
+  caiu de 6 para 0,8 célula/s para casar com a passada do walk; a corrida ficou anotada como "outro estado".
+- **O que foi feito:**
+  - `data/castellan.json`: `runSpeed` 2,5 células/s (passada natural do clipe run, 2,525 m/s do
+    `protagonista.json`); o carregador exige `runSpeed` ≥ `speed`.
+  - Simulação: `MoveCommand` leva "correndo"; `Castellan.IsRunning` (parado com Shift não conta).
+    78 testes (3 novos).
+  - Entrada: ação `run` no Shift; o comando só é reenviado quando a direção ou a corrida mudam.
+  - Visual: `CastellanVisual` toca `run` correndo, com `speed_scale` pela velocidade real sobre a passada do run
+    (mesma lógica que já existia para o walk).
+  - GDD (seção 20, "Movimento") atualizado e reexportado; o export trouxe também a seção "Piso e chão" que a
+    sessão de arte escreveu no documento vivo.
+  - Verificado no jogo: Shift + A → clipe `run` (speed_scale 0,99) a 2,5 células/s; solta Shift → `walk` (1,01);
+    solta A → `idle`. Na câmera cinematográfica, a pose de corrida aparece certinha.
+- **O que deu errado:** na primeira execução o Castelão apareceu como a cápsula antiga: o editor aberto aqui não
+  tinha importado o `protagonista.glb` novo (faltava o arquivo em `.godot/imported`). Não era erro de código;
+  resolvido com um scan e reimportação pelo MCP.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 23:29–23:31 de relógio.
