@@ -28,7 +28,9 @@ FOOTPRINT = 0.9  # base máxima de construções e recursos, para caber em 1 cé
 CRYSTAL_MATERIAL = "Cristal"
 CRYSTAL_EMISSION_STRENGTH = 3.0
 STRIDE_BONES = ("LeftToeBase", "RightToeBase")
-LOCOMOTION_CLIPS = ("jog", "sprint")  # clipes com passada medida para protagonista.json
+LOCOMOTION_CLIPS = ("jog", "sprint")
+LEAN_TOLERANCE = 0.5  # graus
+LEAN_MAX_PASSES = 6  # clipes com passada medida para protagonista.json
 IDLE_KEY_STEP = 3  # quadros entre as chaves do idle feito à mão
 MATTE_ROUGHNESS = 0.8  # fosco, como textura pintada à mão
 # O cristal fica no peito: faixa de altura (fração da altura total) e perto do eixo central.
@@ -320,6 +322,91 @@ def breathing_idle(settings: dict) -> None:
     print(f"  idle: {breaths} respirações de {settings['periodo_s']:g} s feitas no Blender")
 
 
+def trunk_lean(armature: bpy.types.Object) -> float:
+    """Inclinação do tronco para a frente, em graus (quadril → pescoço contra a vertical; frente é -Y)."""
+    up = (armature.matrix_world @ armature.pose.bones["neck"].head) - (armature.matrix_world @ armature.pose.bones["Hips"].head)
+    return math.degrees(math.atan2(-up.y, up.z))
+
+
+def set_trunk_lean(clip: str, target: float) -> None:
+    """Desloca a inclinação média do tronco até <target>, preservando o balanço de cada passada.
+
+    O trecho quadril → primeiro osso da coluna não gira, então uma passada não chega ao alvo:
+    repete até ficar a menos de LEAN_TOLERANCE graus.
+    """
+    first = None
+    for _ in range(LEAN_MAX_PASSES):
+        before, after = trunk_lean_pass(clip, target)
+        first = before if first is None else first
+        if abs(after - target) < LEAN_TOLERANCE:
+            break
+    print(f"  tronco do {clip}: {first:.0f}° -> {after:.1f}° de inclinação média")
+
+
+def trunk_lean_pass(clip: str, target: float) -> tuple[float, float]:
+    """Uma passada da correção. A rotação é dividida pelos três ossos da coluna. Pescoço e ombros voltam
+    à orientação original no mundo: a cabeça continua olhando para onde olhava, e os braços balançam na
+    mesma altura (sem isso, ao endireitar o tronco, as mãos subiam até o rosto)."""
+    armature = next(o for o in bpy.data.objects if o.type == "ARMATURE")
+    armature.data.pose_position = "POSE"
+    armature.animation_data_create()
+    action = bpy.data.actions[clip]
+    armature.animation_data.action = action
+    if action.slots:
+        armature.animation_data.action_slot = action.slots[0]
+    scene = bpy.context.scene
+    spine = ("Spine02", "Spine01", "Spine")
+    kept = ("neck", "LeftShoulder", "RightShoulder")
+    names = spine + kept
+    bones = armature.pose.bones
+    paths = {f'pose.bones["{n}"].rotation_quaternion' for n in names}
+    curves = [c for bag in channelbags(action) for c in bag.fcurves if c.data_path in paths]
+    times = sorted({k.co.x for c in curves for k in c.keyframe_points})
+    leans = []
+    for time in times:
+        set_time(scene, time)
+        leans.append(trunk_lean(armature))
+    before = sum(leans) / len(leans)
+    # +X é o eixo lateral no espaço do esqueleto: girar em volta dele leva o topo para a frente (-Y).
+    step = math.radians(target - before) / 3
+    corrected = {name: {} for name in names}
+    for time in times:
+        set_time(scene, time)
+        # Orientação no espaço do esqueleto (o objeto só tem escala, então equivale ao mundo).
+        orientation = {name: bones[name].matrix.to_3x3().normalized() for name in kept}
+        for name in spine:
+            bones[name].rotation_mode = "QUATERNION"
+            bones[name].matrix = rotate_about_head(bones[name].matrix.copy(), Vector((1, 0, 0)), step)
+            bpy.context.view_layer.update()
+        for name in kept:
+            bone = bones[name]
+            bone.rotation_mode = "QUATERNION"
+            size = bone.matrix.to_scale()
+            bone.matrix = (Matrix.Translation(bone.matrix.to_translation()) @ orientation[name].to_4x4()
+                           @ Matrix.Diagonal((*size, 1)))
+            bpy.context.view_layer.update()
+        for name in names:
+            corrected[name][time] = bones[name].rotation_quaternion.copy()
+    for name in names:
+        path = f'pose.bones["{name}"].rotation_quaternion'
+        bag = channelbags(action)[0]
+        for index in range(4):
+            curve = next((c for c in bag.fcurves if c.data_path == path and c.array_index == index), None)
+            if curve is None:
+                curve = bag.fcurves.new(path, index=index, group_name=name)
+            curve.keyframe_points.clear()
+            for time in times:
+                curve.keyframe_points.insert(time, corrected[name][time][index], options={"FAST"})
+    after = []
+    for time in times:
+        set_time(scene, time)
+        after.append(trunk_lean(armature))
+    armature.animation_data.action = None
+    armature.data.pose_position = "REST"
+    scene.frame_set(0)
+    return before, sum(after) / len(after)
+
+
 def channelbags(action: bpy.types.Action) -> list:
     return [bag for layer in action.layers for strip in layer.strips for bag in strip.channelbags]
 
@@ -516,6 +603,8 @@ def main() -> None:
         remove_bone_scale_tracks()
         for clip, degrees in asset.get("fechar_bracos_graus", {}).items():
             close_arms(clip, degrees)
+        for clip, degrees in asset.get("inclinacao_tronco_graus", {}).items():
+            set_trunk_lean(clip, degrees)
     if asset.get("cristal_emissivo"):
         make_crystal_material(name)
     shrink_textures()

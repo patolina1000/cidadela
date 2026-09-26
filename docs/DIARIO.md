@@ -741,3 +741,38 @@ onde errou, correções manuais e quanto tempo levou.
   as passadas estão em `protagonista.json`.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:00–01:25 de relógio.
+
+---
+
+## 2026-09-26 — Arte: inclinação do tronco nas duas corridas (análise de biomecânica)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** "não é ao contrário na vida real? Quando fica inclinado vai mais rápido? Analise bem."
+- **Medição (Blender, antes):**
+
+  | | jog (Run 3) | sprint | na vida real, a mais rápida tem |
+  |---|---|---|---|
+  | tronco inclinado | **28°** | 11° | um pouco mais (ver abaixo) |
+  | cadência | 152 passos/min | 180 | mais ✔ |
+  | passo | 0,63 m (1,8× a perna) | 0,81 m (2,3×) | mais longo ✔ |
+  | calcanhar sobe | 0,71× a perna | 0,96× | mais alto ✔ |
+  | amplitude dos braços | 110° | 122° | maior ✔ |
+  | coxa à frente | 53° | 48° | maior ✘ (levemente invertido) |
+
+- **Conclusão:** o humano tinha razão sobre a inclinação. Na corrida real, a grande inclinação (uns 45°)
+  aparece só na arrancada (aceleração); em velocidade constante o corpo fica quase ereto, entre 5° e 15°,
+  inclinado a partir do tornozelo. O que marca a velocidade é cadência, comprimento do passo, joelho e
+  calcanhar altos e braços vigorosos. A Run 3 mantinha 28° constantes, uma postura de arrancada, e por
+  isso parecia a mais rápida. Nos outros sinais, o sprint já era o mais rápido.
+- **Decisão do humano:** jog com 8° e sprint com 16° (um pouco a mais para ler como mais rápida com a câmera
+  de cima).
+- **O que foi feito (0 créditos):** `inclinacao_tronco_graus` em `tools/assets.json` e `set_trunk_lean` no
+  `normalize.py`. A correção desloca a inclinação média e preserva o balanço de cada passada; a rotação é
+  dividida pelos três ossos da coluna e repetida até ficar a menos de 0,5° do alvo (o trecho quadril →
+  coluna não gira). Pescoço e ombros mantêm a orientação no mundo. Resultado: jog com 9° (entre 7° e 10°),
+  sprint com 16° (entre 13° e 19°); passadas, pés e braços iguais.
+- **O que deu errado:** a primeira passada só chegou a 20° e 13° (o trecho do quadril entra na medida); virou
+  um laço de correção. Ao endireitar o jog, os braços, que são filhos da coluna, subiram junto e as mãos
+  chegavam ao rosto; resolvido mantendo a orientação dos ombros.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 01:30–01:55 de relógio.
