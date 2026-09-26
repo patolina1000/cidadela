@@ -1,0 +1,10 @@
+{
+  // Todos os itens do jogo: nome mostrado e cor (hex) das formas simples do protótipo (paleta do GDD, seção 17).
+  // A ordem aqui é a ordem dos botões do inventário.
+  "wood":  { "name": "Madeira", "color": "6B5B4B" },
+  "stone": { "name": "Pedra",   "color": "A89F91" },
+  "iron":  { "name": "Ferro",   "color": "1E2A3A" },
+  "shaft": { "name": "Haste",   "color": "C9B38A" },
+  "ingot": { "name": "Lingote", "color": "8C929C" },
+  "sword": { "name": "Espada",  "color": "EDE6D6" }
+}

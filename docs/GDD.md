@@ -113,6 +113,8 @@ A automação usa tecnologia medieval plausível no início e magia no fim, subs
 
 Cada item de combate nasce de uma cadeia que começa simples e ganha etapas a cada era. Os números de etapas abaixo são metas de design.
 
+**Como as máquinas funcionam (protótipo, 25/09/2026):** cada máquina tem uma receita em `data/recipes.json` (serraria: 1 madeira → 2 hastes em 2 s; fundição: 2 ferros → 1 lingote em 3 s; forja: 2 lingotes + 1 haste → 1 espada em 5 s). Ela recebe itens de esteiras que apontam para ela (ou do Castelão, à mão), guarda até 2 ciclos de entrada, trabalha quando tem tudo e solta o produto na esteira ou baú à sua frente (a seta no chão; R gira ao construir). Com a saída cheia (5 ciclos), para. Trabalhando, mostra que está viva: a serraria gira a lâmina, fundição e forja soltam fumaça.
+
 ### Metalurgia e armas (espadas, lanças, machados)
 
 - **Era I (3 etapas):** minério de cobre + estanho → fundição de bronze → forja → espada de bronze.

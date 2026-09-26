@@ -122,7 +122,7 @@ public class BeltTests
         Assert.Equal(2, chest.Count("wood"));
         Assert.Equal(1, world.Castellan.Inventory.Count("wood"));
 
-        world.Enqueue(new TakeFromChestCommand(new GridPos(6, 4)));
+        world.Enqueue(new TakeAllCommand(new GridPos(6, 4)));
         world.Tick();
         Assert.True(chest.IsEmpty);
         Assert.Equal(3, world.Castellan.Inventory.Count("wood"));

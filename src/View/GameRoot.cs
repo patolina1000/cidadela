@@ -14,9 +14,11 @@ namespace Cidadela.View;
 public partial class GameRoot : Node3D
 {
     [Export(PropertyHint.File, "*.json")] public string MapPath = "res://data/maps/mapa_teste.json";
+    [Export(PropertyHint.File, "*.json")] public string ItemsPath = "res://data/items.json";
     [Export(PropertyHint.File, "*.json")] public string ResourcesPath = "res://data/resources.json";
     [Export(PropertyHint.File, "*.json")] public string CastellanPath = "res://data/castellan.json";
     [Export(PropertyHint.File, "*.json")] public string BuildingsPath = "res://data/buildings.json";
+    [Export(PropertyHint.File, "*.json")] public string RecipesPath = "res://data/recipes.json";
 
     private SimWorld _world = null!;
     private readonly SimClock _clock = new();
@@ -42,9 +44,11 @@ public partial class GameRoot : Node3D
     public override void _Ready()
     {
         GameData data = GameData.Parse(
+            FileAccess.GetFileAsString(ItemsPath),
             FileAccess.GetFileAsString(ResourcesPath),
             FileAccess.GetFileAsString(CastellanPath),
-            FileAccess.GetFileAsString(BuildingsPath));
+            FileAccess.GetFileAsString(BuildingsPath),
+            FileAccess.GetFileAsString(RecipesPath));
         _world = MapLoader.Parse(FileAccess.GetFileAsString(MapPath), data);
 
         _view = GetNode<WorldView>("WorldView");
@@ -65,7 +69,7 @@ public partial class GameRoot : Node3D
 
         _inventoryBar = new InventoryBar { Name = "InventoryBar" };
         GetNode("DebugHud").AddChild(_inventoryBar);
-        _inventoryBar.Build(data.Resources.Values);
+        _inventoryBar.Build(data.Items);
         _inventoryBar.ItemClicked += Hold;
 
         // A linha de status desce para baixo dos botões do inventário.
@@ -118,8 +122,8 @@ public partial class GameRoot : Node3D
             _world.Enqueue(new BuildCommand(_selected.Kind, cell, _buildDirection));
         else if (_heldItem is not null)
             _world.Enqueue(new InsertItemCommand(cell, _heldItem));
-        else if (_world.BuildingAt(cell)?.Storage is not null)
-            _world.Enqueue(new TakeFromChestCommand(cell));
+        else if (_world.BuildingAt(cell) is { } b && (b.Storage is not null || b.Machine is not null))
+            _world.Enqueue(new TakeAllCommand(cell));
         else
             _world.Enqueue(new GatherCommand(cell));
     }
@@ -176,7 +180,7 @@ public partial class GameRoot : Node3D
         _view.Render(_clock.Alpha, delta);
         _view.ShowHover(_selected is null ? hovered : null);
         _view.ShowGhost(_selected, hovered, _buildDirection);
-        _view.ShowChestInfo(hovered);
+        _view.ShowBuildingInfo(hovered);
         _hotbar.ShowAffordable(_world.Castellan.Inventory);
         _inventoryBar.ShowCounts(_world.Castellan.Inventory);
         UpdateHud(delta);
@@ -230,7 +234,7 @@ public partial class GameRoot : Node3D
         _inventoryLabel.Text = _selected is not null
             ? $"Construindo {_selected.Name} ({DirectionName(_buildDirection)}) — R gira, botão direito cancela"
             : _heldItem is not null
-                ? $"Segurando {_world.Data.Resource(_heldItem).Name} — clique numa esteira ou baú; botão direito solta"
+                ? $"Segurando {_world.Data.Item(_heldItem).Name} — clique numa esteira, baú ou máquina; botão direito solta"
                 : castellan.GatherTarget is ResourceNode node
                     ? $"Coletando {node.Type.Name} {castellan.GatherProgress:P0} (restam {node.Remaining})"
                     : "";

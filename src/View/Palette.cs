@@ -1,3 +1,4 @@
+using Cidadela.Simulation;
 using Godot;
 
 namespace Cidadela.View;
@@ -18,11 +19,6 @@ public static class Palette
     /// <summary>Fora da paleta do GDD: só para avisos de interface (ex.: fora do alcance).</summary>
     public static readonly Color Warning = new("C8402F");
 
-    public static Color ForResource(string kind) => kind switch
-    {
-        "wood" => Wood,
-        "stone" => Stone,
-        "iron" => Midnight,
-        _ => Colors.Magenta,
-    };
+    /// <summary>Cor de um item, vinda de data/items.json.</summary>
+    public static Color ForItem(GameData data, string kind) => new(data.Item(kind).Color);
 }

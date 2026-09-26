@@ -17,24 +17,41 @@ public sealed class GameData
         AllowTrailingCommas = true,
     };
 
+    /// <summary>Itens na ordem do arquivo (a ordem dos botões do inventário).</summary>
+    public IReadOnlyList<ItemType> Items { get; }
+
     public IReadOnlyDictionary<string, ResourceType> Resources { get; }
     public CastellanStats Castellan { get; }
 
     /// <summary>Construções na ordem do arquivo (a ordem da barra de construção).</summary>
     public IReadOnlyList<BuildingType> Buildings { get; }
 
-    private readonly Dictionary<string, BuildingType> _buildingByKind;
+    private readonly Dictionary<string, BuildingType> _buildingByKind = new();
+    private readonly Dictionary<string, ItemType> _itemByKind = new();
+    private readonly Dictionary<string, RecipeType> _recipeByMachine = new();
 
-    private GameData(IReadOnlyDictionary<string, ResourceType> resources, CastellanStats castellan,
-        List<BuildingType> buildings)
+    private GameData(List<ItemType> items, IReadOnlyDictionary<string, ResourceType> resources, CastellanStats castellan,
+        List<BuildingType> buildings, List<RecipeType> recipes)
     {
+        Items = items;
         Resources = resources;
         Castellan = castellan;
         Buildings = buildings;
-        _buildingByKind = new Dictionary<string, BuildingType>();
+        foreach (ItemType item in items)
+            _itemByKind[item.Kind] = item;
         foreach (BuildingType b in buildings)
             _buildingByKind[b.Kind] = b;
+        foreach (RecipeType r in recipes)
+            _recipeByMachine[r.Machine] = r;
     }
+
+    public ItemType Item(string kind) =>
+        _itemByKind.TryGetValue(kind, out ItemType? type)
+            ? type
+            : throw new FormatException($"Item desconhecido: \"{kind}\".");
+
+    /// <summary>Receita que essa construção faz, ou null se não é máquina.</summary>
+    public RecipeType? RecipeFor(string buildingKind) => _recipeByMachine.GetValueOrDefault(buildingKind);
 
     public BuildingType Building(string kind) =>
         _buildingByKind.TryGetValue(kind, out BuildingType? type)
@@ -46,45 +63,99 @@ public sealed class GameData
             ? type
             : throw new FormatException($"Recurso desconhecido: \"{kind}\".");
 
-    public static GameData Parse(string resourcesJson, string castellanJson, string buildingsJson)
+    public static GameData Parse(string itemsJson, string resourcesJson, string castellanJson,
+        string buildingsJson, string recipesJson)
     {
+        var items = new List<ItemType>();
+        foreach ((string kind, ItemData i) in Ordered<ItemData>(itemsJson, "items.json"))
+            items.Add(new ItemType(kind, i.Name, i.Color));
+        var itemKinds = new HashSet<string>();
+        foreach (ItemType i in items)
+            itemKinds.Add(i.Kind);
+
         var raw = JsonSerializer.Deserialize<Dictionary<string, ResourceData>>(resourcesJson, JsonOptions)
             ?? throw new FormatException("resources.json vazio.");
         var resources = new Dictionary<string, ResourceType>();
         foreach ((string kind, ResourceData r) in raw)
         {
+            if (!itemKinds.Contains(kind))
+                throw new FormatException($"Recurso \"{kind}\" não existe em items.json.");
             if (r.GatherSeconds <= 0f || r.Amount <= 0)
                 throw new FormatException($"Recurso \"{kind}\" precisa de gatherSeconds e amount positivos.");
-            int ticks = Math.Max(1, (int)MathF.Round(r.GatherSeconds * SimClock.TicksPerSecond));
-            resources[kind] = new ResourceType(kind, r.Name, ticks, r.Amount);
+            ItemType item = items.Find(i => i.Kind == kind)!;
+            resources[kind] = new ResourceType(kind, item.Name, SecondsToTicks(r.GatherSeconds), r.Amount);
         }
 
         var c = JsonSerializer.Deserialize<CastellanData>(castellanJson, JsonOptions)
             ?? throw new FormatException("castellan.json vazio.");
         var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius);
 
-        // Lido como lista de pares para manter a ordem do arquivo.
-        using JsonDocument doc = JsonDocument.Parse(buildingsJson, new JsonDocumentOptions
+        var buildings = new List<BuildingType>();
+        foreach ((string kind, BuildingData b) in Ordered<BuildingData>(buildingsJson, "buildings.json"))
+        {
+            CheckItems(itemKinds, b.Cost, $"custo de \"{kind}\"");
+            if (b.BeltSpeed < 0f)
+                throw new FormatException($"beltSpeed negativo em \"{kind}\".");
+            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage));
+        }
+
+        var recipes = new List<RecipeType>();
+        foreach ((string id, RecipeData r) in Ordered<RecipeData>(recipesJson, "recipes.json"))
+        {
+            if (!buildings.Exists(b => b.Kind == r.Machine))
+                throw new FormatException($"Receita \"{id}\": máquina desconhecida \"{r.Machine}\".");
+            if (recipes.Exists(x => x.Machine == r.Machine))
+                throw new FormatException($"Receita \"{id}\": \"{r.Machine}\" já tem receita (por enquanto, uma por máquina).");
+            if (r.Seconds <= 0f || r.Inputs.Count == 0 || r.Outputs.Count == 0)
+                throw new FormatException($"Receita \"{id}\" precisa de entradas, saídas e seconds positivos.");
+            CheckItems(itemKinds, r.Inputs, $"entradas de \"{id}\"");
+            CheckItems(itemKinds, r.Outputs, $"saídas de \"{id}\"");
+            recipes.Add(new RecipeType(id, r.Machine, r.Inputs, r.Outputs, SecondsToTicks(r.Seconds)));
+        }
+
+        return new GameData(items, resources, stats, buildings, recipes);
+    }
+
+    private static int SecondsToTicks(float seconds) =>
+        Math.Max(1, (int)MathF.Round(seconds * SimClock.TicksPerSecond));
+
+    private static void CheckItems(HashSet<string> itemKinds, Dictionary<string, int> items, string where)
+    {
+        foreach ((string item, int amount) in items)
+            if (!itemKinds.Contains(item) || amount <= 0)
+                throw new FormatException($"Item inválido em {where}: {item} × {amount}.");
+    }
+
+    /// <summary>Lê um objeto JSON como lista de pares, mantendo a ordem do arquivo.</summary>
+    private static List<(string Key, T Value)> Ordered<T>(string json, string file)
+    {
+        using JsonDocument doc = JsonDocument.Parse(json, new JsonDocumentOptions
         {
             CommentHandling = JsonCommentHandling.Skip,
             AllowTrailingCommas = true,
         });
-        var buildings = new List<BuildingType>();
+        var list = new List<(string, T)>();
         foreach (JsonProperty prop in doc.RootElement.EnumerateObject())
         {
-            BuildingData b = prop.Value.Deserialize<BuildingData>(JsonOptions)
-                ?? throw new FormatException($"Construção \"{prop.Name}\" vazia.");
-            foreach ((string item, int amount) in b.Cost)
-            {
-                if (!resources.ContainsKey(item) || amount <= 0)
-                    throw new FormatException($"Custo inválido em \"{prop.Name}\": {item} × {amount}.");
-            }
-            if (b.BeltSpeed < 0f)
-                throw new FormatException($"beltSpeed negativo em \"{prop.Name}\".");
-            buildings.Add(new BuildingType(prop.Name, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage));
+            T value = prop.Value.Deserialize<T>(JsonOptions)
+                ?? throw new FormatException($"{file}: \"{prop.Name}\" vazio.");
+            list.Add((prop.Name, value));
         }
+        return list;
+    }
 
-        return new GameData(resources, stats, buildings);
+    private sealed class ItemData
+    {
+        public string Name { get; set; } = "";
+        public string Color { get; set; } = "FF00FF";
+    }
+
+    private sealed class RecipeData
+    {
+        public string Machine { get; set; } = "";
+        public Dictionary<string, int> Inputs { get; set; } = new();
+        public Dictionary<string, int> Outputs { get; set; } = new();
+        public float Seconds { get; set; }
     }
 
     private sealed class BuildingData
@@ -98,7 +169,6 @@ public sealed class GameData
 
     private sealed class ResourceData
     {
-        public string Name { get; set; } = "";
         public float GatherSeconds { get; set; }
         public int Amount { get; set; }
     }

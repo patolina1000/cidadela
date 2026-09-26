@@ -1,0 +1,8 @@
+{
+  // Receitas das máquinas (GDD, seção 5; cadeia do MVP: ferro → espada, madeira → hastes para flechas).
+  // machine: construção que faz a receita (data/buildings.json). Por enquanto, uma receita por máquina.
+  // inputs/outputs: itens por ciclo. seconds: duração de um ciclo.
+  "shafts": { "machine": "sawmill", "inputs": { "wood": 1 },              "outputs": { "shaft": 2 }, "seconds": 2 },
+  "ingot":  { "machine": "smelter", "inputs": { "iron": 2 },              "outputs": { "ingot": 1 }, "seconds": 3 },
+  "sword":  { "machine": "forge",   "inputs": { "ingot": 2, "shaft": 1 }, "outputs": { "sword": 1 }, "seconds": 5 }
+}

@@ -354,3 +354,30 @@ onde errou, correções manuais e quanto tempo levou.
   retorno visual; acrescentei os cubinhos voando.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:49–21:53 de relógio.
+
+---
+
+## 2026-09-25 — Marco 5: máquinas que produzem
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** "pode ir para o próximo marco" (autorizado sem plano detalhado; o plano foi resumido na conversa).
+- **O que foi feito:**
+  - Dados: `data/items.json` (nome e cor de todos os itens; o código não tem mais cores fixas por recurso),
+    `data/recipes.json` (serraria 1 madeira → 2 hastes / 2 s; fundição 2 ferros → 1 lingote / 3 s;
+    forja 2 lingotes + 1 haste → 1 espada / 5 s). `resources.json` perdeu o nome (vem de items.json).
+  - Simulação: `MachineState` (entrada até 2 ciclos, trabalha com tudo, saída até 5 ciclos e para),
+    esteira que aponta para a máquina a abastece, a máquina empurra 1 item por tick para a esteira ou baú
+    à sua frente, o Castelão põe à mão e recolhe a produção (`TakeAllCommand`, que substituiu
+    `TakeFromChestCommand`), desmontar devolve entrada, saída e o ciclo em andamento. Validação das
+    receitas no carregamento. 59 testes (13 novos).
+  - Cena: seta de saída nas máquinas; lâmina da serraria gira e fundição/forja soltam fumaça quando trabalham;
+    etiqueta da máquina com receita, entrada, pronto e estado ("Trabalhando 40%", "Esperando 2 Ferro",
+    "Parada: saída cheia"); inventário com os 6 itens; recolher da máquina faz os itens voarem.
+  - GDD (seção 5, "Como as máquinas funcionam") atualizado e reexportado.
+  - Verificado no jogo: desmontei a forja (madeira e ferro); baú na frente da serraria; 2 madeiras à mão →
+    serraria girando → "Baú / Haste: 4"; 4 ferros na fundição → fumaça → "Pronto: Lingote: 2";
+    recolhi 2 lingotes.
+- **O que deu errado:** string bruta do C# (`"""`) quebrada em duas linhas num teste (erro de sintaxe, corrigido).
+  Recolher da máquina não tinha retorno visual; ganhou os itens voando.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:55–22:00 de relógio.

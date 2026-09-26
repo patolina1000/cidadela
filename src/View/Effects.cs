@@ -35,6 +35,39 @@ public partial class Effects : Node3D
         GetTree().CreateTimer(particles.Lifetime + 0.2).Timeout += particles.QueueFree;
     }
 
+    /// <summary>Uma baforada de fumaça subindo devagar (máquina trabalhando).</summary>
+    public void Smoke(Vector3 position)
+    {
+        var puff = new SphereMesh { Radius = 0.09f, Height = 0.18f, RadialSegments = 8, Rings = 4 };
+        puff.Material = new StandardMaterial3D
+        {
+            AlbedoColor = Palette.Stone.Lightened(0.35f) with { A = 0.7f },
+            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+            ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+        };
+
+        var particles = new CpuParticles3D
+        {
+            Name = "Smoke",
+            Position = position,
+            Mesh = puff,
+            Amount = 3,
+            Lifetime = 1.2,
+            OneShot = true,
+            Explosiveness = 0.6f,
+            Direction = Vector3.Up,
+            Spread = 18f,
+            InitialVelocityMin = 0.4f,
+            InitialVelocityMax = 0.8f,
+            Gravity = new Vector3(0f, 0.3f, 0f),
+            ScaleAmountMin = 0.8f,
+            ScaleAmountMax = 1.6f,
+            Emitting = true,
+        };
+        AddChild(particles);
+        GetTree().CreateTimer(particles.Lifetime + 0.2).Timeout += particles.QueueFree;
+    }
+
     /// <summary>
     /// Um cubinho que voa em arco de <paramref name="from"/> até o alvo (seguindo o alvo se ele andar)
     /// e some ao chegar. Mostra itens voltando para o Castelão.

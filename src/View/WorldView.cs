@@ -21,6 +21,8 @@ public partial class WorldView : Node3D
     private readonly HashSet<int> _seenItems = new();
     private Label3D _chestLabel = null!;
     private readonly Dictionary<Building, Dictionary<string, int>> _chestSnapshots = new();
+    private float _smokeTimer;
+    private float _time;
     private int _buildingsVersion = -1;
     private Node3D? _ghost;
     private string? _ghostKind;
@@ -52,7 +54,7 @@ public partial class WorldView : Node3D
             var root = new Node3D { Name = $"Resource_{resource.Kind}_{resource.Id}", Position = CellCenter(resource.Cell, 0f) };
             AddChild(root);
             var mesh = new BoxMesh { Size = new Vector3(0.8f, 0.8f, 0.8f) };
-            mesh.Material = new StandardMaterial3D { AlbedoColor = Palette.ForResource(resource.Kind), Roughness = 0.9f };
+            mesh.Material = new StandardMaterial3D { AlbedoColor = Palette.ForItem(_world.Data, resource.Kind), Roughness = 0.9f };
             root.AddChild(new MeshInstance3D { Name = "Mesh", Mesh = mesh, Position = new Vector3(0f, 0.4f, 0f) });
             _resourceVisuals[resource] = new ResourceVisual { Root = root, LastRemaining = resource.Remaining };
         }
@@ -102,6 +104,7 @@ public partial class WorldView : Node3D
             SyncBuildings(withEffects: true);
         RenderBeltItems((float)alpha);
         RenderChestTakes();
+        RenderMachines(dt);
 
         foreach ((Villager villager, Node3D node) in _villagerNodes)
         {
@@ -168,7 +171,7 @@ public partial class WorldView : Node3D
             if (!_itemNodes.TryGetValue(item.Id, out MeshInstance3D? node))
             {
                 var cube = new BoxMesh { Size = new Vector3(0.24f, 0.24f, 0.24f) };
-                cube.Material = new StandardMaterial3D { AlbedoColor = Palette.ForResource(item.Kind), Roughness = 0.9f };
+                cube.Material = new StandardMaterial3D { AlbedoColor = Palette.ForItem(_world.Data, item.Kind), Roughness = 0.9f };
                 node = new MeshInstance3D { Name = $"Item_{item.Id}", Mesh = cube };
                 AddChild(node);
                 _itemNodes[item.Id] = node;
@@ -187,14 +190,15 @@ public partial class WorldView : Node3D
     }
 
     /// <summary>
-    /// Quando um baú perde itens (o Castelão recolheu), os itens voam até ele, como no desmontar.
-    /// Compara com o que cada baú tinha no frame anterior.
+    /// Quando um baú ou a saída de uma máquina perde itens (o Castelão recolheu), os itens voam até ele,
+    /// como no desmontar. Compara com o que cada um tinha no frame anterior. A máquina que empurra
+    /// para uma esteira também perde itens, mas 1 por tick: só grupos de 2 ou mais contam como recolher.
     /// </summary>
     private void RenderChestTakes()
     {
         foreach (Building building in _buildingNodes.Keys)
         {
-            if (building.Storage is not Inventory storage)
+            if ((building.Storage ?? building.Machine?.Output) is not Inventory storage)
                 continue;
             if (!_chestSnapshots.TryGetValue(building, out Dictionary<string, int>? before))
             {
@@ -207,9 +211,11 @@ public partial class WorldView : Node3D
             foreach ((string kind, int had) in before)
             {
                 int taken = had - storage.Count(kind);
+                if (building.Machine is not null && taken < 2)
+                    continue;
                 for (int i = 0; i < System.Math.Min(taken, 6); i++)
                 {
-                    _effects.FlyTo(from, _castellan, Palette.ForResource(kind), delay);
+                    _effects.FlyTo(from, _castellan, Palette.ForItem(_world.Data, kind), delay);
                     delay += 0.05;
                 }
             }
@@ -217,25 +223,101 @@ public partial class WorldView : Node3D
         }
     }
 
-    /// <summary>Etiqueta sobre o baú sob o cursor, com o que ele guarda; null esconde.</summary>
-    public void ShowChestInfo(GridPos? cell)
+    /// <summary>
+    /// Máquina trabalhando mostra que está viva (GDD, seção 17: "estado visível"): a serraria gira a lâmina,
+    /// as outras pulsam e soltam fumaça. Parada, fica imóvel.
+    /// </summary>
+    private void RenderMachines(float dt)
     {
-        if (cell is not GridPos c || _world.BuildingAt(c) is not { Storage: Inventory storage } chest)
+        _time += dt;
+        _smokeTimer -= dt;
+        bool puff = _smokeTimer <= 0f;
+        if (puff)
+            _smokeTimer = 0.45f;
+
+        foreach ((Building building, Node3D node) in _buildingNodes)
+        {
+            if (building.Machine is not MachineState machine)
+                continue;
+            var model = node.GetNode<Node3D>("Model");
+            if (model.GetNodeOrNull<Node3D>("Spin") is Node3D spin && machine.IsWorking)
+                spin.Rotation = new Vector3(spin.Rotation.X + dt * 12f, 0f, 0f);
+
+            float pulse = machine.IsWorking ? 1f + 0.04f * Mathf.Sin(_time * 10f) : 1f;
+            model.Scale = new Vector3(1f, pulse, 1f);
+
+            if (puff && machine.IsWorking && building.Kind != "sawmill")
+                _effects.Smoke(node.Position + new Vector3(0f, 1.15f, 0f));
+        }
+    }
+
+    /// <summary>
+    /// Etiqueta sobre a construção sob o cursor: o que um baú guarda, ou receita e estado de uma máquina.
+    /// null (ou célula sem baú/máquina) esconde.
+    /// </summary>
+    public void ShowBuildingInfo(GridPos? cell)
+    {
+        Building? building = cell is GridPos c ? _world.BuildingAt(c) : null;
+        List<string>? lines = building switch
+        {
+            { Storage: Inventory storage } => ChestLines(building, storage),
+            { Machine: MachineState machine } => MachineLines(building, machine),
+            _ => null,
+        };
+        if (building is null || lines is null)
         {
             _chestLabel.Visible = false;
             return;
         }
 
+        _chestLabel.Text = string.Join("\n", lines);
+        _chestLabel.Position = CellCenter(building.Cell, building.Machine is not null ? 1.9f : 1.3f);
+        _chestLabel.Visible = true;
+    }
+
+    private List<string> ChestLines(Building chest, Inventory storage)
+    {
         var lines = new List<string> { chest.Type.Name };
-        foreach (ResourceType type in _world.Data.Resources.Values)
-            if (storage.Count(type.Kind) > 0)
-                lines.Add($"{type.Name}: {storage.Count(type.Kind)}");
+        lines.AddRange(Contents(storage));
         if (lines.Count == 1)
             lines.Add("vazio");
+        return lines;
+    }
 
-        _chestLabel.Text = string.Join("\n", lines);
-        _chestLabel.Position = CellCenter(c, 1.3f);
-        _chestLabel.Visible = true;
+    private List<string> MachineLines(Building building, MachineState machine)
+    {
+        RecipeType recipe = machine.Recipe;
+        var lines = new List<string>
+        {
+            building.Type.Name,
+            $"{ItemsText(recipe.Inputs)} → {ItemsText(recipe.Outputs)} ({recipe.Ticks / (float)SimClock.TicksPerSecond:0.#} s)",
+        };
+        if (!machine.Input.IsEmpty)
+            lines.Add("Entrada: " + string.Join(", ", Contents(machine.Input)));
+        if (!machine.Output.IsEmpty)
+            lines.Add("Pronto: " + string.Join(", ", Contents(machine.Output)));
+        lines.Add(machine.Waiting switch
+        {
+            null => $"Trabalhando {machine.Progress:P0}",
+            MachineWait.OutputFull => "Parada: saída cheia",
+            _ => "Esperando " + ItemsText(recipe.Inputs),
+        });
+        return lines;
+    }
+
+    private IEnumerable<string> Contents(Inventory inventory)
+    {
+        foreach (ItemType type in _world.Data.Items)
+            if (inventory.Count(type.Kind) > 0)
+                yield return $"{type.Name}: {inventory.Count(type.Kind)}";
+    }
+
+    private string ItemsText(IReadOnlyDictionary<string, int> items)
+    {
+        var parts = new List<string>();
+        foreach ((string kind, int amount) in items)
+            parts.Add($"{amount} {_world.Data.Item(kind).Name}");
+        return string.Join(" + ", parts);
     }
 
     /// <summary>
@@ -264,7 +346,7 @@ public partial class WorldView : Node3D
         {
             for (int i = 0; i < System.Math.Min(amount, 4); i++)
             {
-                _effects.FlyTo(center, _castellan, Palette.ForResource(item), delay);
+                _effects.FlyTo(center, _castellan, Palette.ForItem(_world.Data, item), delay);
                 delay += 0.06;
             }
         }
@@ -274,7 +356,7 @@ public partial class WorldView : Node3D
     {
         var parts = new List<string>();
         foreach ((string item, int amount) in type.Cost)
-            parts.Add($"{sign}{amount} {_world.Data.Resource(item).Name}");
+            parts.Add($"{sign}{amount} {_world.Data.Item(item).Name}");
         return string.Join("  ", parts);
     }
 
@@ -316,7 +398,7 @@ public partial class WorldView : Node3D
         if (!visual.Root.Visible)
             return;
 
-        Color color = Palette.ForResource(resource.Kind);
+        Color color = Palette.ForItem(_world.Data, resource.Kind);
         Vector3 top = visual.Root.Position + new Vector3(0f, 0.8f, 0f);
         if (resource.Remaining < visual.LastRemaining)
         {

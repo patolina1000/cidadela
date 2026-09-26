@@ -26,6 +26,7 @@ public sealed class SimWorld
     private readonly Dictionary<GridPos, ResourceNode> _resourceByCell = new();
     private readonly Dictionary<GridPos, Building> _buildingByCell = new();
     private readonly List<Building> _belts = new();
+    private readonly List<Building> _machines = new();
     private int _nextItemId = 1;
     private readonly Queue<ISimCommand> _commands = new();
     private int _nextId = 1;
@@ -46,6 +47,7 @@ public sealed class SimWorld
 
         Castellan.Tick(this);
         TickBelts();
+        TickMachines();
         foreach (Villager villager in _villagers)
             villager.Tick();
         TickCount++;
@@ -86,11 +88,43 @@ public sealed class SimWorld
                 nextLane.AddAtEntry(lane.RemoveFront());
             else if (next?.Storage is Inventory storage)
                 storage.Add(lane.RemoveFront().Kind);
+            else if (next?.Machine is MachineState machine && machine.Accepts(lane.Items[0].Kind))
+                machine.Input.Add(lane.RemoveFront().Kind);
         }
 
         foreach (Building belt in _belts)
             foreach (BeltItem item in belt.Belt!.Items)
                 item.Position = PositionOnBelt(belt, item.Progress);
+    }
+
+    /// <summary>
+    /// Cada máquina trabalha e empurra 1 item pronto por tick para a frente: numa esteira que não aponte
+    /// de volta para ela, ou num baú.
+    /// </summary>
+    private void TickMachines()
+    {
+        foreach (Building building in _machines)
+        {
+            MachineState machine = building.Machine!;
+            machine.Tick();
+
+            if (machine.NextOutput() is not string kind)
+                continue;
+            Building? front = BuildingAt(building.Cell.Step(building.Direction));
+            if (front?.Belt is BeltLane lane && front.Direction != building.Direction.Opposite() && lane.HasRoomAtEntry)
+            {
+                machine.Output.TryRemoveOne(kind);
+                var item = new BeltItem(_nextItemId++, kind);
+                lane.AddAtEntry(item);
+                item.Position = PositionOnBelt(front, 0f);
+                item.PreviousPosition = item.Position;
+            }
+            else if (front?.Storage is Inventory storage)
+            {
+                machine.Output.TryRemoveOne(kind);
+                storage.Add(kind);
+            }
+        }
     }
 
     private static System.Numerics.Vector2 PositionOnBelt(Building belt, float progress) =>
@@ -112,12 +146,19 @@ public sealed class SimWorld
         {
             storage.Add(kind);
         }
+        else if (target.Machine is MachineState machine && machine.Accepts(kind) && Castellan.Inventory.TryRemoveOne(kind))
+        {
+            machine.Input.Add(kind);
+        }
     }
 
-    internal void TryTakeFromChest(GridPos cell)
+    internal void TryTakeAll(GridPos cell)
     {
-        if (BuildingAt(cell)?.Storage is Inventory storage && Castellan.CanReach(cell))
-            storage.MoveAllTo(Castellan.Inventory);
+        if (BuildingAt(cell) is not Building building || !Castellan.CanReach(cell))
+            return;
+        building.Storage?.MoveAllTo(Castellan.Inventory);
+        building.Machine?.EmptyInto(Castellan.Inventory);
+        building.Machine?.Output.MoveAllTo(Castellan.Inventory);
     }
 
     /// <summary>Recurso não esgotado naquela célula, ou null.</summary>
@@ -160,6 +201,7 @@ public sealed class SimWorld
             return;
         _buildingByCell.Remove(cell);
         _belts.Remove(building);
+        _machines.Remove(building);
         BuildingsVersion++;
         Castellan.Inventory.Add(building.Type.Cost);
         // O que estava em cima ou dentro volta junto.
@@ -170,6 +212,7 @@ public sealed class SimWorld
             lane.Clear();
         }
         building.Storage?.MoveAllTo(Castellan.Inventory);
+        building.Machine?.EmptyInto(Castellan.Inventory);
     }
 
     internal void SetCastellan(Vector2 position)
@@ -187,10 +230,12 @@ public sealed class SimWorld
 
     internal Building AddBuilding(BuildingType type, GridPos cell, Direction direction)
     {
-        var building = new Building(_nextId++, type, cell, direction);
+        var building = new Building(_nextId++, type, cell, direction, Data.RecipeFor(type.Kind));
         _buildingByCell[cell] = building;
         if (building.Belt is not null)
             _belts.Add(building);
+        if (building.Machine is not null)
+            _machines.Add(building);
         BuildingsVersion++;
         return building;
     }

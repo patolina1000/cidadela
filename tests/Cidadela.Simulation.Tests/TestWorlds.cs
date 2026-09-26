@@ -7,11 +7,24 @@ namespace Cidadela.Simulation.Tests;
 /// <summary>Monta mundos pequenos a partir de JSON, pelo mesmo caminho que o jogo usa.</summary>
 internal static class TestWorlds
 {
+    public const string Items = """
+        {
+          "wood":  { "name": "Madeira", "color": "6B5B4B" },
+          "stone": { "name": "Pedra",   "color": "A89F91" },
+          "shaft": { "name": "Haste",   "color": "C9B38A" }
+        }
+        """;
+
     public const string Resources = """
         {
-          "wood":  { "name": "Madeira", "gatherSeconds": 1.0, "amount": 30 },
-          "stone": { "name": "Pedra",   "gatherSeconds": 1.5, "amount": 2 }
+          "wood":  { "gatherSeconds": 1.0, "amount": 30 },
+          "stone": { "gatherSeconds": 1.5, "amount": 2 }
         }
+        """;
+
+    /// <summary>Serraria de teste: 1 madeira vira 2 hastes em 1 s (20 ticks).</summary>
+    public const string Recipes = """
+        { "shafts": { "machine": "sawmill", "inputs": { "wood": 1 }, "outputs": { "shaft": 2 }, "seconds": 1 } }
         """;
 
     public const string CastellanStats = """{ "speed": 6.0, "reach": 10.0, "gatherReach": 1.0, "radius": 0.3 }""";
@@ -19,11 +32,12 @@ internal static class TestWorlds
     public const string Buildings = """
         {
           "belt":  { "name": "Esteira", "cost": { "wood": 1 }, "solid": false, "beltSpeed": 1.5 },
-          "chest": { "name": "Baú",     "cost": { "wood": 4 }, "solid": true,  "storage": true }
+          "chest": { "name": "Baú",     "cost": { "wood": 4 }, "solid": true,  "storage": true },
+          "sawmill": { "name": "Serraria", "cost": { "wood": 8 }, "solid": true }
         }
         """;
 
-    public static GameData Data() => GameData.Parse(Resources, CastellanStats, Buildings);
+    public static GameData Data() => GameData.Parse(Items, Resources, CastellanStats, Buildings, Recipes);
 
     /// <summary>Mapa 20×20 com o Castelão em (x, z) e os recursos e construções dados como JSON.</summary>
     public static SimWorld Open(int x = 3, int z = 3, string resources = "[]", string buildings = "[]") =>

@@ -49,7 +49,7 @@ public partial class Hotbar : HBoxContainer
             BuildingType type = types[i];
             var costs = new List<string>();
             foreach ((string item, int amount) in type.Cost)
-                costs.Add($"{amount} {data.Resource(item).Name}");
+                costs.Add($"{amount} {data.Item(item).Name}");
 
             int index = i;
             var button = new Button
