@@ -63,7 +63,7 @@ public partial class GameRoot : Node3D
         for (int i = 0; i < ticks; i++)
             _world.Tick();
 
-        _view.Render(_clock.Alpha);
+        _view.Render(_clock.Alpha, delta);
         _view.ShowHover(_camera.Cursor is Vector2 cursor ? CellUnder(cursor) : null);
         UpdateHud(delta);
     }

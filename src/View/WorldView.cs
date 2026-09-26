@@ -5,7 +5,8 @@ using Godot;
 namespace Cidadela.View;
 
 /// <summary>
-/// Desenha o <see cref="SimWorld"/> com formas simples. Só lê o estado.
+/// Desenha o <see cref="SimWorld"/> com formas simples. Só lê o estado; os efeitos
+/// (lascas, "+1", sacudidas) nascem de comparar o estado com o do frame anterior.
 /// A célula (x, z) ocupa o quadrado [x, x+1] × [z, z+1] no mundo 3D.
 /// </summary>
 public partial class WorldView : Node3D
@@ -14,13 +15,22 @@ public partial class WorldView : Node3D
 
     private SimWorld _world = null!;
     private readonly Dictionary<Villager, Node3D> _villagerNodes = new();
-    private readonly Dictionary<ResourceNode, Node3D> _resourceNodes = new();
+    private readonly Dictionary<ResourceNode, ResourceVisual> _resourceVisuals = new();
     private MeshInstance3D _hover = null!;
     private StandardMaterial3D _hoverMaterial = null!;
-    private Node3D _castellanNode = null!;
+    private CastellanVisual _castellan = null!;
+    private Effects _effects = null!;
 
     /// <summary>Nó desenhado do Castelão, para a câmera seguir.</summary>
-    public Node3D CastellanNode => _castellanNode;
+    public Node3D CastellanNode => _castellan;
+
+    /// <summary>Recurso desenhado: raiz no chão (escalar não tira o cubo do chão) e último restante visto.</summary>
+    private sealed class ResourceVisual
+    {
+        public required Node3D Root { get; init; }
+        public int LastRemaining { get; set; }
+        public float Punch { get; set; }
+    }
 
     public void Build(SimWorld world)
     {
@@ -29,9 +39,12 @@ public partial class WorldView : Node3D
 
         foreach (ResourceNode resource in world.Resources)
         {
+            var root = new Node3D { Name = $"Resource_{resource.Kind}_{resource.Id}", Position = CellCenter(resource.Cell, 0f) };
+            AddChild(root);
             var mesh = new BoxMesh { Size = new Vector3(0.8f, 0.8f, 0.8f) };
-            _resourceNodes[resource] = AddShape($"Resource_{resource.Kind}_{resource.Id}", mesh,
-                Palette.ForResource(resource.Kind), CellCenter(resource.Cell, 0.4f));
+            mesh.Material = new StandardMaterial3D { AlbedoColor = Palette.ForResource(resource.Kind), Roughness = 0.9f };
+            root.AddChild(new MeshInstance3D { Name = "Mesh", Mesh = mesh, Position = new Vector3(0f, 0.4f, 0f) });
+            _resourceVisuals[resource] = new ResourceVisual { Root = root, LastRemaining = resource.Remaining };
         }
 
         foreach (Machine machine in world.Machines)
@@ -46,17 +59,21 @@ public partial class WorldView : Node3D
             _villagerNodes[villager] = AddShape($"Villager_{villager.Id}", mesh, Palette.Bone, Vector3.Zero);
         }
 
-        _castellanNode = BuildCastellan();
+        _castellan = new CastellanVisual { Name = "Castellan" };
+        AddChild(_castellan);
+        _effects = new Effects { Name = "Effects" };
+        AddChild(_effects);
         BuildHover();
 
-        Render(0.0);
+        Render(0.0, 0.0);
     }
 
     /// <summary>Atualiza o que muda, interpolando o que se move entre o tick anterior e o atual.</summary>
-    public void Render(double alpha)
+    public void Render(double alpha, double delta)
     {
-        foreach ((ResourceNode resource, Node3D node) in _resourceNodes)
-            node.Visible = !resource.IsDepleted;
+        float dt = (float)delta;
+        foreach ((ResourceNode resource, ResourceVisual visual) in _resourceVisuals)
+            RenderResource(resource, visual, dt);
 
         foreach ((Villager villager, Node3D node) in _villagerNodes)
         {
@@ -65,13 +82,40 @@ public partial class WorldView : Node3D
             node.Position = new Vector3(p.X + 0.5f, 0.4f, p.Y + 0.5f);
         }
 
-        Castellan castellan = _world.Castellan;
-        System.Numerics.Vector2 c = System.Numerics.Vector2.Lerp(
-            castellan.PreviousPosition, castellan.Position, (float)alpha);
-        _castellanNode.Position = new Vector3(c.X + 0.5f, 0f, c.Y + 0.5f);
-        // Basis.LookingAt olha para -Z; o "nariz" do Castelão fica em -Z local.
-        var facing = new Vector3(castellan.Facing.X, 0f, castellan.Facing.Y);
-        _castellanNode.Basis = Basis.LookingAt(facing, Vector3.Up);
+        _castellan.UpdateFrom(_world.Castellan, (float)alpha, dt);
+    }
+
+    /// <summary>
+    /// Encolhe conforme esgota; a cada item tirado, sacode e solta lascas e "+1"; ao esgotar, estoura.
+    /// </summary>
+    private void RenderResource(ResourceNode resource, ResourceVisual visual, float dt)
+    {
+        if (!visual.Root.Visible)
+            return;
+
+        Color color = Palette.ForResource(resource.Kind);
+        Vector3 top = visual.Root.Position + new Vector3(0f, 0.8f, 0f);
+        if (resource.Remaining < visual.LastRemaining)
+        {
+            int taken = visual.LastRemaining - resource.Remaining;
+            visual.LastRemaining = resource.Remaining;
+            visual.Punch = 1f;
+            _effects.Burst(top, color, amount: 8);
+            _effects.FloatingText(top + new Vector3(0f, 0.3f, 0f), $"+{taken} {resource.Type.Name}", Palette.Bone);
+        }
+
+        if (resource.IsDepleted)
+        {
+            _effects.Burst(visual.Root.Position + new Vector3(0f, 0.4f, 0f), color, amount: 24, speed: 3.5f);
+            visual.Root.Visible = false;
+            return;
+        }
+
+        // Nunca menor que 55%: ainda precisa ser clicável e reconhecível.
+        float size = Mathf.Lerp(0.55f, 1f, (float)resource.Remaining / resource.Type.StartAmount);
+        visual.Punch = Mathf.Lerp(visual.Punch, 0f, 1f - Mathf.Exp(-14f * dt));
+        float squash = 0.22f * visual.Punch;
+        visual.Root.Scale = new Vector3(size * (1f + squash), size * (1f - squash), size * (1f + squash));
     }
 
     /// <summary>
@@ -108,23 +152,6 @@ public partial class WorldView : Node3D
         _hover = new MeshInstance3D { Name = "HoverCell", Mesh = mesh, Visible = false };
         _hover.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
         AddChild(_hover);
-    }
-
-    /// <summary>Cápsula maior e escura, com um "nariz" que mostra para onde está virado.</summary>
-    private Node3D BuildCastellan()
-    {
-        var root = new Node3D { Name = "Castellan" };
-        AddChild(root);
-
-        var body = new CapsuleMesh { Radius = 0.3f, Height = 1.2f };
-        body.Material = new StandardMaterial3D { AlbedoColor = Palette.DeepPurple, Roughness = 0.8f };
-        root.AddChild(new MeshInstance3D { Name = "Body", Mesh = body, Position = new Vector3(0f, 0.6f, 0f) });
-
-        var nose = new BoxMesh { Size = new Vector3(0.14f, 0.14f, 0.25f) };
-        nose.Material = new StandardMaterial3D { AlbedoColor = Palette.Pumpkin, Roughness = 0.8f };
-        root.AddChild(new MeshInstance3D { Name = "Nose", Mesh = nose, Position = new Vector3(0f, 0.9f, -0.35f) });
-
-        return root;
     }
 
     private void BuildGround(WorldGrid grid)

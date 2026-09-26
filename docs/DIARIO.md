@@ -248,3 +248,24 @@ onde errou, correções manuais e quanto tempo levou.
   - Os aldeões ainda atravessam tudo (inclusive o Castelão); ficou fora do escopo.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:17–21:21 de relógio.
+
+---
+
+## 2026-09-25 — Efeitos visuais do Castelão trabalhando
+
+- **Agente / modelo:** Claude Code 2.1.265 + Opus 5.5, com o MCP godot-ai.
+- **Pedido:** um "efeitinho" visual do Castelão fazendo as coisas.
+- **O que foi feito (só na cena; a simulação não mudou):**
+  - `CastellanVisual`: pivô nos pés; golpe de coleta sincronizado com o progresso do item (puxa para trás,
+    bate para a frente e acerta quando o item cai); quica ao andar, pela distância andada; vira suave.
+  - `Effects`: lascas (CPUParticles3D de cubinhos da cor do recurso) e texto flutuante "+1 Madeira" que sobe
+    e some; os dois se apagam sozinhos.
+  - Recursos: a cada item tirado, sacodem (achatam e voltam), soltam lascas e o "+1"; encolhem até 55% conforme
+    esgotam; ao esgotar, estouram em mais lascas. Os efeitos nascem de comparar o restante com o frame anterior.
+- **Verificado no jogo (pelos nós, porque a janela foi para segundo plano e os screenshots congelaram):**
+  inclinação de 13,8° na fase de puxar; árvore em 77% do tamanho; lascas e "+1" criados a cada item e
+  apagados depois.
+- **O que deu errado:** o primeiro clique calculado pela projeção errou, porque a câmera ainda estava se
+  movendo (espiar com o cursor); acertei mirando pelo screenshot. Sem screenshot em movimento para o diário.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:23–21:25 de relógio.
