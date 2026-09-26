@@ -28,7 +28,9 @@ from PIL import Image, ImageFilter
 from pipeline import ROOT, Meshy, fetch
 
 CONFIG_FILE = ROOT / "tools/texturas.json"
-STATE_FILE = Path(__file__).with_name("textures_state.json")
+STATE_DIR = Path(__file__).parent
+# Cada versão das texturas tem seu estado e seu orçamento (os créditos das versões antigas não contam).
+STATE_FILE = STATE_DIR / "textures_state_v1.json"
 TEXTURE_DIR = ROOT / "assets/texturas/chao"
 RAW_DIR = TEXTURE_DIR / "bruto"
 PREVIEW_DIR = ROOT / "assets/previews/piso"
@@ -48,6 +50,11 @@ MIN_BAND_CONTRAST = 0.80
 FLATTEN_FRACTION = 0.25  # manchas maiores que isso (em fração do lado) contam como "iluminação"
 FLATTEN_STRENGTH = 0.75  # quanto dessas manchas sai, para a repetição 4x4 não formar listras
 MASK_SOFTNESS = 0.08  # distância de cor (0..1) em que a máscara de emissão vai de 1 a 0
+
+
+def use_version(version: str) -> None:
+    global STATE_FILE
+    STATE_FILE = STATE_DIR / f"textures_state_{version}.json"
 
 
 def load_state() -> dict:
@@ -261,7 +268,7 @@ def generate(meshy: Meshy, config: dict, state: dict, entry: dict) -> None:
             save_state(state)
             print(f"  {name} #{number}: {task['status']}")
             continue
-        raw = RAW_DIR / f"{name}_{number}.png"
+        raw = RAW_DIR / f"{name}_{config['versao']}_{number}.png"
         fetch(task["image_urls"][0], raw)
         texture, metrics = process(entry, raw, config["tamanho_px"])
         attempt.update(status="SUCCEEDED", raw=str(raw.relative_to(ROOT)), metricas=metrics)
@@ -284,8 +291,11 @@ def main() -> None:
     args = parser.parse_args()
 
     config = json.loads(CONFIG_FILE.read_text())
+    use_version(config["versao"])
     state = load_state()
-    entries = [e for e in config["texturas"] if not args.only or e["nome"] in args.only]
+    # Texturas presas a uma versão antiga ("versao" na entrada) ficam como estão.
+    entries = [e for e in config["texturas"]
+               if e.get("versao", config["versao"]) == config["versao"] and (not args.only or e["nome"] in args.only)]
 
     if args.reprocess:
         for entry in entries:

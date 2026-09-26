@@ -890,3 +890,36 @@ onde errou, correções manuais e quanto tempo levou.
   pedem uma camada de piso na simulação (convivendo com construções e esteiras) e o efeito na velocidade.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 04:00–04:40 de relógio.
+
+---
+
+## 2026-09-26 — Arte: chão refeito na paleta nova (v2: escuro, dessaturado, calmo)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** as texturas do chão fugiram do tema (saturadas, claras, com detalhe demais). Refazer com a
+  paleta nova do chão (terra escura #4A3B3A, terra arroxeada #3F3342, musgo acinzentado #4E5544, grama morta
+  #5A5847, pedra fria #66636B, lama #2E2931, líquen roxo #6B4F7C): tons escuros e frios, pinceladas largas,
+  pouco detalhe e contraste, espirais quase invisíveis, e o complemento de prompt "gothic whimsical dark
+  forest floor, twilight, muted desaturated colors, low contrast, broad painterly strokes, no highlights".
+  Prévias 4×4 lado a lado com as antigas. Limite de 100 créditos.
+- **O que foi feito:**
+  - A paleta não estava na minha cópia do GDD: acrescentada em "Piso e chão" (seção 17) com as regras.
+  - `tools/texturas.json` virou a versão `v2`: estilo novo e cada terreno com as cores novas (grama em musgo
+    acinzentado e grama morta; terra escura para arroxeada; pedra fria com líquen roxo; lama; areia de rio
+    cinza-oliva). Os pisos construídos ficam presos à `v1` (não foram pedidos).
+  - `textures.py`: estado, brutos e orçamento separados por versão (a `v1` continua recuperável).
+  - Resultado: 4 aprovadas de primeira; a areia de rio na segunda (a primeira tinha emenda). A grama passou
+    na checagem, mas no jogo as folhas pintadas e as espirais ainda chamavam atenção: usei a segunda tentativa
+    com o prompt mais explícito ("almost uniform, soft broad strokes, no individual leaves, only a few very
+    faint swirls"). Ficou a segunda.
+  - Medido (textura antes → depois): saturação de 0,24–0,70 para 0,08–0,20; contraste de 0,035–0,125 para
+    0,014–0,035; detalhe fino de 2,5 a 5 vezes menor; a areia foi de brilho 0,68 para 0,29. A grama ficou um
+    pouco mais clara (0,20 → 0,24), porque o musgo acinzentado da paleta é mais claro que o verde escuro da v1.
+  - Comparação: `assets/previews/piso/comparacao_chao_v1_v2.jpg` (antes à esquerda, depois à direita, com os
+    números). As prévias 4×4 de cada textura foram atualizadas.
+- **Créditos:** 42 (7 imagens). Saldo: 2.938 → 2.896.
+- **Atenção:** no jogo o chão parece mais claro que a textura, por causa do sol da cena. Se precisar ficar
+  mais escuro, é ajuste de luz ou de tom no shader, sem gerar imagem. Os pisos construídos (tábuas,
+  calçamento, rúnico) ainda estão na paleta antiga.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 04:50–05:20 de relógio.

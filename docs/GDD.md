@@ -549,6 +549,8 @@ Troque \[OBJETO\] pelo item (ex.: "blacksmith forge with bellows", "villager arc
 
 Toda textura passa por um teste: uma prévia repetida em 4×4 para achar emendas e repetição visível.
 
+**Paleta do chão (26/09/2026):** terra escura #4A3B3A · terra arroxeada #3F3342 · musgo acinzentado #4E5544 · grama morta #5A5847 · pedra fria #66636B · lama #2E2931 · líquen roxo #6B4F7C. Tons escuros, dessaturados e frios, sem verde vivo nem brilho de sol; pinceladas largas, pouco detalhe e contraste baixo, para o chão ser um fundo calmo que não compete com os personagens; espirais só sutis, escuro sobre escuro. Complemento do prompt: "gothic whimsical dark forest floor, twilight, muted desaturated colors, low contrast, broad painterly strokes, no highlights".
+
 ## 18. Integração das IAs com o Godot
 
 **Plano: os agentes de código (Claude Code e Codex) rodam no terminal dentro da pasta do projeto e se conectam ao editor Godot por um servidor MCP.** Com isso a IA enxerga as cenas reais, roda o jogo, lê os erros e corrige sozinha. Os assets 3D entram como arquivos GLB numa pasta que o Godot importa automaticamente.
