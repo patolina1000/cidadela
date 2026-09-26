@@ -1268,3 +1268,28 @@ onde errou, correções manuais e quanto tempo levou.
 - **Aguardando decisão:** penumbra PCSS (−3,3 ms; prints `perf_sombra_com_penumbra.png` /
   `perf_sombra_sem_penumbra.png`).
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados (sem mudança na simulação).
+
+---
+
+## 2026-09-26 — Desempenho 3: penumbra do sol desligada (aprovado) e medição limpa do LOD
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Decisões do humano:** penumbra PCSS desligada, aprovada ("2 - aprovo"); LOD da grama aceito ("a única
+  diferença que senti é que ficou mais escuro ou mais claro", sem preferência).
+- **O que foi feito:** `light_angular_distance = 0.0` no sol (`scenes/Main.tscn`); o desfoque fixo de 1,6
+  continua.
+- **Medição limpa (janela com foco, V-Sync desligado, 3024×1890, 85.881 tufos, mapa de teste):**
+
+  | Cena | ms/quadro | FPS |
+  |---|---|---|
+  | Início do dia (atlas 4096, penumbra, malha completa) | 25,5 | 38–42 |
+  | Atlas 2048 | 22,2 | 45 |
+  | + LOD por folha achatada | ~16 (estimado) | ~62 |
+  | + penumbra desligada (**estado atual**) | **12,8** | **78** |
+  | Estado atual com LOD desligado (F12) | 18,2 | 55 |
+
+  O LOD sozinho vale 5,4 ms nesta cena; a penumbra, 3,3; o atlas, 3,3. Meta de 60 FPS estáveis em tela cheia
+  na Retina atingida com toda a grama, sem mudar densidade, luz, névoa nem cores.
+- **Sobre a diferença de brilho que o humano notou no LOD:** a folha achatada tem menos vértices, e o degradê
+  do shader (UV.y) e as normais são interpolados entre menos pontos, então a folha fica um pouco mais uniforme.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados (sem mudança na simulação).
