@@ -1140,3 +1140,17 @@ onde errou, correções manuais e quanto tempo levou.
 - **Prints:** `docs/prints/grama_stylized_visao.png`, `docs/prints/grama_stylized_perto.png`.
 - **GDD:** parágrafo da grama na seção 17 reescrito para o asset.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-26 — Grama se mexe quando a protagonista passa
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** "tem como fazer a grama se mover um pouco quando meu personagem passa por ela?"
+- **O que foi feito:** copiei o shader do asset para `src/View/Grass.gdshader` (o original em
+  `assets/grama_stylized` fica intacto; a licença MIT permite) e acrescentei o empurrão: num raio de ~0,45
+  célula da protagonista, a grama se inclina para longe dela (a ponta mais que a base, pela altura no mundo)
+  e abaixa até 40%. A view passa a posição dela ao shader a cada quadro (`GrassField.SetPusher`).
+- **Verificação:** jogo rodando sem erros; nos prints de câmera cinemática andando, abre uma clareira em volta
+  dos pés dela. `docs/prints/grama_empurrao.png`.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.

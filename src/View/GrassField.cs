@@ -19,6 +19,8 @@ public partial class GrassField : Node3D
     private const int ChunkCells = 8;
     private const int MaxTuftsPerCell = 120;
     private const string AssetDir = "res://assets/grama_stylized/";
+    // Cópia do shader do asset com o empurrão da protagonista.
+    private const string ShaderPath = "res://src/View/Grass.gdshader";
     private static readonly string[] MeshFiles = { "grass.glb", "grass2.glb" };
 
     // Grama baixa: a protagonista tem ~0,75 de altura; a grama fica em até ~20% dela (com as manchas), e itens
@@ -40,6 +42,7 @@ public partial class GrassField : Node3D
     private Func<GridPos, bool> _blocked = null!;
     private Mesh[] _meshes = null!;
     private float[] _meshHeights = null!;
+    private ShaderMaterial _material = null!;
     private MultiMeshInstance3D[,,] _chunks = null!;
     private readonly HashSet<Vector2I> _dirty = new();
     private readonly FastNoiseLite _clumps = new() { Frequency = 0.35f, Seed = 7 };
@@ -54,7 +57,7 @@ public partial class GrassField : Node3D
         _blocked = blocked;
         _meshes = Array.ConvertAll(MeshFiles, f => LoadMesh(AssetDir + f));
         _meshHeights = Array.ConvertAll(_meshes, m => Mathf.Max(m.GetAabb().Size.Y, 0.001f));
-        ShaderMaterial material = BuildMaterial();
+        ShaderMaterial material = _material = BuildMaterial();
 
         int cx = (grid.Width + ChunkCells - 1) / ChunkCells;
         int cz = (grid.Height + ChunkCells - 1) / ChunkCells;
@@ -76,6 +79,9 @@ public partial class GrassField : Node3D
             RebuildChunk(x, z);
         }
     }
+
+    /// <summary>Onde está a protagonista: a grama em volta dela se inclina para longe. Chamado a cada quadro.</summary>
+    public void SetPusher(Vector3 position) => _material.SetShaderParameter("pusher_pos", position);
 
     /// <summary>A célula mudou (construiu, desmontou, recurso esgotou): refaz o bloco dela no próximo frame.</summary>
     public void MarkDirty(GridPos cell) => _dirty.Add(new Vector2I(cell.X / ChunkCells, cell.Z / ChunkCells));
@@ -105,7 +111,7 @@ public partial class GrassField : Node3D
             Seamless = true,
             Noise = new FastNoiseLite { Frequency = 0.01f, Seed = 3 },
         };
-        var material = new ShaderMaterial { Shader = GD.Load<Shader>(AssetDir + "grass.gdshader") };
+        var material = new ShaderMaterial { Shader = GD.Load<Shader>(ShaderPath) };
         material.SetShaderParameter("color", TipColor);
         material.SetShaderParameter("color2", BaseColor);
         material.SetShaderParameter("noise", noise);
