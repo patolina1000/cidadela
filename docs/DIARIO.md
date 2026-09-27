@@ -1574,3 +1574,25 @@ onde errou, correções manuais e quanto tempo levou.
   (frente, costas, dormindo) e a orientação da textura (pode estar de cabeça para baixo: aí é girar o decal
   180° em Y).
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Aldeão modular, etapa 6: peças de cabeça (chapéus) em JSON, com a regra "cobre"
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `data/head_pieces.json` (peças com `kind`, `name`, `cobre` nenhum/parcial/total,
+  `model` opcional em `assets/modelos/aldeao_chapeus/`, e `worker`: a peça que quem tem cabana veste).
+  `VillagerLooks` lê o JSON (valor de `cobre` inválido dá `FormatException`), e `InstantiateHeadPiece` usa o
+  GLB ou, sem modelo, uma forma provisória de chapéu de palha (aba larga + copa baixa, dois cilindros) na cor
+  do recurso do ofício. `VillagerVisual.UpdateHat` põe a peça no encaixe "Chapéu" quando o aldeão ganha
+  cabana e tira quando perde; regra: `nenhum` mostra o cabelo, `parcial` troca pela versão sob chapéu
+  (`underHat` em `villager_looks.json`; nenhum cabelo tem ainda, então esconde), `total` esconde. Cabelo e
+  chapéu ficam na camada 2, fora do alcance do decal do rosto.
+- **Mapa de teste `data/maps/aldeoes_teste.json`:** cabana de lenhador com árvores perto e 4 aldeões, para ver
+  walk, carry, chapéu e expressões sem preparar nada. `MapPath` do GameRoot aponta para ele **temporariamente**
+  (volta ao `mapa_teste.json` no fim da tarefa).
+- **Conferido no jogo (capturas F11 em resolução total):** o lenhador anda com o chapéu de palha e sem o
+  cabelo por baixo; o decal do rosto aparece de frente (olhos e boca), acompanha a cabeça e não vaza para a
+  nuca. Prints: `docs/prints/aldeao_chapeu_palha.png`, `aldeao_rosto_decal.png`. Ainda não conferi o decal
+  no clipe `sleep` de perto nem a orientação exata (se a textura está de ponta-cabeça).
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.

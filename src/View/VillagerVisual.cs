@@ -48,6 +48,10 @@ public partial class VillagerVisual : Node3D
     private StandardMaterial3D _loadMaterial = null!;
     private bool _lookApplied;
     private Node3D? _hair;
+    private Node3D? _hairUnderHat;
+    private VillagerLooks.Hair? _hairInfo;
+    private Node3D? _hat;
+    private string? _hatJob;
     private Decal? _face;
     private VillagerExpression? _shownExpression;
     private float _yaw;
@@ -111,6 +115,7 @@ public partial class VillagerVisual : Node3D
     {
         if (!_lookApplied)
             ApplyLook(villager);
+        UpdateHat(villager, data);
         if (_face is not null && _shownExpression != villager.Expression)
         {
             _shownExpression = villager.Expression;
@@ -188,12 +193,50 @@ public partial class VillagerVisual : Node3D
         }
         if (HairSocket is null)
             return;
-        VillagerLooks.Hair? hair = VillagerLooks.HairFor(villager.HairVariant);
-        _hair = hair is null ? null : VillagerLooks.InstantiateHair(hair.Model);
+        _hairInfo = VillagerLooks.HairFor(villager.HairVariant);
+        _hair = _hairInfo is null ? null : VillagerLooks.InstantiateHair(_hairInfo.Model);
         if (_hair is not null)
         {
             _hair.Name = "HairPiece";
             HairSocket.AddChild(_hair);
+        }
+    }
+
+    /// <summary>
+    /// Chapéu de quem tem cabana (peça "worker" de data/head_pieces.json, na cor do recurso do ofício) e a
+    /// regra "cobre": nenhum mostra o cabelo; parcial troca pela versão sob chapéu (ou esconde, se não há);
+    /// total esconde.
+    /// </summary>
+    private void UpdateHat(Villager villager, GameData data)
+    {
+        string? job = villager.Home?.Workplace?.Job.Resource;
+        if (job == _hatJob)
+            return;
+        _hatJob = job;
+        _hat?.QueueFree();
+        _hat = null;
+        _hairUnderHat?.QueueFree();
+        _hairUnderHat = null;
+        if (_hair is not null)
+            _hair.Visible = true;
+
+        if (job is null || HatSocket is null || VillagerLooks.WorkerPiece() is not VillagerLooks.HeadPiece piece)
+            return;
+        _hat = VillagerLooks.InstantiateHeadPiece(piece, Palette.ForItem(data, job));
+        _hat.Name = "HatPiece";
+        HatSocket.AddChild(_hat);
+
+        if (piece.Covers == VillagerLooks.Coverage.None || _hair is null)
+            return;
+        _hair.Visible = false;
+        if (piece.Covers == VillagerLooks.Coverage.Partial && _hairInfo is not null && !string.IsNullOrEmpty(_hairInfo.UnderHat))
+        {
+            _hairUnderHat = VillagerLooks.InstantiateHair(_hairInfo.UnderHat);
+            if (_hairUnderHat is not null)
+            {
+                _hairUnderHat.Name = "HairUnderHat";
+                HairSocket!.AddChild(_hairUnderHat);
+            }
         }
     }
 
