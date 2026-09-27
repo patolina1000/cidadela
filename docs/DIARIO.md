@@ -1432,3 +1432,21 @@ onde errou, correções manuais e quanto tempo levou.
   marcador no lugar errado (o mesmo problema de ponta de osso no importador do Blender), e foi retirada.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 12:10–13:40 de relógio.
+
+---
+
+## 2026-09-27 — Aldeão: mais 3 variações; o cabelo longo liso falhou na Meshy
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** "pode gerar" as outras 4 variações.
+- **Resultado:** médio com franja, ondulado e rabo de cavalo geradas, com rig e os 5 clipes
+  (`idle`, `walk`, `carry`, `work`, `sleep`) e o nó "Rosto"; todas com 0,40 m. Inspecionadas de frente e de
+  lado: o rig funcionou nas três (pés não cruzam, nenhuma deformação estranha), cada cabelo se distingue.
+  Larguras do rosto: 0,104 / 0,101 / 0,092 m.
+- **Falhas da Meshy:** a primeira tentativa do médio com franja deu "erro inesperado" e a segunda passou;
+  o **longo liso** deu o mesmo erro duas vezes e, pela regra (uma nova tentativa só), ficou para depois.
+  Tarefa que falha não é cobrada.
+- **Créditos:** 114 (3 × 38). Saldo: 2.858 → 2.744. Total do aldeão até aqui: 152.
+- **Prévia:** `assets/previews/aldeoes.png` com a protagonista de referência e as 4 prontas, numeradas.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 13:45–14:25 de relógio.
