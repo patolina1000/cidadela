@@ -1809,3 +1809,37 @@ onde errou, correções manuais e quanto tempo levou.
 - **Créditos:** 0.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 18:40–19:50 de relógio.
+
+---
+
+## 2026-09-27 — Aldeão: 5 cabelos gerados como perucas próprias
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** os 5 cabelos como peças próprias ("perucas") na Meshy, a partir das vistas do conceito, no
+  tamanho da cabeça do corpo-base; nenhum fio na frente dos olhos nem sobre a máscara; fechados; bonitos de
+  trás. Custo aprovado: 210 créditos.
+- **Geração (`tools/meshy_pipeline/hair_pieces.py`, 210 créditos, nenhuma falha):** para cada cabelo,
+  Image to Image (`nano-banana-2`, referências: vistas de frente e costas do conceito) com o prompt "só esse
+  penteado, como peruca, sem cabeça nem rosto, franja acima das sobrancelhas, costas cheias", uma imagem de
+  frente e uma de costas (6 + 6), e Multi-Image to 3D com as duas (30). As imagens de peruca saíram limpas:
+  de frente, o rosto fica vazio.
+- **Encaixe (`tools/blender/fit_hair.py`, 0 créditos):**
+  - escala pela coroa: largura da peruca numa faixa perto do topo = 1,12 × a largura da cabeça na mesma
+    faixa, com a faixa medida em altura de cabeça (medida em altura da peruca, no cabelo comprido ela caía
+    nas orelhas e a peruca encolhia); topo pelo percentil 97 da altura (uma mecha espetada baixava tudo);
+  - abertura do rosto: toda face na frente da cabeça dentro da oval da máscara (×1,08) sai;
+  - fora do couro cabeludo: um campo de direções infla a camada perto da cabeça (até 2,5 cm da pele) o
+    quanto for preciso para ficar 2 mm fora, deslocando as camadas juntas (empurrar vértice a vértice
+    achatava as mechas numa película e abria frestas); a cortina de cabelo comprido, longe, não anda;
+  - touca por baixo (couro cabeludo fora da abertura do rosto, 0,8 mm), texturizada com a UV do ponto mais
+    próximo da peruca e o material dela: no longo liso, a nuca não tinha malha nenhuma e a touca lisa
+    aparecia como mancha; agora aparecem fios. Buracos pequenos fechados, normais recalculadas, duas faces.
+  - Sem rig: o cabelo é rígido, preso ao nó "Cabelo" (origem do GLB no encaixe).
+- **Conferido:** cobertura de trás, dos lados e do topo entre 97% e 100% das direções a partir do centro da
+  cabeça; no Godot, os 5 carregam no nó "Cabelo" do corpo-base, uma malha e um material cada.
+- **Prévia:** `assets/previews/aldeoes_correcao2.png` (frente, costas e perfil, com a máscara do rosto).
+- **Limites:** no longo liso, a nuca é a touca texturizada (lê como cabelo, mas um pouco embaralhada); o
+  ondulado saiu mais claro que os outros (é a cor da peruca gerada).
+- **Créditos:** 210. Total do aldeão: 438. Saldo: 2.458.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:55–21:40 de relógio.
