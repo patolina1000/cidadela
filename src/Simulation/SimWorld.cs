@@ -195,6 +195,17 @@ public sealed class SimWorld
         }
     }
 
+    /// <summary>Item nascendo na entrada de uma esteira (alimentador do palco da Biografia e de testes).</summary>
+    internal void TrySpawnItem(GridPos cell, string kind)
+    {
+        if (BuildingAt(cell) is not { Belt: BeltLane lane } target || !lane.HasRoomAtEntry)
+            return;
+        var item = new BeltItem(_nextItemId++, kind);
+        lane.AddAtEntry(item);
+        item.Position = PositionOnBelt(target, 0f);
+        item.PreviousPosition = item.Position;
+    }
+
     internal void TryTakeAll(GridPos cell)
     {
         if (BuildingAt(cell) is not Building building || !Castellan.CanReach(cell))

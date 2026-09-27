@@ -1705,3 +1705,27 @@ onde errou, correções manuais e quanto tempo levou.
   mais alto que ocupa também a coluna das entradas.
 - **Prints:** `docs/prints/biografia_protagonista.png`, `biografia_aldeao.png`, `biografia_serraria.png`.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Biografia, etapa D: máquinas trabalhando de verdade no palco
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Simulação:** `SpawnItemCommand(cell, kind)` + `SimWorld.TrySpawnItem`: um item nasce na entrada de uma
+  esteira sem Castelão nem alcance (alimentador do palco e de testes). 3 testes novos (`SpawnItemTests`);
+  total 94 aprovados.
+- **Palco:** para cada máquina, `BiographyRoot.BuildMachineWorld` monta um mundo 9×7 de terra pelo
+  `MapLoader` (esteira de entrada x 1..3 → máquina em (4,3) virada para leste → esteira de saída x 5..7 →
+  baú em (8,3); o Castelão fica escondido em (4,1) porque o mapa exige um), desenhado pelo próprio
+  `WorldView` do jogo (esteiras, itens, pulso da máquina, fumaça). O alimentador faz nascer os insumos da
+  receita na primeira esteira a cada 10 ticks, na proporção da receita (forja: lingote, lingote, haste).
+  "Funcionando" alimenta; "parada" corta o insumo: a máquina termina o que tem na esteira e para de verdade.
+  Um `VillagerVisual` fica ao sul da máquina, virado para ela, em `work` quando funciona e `idle` quando
+  para: **só visual**, a simulação ainda não tem operador de máquina. A câmera das máquinas começa ao sul,
+  para a esteira correr da esquerda para a direita.
+- **Conferido no jogo:** Serraria com hastes saindo; Forja com lingotes e hastes na fila, fumaça e espada na
+  saída; "parada" esvazia a fila e o aldeão volta ao idle. Prints: `docs/prints/biografia_serraria_funcionando.png`,
+  `biografia_forja_funcionando.png`, `biografia_forja_parada.png`.
+- **Medição:** a janela do jogo abre ora em 1152×648, ora em 3840×2160 (monitor do editor); as coordenadas dos
+  cliques de teste mudam com isso. Anotado.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 94 aprovados.

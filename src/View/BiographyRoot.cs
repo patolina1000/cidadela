@@ -32,6 +32,20 @@ public partial class BiographyRoot : Node3D
     private Vector2 _lastMouse;
     private float _spin;
     private bool _machineRunning = true;
+    private float _defaultYaw = Mathf.Pi;
+
+    // Máquinas trabalham de verdade: um mundo pequeno da simulação (esteira → máquina → esteira → baú),
+    // desenhado pelo WorldView do jogo, com um alimentador que faz nascer os insumos da receita.
+    private const int FeedEveryTicks = 10;
+    private static readonly GridPos MachineCell = new(4, 3), FeedCell = new(1, 3), OperatorCell = new(4, 4);
+    private Node3D? _machineRoot;
+    private SimWorld? _machineWorld;
+    private WorldView? _machineView;
+    private readonly SimClock _machineClock = new();
+    private readonly List<string> _feedCycle = new();
+    private int _feedIndex, _feedTimer;
+    private VillagerVisual? _operator;
+    private VillagerVisual.DrawState _operatorState;
 
     private VBoxContainer _entryList = null!;
     private Label _title = null!, _description = null!, _story = null!;
@@ -121,18 +135,32 @@ public partial class BiographyRoot : Node3D
         float dt = (float)delta;
         if (_villager is not null)
             _villager.UpdateFrom(_villagerState, _data, dt);
+        if (_machineWorld is not null && _machineView is not null)
+        {
+            int ticks = _machineClock.Advance(delta);
+            for (int i = 0; i < ticks; i++)
+            {
+                if (_machineRunning && ++_feedTimer >= FeedEveryTicks && _feedCycle.Count > 0)
+                {
+                    _feedTimer = 0;
+                    _machineWorld.Enqueue(new SpawnItemCommand(FeedCell, _feedCycle[_feedIndex++ % _feedCycle.Count]));
+                }
+                _machineWorld.Tick();
+            }
+            _machineView.Render(_machineClock.Alpha, delta);
+            if (_operator is not null)
+            {
+                // Aldeão operando: só visual (a simulação ainda não tem operador de máquina).
+                _operator.PreviewClip = _machineRunning ? "work" : "idle";
+                _operator.UpdateFrom(_operatorState, _data, dt);
+            }
+            return;
+        }
         // Itens e recursos giram devagar no palco; máquinas paradas ficam paradas.
         if (_model is not null && _current is { ModelKind: "item" or "resource" })
         {
             _spin += dt * 0.6f;
             _model.Rotation = new Vector3(0f, _spin, 0f);
-        }
-        if (_model is not null && _current is { ModelKind: "building" } && _model.GetNodeOrNull<Node3D>("Model") is Node3D machine)
-        {
-            if (machine.GetNodeOrNull<Node3D>("Spin") is Node3D spin && _machineRunning)
-                spin.Rotation = new Vector3(spin.Rotation.X + dt * 12f, 0f, 0f);
-            machine.Scale = _machineRunning && _current.Animations.Count > 0 ? new Vector3(1f, 1f + 0.04f * Mathf.Sin(_spin * 10f), 1f) : Vector3.One;
-            _spin += dt;
         }
     }
 
@@ -143,11 +171,21 @@ public partial class BiographyRoot : Node3D
         _model = null;
         _castellan = null;
         _villager = null;
+        _machineRoot?.QueueFree();
+        _machineRoot = null;
+        _machineWorld = null;
+        _machineView = null;
+        _operator = null;
         _spin = 0f;
         _machineRunning = true;
+        _defaultYaw = Mathf.Pi;
+        GetNode<Node3D>("Pedestal").Visible = true;
 
         switch (entry.ModelKind)
         {
+            case "building" when _data.RecipeFor(entry.ModelArg) is RecipeType recipe:
+                BuildMachineWorld(entry.ModelArg, recipe);
+                break;
             case "castellan":
                 _castellan = new CastellanVisual { Name = "Castellan" };
                 _model = _castellan;
@@ -184,9 +222,61 @@ public partial class BiographyRoot : Node3D
         }
         if (_model is not null)
             _stage.AddChild(_model);
-        _yaw = Mathf.Pi;
+        _yaw = _defaultYaw;
         _pitch = 0.32f;
         PlaceCamera();
+    }
+
+    /// <summary>
+    /// Mundo 9×7 de terra com esteira de entrada (x 1..3), a máquina em (4,3) virada para leste, esteira de
+    /// saída (x 5..7) e um baú em (8,3). O Castelão fica escondido em (4,1) só porque o mapa exige um. O
+    /// alimentador faz nascer os insumos da receita na primeira esteira, na proporção da receita.
+    /// </summary>
+    private void BuildMachineWorld(string kind, RecipeType recipe)
+    {
+        string map = $$"""
+            {
+              "width": 9, "height": 7,
+              "castellan": { "x": 4, "z": 1 },
+              "resources": [],
+              "buildings": [
+                { "kind": "belt", "x": 1, "z": 3, "direction": "east" },
+                { "kind": "belt", "x": 2, "z": 3, "direction": "east" },
+                { "kind": "belt", "x": 3, "z": 3, "direction": "east" },
+                { "kind": "{{kind}}", "x": 4, "z": 3, "direction": "east" },
+                { "kind": "belt", "x": 5, "z": 3, "direction": "east" },
+                { "kind": "belt", "x": 6, "z": 3, "direction": "east" },
+                { "kind": "belt", "x": 7, "z": 3, "direction": "east" },
+                { "kind": "chest", "x": 8, "z": 3 }
+              ],
+              "terrain": { "default": "dirt", "patches": [] },
+              "villagers": []
+            }
+            """;
+        _machineWorld = MapLoader.Parse(map, _data);
+        _feedCycle.Clear();
+        foreach ((string item, int count) in recipe.Inputs)
+            for (int i = 0; i < count; i++)
+                _feedCycle.Add(item);
+        _feedIndex = 0;
+        _feedTimer = FeedEveryTicks; // o primeiro insumo nasce já
+
+        // A célula da máquina fica no centro do palco; o mundo inteiro é deslocado para isso.
+        _machineRoot = new Node3D { Name = "MachineWorld", Position = _stage.Position - new Vector3(MachineCell.X + 0.5f, 0.03f, MachineCell.Z + 0.5f) };
+        AddChild(_machineRoot);
+        _machineView = new WorldView { Name = "View" };
+        _machineRoot.AddChild(_machineView);
+        _machineView.Build(_machineWorld);
+        _machineView.CastellanNode.Visible = false;
+        GetNode<Node3D>("Pedestal").Visible = false;
+
+        _operator = new VillagerVisual { Name = "Operator" };
+        _machineRoot.AddChild(_operator);
+        _operatorState = new VillagerVisual.DrawState(new System.Numerics.Vector2(OperatorCell.X, OperatorCell.Z), new System.Numerics.Vector2(0f, -1f),
+            2, VillagerExpression.Effort, false, null, null, -1f, 0f);
+
+        _targetHeight = 0.45f; _distance = 4.6f;
+        _defaultYaw = 0f; // câmera ao sul, olhando para o norte: a esteira corre da esquerda para a direita
     }
 
     // ---- Interface ----------------------------------------------------------------------------------------
@@ -278,6 +368,11 @@ public partial class BiographyRoot : Node3D
         _model = null;
         _castellan = null;
         _villager = null;
+        _machineRoot?.QueueFree();
+        _machineRoot = null;
+        _machineWorld = null;
+        _machineView = null;
+        _operator = null;
         _title.Text = "";
         _description.Text = "";
         _story.Text = "";
