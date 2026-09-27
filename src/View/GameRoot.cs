@@ -15,7 +15,7 @@ namespace Cidadela.View;
 /// </summary>
 public partial class GameRoot : Node3D
 {
-    [Export(PropertyHint.File, "*.json")] public string MapPath = "res://data/maps/aldeoes_teste.json";
+    [Export(PropertyHint.File, "*.json")] public string MapPath = "res://data/maps/mapa_teste.json";
     [Export(PropertyHint.File, "*.json")] public string ItemsPath = "res://data/items.json";
     [Export(PropertyHint.File, "*.json")] public string ResourcesPath = "res://data/resources.json";
     [Export(PropertyHint.File, "*.json")] public string CastellanPath = "res://data/castellan.json";

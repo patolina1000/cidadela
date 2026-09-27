@@ -1596,3 +1596,45 @@ onde errou, correções manuais e quanto tempo levou.
   nuca. Prints: `docs/prints/aldeao_chapeu_palha.png`, `aldeao_rosto_decal.png`. Ainda não conferi o decal
   no clipe `sleep` de perto nem a orientação exata (se a textura está de ponta-cabeça).
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Aldeão modular, etapa 7: desempenho com 50, 200 e 500 aldeões animados
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `VillagerVisual` ganhou um `DrawState` (posição, direção, cabelo, expressão, descanso,
+  carga, ofício, coleta): o jogo monta a partir do `Villager`, a cena de estresse monta um sintético. Em
+  `scenes/Stress.tscn` as teclas **0/1/2/3** criam 0/50/200/500 aldeões com o modelo completo (esqueleto
+  animado em walk, cabelo, decal de expressão trocando a cada 4 s, metade com chapéu de palha, um quarto
+  carregando), andando em círculos a 1,2 células/s em volta do ponto olhado; **H** esconde a horda de
+  inimigos/itens/máquinas para medir só os aldeões sobre a grama. A cena força tela cheia ao abrir (a janela
+  abria em 1152×648 pelo editor).
+- **Números (V-Sync desligado, janela com foco, horda oculta, grama 468 mil tufos, câmera a 16 do chão).**
+  Atenção: a tela cheia foi para o monitor externo, **3840×2160** (8,3 Mpx, mais que a Retina, 5,7 Mpx), então
+  os valores são um teto conservador:
+
+  | Aldeões animados | ms/quadro | FPS | draw calls | nós |
+  |---|---|---|---|---|
+  | 0 | 13,2 | 76 | 41 | 17.413 |
+  | 50 | 14,5 | 69 | 265 | 18.318 |
+  | 200 | 16,7 | 60 | 885 | 21.033 |
+  | 500 (câmera a 6, zoom do humano; ~150 na tela) | 16,4 | 61 | 739 | 26.463 |
+  | 500 idem, sem grama | 12,5 | 80 | 718 | 26.463 |
+
+  500 a distância 16 não deu para medir: o humano estava usando o mouse na janela e o foco se perdia.
+  Extrapolando o custo linear (≈ 17 µs por aldeão na tela por quadro, 50 → +1,3 ms, 200 → +3,5 ms), 500 na
+  tela dariam ≈ 22 ms (≈ 45 FPS) em 4K, e um pouco melhor na Retina. A confirmar com a janela livre.
+- **Onde está o custo:** CPU da view 2,4–3,6 ms (inclui atualizar os 500 `VillagerVisual`), simulação
+  0,1–0,2 ms: sobra. O que cresce é a GPU: ~4,4 draw calls por aldeão (corpo com skinning, cabelo, aba e copa
+  do chapéu, decal) e o skinning de 500 esqueletos.
+- **Propostas se precisar de mais (não aplicadas, porque 200–500 na tela já ficam em ≥ 60 FPS):**
+  1. `VisibilityRange`: além de ~20 unidades da câmera, trocar o corpo animado por uma malha estática (pose
+     de walk congelada) ou um impostor; a câmera normal fica a 16, então só afeta o zoom mais afastado.
+  2. Taxa de animação menor para quem está longe: `AnimationPlayer` em modo manual, avançando a 10–15 Hz para
+     aldeões a mais de ~12 unidades (imperceptível de cima).
+  3. Menos draw calls por aldeão: aba e copa do chapéu numa malha só; e, quando o chapéu de arte existir,
+     cabelo + chapéu na mesma `MeshInstance3D` com duas superfícies.
+  4. LOD de malha no import do corpo-base (o Godot gera; o esqueleto é o mesmo).
+- **Prints:** `docs/prints/estresse_aldeoes_50.png`, `estresse_aldeoes_500.png`.
+- `MapPath` do GameRoot voltou para `mapa_teste.json`.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.

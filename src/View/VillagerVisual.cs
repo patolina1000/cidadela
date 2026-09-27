@@ -111,20 +111,43 @@ public partial class VillagerVisual : Node3D
         _pivot.AddChild(_load);
     }
 
-    public void UpdateFrom(Villager villager, GameData data, float alpha, float dt)
+    /// <summary>
+    /// O que a view precisa saber de um aldeão para desenhá-lo. O jogo monta a partir de <see cref="Villager"/>;
+    /// a cena de estresse monta um sintético.
+    /// </summary>
+    public readonly record struct DrawState(
+        System.Numerics.Vector2 Position, System.Numerics.Vector2 Facing, int HairVariant, VillagerExpression Expression,
+        bool Resting, string? CarryingKind, string? JobResource, float GatherProgress, float GatherStep);
+
+    public static DrawState StateOf(Villager villager, float alpha)
+    {
+        float step = 0f;
+        if (villager.Task == VillagerTask.Gathering && villager.Target is ResourceNode node)
+            step = 1f / Mathf.Max(1f, node.Type.GatherTicks * villager.Stats.GatherMultiplier);
+        return new DrawState(
+            System.Numerics.Vector2.Lerp(villager.PreviousPosition, villager.Position, alpha), villager.Facing,
+            villager.HairVariant, villager.Expression, villager.Resting,
+            villager.CarryingCount > 0 ? villager.CarryingKind : null,
+            villager.Home?.Workplace?.Job.Resource,
+            villager.Task == VillagerTask.Gathering ? Mathf.Clamp(villager.GatherProgress + alpha * step, 0f, 1f) : -1f, step);
+    }
+
+    public void UpdateFrom(Villager villager, GameData data, float alpha, float dt) => UpdateFrom(StateOf(villager, alpha), data, dt);
+
+    public void UpdateFrom(in DrawState s, GameData data, float dt)
     {
         if (!_lookApplied)
-            ApplyLook(villager);
-        UpdateHat(villager, data);
-        if (_face is not null && _shownExpression != villager.Expression)
+            ApplyLook(s.HairVariant);
+        UpdateHat(s.JobResource, data);
+        if (_face is not null && _shownExpression != s.Expression)
         {
-            _shownExpression = villager.Expression;
-            _face.TextureAlbedo = VillagerLooks.FaceTexture(villager.Expression);
+            _shownExpression = s.Expression;
+            _face.TextureAlbedo = VillagerLooks.FaceTexture(s.Expression);
         }
-        System.Numerics.Vector2 p = System.Numerics.Vector2.Lerp(villager.PreviousPosition, villager.Position, alpha);
+        System.Numerics.Vector2 p = s.Position;
         Position = new Vector3(p.X + 0.5f, 0f, p.Y + 0.5f);
 
-        float targetYaw = Mathf.Atan2(-villager.Facing.X, -villager.Facing.Y);
+        float targetYaw = Mathf.Atan2(-s.Facing.X, -s.Facing.Y);
         _yaw = Mathf.LerpAngle(_yaw, targetYaw, 1f - Mathf.Exp(-TurnSmoothing * dt));
         Rotation = new Vector3(0f, _yaw, 0f);
 
@@ -132,19 +155,14 @@ public partial class VillagerVisual : Node3D
         _lastDrawn = p;
         _hasLast = true;
         bool moving = walked > 0.0001f;
-        bool carrying = villager.CarryingCount > 0 && villager.CarryingKind is not null;
+        bool carrying = s.CarryingKind is not null;
 
         _load.Visible = carrying;
-        if (villager.CarryingKind is string kind)
+        if (s.CarryingKind is string kind)
             _loadMaterial.AlbedoColor = Palette.ForItem(data, kind);
 
         // Golpe procedural só na coleta (sem clipe próprio ainda).
-        float targetSwing = 0f;
-        if (villager.Task == VillagerTask.Gathering && villager.Target is ResourceNode node)
-        {
-            float step = 1f / Mathf.Max(1f, node.Type.GatherTicks * villager.Stats.GatherMultiplier);
-            targetSwing = CastellanVisual.SwingAngle(Mathf.Clamp(villager.GatherProgress + alpha * step, 0f, 1f));
-        }
+        float targetSwing = s.GatherProgress >= 0f ? CastellanVisual.SwingAngle(s.GatherProgress) : 0f;
         _swing = Mathf.Lerp(_swing, targetSwing, 1f - Mathf.Exp(-SwingSmoothing * dt));
         _pivot.Rotation = new Vector3(Mathf.DegToRad(_swing), 0f, 0f);
 
@@ -156,7 +174,7 @@ public partial class VillagerVisual : Node3D
             return;
         }
 
-        bool sleeping = villager.Resting || DebugForceSleep;
+        bool sleeping = s.Resting || DebugForceSleep;
         string clip = sleeping ? "sleep" : moving ? (carrying ? "carry" : "walk") : "idle";
         if (_animations.CurrentAnimation != clip && _animations.HasAnimation(clip))
             _animations.Play(clip, ClipBlendSeconds);
@@ -170,7 +188,7 @@ public partial class VillagerVisual : Node3D
     }
 
     /// <summary>Cabelo sorteado dentro do encaixe "Cabelo" (a peça já vem com a origem no encaixe).</summary>
-    private void ApplyLook(Villager villager)
+    private void ApplyLook(int hairVariant)
     {
         _lookApplied = true;
         if (FaceSocket is not null)
@@ -193,7 +211,7 @@ public partial class VillagerVisual : Node3D
         }
         if (HairSocket is null)
             return;
-        _hairInfo = VillagerLooks.HairFor(villager.HairVariant);
+        _hairInfo = VillagerLooks.HairFor(hairVariant);
         _hair = _hairInfo is null ? null : VillagerLooks.InstantiateHair(_hairInfo.Model);
         if (_hair is not null)
         {
@@ -207,9 +225,8 @@ public partial class VillagerVisual : Node3D
     /// regra "cobre": nenhum mostra o cabelo; parcial troca pela versão sob chapéu (ou esconde, se não há);
     /// total esconde.
     /// </summary>
-    private void UpdateHat(Villager villager, GameData data)
+    private void UpdateHat(string? job, GameData data)
     {
-        string? job = villager.Home?.Workplace?.Job.Resource;
         if (job == _hatJob)
             return;
         _hatJob = job;
