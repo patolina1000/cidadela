@@ -24,9 +24,24 @@ public enum VillagerTask
 public sealed class Villager
 {
     private const int RetryTicks = SimClock.TicksPerSecond;
+    /// <summary>Ocioso por este tempo, fica sonolento.</summary>
+    public const int SleepyAfterTicks = 30 * SimClock.TicksPerSecond;
+    /// <summary>Quanto tempo a alegria de uma entrega dura.</summary>
+    public const int HappyTicks = 3 * SimClock.TicksPerSecond;
+    /// <summary>Quantas variações de cabelo existem (data/villager_looks.json lista as peças).</summary>
+    public const int HairVariants = 5;
 
     public int Id { get; }
     public VillagerStats Stats { get; }
+
+    /// <summary>Variação de cabelo, 1 a <see cref="HairVariants"/>, sorteada ao nascer (fixa pelo id).</summary>
+    public int HairVariant { get; }
+
+    /// <summary>Expressão do rosto neste tick, pelas regras do GDD ("Aldeão: implementação v1").</summary>
+    public VillagerExpression Expression { get; private set; } = VillagerExpression.Distracted;
+
+    /// <summary>Descansando (dormindo). Ainda não há noite na simulação; quem for criar a noite liga isto.</summary>
+    public bool Resting { get; private set; }
 
     /// <summary>Posição contínua no plano da grade (X, Z), em células; (x, z) = centro da célula x, z.</summary>
     public Vector2 Position { get; private set; }
@@ -49,6 +64,9 @@ public sealed class Villager
     private readonly Queue<GridPos> _path = new();
     private int _gatherTicks;
     private int _retryIn;
+    private int _idleTicks;
+    private int _happyTicks;
+    private bool _hutFull;
 
     public Villager(int id, Vector2 position, VillagerStats stats)
     {
@@ -56,7 +74,12 @@ public sealed class Villager
         Position = position;
         PreviousPosition = position;
         Stats = stats;
+        // Mistura simples do id: aldeões vizinhos não saem com cabelos em sequência.
+        HairVariant = 1 + (int)(((uint)id * 2654435761u >> 16) % HairVariants);
     }
+
+    /// <summary>Liga ou desliga o descanso (o sistema de noite, quando existir, chama isto).</summary>
+    public void SetResting(bool resting) => Resting = resting;
 
     internal void AssignHome(Building? home)
     {
@@ -65,6 +88,8 @@ public sealed class Villager
         _path.Clear();
         _gatherTicks = 0;
         _retryIn = 0;
+        _hutFull = false;
+        _idleTicks = 0;
         Task = home is null ? VillagerTask.Unemployed : VillagerTask.Waiting;
     }
 
@@ -80,8 +105,19 @@ public sealed class Villager
     internal void Tick(SimWorld world)
     {
         PreviousPosition = Position;
+        if (_happyTicks > 0)
+            _happyTicks--;
         if (Home?.Workplace is not Workplace work)
+        {
+            _idleTicks++;
+            UpdateExpression();
             return;
+        }
+
+        if (Task == VillagerTask.Waiting || Task == VillagerTask.Unemployed)
+            _idleTicks++;
+        else
+            _idleTicks = 0;
 
         switch (Task)
         {
@@ -103,6 +139,23 @@ public sealed class Villager
                     Deliver(world, work);
                 break;
         }
+        UpdateExpression();
+    }
+
+    /// <summary>
+    /// Tabela do GDD, do mais forte para o mais fraco: dormindo, feliz (acabou de entregar), esforço
+    /// (coletando ou levando a carga), preocupado (trabalho parado: cabana cheia, mesmo com carga na mão),
+    /// sonolento (ocioso há muito tempo), distraído. Espantado, chorando e bravo ainda não têm gatilho
+    /// (horda, ferimento, interrupção).
+    /// </summary>
+    private void UpdateExpression()
+    {
+        Expression = Resting ? VillagerExpression.Sleeping
+            : _happyTicks > 0 ? VillagerExpression.Happy
+            : Task == VillagerTask.Gathering || (CarryingCount > 0 && Task != VillagerTask.Waiting) ? VillagerExpression.Effort
+            : _hutFull ? VillagerExpression.Worried
+            : _idleTicks >= SleepyAfterTicks ? VillagerExpression.Sleepy
+            : VillagerExpression.Distracted;
     }
 
     /// <summary>Decide o próximo passo: entregar a carga, ou buscar o recurso mais perto dentro do raio.</summary>
@@ -114,7 +167,8 @@ public sealed class Villager
             GoHome(world);
             return;
         }
-        if (work.Free <= 0)
+        _hutFull = work.Free <= 0;
+        if (_hutFull)
         {
             Task = VillagerTask.Waiting;
             return;
@@ -186,7 +240,10 @@ public sealed class Villager
             CarryingCount -= amount;
             if (CarryingCount == 0)
                 CarryingKind = null;
+            if (amount > 0)
+                _happyTicks = HappyTicks;
         }
+        _hutFull = CarryingCount > 0; // sobrou carga: a cabana está cheia
         // Se a cabana encheu, espera com o resto da carga.
         Task = VillagerTask.Waiting;
         _retryIn = CarryingCount > 0 ? RetryTicks : 0;

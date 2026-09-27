@@ -1494,3 +1494,32 @@ onde errou, correções manuais e quanto tempo levou.
 - **Créditos:** 38. Total do aldeão: 190 (4 variações + corpo-base). Saldo: 2.706.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 14:35–16:10 de relógio.
+
+---
+
+## 2026-09-27 — Aldeão modular, etapa 2: cabelo sorteado, expressão e descanso na simulação
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Etapa 1 (merge da `arte`):** já estava feito, a `master` apontava para o mesmo commit da `arte`
+  (`2cc1f0f`); nada a mesclar. O `docs/GDD.md` local tem uma exportação em texto puro não commitada (sem
+  os títulos em markdown); ficou de fora dos commits, a reexportar em markdown do documento vivo.
+- **Decisões do humano:** velocidade do aldeão pela opção (c): 1,2 células/s (era 3,0) com a animação
+  limitada a 3×; se ficar ruim, o agente de arte faz um walk mais rápido. `sleep` ligado a um estado
+  `Resting` que ainda nada dispara (a noite não existe), mais tecla de depuração na view. Coleta **não**
+  usa o clipe `work`: coleta e trabalho de máquina terão animações próprias; até lá, coletando fica em
+  `idle` com o golpe procedural do corpo.
+- **O que foi feito:**
+  - `VillagerExpression` (enum na ordem das células do atlas 3×3: distraído, esforço, feliz, sonolento,
+    dormindo, espantado, preocupado, chorando, bravo).
+  - `Villager.HairVariant` (1–5, fixo pelo id com uma mistura simples), `Villager.Expression` calculada a
+    cada tick pela tabela do GDD com o que a simulação já sabe: dormindo (`Resting`), feliz por 3 s após
+    entregar, esforço coletando ou levando carga, preocupado com a cabana cheia (mesmo parado com carga na
+    mão), sonolento após 30 s ocioso, senão distraído. Espantado, chorando e bravo ficam sem gatilho.
+  - `Villager.SetResting(bool)` para o futuro sistema de noite.
+  - `data/villagers.json`: `speed` 1.2, com o porquê no comentário.
+  - Testes: `VillagerLookTests` (6 novos; total 91 aprovados).
+- **O que deu errado:** o teste de "feliz" usava uma árvore tão perto que o aldeão entregava de novo em
+  menos de 3 s (comportamento certo; afastei a árvore no teste). "Preocupado" não aparecia porque, com a
+  cabana cheia, o aldeão espera com carga sobrando e "carregando" vencia; agora esforço só vale coletando
+  ou levando a carga.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 91 aprovados.
