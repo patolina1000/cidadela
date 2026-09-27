@@ -74,6 +74,15 @@ public partial class CastellanVisual : Node3D
         _pivot.AddChild(new MeshInstance3D { Name = "Nose", Mesh = nose, Position = new Vector3(0f, 0.9f, -0.35f) });
     }
 
+    /// <summary>Toca um clipe em 1× fora da simulação (palco da Biografia). Sem efeito na cápsula.</summary>
+    public void PlayClip(string clip)
+    {
+        if (_animations is null || !_animations.HasAnimation(clip))
+            return;
+        _animations.Play(clip, ClipBlendSeconds);
+        _animations.SpeedScale = 1f;
+    }
+
     public void UpdateFrom(Castellan castellan, float alpha, float dt)
     {
         System.Numerics.Vector2 p = System.Numerics.Vector2.Lerp(castellan.PreviousPosition, castellan.Position, alpha);

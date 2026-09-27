@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b6xnp1b0pooys"
-path="res://.godot/imported/medio_franja_texture_0.png-222275e81b365d4a57d95aa5da7824b5.ctex"
+path.s3tc="res://.godot/imported/medio_franja_texture_0.png-222275e81b365d4a57d95aa5da7824b5.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "2b2fb5f2f192d754bb003005e1139a59"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/modelos/aldeao_cabelos/medio_franja_texture_0.png"
-dest_files=["res://.godot/imported/medio_franja_texture_0.png-222275e81b365d4a57d95aa5da7824b5.ctex"]
+dest_files=["res://.godot/imported/medio_franja_texture_0.png-222275e81b365d4a57d95aa5da7824b5.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

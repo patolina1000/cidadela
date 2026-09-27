@@ -343,7 +343,7 @@ public partial class WorldView : Node3D
             return new FocusTarget(_castellan, 0.8f, 3.2f, DescribeCastellan);
         foreach ((Villager villager, VillagerVisual visual) in _villagerNodes)
             if (visual == nearest)
-                return new FocusTarget(visual, 0.55f, 2.6f, () => DescribeVillager(villager));
+                return new FocusTarget(visual, 0.25f, 1.8f, () => DescribeVillager(villager));
 
         var cell = new GridPos(Mathf.FloorToInt(ground.X), Mathf.FloorToInt(ground.Z));
         if (_world.BuildingAt(cell) is Building building && _buildingNodes.TryGetValue(building, out Node3D? bNode))

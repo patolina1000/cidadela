@@ -1543,3 +1543,238 @@ onde errou, correções manuais e quanto tempo levou.
 - **Créditos:** 38 (longo liso). Total do aldeão: 228. Saldo: 2.668.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 16:20–18:30 de relógio.
+
+---
+
+## 2026-09-27 — Aldeão modular, etapa 2: cabelo sorteado, expressão e descanso na simulação
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Etapa 1 (merge da `arte`):** já estava feito, a `master` apontava para o mesmo commit da `arte`
+  (`2cc1f0f`); nada a mesclar. O `docs/GDD.md` local tem uma exportação em texto puro não commitada (sem
+  os títulos em markdown); ficou de fora dos commits, a reexportar em markdown do documento vivo.
+- **Decisões do humano:** velocidade do aldeão pela opção (c): 1,2 células/s (era 3,0) com a animação
+  limitada a 3×; se ficar ruim, o agente de arte faz um walk mais rápido. `sleep` ligado a um estado
+  `Resting` que ainda nada dispara (a noite não existe), mais tecla de depuração na view. Coleta **não**
+  usa o clipe `work`: coleta e trabalho de máquina terão animações próprias; até lá, coletando fica em
+  `idle` com o golpe procedural do corpo.
+- **O que foi feito:**
+  - `VillagerExpression` (enum na ordem das células do atlas 3×3: distraído, esforço, feliz, sonolento,
+    dormindo, espantado, preocupado, chorando, bravo).
+  - `Villager.HairVariant` (1–5, fixo pelo id com uma mistura simples), `Villager.Expression` calculada a
+    cada tick pela tabela do GDD com o que a simulação já sabe: dormindo (`Resting`), feliz por 3 s após
+    entregar, esforço coletando ou levando carga, preocupado com a cabana cheia (mesmo parado com carga na
+    mão), sonolento após 30 s ocioso, senão distraído. Espantado, chorando e bravo ficam sem gatilho.
+  - `Villager.SetResting(bool)` para o futuro sistema de noite.
+  - `data/villagers.json`: `speed` 1.2, com o porquê no comentário.
+  - Testes: `VillagerLookTests` (6 novos; total 91 aprovados).
+- **O que deu errado:** o teste de "feliz" usava uma árvore tão perto que o aldeão entregava de novo em
+  menos de 3 s (comportamento certo; afastei a árvore no teste). "Preocupado" não aparecia porque, com a
+  cabana cheia, o aldeão espera com carga sobrando e "carregando" vencia; agora esforço só vale coletando
+  ou levando a carga.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 91 aprovados.
+
+---
+
+## 2026-09-27 — Aldeão modular, etapa 3: o corpo-base no lugar da cápsula, com os clipes
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `VillagerVisual` reescrito: instancia `assets/modelos/aldeao_base/aldeao_base.glb`
+  (girado 180°, como a protagonista), acha os encaixes "Rosto", "Cabelo" e "Chapéu" e lê `largura_m` dos
+  extras do glTF (0,0898 m). Estados → clipes: parado idle, andando walk, andando com carga carry,
+  descansando sleep; coletando fica em idle com o golpe procedural do pivô. walk e carry tocam no ritmo da
+  velocidade real ÷ passada do JSON (0,207 m/s), com teto de 3×. A carga (cubinho) passou das costas para a
+  frente do peito, onde o clipe carry abraça. Sem o modelo, cai numa cápsula pequena. Foco cinematográfico do
+  aldeão baixado para a altura do modelo (0,25 a 1,8 de distância). Tecla **N** no painel de desempenho força
+  o sleep em todos (só visual), para conferir o decal no clipe deitado.
+- **Conferido no jogo:** os três aldeões aparecem com o modelo, sem aviso de encaixe faltando; idle respira;
+  o sleep deita no chão. Prints: `docs/prints/aldeao_modelo_idle.png`, `aldeao_modelo_sleep.png`.
+- **Import:** o editor marcou as texturas do aldeão como usadas em 3D (compressão VRAM); os `.import` mudados
+  entram neste commit para não oscilar a cada abertura.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Aldeão modular, etapa 4: cabelos como peças no encaixe "Cabelo"
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `data/villager_looks.json` lista as 5 variações na ordem do sorteio (nome, modelo,
+  versão sob chapéu). `src/View/VillagerLooks.cs` lê o JSON (System.Text.Json, porque os JSON de `data/` têm
+  comentários que o `Json` do Godot não aceita), guarda as `PackedScene` dos GLB em cache e instancia a peça;
+  arquivo ausente (o longo liso, variação 4) = careca com um aviso único. `VillagerVisual` põe a peça
+  dentro do nó "Cabelo" na primeira atualização (a peça já vem com a origem no encaixe, sem ajuste). Um
+  corpo, um rig e um `AnimationPlayer` por aldeão; o cabelo é só uma malha filha da cabeça.
+- **Conferido no jogo:** os três aldeões saíram com cabelos diferentes (franja, curto), acompanhando a cabeça
+  no idle. Print: `docs/prints/aldeao_cabelo.png`.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Aldeão modular, etapa 5: expressão por Decal no encaixe "Rosto"
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `VillagerLooks.FaceTexture` fatia o atlas `assets/texturas/aldeao/expressoes.png`
+  (3×3, 256 px por célula) em 9 texturas na primeira vez (o `Decal` não lê região de atlas). `VillagerVisual`
+  cria um `Decal` filho do encaixe "Rosto", girado 90° em X para projetar no −Z do encaixe (para dentro do
+  rosto), com lado = `largura_m` × 1,15 e profundidade 0,08 (curta, para não alcançar a nuca); troca a
+  textura quando `Villager.Expression` muda. O decal só atinge a camada 1 (o corpo): as peças de cabelo
+  (e os chapéus, na etapa 6) ficam na camada 2, então o rosto nunca aparece sobre o cabelo.
+- **Verificação visual pendente:** a janela do jogo ficou em segundo plano durante as capturas (o humano
+  estava usando a máquina) e as três capturas F11 saíram idênticas. Falta conferir o decal nos cinco clipes
+  (frente, costas, dormindo) e a orientação da textura (pode estar de cabeça para baixo: aí é girar o decal
+  180° em Y).
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Aldeão modular, etapa 6: peças de cabeça (chapéus) em JSON, com a regra "cobre"
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `data/head_pieces.json` (peças com `kind`, `name`, `cobre` nenhum/parcial/total,
+  `model` opcional em `assets/modelos/aldeao_chapeus/`, e `worker`: a peça que quem tem cabana veste).
+  `VillagerLooks` lê o JSON (valor de `cobre` inválido dá `FormatException`), e `InstantiateHeadPiece` usa o
+  GLB ou, sem modelo, uma forma provisória de chapéu de palha (aba larga + copa baixa, dois cilindros) na cor
+  do recurso do ofício. `VillagerVisual.UpdateHat` põe a peça no encaixe "Chapéu" quando o aldeão ganha
+  cabana e tira quando perde; regra: `nenhum` mostra o cabelo, `parcial` troca pela versão sob chapéu
+  (`underHat` em `villager_looks.json`; nenhum cabelo tem ainda, então esconde), `total` esconde. Cabelo e
+  chapéu ficam na camada 2, fora do alcance do decal do rosto.
+- **Mapa de teste `data/maps/aldeoes_teste.json`:** cabana de lenhador com árvores perto e 4 aldeões, para ver
+  walk, carry, chapéu e expressões sem preparar nada. `MapPath` do GameRoot aponta para ele **temporariamente**
+  (volta ao `mapa_teste.json` no fim da tarefa).
+- **Conferido no jogo (capturas F11 em resolução total):** o lenhador anda com o chapéu de palha e sem o
+  cabelo por baixo; o decal do rosto aparece de frente (olhos e boca), acompanha a cabeça e não vaza para a
+  nuca. Prints: `docs/prints/aldeao_chapeu_palha.png`, `aldeao_rosto_decal.png`. Ainda não conferi o decal
+  no clipe `sleep` de perto nem a orientação exata (se a textura está de ponta-cabeça).
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Aldeão modular, etapa 7: desempenho com 50, 200 e 500 aldeões animados
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `VillagerVisual` ganhou um `DrawState` (posição, direção, cabelo, expressão, descanso,
+  carga, ofício, coleta): o jogo monta a partir do `Villager`, a cena de estresse monta um sintético. Em
+  `scenes/Stress.tscn` as teclas **0/1/2/3** criam 0/50/200/500 aldeões com o modelo completo (esqueleto
+  animado em walk, cabelo, decal de expressão trocando a cada 4 s, metade com chapéu de palha, um quarto
+  carregando), andando em círculos a 1,2 células/s em volta do ponto olhado; **H** esconde a horda de
+  inimigos/itens/máquinas para medir só os aldeões sobre a grama. A cena força tela cheia ao abrir (a janela
+  abria em 1152×648 pelo editor).
+- **Números (V-Sync desligado, janela com foco, horda oculta, grama 468 mil tufos, câmera a 16 do chão).**
+  Atenção: a tela cheia foi para o monitor externo, **3840×2160** (8,3 Mpx, mais que a Retina, 5,7 Mpx), então
+  os valores são um teto conservador:
+
+  | Aldeões animados | ms/quadro | FPS | draw calls | nós |
+  |---|---|---|---|---|
+  | 0 | 13,2 | 76 | 41 | 17.413 |
+  | 50 | 14,5 | 69 | 265 | 18.318 |
+  | 200 | 16,7 | 60 | 885 | 21.033 |
+  | 500 (câmera a 6, zoom do humano; ~150 na tela) | 16,4 | 61 | 739 | 26.463 |
+  | 500 idem, sem grama | 12,5 | 80 | 718 | 26.463 |
+
+  500 a distância 16 não deu para medir: o humano estava usando o mouse na janela e o foco se perdia.
+  Extrapolando o custo linear (≈ 17 µs por aldeão na tela por quadro, 50 → +1,3 ms, 200 → +3,5 ms), 500 na
+  tela dariam ≈ 22 ms (≈ 45 FPS) em 4K, e um pouco melhor na Retina. A confirmar com a janela livre.
+- **Onde está o custo:** CPU da view 2,4–3,6 ms (inclui atualizar os 500 `VillagerVisual`), simulação
+  0,1–0,2 ms: sobra. O que cresce é a GPU: ~4,4 draw calls por aldeão (corpo com skinning, cabelo, aba e copa
+  do chapéu, decal) e o skinning de 500 esqueletos.
+- **Propostas se precisar de mais (não aplicadas, porque 200–500 na tela já ficam em ≥ 60 FPS):**
+  1. `VisibilityRange`: além de ~20 unidades da câmera, trocar o corpo animado por uma malha estática (pose
+     de walk congelada) ou um impostor; a câmera normal fica a 16, então só afeta o zoom mais afastado.
+  2. Taxa de animação menor para quem está longe: `AnimationPlayer` em modo manual, avançando a 10–15 Hz para
+     aldeões a mais de ~12 unidades (imperceptível de cima).
+  3. Menos draw calls por aldeão: aba e copa do chapéu numa malha só; e, quando o chapéu de arte existir,
+     cabelo + chapéu na mesma `MeshInstance3D` com duas superfícies.
+  4. LOD de malha no import do corpo-base (o Godot gera; o esqueleto é o mesmo).
+- **Prints:** `docs/prints/estresse_aldeoes_50.png`, `estresse_aldeoes_500.png`.
+- `MapPath` do GameRoot voltou para `mapa_teste.json`.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Menu inicial
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Pedido (tarefa 2 de 3):** tela no estilo do jogo (névoa roxa, escuro), protagonista em idle com o cristal
+  brilhando e aldeões por perto; botões Novo jogo, Continuar (desativado sem save), Biografia, Configurações
+  (esboço) e Sair.
+- **Antes:** o GDD vivo foi exportado e comparado com o commit: sem diferenças. A `arte` não tem commits novos
+  (o rosto apagado da textura ainda não chegou; a tarefa 1 espera).
+- **O que foi feito:**
+  - `scenes/Menu.tscn` (cena principal agora; `Main.tscn` continua sendo o jogo) com o mesmo céu, névoa e sol
+    do jogo, e `src/View/MenuRoot.cs`: campo de grama 24×24, `CastellanVisual` no centro (idle e cristal
+    aceso, sem simulação), 4 `VillagerVisual` com cabelos, expressões e chapéus variados via `DrawState`,
+    câmera baixa com um balanço lento. Painel escuro à esquerda com os botões; o grupo fica à direita do
+    centro para não ser coberto.
+  - Continuar olha `GameFiles.HasSave()` (`user://save.json`); não existe sistema de save, então nasce
+    desativado com dica "Nenhum jogo salvo.". Biografia abre `scenes/Biography.tscn` quando ela existir.
+    Configurações: painel com Tela cheia e V-Sync funcionando e um volume desabilitado (não há som).
+  - `src/View/GameFiles.cs`: caminhos dos JSON e `LoadData()`; o `StressRoot` passou a usar (tinha cópia).
+  - `scenes/vignette_material.tres` para reaproveitar a vinheta fora do `Main.tscn`.
+- **Conferido no jogo:** menu, painel de configurações e Novo jogo (carrega o jogo). O editor abriu `Main.tscn`
+  no primeiro `project_run mode=main` (configuração antiga em memória); rodando a cena do menu direto, ok.
+- **Prints:** `docs/prints/menu_inicial.png`, `menu_configuracoes.png`.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Biografia, etapa B: dados e textos
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `data/biography.json` com 6 categorias (Personagens, Máquinas, Construções, Armas e
+  Itens, Recursos, Inimigos) e 16 entradas: cada uma com id, nome, categoria, descrição, história, modelo
+  (`castellan`, `villager`, `building:<kind>`, `item:<kind>`, `resource:<kind>`), animações (botões do
+  palco) e `descoberto` (tudo true por ora). Inimigos fica vazio com a frase "As hordas ainda não chegaram
+  até aqui": não há inimigo no jogo nem modelo; inventar um seria arte.
+- **Textos:** no tom de "História e mundo" (frases curtas, sugerir e não explicar; a Corrupção só por efeitos:
+  o veio azul dentro dos troncos, a mancha do minério, o fumo que não chega ao céu). Apresentados ao humano
+  para revisão antes de fechar a tarefa.
+- Sem mudança de código. `dotnet build` não se aplica (só JSON).
+
+---
+
+## 2026-09-27 — Biografia, etapa C: a cena da enciclopédia com palco 3D
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:**
+  - `src/View/Biography.cs` lê `data/biography.json` (categorias, entradas; `descoberto` false vira "???" e
+    botão desativado).
+  - `scenes/Biography.tscn` + `src/View/BiographyRoot.cs`: mesma atmosfera do jogo; colunas categorias →
+    entradas → palco → texto (nome, descrição, história). Palco: pátio de terra com grama em volta, pedestal,
+    câmera em órbita (arrastar gira, roda aproxima; o delta vem da posição absoluta, porque eventos sintéticos
+    de teste vêm sem `Relative`). Modelos: `CastellanVisual` (idle, com o cristal), `VillagerVisual`
+    (dirigido por um `DrawState` parado, de frente para a câmera), `BuildingModels` para construções e
+    máquinas, cubos de item e de recurso girando devagar.
+  - Controles embaixo: clipes da entrada (protagonista: idle, run, work; aldeão: idle, walk, carry, work,
+    sleep; máquinas: funcionando/parada, por enquanto só a lâmina e o pulso do modelo, a etapa D troca pelo
+    mundo real); no aldeão, 9 expressões, 5 cabelos e um botão de chapéu.
+  - Ganchos de prévia: `CastellanVisual.PlayClip`, `VillagerVisual.PreviewClip` (clipe forçado em 1×) e
+    `VillagerVisual.ResetLook` (refaz cabelo e chapéu ao vivo). Esc ou "Voltar ao menu" voltam ao menu.
+- **Conferido no jogo:** categorias, entradas, texto, giro por arrasto, troca de expressão (feliz), cabelo
+  (ondulado) e clipe (walk). O aldeão nasceu de costas (direção padrão +Z) e foi virado para −Z; as
+  fileiras de botões estouravam o painel de baixo e passaram a quebrar linha (`HFlowContainer`) num painel
+  mais alto que ocupa também a coluna das entradas.
+- **Prints:** `docs/prints/biografia_protagonista.png`, `biografia_aldeao.png`, `biografia_serraria.png`.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Biografia, etapa D: máquinas trabalhando de verdade no palco
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Simulação:** `SpawnItemCommand(cell, kind)` + `SimWorld.TrySpawnItem`: um item nasce na entrada de uma
+  esteira sem Castelão nem alcance (alimentador do palco e de testes). 3 testes novos (`SpawnItemTests`);
+  total 94 aprovados.
+- **Palco:** para cada máquina, `BiographyRoot.BuildMachineWorld` monta um mundo 9×7 de terra pelo
+  `MapLoader` (esteira de entrada x 1..3 → máquina em (4,3) virada para leste → esteira de saída x 5..7 →
+  baú em (8,3); o Castelão fica escondido em (4,1) porque o mapa exige um), desenhado pelo próprio
+  `WorldView` do jogo (esteiras, itens, pulso da máquina, fumaça). O alimentador faz nascer os insumos da
+  receita na primeira esteira a cada 10 ticks, na proporção da receita (forja: lingote, lingote, haste).
+  "Funcionando" alimenta; "parada" corta o insumo: a máquina termina o que tem na esteira e para de verdade.
+  Um `VillagerVisual` fica ao sul da máquina, virado para ela, em `work` quando funciona e `idle` quando
+  para: **só visual**, a simulação ainda não tem operador de máquina. A câmera das máquinas começa ao sul,
+  para a esteira correr da esquerda para a direita.
+- **Conferido no jogo:** Serraria com hastes saindo; Forja com lingotes e hastes na fila, fumaça e espada na
+  saída; "parada" esvazia a fila e o aldeão volta ao idle. Prints: `docs/prints/biografia_serraria_funcionando.png`,
+  `biografia_forja_funcionando.png`, `biografia_forja_parada.png`.
+- **Medição:** a janela do jogo abre ora em 1152×648, ora em 3840×2160 (monitor do editor); as coordenadas dos
+  cliques de teste mudam com isso. Anotado.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 94 aprovados.
