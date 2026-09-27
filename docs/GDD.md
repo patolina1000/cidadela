@@ -706,6 +706,104 @@ Olhar longe é livre desde o início; construir longe é recompensa, seguindo a 
 
 A posição e a vida do Castelão são estado da **simulação**, em ticks fixos como o resto. O teclado vira um comando de movimento aplicado no próximo tick; a cena só desenha e interpola, e a câmera segue o desenho.
 
+## História e mundo (rascunho, 26/09/2026)
+
+> **Não é definitivo.** Base gerada com o Sudowrite a partir das ideias do Arthur. Tudo aqui pode mudar ao longo do projeto.
+
+**Regras de tom:** a Corrupção nunca é explicada, só mostrada por efeitos, rastros e relatos contraditórios. Se os cristais eram adorados como deuses fica em aberto; cada povo acredita numa coisa. Não existem humanos, só povos parecidos. Sem bem contra o mal, sem profecias, sem vilão. Preferir uma pergunta sem resposta a uma explicação.
+
+### Premissa
+
+Os cristais, outrora silenciosos, despertaram e depois apodreceram. Resta apenas um, o menor de todos, escondido numa floresta tão densa que a luz do dia chega cansada. Dele nasceu um ser pequeno demais para a guerra e frágil demais para a noite. Incapaz de dormir, ele constrói máquinas que trabalham enquanto vigia. Ele consegue o que ninguém mais consegue: tocar nos cristais podres sem se quebrar. Talvez isso seja purificação. Talvez seja só insistência.
+
+### O mundo antes e depois
+
+**Antes:** cristais brotavam em vales esquecidos, cavernas novas e leitos de rios que mudavam de curso para acomodá-los. Ninguém os criou nem os entendeu; os povos só aprenderam a usá-los (calor para forjas, luz para colheitas, voz que atravessava montanhas). Nenhum culto unificado; só o hábito de não olhar diretamente para os maiores.
+
+**Depois:** os cristais escureceram por dentro. O calor queima sem propósito, a luz pisca em padrões que não iluminam nada, rios correm para trás ou carregam fragmentos que cortam como vidro. Em alguns lugares o céu nunca escurece por completo, com estrelas piscando em padrões quase regulares. Animais pararam de fazer sons. O vento carrega vozes, mas nunca palavras.
+
+### A Corrupção (só efeitos)
+
+- Cristais escurecem como frutas podres e continuam crescendo em formas sem sentido: espirais que não terminam, ângulos que doem de olhar.
+- Criaturas perto das zonas corrompidas perdem a memória, ou lembram de coisas que nunca aconteceram.
+- A paisagem não apodrece, petrifica: flores viram vidro, lagos viram espelhos que não refletem o céu. O ar perto dela recusa carregar som.
+
+**Três teorias do mundo (nenhuma é confirmada):**
+
+1. **O Despertar** (Ferro-velhos): os cristais acordaram, e o que viram os enlouqueceu. Não foi ataque; foi desespero.
+2. **O Vazio** (Lenteios): a Corrupção é o que sobra quando um cristal para de sonhar. E o vazio tem fome.
+3. **A Resposta** (Carrascos): os cristais finalmente nos ouviram e responderam. Ninguém gostou da resposta.
+
+### O último cristal
+
+**O que se sabe:** é o menor dos que restam; luz azul tênue; fica numa clareira que não aparece em mapas antigos, e a vegetação parece escondê-lo, protegê-lo ou aprisioná-lo. Ficou séculos sem sinais de atividade; criou o protagonista e voltou ao silêncio. Gera aldeões em ciclos irregulares, nunca mais de sete por vez.
+
+**O que não se sabe:** se escapou da Corrupção ou se ela só ainda não chegou; se criar o protagonista foi desespero, esperança ou outra coisa; se é consciente, se sofre, se sonha; por que criou alguém que não pode lutar, mas pode tocar os outros cristais.
+
+### O protagonista
+
+Nasceu completo: cabelo longo, roupas já rasgadas, olhos já vazios. Masculino, de aparência delicada e feminina. Não chorou, nunca dorme, não sente fome, mas sente um cansaço sem nome. Não lembra de nada antes de abrir os olhos nem sabe se tem nome. Constrói porque não pode carregar; automatiza porque não confia em si mesmo. Toca cristais corrompidos com as mãos nuas. Chama os aldeões de "os meus" (posse ou promessa?); eles o chamam de "o que não dorme" (respeito ou lamento?). Depois das batalhas, às vezes constrói algo inútil: um banco, uma estátua, um jardim que ninguém verá.
+
+### O Primeiro Aldeão
+
+O primeiro ser que o cristal gerou depois do protagonista, e o modelo de todos os aldeões.
+
+- **Forma:** bate na cintura do protagonista. Corpo redondo, quase infantil, "como se alguém tivesse começado a esculpir um ser e desistido nos ombros". Mesma pele azul-pálida, mas opaca, sem a translucidez do protagonista. Liso, sem marcas, sem gênero e sem roupas, como um boneco.
+- **Rosto:** expressão de inocência total, sem malícia possível. Olhos redondos, um pouco desalinhados, que demoram a focar. Boca pequena, sempre entreaberta. Cabelo igual ao do protagonista, mas desgrenhado, caindo nos olhos.
+- **Corpo:** bípede e instável; pernas curtas para o torso; braços que balançam ao andar.
+- **Natureza:** não pensa em causas, só em repetições. Gira a manivela, carrega, encaixa. Mas tem o que o protagonista não tem: potencial para se tornar guerreiro, mago, clérigo, arqueiro, ou continuar girando manivelas até o fim do mundo.
+- **Relação:** segue o protagonista como uma sombra. Quase não fala. Cochila de pé enquanto o protagonista vigia. O protagonista o olha com algo que não é carinho nem tristeza: reconhecimento de algo que ainda não aconteceu.
+
+**Conflito a resolver:** esta descrição diz que o aldeão não tem cristal, mas a seção 6 diz que ele tem um cristal opaco que brilha ao se formar numa classe. **Proposta:** o camponês não tem cristal; o cristal *nasce* no peito quando ele se forma numa classe, já na cor da classe. Mantém as duas ideias.
+
+### Regra de design: fábricas e aldeões são inseparáveis
+
+A automação do castelo e das fábricas depende dos aldeões; eles não são só "população", são parte da máquina. Pontos de partida para refinar:
+
+- Máquinas das primeiras eras precisam de aldeões operando (girar manivela, alimentar forno, carregar entre prédios). Sem aldeão, a máquina para.
+- Cada era não elimina os aldeões: muda o que fazem (de força bruta para operar, supervisionar, reparar).
+- As escolas e academias são parte da cadeia de produção: aldeão entra, especialista sai.
+- A tensão do jogo: todo aldeão enviado para a muralha à noite é um aldeão a menos na fábrica.
+
+### Povos, hordas e narrativa
+
+**Três povos (não humanos):** Ferro-velhos / Veth'kori (nômades altos que forjavam com cristais, esqueceram como; sentem dívida), Lenteios / Saal-mor (baixos, cantam sem palavras, vivem nas cidades mortas; sentem culpa), Carrascos / Thren (pele cinza, seis dedos; destruíam cristais recém-nascidos por piedade; agora sentem vergonha).
+
+**Hordas:** vêm da direção dos cristais mortos. Altas, desproporcionais, membros como raízes; algumas com cristais escuros no corpo, outras sem rosto, outras com rostos demais. Não gritam: fazem som de vidro raspando em vidro. Antes de atacar, param e olham, como se tentassem lembrar para que servem. Morrem em pó que brilha um segundo; dentro, às vezes, fragmentos de cristal quentes. Algumas não atacam: inclinam a cabeça, confusas. Uma horda que dança: se interrompida, ataca; se observada, vai embora.
+
+**Narrativa sem textos longos:** objetos com memória ("Alguém bebeu aqui. Não lembro o gosto."), ruínas como perguntas (um cristal partido com a metade de cima flutuando; uma cidade com todas as portas abertas), descrições curtas de itens ("Cristal podre: ainda cresce. Não deveria."), sombras e estrelas que só aparecem à noite.
+
+### Aldeão: implementação v1 (26/09/2026, não definitivo)
+
+**No jogo (27/09/2026):** o aldeão usa o corpo-base modular (`assets/modelos/aldeao_base`): um rig e cinco clipes (idle, walk, carry, work, sleep); o cabelo sorteado ao nascer (1 a 5, fixo pelo id) é uma peça separada no encaixe "Cabelo" (`data/villager_looks.json`); a expressão é um Decal no encaixe "Rosto" (atlas 3×3 fatiado, largura lida do modelo, só atinge o corpo); peças de cabeça vão no encaixe "Chapéu" (`data/head_pieces.json`, campo "cobre": nenhum, parcial ou total; hoje um chapéu de palha provisório para quem tem cabana). Estados → clipes: parado idle, andando walk, com carga carry, descansando sleep (o descanso existe na simulação, mas a noite ainda não o liga); coleta e trabalho de máquina terão clipes próprios (o work da manivela não é usado na coleta). Velocidade 1,2 células/s com a animação até 3× a passada natural (0,207 m/s); se ficar ruim, o agente de arte faz um walk mais rápido. Expressões ligadas: distraído, esforço, feliz (3 s após entregar), sonolento (30 s ocioso), dormindo, preocupado (cabana cheia); espantado, chorando e bravo aguardam horda, ferimento e interrupção. Custo medido: 200 a 500 aldeões animados na tela mantêm ≥ 60 FPS em 3840×2160 (números no diário).
+
+**Arte aprovada (por enquanto):** corpo redondo, pele azul-pálida fosca, olhos enormes, sem roupas e sem gênero, cabelo azul-acinzentado. Conceitos em `assets/conceitos/aldeao/`.
+
+**Variedade:** 5 cabelos (curto bagunçado, médio com franja de lado, ondulado, longo liso, rabo de cavalo), sorteados ao nascer. Estrutura modular (decidido em 27/09/2026): um corpo-base careca com um único rig e um único conjunto de animações; cabelos são peças separadas presas ao osso da cabeça (nó "Cabelo"). Chapéus e elmos usam um segundo nó ("Chapéu") no mesmo osso, uma camada acima do cabelo. Cada peça de cabeça diz quanto cobre: nenhum (coroa, tiara: cabelo inteiro aparece), parcial (chapéu, capuz: troca pela versão "sob chapéu" do cabelo, cortada por script no Blender na linha do chapéu) ou total (elmo fechado: cabelo escondido).
+
+**Expressões mudam conforme a ação**, por decal no rosto (atlas de 9 expressões, trocadas por código):
+
+| Expressão | Quando aparece |
+| --- | --- |
+| Distraído (padrão) | Parado, andando |
+| Esforço/nervoso | Carregando, girando manivela |
+| Feliz | Terminou uma entrega, subiu de nível |
+| Sonolento | Ocioso há muito tempo |
+| Dormindo | Descansando à noite |
+| Espantado | Horda chegando, susto |
+| Preocupado | Com fome, máquina parada |
+| Chorando | Ferido, aldeão próximo morreu |
+| Bravo | Interrompido várias vezes |
+
+**Gameplay v1:** nascem do Coração em ciclos (no máximo 7 por vez), vagam perto dele, seguem o protagonista quando chamados e podem ser designados a dois trabalhos: carregar itens entre prédios e operar máquinas (máquina sem aldeão para). Cada um nasce com atributos sorteados (Força, Destreza, Intelecto, Fé, Moral), visíveis ao passar o mouse; classes, escola e professores ficam para depois.
+
+### Nomes em estudo
+
+- **Mundo:** Vetrith, Morro-silente, A Cavidade.
+- **Último cristal:** O Azul que Não Pergunta, Thren-vai, O Pequeno.
+- **Protagonista:** Ves, Lumen, O Primeiro que Acordou. (No jogo ainda aparece como "Castelão".)
+- **Aldeões:** Os Segundos, Povos de Massa, Os Quase.
+
 ## 21. Perguntas em aberto
 
 - [x] Decidido: 3D com câmera top-down inclinada (estilo Albion), fábricas de até 3 andares.
