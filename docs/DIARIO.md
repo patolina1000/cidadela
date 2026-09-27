@@ -1664,3 +1664,18 @@ onde errou, correções manuais e quanto tempo levou.
   no primeiro `project_run mode=main` (configuração antiga em memória); rodando a cena do menu direto, ok.
 - **Prints:** `docs/prints/menu_inicial.png`, `menu_configuracoes.png`.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Biografia, etapa B: dados e textos
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `data/biography.json` com 6 categorias (Personagens, Máquinas, Construções, Armas e
+  Itens, Recursos, Inimigos) e 16 entradas: cada uma com id, nome, categoria, descrição, história, modelo
+  (`castellan`, `villager`, `building:<kind>`, `item:<kind>`, `resource:<kind>`), animações (botões do
+  palco) e `descoberto` (tudo true por ora). Inimigos fica vazio com a frase "As hordas ainda não chegaram
+  até aqui": não há inimigo no jogo nem modelo; inventar um seria arte.
+- **Textos:** no tom de "História e mundo" (frases curtas, sugerir e não explicar; a Corrupção só por efeitos:
+  o veio azul dentro dos troncos, a mancha do minério, o fumo que não chega ao céu). Apresentados ao humano
+  para revisão antes de fechar a tarefa.
+- Sem mudança de código. `dotnet build` não se aplica (só JSON).

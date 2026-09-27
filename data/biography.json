@@ -1,0 +1,122 @@
+{
+  // Biografia: a enciclopédia do jogo (menu inicial → Biografia). Só a view lê este arquivo.
+  // Textos no tom da seção "História e mundo" do GDD: frases curtas, melancólicas, que sugerem e não explicam.
+  // A Corrupção nunca é explicada.
+  //
+  // categorias: na ordem em que aparecem. "vazio" é a frase mostrada quando não há entradas.
+  // entradas: id, nome, categoria (id de cima), descricao (1–2 frases), historia (um parágrafo),
+  //   modelo: o que o palco mostra — "castellan", "villager", "building:<kind de buildings.json>",
+  //           "item:<kind de items.json>", "resource:<kind de resources.json>", ou "" (só texto);
+  //   animacoes: botões do palco (personagens: clipes; máquinas: "funcionando" e "parada");
+  //   descoberto: por enquanto tudo true; no futuro vira false até o jogador encontrar no jogo.
+  "categorias": [
+    { "id": "personagens",  "nome": "Personagens",   "vazio": "Nenhum registro." },
+    { "id": "maquinas",     "nome": "Máquinas",      "vazio": "Nenhum registro." },
+    { "id": "construcoes",  "nome": "Construções",   "vazio": "Nenhum registro." },
+    { "id": "armas_itens",  "nome": "Armas e Itens", "vazio": "Nenhum registro." },
+    { "id": "recursos",     "nome": "Recursos",      "vazio": "Nenhum registro." },
+    { "id": "inimigos",     "nome": "Inimigos",      "vazio": "Nenhum registro. As hordas ainda não chegaram até aqui." }
+  ],
+  "entradas": [
+    {
+      "id": "protagonista", "nome": "O que não dorme", "categoria": "personagens",
+      "descricao": "Nasceu completo, de um cristal que não explicou por quê. Não come, não dorme, não lembra. Constrói.",
+      "historia": "Abriu os olhos numa clareira que não está nos mapas. O cristal estava lá: pequeno, azul, calado. Ele esperou uma palavra; não veio. Então começou a empilhar pedras. Toca os cristais podres com as mãos nuas e não se quebra. Ninguém sabe se isso é um dom. Depois das batalhas, às vezes constrói um banco onde ninguém vai sentar.",
+      "modelo": "castellan", "animacoes": ["idle", "run", "work"], "descoberto": true
+    },
+    {
+      "id": "aldeao", "nome": "Os Segundos", "categoria": "personagens",
+      "descricao": "Pequeno, redondo, sem marcas. Gira a manivela, carrega, encaixa. Cochila de pé.",
+      "historia": "Vieram depois dele, em ciclos que ninguém conta, nunca mais de sete. Parecem inacabados, como se alguém tivesse parado de esculpir nos ombros. Não perguntam para quê. Seguem o que não dorme como sombras curtas. Um dia, talvez, um cristal nasça no peito de um deles. Até lá, a manivela.",
+      "modelo": "villager", "animacoes": ["idle", "walk", "carry", "work", "sleep"], "descoberto": true
+    },
+
+    {
+      "id": "serraria", "nome": "Serraria", "categoria": "maquinas",
+      "descricao": "Uma lâmina que gira. Entra madeira, saem hastes. A lâmina não sabe disso.",
+      "historia": "A primeira máquina que ele montou de olhos fechados. O barulho é o único som constante da clareira; os aldeões dormem melhor perto dela. Ninguém lembra quem inventou a serra. Talvez ninguém tenha inventado.",
+      "modelo": "building:sawmill", "animacoes": ["funcionando", "parada"], "descoberto": true
+    },
+    {
+      "id": "fundicao", "nome": "Fundição", "categoria": "maquinas",
+      "descricao": "Come ferro, devolve lingotes. Por dentro é quente demais para perguntar.",
+      "historia": "Os Ferro-velhos forjavam com cristais e esqueceram como. Esta não usa cristal nenhum: só fogo teimoso e pedra empilhada. O fumo sobe e não chega ao céu. Alguma coisa entre os dois o dissolve.",
+      "modelo": "building:smelter", "animacoes": ["funcionando", "parada"], "descoberto": true
+    },
+    {
+      "id": "forja", "nome": "Forja", "categoria": "maquinas",
+      "descricao": "Dois lingotes e uma haste viram uma espada. A conta não fecha; a espada existe mesmo assim.",
+      "historia": "Bate-se o ferro até ele desistir de ser ferro. O que não dorme não sabe lutar; faz espadas para quem vai saber. Cada uma sai um pouco diferente. Ele não corrige.",
+      "modelo": "building:forge", "animacoes": ["funcionando", "parada"], "descoberto": true
+    },
+
+    {
+      "id": "esteira", "nome": "Esteira", "categoria": "construcoes",
+      "descricao": "Madeira que anda. Leva o que se põe em cima e não pergunta para onde.",
+      "historia": "Antes, carregar era coisa de braço. Agora é coisa de tábua e roda. Os aldeões olham os itens passando como quem olha um rio. Às vezes um deles põe a mão. Tira em seguida.",
+      "modelo": "building:belt", "animacoes": [], "descoberto": true
+    },
+    {
+      "id": "bau", "nome": "Baú", "categoria": "construcoes",
+      "descricao": "Guarda o que ainda não serve. Um dia serve.",
+      "historia": "Um caixote com tampa. Dentro, madeira que espera, pedra que espera. Ele fecha a tampa mesmo sem chuva. Diz que é para as coisas não olharem para fora.",
+      "modelo": "building:chest", "animacoes": [], "descoberto": true
+    },
+    {
+      "id": "cabana_lenhador", "nome": "Cabana do Lenhador", "categoria": "construcoes",
+      "descricao": "Um teto e um machado. O aldeão que entra sai lenhador.",
+      "historia": "Não é uma casa; ninguém mora. É um lugar de virar alguma coisa. A árvore cai, o aldeão volta, a pilha cresce. A floresta não parece menor. Ainda.",
+      "modelo": "building:lumber_hut", "animacoes": [], "descoberto": true
+    },
+    {
+      "id": "cabana_pedreiro", "nome": "Cabana do Pedreiro", "categoria": "construcoes",
+      "descricao": "Pedra que se tira de pedra. O martelo é mais velho que a cabana.",
+      "historia": "As rochas em volta da clareira têm veias claras que ninguém explica. O pedreiro bate onde a veia é mais fina. Diz que a pedra avisa. Os outros não perguntam o que a pedra avisa.",
+      "modelo": "building:stone_hut", "animacoes": [], "descoberto": true
+    },
+    {
+      "id": "cabana_mineiro", "nome": "Cabana do Mineiro", "categoria": "construcoes",
+      "descricao": "Escava onde o chão é mais frio. O ferro está lá. Outra coisa também.",
+      "historia": "O mineiro é o aldeão que menos cochila. Traz o ferro e, às vezes, fica olhando o buraco depois. Ninguém desce junto. O ferro sai bom.",
+      "modelo": "building:iron_hut", "animacoes": [], "descoberto": true
+    },
+
+    {
+      "id": "haste", "nome": "Haste", "categoria": "armas_itens",
+      "descricao": "Madeira reta. Espera uma ponta.",
+      "historia": "A serraria tira duas de cada tora. Empilhadas, parecem uma cerca deitada. Serviriam para flechas, se alguém soubesse atirar. Por enquanto, seguram espadas.",
+      "modelo": "item:shaft", "animacoes": [], "descoberto": true
+    },
+    {
+      "id": "lingote", "nome": "Lingote", "categoria": "armas_itens",
+      "descricao": "Ferro que passou pelo fogo e voltou mais quieto.",
+      "historia": "Pesa mais do que parece. Esfria devagar; os aldeões gostam de encostar nele à noite. Não brilha. Cristais brilham, e isto não é um cristal, e isso é um alívio.",
+      "modelo": "item:ingot", "animacoes": [], "descoberto": true
+    },
+    {
+      "id": "espada", "nome": "Espada", "categoria": "armas_itens",
+      "descricao": "Serve para o que ele não consegue fazer.",
+      "historia": "A primeira saiu torta e ele a guardou. Não sabe segurar uma. Faz assim mesmo, muitas, para a noite em que alguém precisar. Ainda não houve essa noite. Ele sabe que vai haver.",
+      "modelo": "item:sword", "animacoes": [], "descoberto": true
+    },
+
+    {
+      "id": "madeira", "nome": "Madeira", "categoria": "recursos",
+      "descricao": "Árvores que não fazem som ao cair.",
+      "historia": "A floresta é tão densa que a luz chega cansada. As árvores cedem ao machado sem estalar, como se já esperassem. Dentro dos troncos, às vezes, um veio azul. Ele manda queimar esses.",
+      "modelo": "resource:wood", "animacoes": [], "descoberto": true
+    },
+    {
+      "id": "pedra", "nome": "Pedra", "categoria": "recursos",
+      "descricao": "Fria, cinza, paciente.",
+      "historia": "As rochas da clareira estavam aqui antes do cristal, dizem. Ou o cristal estava antes delas. Nenhuma das duas versões muda o peso de carregar.",
+      "modelo": "resource:stone", "animacoes": [], "descoberto": true
+    },
+    {
+      "id": "ferro", "nome": "Ferro", "categoria": "recursos",
+      "descricao": "Sai de baixo, manchado de alguma coisa que sai na água.",
+      "historia": "Os veios ficam onde a grama não cresce direito. O mineiro esfrega o minério até a mancha ir embora. Quase sempre vai. O que fica, ele não menciona.",
+      "modelo": "resource:iron", "animacoes": [], "descoberto": true
+    }
+  ]
+}
