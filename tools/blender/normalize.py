@@ -30,6 +30,7 @@ CRYSTAL_MATERIAL = "Cristal"
 CRYSTAL_EMISSION_STRENGTH = 3.0
 STRIDE_BONES = ("LeftToeBase", "RightToeBase")
 BLEED = 3  # px além da borda das ilhas de UV pintados no rosto apagado
+RIGID_MARGIN, RIGID_FADE = 1.25, 1.6  # pele rígida até 1,25x o meio-tamanho do plano; some até 1,6x
 LOCOMOTION_CLIPS = ("run",)  # clipes com passada medida para protagonista.json
 LEAN_TOLERANCE = 0.5  # graus
 # Laço dos movimentos por texto: ossos comparados, margem ignorada nas pontas e duração do ciclo.
@@ -950,15 +951,39 @@ def flatten_face(obj: bpy.types.Object, positions: np.ndarray, center: np.ndarra
           f"borda de {len(rim)} arestas")
 
 
-def add_face_mask(settings: dict, asset: dict) -> None:
-    """Máscara do rosto: grade curva colada à frente da cabeça, onde o jogo desenha a expressão.
+def rigid_skin(body: bpy.types.Object, center: tuple, half: tuple, neck_z: float) -> None:
+    """A pele debaixo de um plano do rosto passa a seguir 100% o osso Head (o plano segue só ele; o
+    queixo e as bochechas tinham peso do pescoço e entravam no plano na caminhada). Borda suave."""
+    head = body.vertex_groups["Head"].index
+    others = [g for g in body.vertex_groups if g.index != head]
+    for v in body.data.vertices:
+        world = body.matrix_world @ v.co
+        d = max(abs(world.x - center[0]) / (half[0] * RIGID_MARGIN), abs(world.z - center[1]) / (half[1] * RIGID_MARGIN))
+        if d >= RIGID_FADE or world.z < neck_z:
+            continue  # longe do plano ou abaixo da base da cabeça (o pescoço continua dobrando)
+        w = 1.0 if d <= 1 else 1 - (d - 1) / (RIGID_FADE - 1)
+        for g in others:
+            try:
+                old = g.weight(v.index)
+            except RuntimeError:
+                continue
+            g.add([v.index], old * (1 - w), "REPLACE")
+        try:
+            current = body.vertex_groups["Head"].weight(v.index)
+        except RuntimeError:
+            current = 0.0
+        body.vertex_groups["Head"].add([v.index], current + (1 - current) * w, "REPLACE")
 
-    Uma grade quadrada no plano da frente (largura "largura_fracao" da cabeça, centro a "centro_altura"
-    da altura da cabeça) é projetada na superfície do rosto (raio de frente para trás; fora da silhueta,
-    o ponto mais próximo) e afastada "afastamento_m" para fora pela normal. UV: exatamente a célula 1
-    (canto de cima à esquerda) do atlas 3x3; o jogo troca a célula pelo deslocamento de UV. Material com
-    o atlas e transparência (as bordas das células já são transparentes). Presa ao esqueleto com peso 1
-    no osso Head: acompanha a cabeça como a pele dela.
+
+def add_face_planes(settings: dict, asset: dict) -> None:
+    """Rosto em planos 2D presos à cabeça (olhos e boca), como em jogos estilizados.
+
+    Para cada plano de "planos": uma grade no plano da frente, centrada na altura "centro_altura" da
+    cabeça (fração entre a base, no osso Head, e o topo), com largura "largura_fracao" da cabeça e altura
+    largura x "proporcao"; cada ponto é projetado na superfície do rosto (raio de frente para trás) e
+    afastado "afastamento_m" pela normal. UV: exatamente a célula 1 (coluna 0, linha 0) da folha, que tem
+    "colunas" x "linhas" células; o jogo troca a célula pelo deslocamento de UV. Material com a folha,
+    transparente. Presos ao esqueleto com peso 1 no osso Head.
     """
     import bmesh
     from mathutils.bvhtree import BVHTree
@@ -978,70 +1003,64 @@ def add_face_mask(settings: dict, asset: dict) -> None:
     top = armature.matrix_world @ armature.pose.bones["head_end"].head
     head_height = top.z - base.z
     head_width = FACE["largura"] / 0.6
-    size = head_width * settings.get("largura_fracao", 0.85)
-    center_z = base.z + head_height * settings.get("centro_altura", 0.41)
     center_x = FACE["posicao"].x
-    front_y = min(v.y for v in verts if abs(v.z - center_z) < size / 2) - size
-    offset = settings.get("afastamento_m", 0.0015) / raw_to_m
-    n = settings.get("grade", 16)
-
-    bm = bmesh.new()
-    uv_layer = bm.loops.layers.uv.new("UVMap")
-    grid = []
-    for j in range(n + 1):
-        row = []
-        for i in range(n + 1):
-            u, v = i / n, j / n
-            origin = Vector((center_x + (u - 0.5) * size, front_y, center_z + (v - 0.5) * size))
-            hit, normal, _, _ = tree.ray_cast(origin, Vector((0, 1, 0)), size * 4)
-            if hit is None:
-                hit, normal, _, _ = tree.find_nearest(origin)
-            row.append(bm.verts.new(hit + normal.normalized() * offset))
-        grid.append(row)
-    oval = settings.get("oval", (0.46, 0.40))  # meia largura e meia altura, fração da célula
-    for j in range(n):
-        for i in range(n):
-            # Só a oval dos traços: os cantos da célula são transparentes no atlas, e ali a grade
-            # sairia da região do rosto presa só ao osso da cabeça (atravessava a pele no pescoço).
-            cu, cv = (i + 0.5) / n - 0.5, (j + 0.5) / n - 0.5
-            if (cu / oval[0]) ** 2 + (cv / oval[1]) ** 2 > 1:
-                continue
-            face = bm.faces.new((grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i]))
-            for loop, (di, dj) in zip(face.loops, ((0, 0), (1, 0), (1, 1), (0, 1))):
-                # Célula 1 do atlas: terço esquerdo, terço de cima (V do Blender cresce para cima).
-                loop[uv_layer].uv = ((i + di) / n / 3, 2 / 3 + (j + dj) / n / 3)
-    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
-    bm.normal_update()
-    if sum(f.normal.y for f in bm.faces) > 0:  # normais para a frente (-Y)
-        bmesh.ops.reverse_faces(bm, faces=bm.faces)
-    mesh = bpy.data.meshes.new("Rosto")
-    bm.to_mesh(mesh)
-    bm.free()
-    for poly in mesh.polygons:
-        poly.use_smooth = True
-    mask = bpy.data.objects.new("Rosto", mesh)
-    bpy.context.scene.collection.objects.link(mask)
-    mask.parent = armature
-    mask.matrix_parent_inverse = armature.matrix_world.inverted()
-    group = mask.vertex_groups.new(name="Head")
-    group.add(range(len(mesh.vertices)), 1.0, "REPLACE")
-    modifier = mask.modifiers.new("Armature", "ARMATURE")
-    modifier.object = armature
-
-    material = bpy.data.materials.new("expressoes")
-    nodes, links = material.node_tree.nodes, material.node_tree.links
-    bsdf = nodes["Principled BSDF"]
-    tex = nodes.new("ShaderNodeTexImage")
-    tex.image = bpy.data.images.load(str(ROOT / settings.get("atlas", "assets/texturas/aldeao/expressoes.png")))
-    tex.image.pack()
-    links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
-    links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
-    bsdf.inputs["Roughness"].default_value = MATTE_ROUGHNESS
-    material.surface_render_method = "BLENDED"
-    mesh.materials.append(material)
+    offset = settings.get("afastamento_m", 0.001) / raw_to_m
+    for plane in settings["planos"]:
+        width = head_width * plane["largura_fracao"]
+        height = width * plane["proporcao"]
+        center_z = base.z + head_height * plane["centro_altura"]
+        front_y = min(v.y for v in verts if abs(v.z - center_z) < height) - head_width
+        nx = plane.get("grade", 12)
+        ny = max(2, round(nx * plane["proporcao"]))
+        cols, rows = plane["colunas"], plane["linhas"]
+        bm = bmesh.new()
+        uv_layer = bm.loops.layers.uv.new("UVMap")
+        grid = []
+        for j in range(ny + 1):
+            row = []
+            for i in range(nx + 1):
+                u, v = i / nx, j / ny
+                origin = Vector((center_x + (u - 0.5) * width, front_y, center_z + (v - 0.5) * height))
+                hit, normal, _, _ = tree.ray_cast(origin, Vector((0, 1, 0)), head_width * 4)
+                if hit is None:
+                    hit, normal, _, _ = tree.find_nearest(origin)
+                row.append(bm.verts.new(hit + normal.normalized() * offset))
+            grid.append(row)
+        for j in range(ny):
+            for i in range(nx):
+                face = bm.faces.new((grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i]))
+                for loop, (di, dj) in zip(face.loops, ((0, 0), (1, 0), (1, 1), (0, 1))):
+                    # Célula 1: primeira coluna, linha de cima (V do Blender cresce para cima).
+                    loop[uv_layer].uv = ((i + di) / nx / cols, 1 - 1 / rows + (j + dj) / ny / rows)
+        bm.normal_update()
+        if sum(f.normal.y for f in bm.faces) > 0:  # normais para a frente (-Y)
+            bmesh.ops.reverse_faces(bm, faces=bm.faces)
+        mesh = bpy.data.meshes.new(plane["nome"])
+        bm.to_mesh(mesh)
+        bm.free()
+        for poly in mesh.polygons:
+            poly.use_smooth = True
+        obj = bpy.data.objects.new(plane["nome"], mesh)
+        bpy.context.scene.collection.objects.link(obj)
+        obj.parent = armature
+        obj.matrix_parent_inverse = armature.matrix_world.inverted()
+        obj.vertex_groups.new(name="Head").add(range(len(mesh.vertices)), 1.0, "REPLACE")
+        obj.modifiers.new("Armature", "ARMATURE").object = armature
+        material = bpy.data.materials.new(plane["nome"].lower())
+        nodes, links = material.node_tree.nodes, material.node_tree.links
+        bsdf = nodes["Principled BSDF"]
+        tex = nodes.new("ShaderNodeTexImage")
+        tex.image = bpy.data.images.load(str(ROOT / plane["imagem"]))
+        tex.image.pack()
+        links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+        links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
+        bsdf.inputs["Roughness"].default_value = MATTE_ROUGHNESS
+        material.surface_render_method = "BLENDED"
+        mesh.materials.append(material)
+        rigid_skin(body, (center_x, center_z), (width / 2, height / 2), base.z)
+        print(f"  plano {plane['nome']}: {width * raw_to_m * 100:.1f} x {height * raw_to_m * 100:.1f} cm, "
+              f"a {plane['centro_altura']:.0%} da cabeça, {settings.get('afastamento_m', 0.001) * 1000:.0f} mm fora")
     FACE["mascara"] = True
-    print(f"  máscara do rosto: grade {n}x{n}, {size * raw_to_m * 100:.1f} cm, "
-          f"{settings.get('afastamento_m', 0.0015) * 1000:.1f} mm para fora")
 
 
 def measure_head_top(settings: dict) -> None:
@@ -1328,8 +1347,8 @@ def main() -> None:
     shrink_textures()
     if "apagar_rosto" in asset:
         erase_face(asset["apagar_rosto"])
-    if "mascara_rosto" in asset:
-        add_face_mask(asset["mascara_rosto"], asset)
+    if "planos_rosto" in asset:
+        add_face_planes(asset["planos_rosto"], asset)
     root = add_root(name)
     fit(root, asset)
     def to_gltf(point: Vector) -> Vector:

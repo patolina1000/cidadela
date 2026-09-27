@@ -27,8 +27,8 @@ def main() -> None:
     bpy.ops.import_scene.gltf(filepath=glb, disable_bone_shape=True)
     scene = bpy.context.scene
     armature = next(o for o in bpy.data.objects if o.type == "ARMATURE")
-    mask = next(o for o in bpy.data.objects if o.type == "MESH" and o.name.startswith("Rosto"))
-    body = next(o for o in bpy.data.objects if o.type == "MESH" and o is not mask)
+    planes = [o for o in bpy.data.objects if o.type == "MESH" and o.name.split(".")[0] in ("Rosto", "Olhos", "Boca")]
+    body = next(o for o in bpy.data.objects if o.type == "MESH" and o not in planes)
     armature.animation_data_create()
     worst = []
     scene.render.resolution_x = scene.render.resolution_y = 320
@@ -50,7 +50,7 @@ def main() -> None:
         if action.slots:
             armature.animation_data.action_slot = action.slots[0]
         start, end = action.frame_range
-        distances = []
+        distances = {o.name: [] for o in planes}
         for k in range(FRAMES):
             scene.frame_set(int(start + (end - start) * k / FRAMES))
             depsgraph = bpy.context.evaluated_depsgraph_get()
@@ -58,17 +58,19 @@ def main() -> None:
             tree = BVHTree.FromPolygons([body.matrix_world @ v.co for v in body_mesh.vertices],
                                         [p.vertices[:] for p in body_mesh.polygons])
             body.evaluated_get(depsgraph).to_mesh_clear()
-            mask_mesh = mask.evaluated_get(depsgraph).to_mesh()
-            for v in mask_mesh.vertices:
-                point = mask.matrix_world @ v.co
-                nearest, normal, _, dist = tree.find_nearest(point)
-                sign = 1 if (point - nearest).dot(normal) >= 0 else -1
-                distances.append(sign * dist * 1000)
-            mask.evaluated_get(depsgraph).to_mesh_clear()
-        low, high = min(distances), max(distances)
-        worst.append((clip, low, high))
-        print(f"MASCARA {clip:6s}: distância até a pele de {low:+.2f} a {high:+.2f} mm "
-              f"({'ok' if low > 0.2 and high < 6 else 'VERIFICAR'})")
+            for plane in planes:
+                plane_mesh = plane.evaluated_get(depsgraph).to_mesh()
+                for v in plane_mesh.vertices:
+                    point = plane.matrix_world @ v.co
+                    nearest, normal, _, dist = tree.find_nearest(point)
+                    sign = 1 if (point - nearest).dot(normal) >= 0 else -1
+                    distances[plane.name].append(sign * dist * 1000)
+                plane.evaluated_get(depsgraph).to_mesh_clear()
+        for name, values in distances.items():
+            low, high = min(values), max(values)
+            worst.append((clip, low, high))
+            print(f"PLANO {name:6s} {clip:6s}: distância até a pele de {low:+.2f} a {high:+.2f} mm "
+                  f"({'ok' if low > 0.2 and high < 6 else 'VERIFICAR'})")
         # Quadro do meio, frente e perfil, ampliado na cabeça.
         scene.frame_set(int((start + end) / 2))
         head = armature.matrix_world @ armature.pose.bones["Head"].matrix.to_translation()

@@ -1857,3 +1857,46 @@ onde errou, correções manuais e quanto tempo levou.
 - **Conferido:** `dotnet build` 0 erros e 0 avisos; `dotnet test` 94 aprovados; render no Godot com a célula
   "feliz" mostrando o sorriso na máscara, sem projeção no cabelo.
 - Depois, `master` avançada até a `arte`.
+
+---
+
+## 2026-09-27 — Rosto do aldeão v3: traços 2D desenhados por código em dois planos (olhos e boca)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** refazer o rosto como em jogos estilizados: traços 2D limpos desenhados por código (SVG → PNG
+  transparente), duas folhas (olhos com sobrancelhas; boca), dois planos presos ao osso Head, curvos, 1 mm
+  acima da pele, cada um com UV numa célula; prévia de frente e a 55°. Esquecer os recortes da ilustração
+  (a tentativa de tirar só os traços do conceito, interrompida, está no histórico do `villager_faces.py`).
+- **Folhas (`tools/meshy_pipeline/face_sprites.py`, 0 créditos):** SVG por código, exportado com `cairosvg`
+  (usa o cairo do Homebrew; o script se relança com `DYLD_FALLBACK_LIBRARY_PATH`). Olhos redondos com branco
+  #E3E7EB, pupila #15171C com brilho, olheira suave (elipse desfocada, 28%), contorno #1B1E26 de 5 px,
+  sobrancelhas finas, pálpebras como cortes com linha. `assets/texturas/aldeao/olhos.png` 3×3 de 512×256:
+  distraído, esforço, feliz, sonolento, fechado, espantado, preocupado, chorando (lágrimas), bravo.
+  `bocas.png` 3×2 de 256×128: neutra, entreaberta, sorriso, esforço (dentes cerrados), "o", triste. SVGs ao
+  lado. Tudo centralizado no mesmo ponto em cada célula; fundo 100% transparente.
+- **Planos (`add_face_planes` no `normalize.py`, config `planos_rosto`):** grade projetada na pele (raio de
+  frente para trás) e afastada 1 mm pela normal, peso 1 no osso Head, UV na célula 1 da folha. Olhos:
+  13,5 × 6,7 cm, centro a 44% da altura da cabeça; boca: 6,3 × 3,1 cm, a 24%. Substituem a máscara "Rosto".
+- **Problemas e correções:**
+  - a boca entrava até 1,4 mm na caminhada: a pele do queixo tinha peso do pescoço e do ombro. A pele
+    debaixo de cada plano (acima da base da cabeça) passou a seguir 100% o osso Head, com borda suave; a
+    célula da boca virou 2:1 para o plano não chegar ao queixo;
+  - manchas de pele dentro dos olhos: a grade de 16×8 fazia cordas por baixo da pele facetada; agora 48×24
+    (olhos) e 24×12 (boca);
+  - a touca dos cabelos aparecia na frente dos planos: `fit_hair.py` abre o rosto pela oval que envolve os
+    planos Olhos e Boca; os 5 cabelos foram reencaixados.
+- **Conferido (`check_face_mask.py`):** em idle, walk, carry, work e sleep, olhos entre +0,02 e +1,0 mm da
+  pele (o mais perto é a borda nas têmporas) e boca entre +0,93 e +1,0 mm: nenhum atravessa.
+- **Jogo (`VillagerVisual`, a pedido anterior de testar na Biografia):** acha os planos "Olhos" e "Boca" e
+  troca a célula de cada um pelo `uv1_offset` (olhos 1/3 × 1/3, boca 1/3 × 1/2). Mapa expressão → (olhos,
+  boca): distraído (distraído, entreaberta), esforço (esforço, esforço), feliz (feliz, sorriso), sonolento
+  (sonolento, neutra), dormindo (fechado, entreaberta), espantado (espantado, "o"), preocupado (preocupado,
+  triste), chorando (chorando, triste), bravo (bravo, neutra). Modelos antigos continuam com o "Rosto".
+  `dotnet build` 0 erros e 0 avisos; `dotnet test` 94 aprovados.
+- **Prévia:** `assets/previews/rosto_v3.png` (as 9 combinações no modelo, de frente e a 55°, renderizada no
+  Godot com SubViewport).
+- **Atenção:** a 55° (câmera do jogo) a franja cobre a metade de cima dos olhos; a expressão lê pela boca e
+  pela parte de baixo dos olhos. Se precisar ler melhor de cima, dá para descer um pouco os olhos ou
+  encurtar a franja no encaixe.
+- **Créditos:** 0.
+- **Correções manuais:** nenhuma.

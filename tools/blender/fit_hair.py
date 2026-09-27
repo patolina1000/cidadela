@@ -2,7 +2,8 @@
 
 1. Escala a peruca para LARGURA x a largura da cabeça e põe o topo dela TOPO acima do topo da cabeça,
    centrada em x e com o meio da profundidade no meio da cabeça.
-2. Abertura do rosto: toda face na frente da cabeça cujo centro cai dentro da oval da máscara "Rosto"
+2. Abertura do rosto: toda face na frente da cabeça cujo centro cai dentro da oval que envolve os planos
+   do rosto ("Olhos" e "Boca")
    (ampliada por FOLGA_ROSTO) sai: nenhum fio fica na frente dos olhos nem cobre a máscara.
 3. Nenhum vértice fica dentro do couro cabeludo: os que caem dentro vão para fora (+MARGEM), só na cabeça.
 4. Fecha buracos pequenos, recalcula normais, material com as duas faces visíveis.
@@ -52,10 +53,11 @@ def base_head() -> dict:
         obj.evaluated_get(depsgraph).to_mesh_clear()
         return pts, polys
 
-    mask = next(o for o in bpy.data.objects if o.type == "MESH" and o.name.startswith("Rosto"))
-    body = next(o for o in bpy.data.objects if o.type == "MESH" and o is not mask)
+    # Planos do rosto (olhos e boca); modelos antigos: a máscara "Rosto".
+    face = [o for o in bpy.data.objects if o.type == "MESH" and o.name.split(".")[0] in ("Olhos", "Boca", "Rosto")]
+    body = next(o for o in bpy.data.objects if o.type == "MESH" and o not in face)
     body_pts, body_polys = world_points(body)
-    mask_pts, _ = world_points(mask)
+    mask_pts = [p for o in face for p in world_points(o)[0]]
     neck = armature.matrix_world @ armature.pose.bones["Head"].head
     top = max(p.z for p in body_pts)
     head = [p for p in body_pts if p.z > neck.z]

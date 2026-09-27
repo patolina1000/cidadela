@@ -6,7 +6,8 @@ namespace Cidadela.View;
 /// <summary>
 /// Desenho de um aldeão com o modelo modular (GDD, "Aldeão: implementação v1"): um corpo-base careca
 /// (<see cref="ModelPath"/>) com um rig e um conjunto de clipes só (idle, walk, carry, work, sleep), e três
-/// encaixes presos à cabeça: "Rosto" (decal de expressão), "Cabelo" (peça sorteada) e "Chapéu" (peça de
+/// encaixes presos à cabeça: "Olhos" e "Boca" (planos de traços trocados por UV; modelos antigos: "Rosto"
+/// com decal ou máscara), "Cabelo" (peça sorteada) e "Chapéu" (peça de
 /// cabeça). Estados da simulação → clipe: parado idle, andando walk, andando com carga carry, descansando
 /// sleep. Coletando fica em idle com o golpe procedural do corpo (coleta e trabalho de máquina terão clipes
 /// próprios; o clipe "work" da manivela não é usado na coleta, decisão de 27/09/2026).
@@ -60,6 +61,15 @@ public partial class VillagerVisual : Node3D
     // Máscara do rosto em malha (modelo novo): a expressão é a célula do atlas escolhida pelo deslocamento
     // de UV. Cada aldeão tem a sua cópia do material, para as expressões serem independentes.
     private StandardMaterial3D? _faceMask;
+    // Rosto em dois planos (olhos e boca), com as folhas de traços de tools/meshy_pipeline/face_sprites.py:
+    // olhos 3 x 3 células, boca 3 x 2. Cada aldeão tem a sua cópia dos materiais.
+    private StandardMaterial3D? _eyes;
+    private StandardMaterial3D? _mouth;
+    // Por expressão (ordem de VillagerExpression): célula dos olhos e célula da boca.
+    // Olhos: distraído, esforço, feliz, sonolento, fechado, espantado, preocupado, chorando, bravo.
+    // Boca: neutra, entreaberta, sorriso, esforço, "o", triste.
+    private static readonly (int Eyes, int Mouth)[] FaceCells =
+        { (0, 1), (1, 3), (2, 2), (3, 0), (4, 1), (5, 4), (6, 5), (7, 5), (8, 0) };
     private VillagerExpression? _shownExpression;
     private float _yaw;
     private float _swing;
@@ -94,7 +104,8 @@ public partial class VillagerVisual : Node3D
                 _animations.Play("idle");
             }
 
-            FaceSocket = model.FindChild("Rosto", recursive: true, owned: false) as Node3D;
+            FaceSocket = (model.FindChild("Olhos", recursive: true, owned: false)
+                ?? model.FindChild("Rosto", recursive: true, owned: false)) as Node3D;
             HairSocket = model.FindChild("Cabelo", recursive: true, owned: false) as Node3D;
             HatSocket = (model.FindChild("Chapéu", recursive: true, owned: false) ?? model.FindChild("Chapeu", recursive: true, owned: false)) as Node3D;
             if (FaceSocket is not null && FaceSocket.HasMeta("largura_m"))
@@ -150,6 +161,14 @@ public partial class VillagerVisual : Node3D
         {
             _shownExpression = s.Expression;
             _face.TextureAlbedo = VillagerLooks.FaceTexture(s.Expression);
+        }
+        if (_eyes is not null && _shownExpression != s.Expression)
+        {
+            _shownExpression = s.Expression;
+            (int eyes, int mouth) = FaceCells[(int)s.Expression];
+            _eyes.Uv1Offset = new Vector3(eyes % 3 / 3f, eyes / 3 / 3f, 0f);
+            if (_mouth is not null)
+                _mouth.Uv1Offset = new Vector3(mouth % 3 / 3f, mouth / 3 / 2f, 0f);
         }
         if (_faceMask is not null && _shownExpression != s.Expression)
         {
@@ -215,7 +234,18 @@ public partial class VillagerVisual : Node3D
     private void ApplyLook(int hairVariant)
     {
         _lookApplied = true;
-        if (FaceSocket is MeshInstance3D mask && _faceMask is null)
+        if (_eyes is null && FaceSocket?.GetParent()?.FindChild("Olhos", false, false) is MeshInstance3D eyes)
+        {
+            // Os planos já estão na célula 1 das folhas; o deslocamento de UV escolhe a célula.
+            _eyes = (StandardMaterial3D)((StandardMaterial3D)eyes.Mesh.SurfaceGetMaterial(0)).Duplicate();
+            eyes.SetSurfaceOverrideMaterial(0, _eyes);
+            if (FaceSocket.GetParent().FindChild("Boca", false, false) is MeshInstance3D mouth)
+            {
+                _mouth = (StandardMaterial3D)((StandardMaterial3D)mouth.Mesh.SurfaceGetMaterial(0)).Duplicate();
+                mouth.SetSurfaceOverrideMaterial(0, _mouth);
+            }
+        }
+        else if (FaceSocket is MeshInstance3D mask && _faceMask is null)
         {
             // A máscara já está na célula 1 (distraído); o deslocamento anda 1/3 por coluna e por linha.
             _faceMask = (StandardMaterial3D)((StandardMaterial3D)mask.Mesh.SurfaceGetMaterial(0)).Duplicate();
