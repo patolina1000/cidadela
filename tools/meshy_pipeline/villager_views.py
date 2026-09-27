@@ -30,6 +30,8 @@ VARIANTS = {
     "ondulado": ("aldeao_expressoes.png", (36, 595, 352, 1004), (361, 595, 672, 1000)),
     "longo_liso": ("aldeao_folha.png", (254, 350, 666, 802), (677, 351, 1089, 801)),
     "rabo_cavalo": ("aldeao_expressoes.png", (747, 602, 1062, 1005), (1072, 599, 1384, 1004)),
+    # Corpo-base careca (estrutura modular, 27/09/2026): os cabelos viram peças separadas.
+    "careca": ("aldeao_careca.png", (90, 193, 690, 903), (732, 193, 1333, 902)),
 }
 
 

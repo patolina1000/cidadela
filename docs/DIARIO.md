@@ -1450,3 +1450,47 @@ onde errou, correções manuais e quanto tempo levou.
 - **Prévia:** `assets/previews/aldeoes.png` com a protagonista de referência e as 4 prontas, numeradas.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 13:45–14:25 de relógio.
+
+---
+
+## 2026-09-27 — Aldeão modular: corpo-base careca + cabelos como peças
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** um corpo-base careca com um rig e um conjunto de animações só, e os cabelos como peças
+  separadas, recortadas das variações já geradas (sem gerar nada novo); nós "Cabelo" e, acima dele,
+  "Chapéu" presos à cabeça; prévia do corpo-base com cada cabelo a 55°.
+- **Corpo-base (`aldeao_base`, 38 créditos):** a folha careca (renomeada para `aldeao_careca.png`) teve
+  frente e costas recortadas e passou pelo Multi-Image to 3D, rig e sono, com os mesmos ajustes do curto
+  bagunçado (idle, walk, carry, work, sleep, Rosto). O rig funcionou como nas variações (inspecionado). Nós
+  presos à cabeça gravados no glTF e listados em `aldeao_base.json` (`encaixes`, espaço do modelo):
+  Rosto (0; 0,308; 0,059), Cabelo no topo da cabeça (0; 0,400; −0,006) e Chapéu 12% da altura da cabeça
+  acima (0; 0,417; −0,006). **Conferido no Godot:** os três viram filhos de `BoneAttachment3D`.
+- **Cabelos (`tools/blender/extract_hair.py`, 0 créditos):** para cada variação, a malha em pose de repouso;
+  cabelo = faces **escuras e saturadas** (limite de brilho por Otsu na cabeça; saturação no meio do caminho
+  entre pele e cabelo), crescendo pela vizinhança a partir das de cima do pescoço; fechamento de 3 passos
+  (fora do rosto) para cobrir reflexos claros; ilhas pequenas fora; buracos de até 12 arestas fechados. A
+  cabeça da variação vai para a do corpo-base (base e topo iguais, folga de 3%) e todo vértice que cai dentro
+  do couro cabeludo do corpo-base é empurrado para fora (+2 mm). Exportado em
+  `assets/modelos/aldeao_cabelos/<var>.glb` com a origem no encaixe "Cabelo": no jogo, o cabelo vira filho
+  desse nó sem ajuste. **Conferido no Godot:** o rabo de cavalo preso no Cabelo ocupa o topo e a nuca da
+  cabeça e acompanha a caminhada.
+- **O que deu errado no caminho:**
+  - o glTF duplica vértices nas costuras de UV, e as faces não compartilhavam arestas: a vizinhança passou a
+    ser pela posição dos vértices;
+  - só o brilho deixava o crescimento escorrer pela pele sombreada do corpo; a saturação separa (o cabelo é
+    mais saturado: 0,30 contra 0,19 no curto);
+  - a cabeça careca, de formato um pouco diferente, atravessava o cabelo (manchas carecas na prévia);
+    resolvido empurrando para fora os vértices de dentro.
+- **Faltando:** o **longo liso**, que falhou duas vezes na Meshy, não tem modelo para recortar. Opções: tentar
+  gerar a variação de novo (38 créditos se der certo) ou gerar só um cabelo.
+- **Cabelos longos e corrente de ossos:** nos modelos da Meshy, o cabelo longo virou pouco volume: no ondulado
+  e no rabo de cavalo a geometria de cabelo desce só até cerca de meia altura de cabeça abaixo do pescoço (o
+  resto das pontas ficou pintado na textura do corpo). Presos rígidos à cabeça, eles quase não atravessam
+  os ombros; no protótipo, aceitável. **Uma corrente de 2 a 3 ossos só valeria** para um cabelo longo de
+  verdade (o longo liso, se for regerado, ou um rabo refeito mais comprido): balançaria com a corrida e
+  evitaria atravessar as costas quando a cabeça gira. Para os 4 atuais, não compensa.
+- **Prévia:** `assets/previews/aldeoes_modular.png` (corpo-base em idle com os 4 cabelos, numerados).
+- **Ferramentas:** `extract_hair.py`, `preview_modular.py` (com `AZIMUTE` para ver de lado ou por trás).
+- **Créditos:** 38. Total do aldeão: 190 (4 variações + corpo-base). Saldo: 2.706.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 14:35–16:10 de relógio.

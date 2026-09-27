@@ -697,11 +697,36 @@ def measure_face(settings: dict) -> None:
     print(f"  Rosto: frente da cabeça a {settings.get('altura_fracao', 0.35):.0%} da altura da cabeça")
 
 
-def add_face_node(glb: Path, position: Vector, width: float) -> None:
-    """Acrescenta ao glTF o nó "Rosto", filho da articulação da cabeça (acompanha as animações).
+def measure_head_top(settings: dict) -> None:
+    """Topo da cabeça (ponto mais alto da malha perto do eixo), para os nós de encaixe do cabelo e do
+    chapéu. Cada nó sobe "acima_fracao" da altura da cabeça a partir do topo."""
+    armature = armature_object()
+    armature.data.pose_position = "REST"
+    bpy.context.view_layer.update()
+    base = armature.matrix_world @ armature.pose.bones["Head"].head
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    points = []
+    for obj in meshes():
+        mesh = obj.evaluated_get(depsgraph).to_mesh()
+        points += [obj.matrix_world @ v.co for v in mesh.vertices]
+        obj.evaluated_get(depsgraph).to_mesh_clear()
+    top_z = max(p.z for p in points)
+    near_axis = [p for p in points if abs(p.x - base.x) < (top_z - base.z) * 0.15 and p.z > top_z - (top_z - base.z) * 0.1]
+    top = Vector((base.x, sum(p.y for p in near_axis) / len(near_axis), top_z))
+    head_height = top_z - base.z
+    for name, node in settings.items():
+        HEAD_NODES[name] = top + Vector((0, 0, node.get("acima_fracao", 0.0) * head_height))
+    print(f"  encaixes no topo da cabeça: {', '.join(settings)}")
+
+
+HEAD_NODES: dict = {}  # nome -> posição no mundo antes do fit (encaixes presos à cabeça)
+
+
+def add_head_node(glb: Path, name: str, position: Vector, extras: dict | None = None) -> None:
+    """Acrescenta ao glTF um nó filho da articulação da cabeça (acompanha as animações).
 
     <position> está no espaço do modelo do glTF (Y para cima, frente +Z). O nó fica sem giro e sem
-    escala no espaço do modelo: o +Z dele aponta para fora do rosto. "largura_m" vai nos extras.
+    escala no espaço do modelo: +Y para cima, +Z para a frente do personagem.
     """
     data = glb.read_bytes()
     json_length = struct.unpack("<I", data[12:16])[0]
@@ -727,15 +752,17 @@ def add_face_node(glb: Path, position: Vector, width: float) -> None:
         head_global = head_global @ local(nodes[index])
     marker = head_global.inverted() @ Matrix.Translation(position)
     t, r, sc = marker.decompose()
-    nodes.append({"name": "Rosto", "translation": list(t), "rotation": [r.x, r.y, r.z, r.w],
-                  "scale": list(sc), "extras": {"largura_m": round(width, 4)}})
+    node = {"name": name, "translation": list(t), "rotation": [r.x, r.y, r.z, r.w], "scale": list(sc)}
+    if extras:
+        node["extras"] = extras
+    nodes.append(node)
     nodes[head].setdefault("children", []).append(len(nodes) - 1)
 
     text = json.dumps(gltf, separators=(",", ":")).encode()
     text += b" " * (-len(text) % 4)
     body = struct.pack("<II", len(text), 0x4E4F534A) + text + binary
     glb.write_bytes(struct.pack("<III", 0x46546C67, 2, 12 + len(body)) + body)
-    print(f"  Rosto: nó na cabeça, largura {width:.3f} m")
+    print(f"  nó {name} na cabeça" + (f" {extras}" if extras else ""))
 
 
 def channelbags(action: bpy.types.Action) -> list:
@@ -947,16 +974,22 @@ def main() -> None:
             ground_clip(clip)
         if "rosto" in asset:
             measure_face(asset["rosto"])
+        if "nos_cabeca" in asset:
+            measure_head_top(asset["nos_cabeca"])
     if asset.get("cristal_emissivo"):
         make_crystal_material(name)
     shrink_textures()
     root = add_root(name)
     fit(root, asset)
-    if FACE:
+    def to_gltf(point: Vector) -> Vector:
         # Mundo do Blender depois do fit (Z para cima, frente -Y) para o espaço do modelo glTF.
-        world = root.matrix_world @ FACE["posicao"]
-        FACE["gltf"] = Vector((world.x, world.z, -world.y))
-        FACE["largura_m"] = FACE["largura"] * root.scale.x
+        world = root.matrix_world @ point
+        return Vector((world.x, world.z, -world.y))
+    head_nodes = []
+    if FACE:
+        head_nodes.append(("Rosto", to_gltf(FACE["posicao"]), {"largura_m": round(FACE["largura"] * root.scale.x, 4)}))
+    for node_name, point in HEAD_NODES.items():
+        head_nodes.append((node_name, to_gltf(point), None))
     if character:
         # O jogo lê isto para tocar as corridas no ritmo da velocidade real, sem deslizar.
         info = {}
@@ -970,8 +1003,14 @@ def main() -> None:
         if obj.type == "ARMATURE":
             obj.data.pose_position = "POSE"
     export(root, folder / f"{name}.glb", animated=character)
-    if FACE:
-        add_face_node(folder / f"{name}.glb", FACE["gltf"], FACE["largura_m"])
+    for node_name, position, extras in head_nodes:
+        add_head_node(folder / f"{name}.glb", node_name, position, extras)
+    if head_nodes:
+        # O jogo e as ferramentas de cabelo leem as posições dos encaixes (espaço do modelo glTF).
+        info_path = folder / f"{name}.json"
+        info = json.loads(info_path.read_text()) if info_path.exists() else {}
+        info["encaixes"] = {n: [round(v, 4) for v in p] for n, p, _ in head_nodes}
+        info_path.write_text(json.dumps(info, indent=2, ensure_ascii=False) + "\n")
 
 
 main()
