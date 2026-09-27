@@ -1778,3 +1778,34 @@ onde errou, correções manuais e quanto tempo levou.
 - **Medição:** a janela do jogo abre ora em 1152×648, ora em 3840×2160 (monitor do editor); as coordenadas dos
   cliques de teste mudam com isso. Anotado.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 94 aprovados.
+
+---
+
+## 2026-09-27 — Aldeão: máscara do rosto em malha (no lugar do decal) e proposta dos cabelos
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** o decal projetava o rosto nos fios de cabelo da frente. (1) Máscara do rosto em malha presa ao
+  osso Head, com UV numa célula do atlas; conferir em todos os clipes. (2) Propor os 5 cabelos como peças
+  próprias na Meshy, com o custo antes.
+- **1. Máscara (`add_face_mask` no `normalize.py`, config `mascara_rosto`, 0 créditos):**
+  - Grade 16×16 no plano da frente (0,85 da largura da cabeça = 12,7 cm, centro a 41% da altura da cabeça),
+    projetada na superfície do rosto (raio de frente para trás) e afastada 2 mm pela normal. Só a oval dos
+    traços fica (os cantos da célula são transparentes no atlas).
+  - UV: exatamente a célula 1 do atlas (no Godot, x 0..1/3 e y 0..1/3); o jogo troca a célula pelo
+    `uv1_offset` (1/3 por coluna e por linha). Material com o atlas, transparente.
+  - Objeto "Rosto" com skin 100% no osso Head (segue a cabeça como a pele dela); substitui o nó vazio
+    "Rosto" (a posição continua em `aldeao_base.json`).
+  - **Conferido (`tools/blender/check_face_mask.py`):** distância de cada vértice até a pele, 12 instantes
+    por clipe: idle, work e sleep entre +1,2 e +2,5 mm; walk e carry entre 0,0 e +2,0 mm (o ponto mais perto
+    encosta, não atravessa). Primeira versão, quadrada: atravessava até 11 mm nos cantos (a grade saía da
+    região do rosto presa só à cabeça e entrava na do pescoço) e sobrava uma aba abaixo do queixo; resolvido
+    cortando para a oval. No Godot: `MeshInstance3D` "Rosto" filho do `Skeleton3D`, material transparente.
+  - **Para o agente do jogo:** o "Rosto" agora é a malha, não um nó vazio para o decal.
+- **2. Cabelos:** tentei montar vistas "só do cabelo" recortando o conceito pela cor; no desenho 2D a pele
+  sombreada e o cabelo têm quase o mesmo azul e o recorte levou corpo e rosto junto (descartado). Proposta:
+  Image to Image da Meshy (referências: frente e costas do conceito de cada cabelo) para gerar a peruca limpa
+  de frente e de costas, e Multi-Image to 3D a partir delas; no Blender, encaixe na cabeça do corpo-base e
+  checagem de que nada fica na frente da máscara. Custo: 42 por cabelo, 210 para os 5. Aguardando aprovação.
+- **Créditos:** 0.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 18:40–19:50 de relógio.
