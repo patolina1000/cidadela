@@ -1114,3 +1114,275 @@ onde errou, correções manuais e quanto tempo levou.
   sobrancelhas no conceito); no "dormindo" a borda de baixo pega uma ponta do cabelo, quase toda apagada
   pelo degradê.
 - **Correções manuais:** nenhuma.
+
+---
+
+## 2026-09-26 — Grama mais densa e miúda
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** "estou achando muita pouca grama, queria uma grama densa e pequena."
+- **O que foi feito:** até 36 tufos por célula (eram 9); tufos menores: altura 0,035–0,07 (era 0,05–0,1) e
+  largura 0,4–0,65 (era 0,55–0,85). Cores roxas da sessão de arte mantidas.
+- **Desempenho:** mapa de teste com 25.681 tufos (eram ~6.400) a 145 FPS no rótulo de depuração.
+- **Print:** `docs/prints/grama_densa.png`. O print de perto não saiu: a janela do jogo estava em segundo plano
+  e o MCP só devolvia o último quadro.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-26 — Grama no estilo Breath of the Wild
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** "sabe a grama do zelda: The Legend of Zelda: Breath of the Wild? pronto." (depois de pedir grama
+  densa e pequena).
+- **O que foi feito** (o que marca a grama do BotW, trazido para o nosso crepúsculo e mantendo a grama baixa):
+  - Tapete mais denso: até 64 tufos por célula (eram 36); ~45.700 tufos no mapa de teste.
+  - Base escura (0,55) que some no chão e ponta clara (1,5): o campo parece contínuo.
+  - Faixas de vento: ruído que desliza na direção do vento; onde passa, a grama deita e a ponta clareia.
+    O tremor por tufo continua, mais fraco.
+  - Manchas de altura por ruído (`FastNoiseLite`, 0,7× a 1,25×): trechos mais altos e mais baixos.
+  - A grama se afasta e abaixa em volta da protagonista (a view passa a posição dela ao shader a cada quadro).
+  - Malha do tufo indexada (36 → 20 vértices): o shader de vento roda menos vezes.
+- **Desempenho (3024×1890):** sem grama 72 FPS; grama nova 49–55 FPS antes de indexar, ~58 depois.
+  Não medi o mapa 96×96 cheio desta vez (seriam ~590 mil tufos; vai pedir corte por distância).
+- **Prints:** `docs/prints/grama_botw_visao.png`, `docs/prints/grama_botw_perto.png`. Não consegui um print
+  da protagonista dentro do gramado (ela ficou no pátio de terra); o gramado aparece ao fundo.
+- **GDD:** parágrafo da grama na seção 17 reescrito com a referência ao BotW e as cores roxas atuais.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-26 — Grama trocada pelo asset "Stylized Grass Shader" (StayAtHomeDev) e 5× mais tufos
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** "esqueça essa grama e use essa https://stayathomedev.itch.io/stylized-grass-shader"; no meio da
+  tarefa: "aumente a quantidade em 5x de gramas."
+- **O que foi feito:**
+  - Baixei os dois pacotes do itch.io (grátis, "pague quanto quiser", licença MIT) e guardei em
+    `assets/grama_stylized/` o shader, as malhas `grass.glb` e `grass2.glb` e a licença.
+  - `GrassField` agora usa as malhas e o shader do asset (sem mudanças no shader): um MultiMeshInstance3D por
+    malha em cada bloco de 8×8. Ficaram a densidade por terreno, a grama sumindo sob construções e as manchas
+    de altura. Cores: ponta #C4B3D6, base #6A5B7C, manchas de ruído a cada 12 células.
+  - Apaguei o nosso `Grass.gdshader` (vento BotW, afastar da protagonista): o shader do asset não tem vento.
+  - Altura 0,08–0,13 (×0,75–1,2 nas manchas); com a nossa altura antiga a malha do asset virava pontinhos.
+  - Até 120 tufos por célula (24 × 5, a pedido).
+- **Desempenho (3024×1890):** 24/célula: ~17 mil tufos, 54–87 FPS (leituras instáveis; o humano estava
+  jogando ao mesmo tempo). 120/célula: 85.881 tufos, ~33 FPS. A touceira `grass.glb` tem muitas folhas.
+- **Problemas:** os `.res` do asset apontam para `res://grass.gdshader` (caminho do autor) e usam formato antigo
+  de malha; troquei pelos `.glb`. O download pelo itch.io precisou do endpoint de download grátis.
+  Um script headless do Godot para inspecionar as malhas travou; medi pelo jogo com um print temporário.
+- **Prints:** `docs/prints/grama_stylized_visao.png`, `docs/prints/grama_stylized_perto.png`.
+- **GDD:** parágrafo da grama na seção 17 reescrito para o asset.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-26 — Grama se mexe quando a protagonista passa
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** "tem como fazer a grama se mover um pouco quando meu personagem passa por ela?"
+- **O que foi feito:** copiei o shader do asset para `src/View/Grass.gdshader` (o original em
+  `assets/grama_stylized` fica intacto; a licença MIT permite) e acrescentei o empurrão: num raio de ~0,45
+  célula da protagonista, a grama se inclina para longe dela (a ponta mais que a base, pela altura no mundo)
+  e abaixa até 40%. A view passa a posição dela ao shader a cada quadro (`GrassField.SetPusher`).
+- **Verificação:** jogo rodando sem erros; nos prints de câmera cinemática andando, abre uma clareira em volta
+  dos pés dela. `docs/prints/grama_empurrao.png`.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-26 — Sombra do sol mais curta (o resto da tentativa de desempenho foi desfeito)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** empurrão da grama só na câmera cinematográfica e jogo travado a 120 FPS com melhorias de desempenho.
+- **O que foi tentado:** limite de 120 FPS, 3D em resolução menor com FSR (0,6), grama com visibilidade por
+  distância, tufos mais largos e menos numerosos (120 → 24 por célula), empurrão só na cinematográfica e sombra
+  do sol com 2 cascatas e alcance de 40. Chegou a ~120 FPS, mas mudou a grama.
+- **Resultado:** o humano pediu para voltar tudo ("a quantidade de grama antes estava perfeita") e manter só a luz,
+  de que gostou mais fraca. Ficou só a sombra do sol em `scenes/Main.tscn` (`directional_shadow_mode = 1`,
+  `directional_shadow_max_distance = 40`); o resto voltou ao commit anterior.
+- **Lição:** não trocar o visual (densidade e forma da grama) para ganhar desempenho sem perguntar antes.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados (rodado durante a tentativa; sem mudança na simulação).
+
+---
+
+## 2026-09-26 — Desempenho, passo 0: medição (painel F3 e teclas de A/B)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Pedido:** análise completa de desempenho; meta 60 FPS estáveis em tela cheia na Retina (3024×1890) sem
+  reduzir grama nem mudar o visual aprovado. Plano aprovado em 4 passos: medir, cortes sem mudança visual,
+  trocas visuais só com aprovação, teste de estresse + arquitetura para escala.
+- **O que foi feito:** `src/View/PerfOverlay.cs`, painel na tecla **F3** com FPS, ms por quadro, ms de CPU do
+  jogo (cronometrado no GameRoot em volta de simulação + view), draw calls, primitivos, objetos, nós, VRAM e
+  resolução 3D. Teclas **F4** grama, **F5** brilho, **F6** névoa, **F7** sombra do sol, **F8** chão,
+  **F9** escala 3D (1 → 0,77 → 0,67 → 0,5 com FSR 2), **F10** pós-processo (ajuste de cor + vinheta).
+- **Cuidados de medição:** no Metal não há profiler de GPU e o monitor `TIME_PROCESS` inclui a espera pela
+  GPU (marcava 32 ms de "CPU"); por isso o painel mede a CPU do jogo por conta própria. O contador de
+  primitivos do Godot não conta instâncias de MultiMesh (mostra 0,04 M com 8,6 M de triângulos de grama).
+- **Números (mapa de teste 32×32, 85.881 tufos, 3024×1890, tudo ligado = base):**
+
+  | Cena | FPS | ms/quadro |
+  |---|---|---|
+  | Base | 38–42 | 25–26 |
+  | Sem grama | 63 | 15,9 |
+  | Sem brilho | 37 | 27,0 |
+  | Sem névoa | 35 | 28,6 |
+  | Sem sombra do sol | 62 | 16,1 |
+  | Sem chão | 63 | 15,9 |
+  | Sem pós-processo | 37 | 27,0 |
+  | Escala 3D 0,67 (FSR 2) | 40 | 25,0 |
+  | Escala 3D 0,50 (FSR 2) | 49 | 20,4 |
+  | Sem grama + sem sombra | 120 | 8,3 |
+  | Sem grama + sem chão | 106 | 9,4 |
+  | Sem sombra + sem chão (grama ligada) | 75 | 13,3 |
+
+  CPU do jogo: 0,1–0,2 ms em todos os casos. O gargalo é 100% renderização.
+- **Leitura:** os custos somam. Grama ≈ 10 ms com sombra e ≈ 5 ms sem (o custo é o número de fragmentos das
+  8,6 M de triângulos minúsculos, cada um amostrando a sombra suave); sombra do sol ≈ 8 ms, quase tudo na
+  filtragem suave por pixel dos receptores (sem grama, só o chão como receptor, tirar a sombra economiza 7,6 ms);
+  chão ≈ 7 ms (shader pesado por pixel). Brilho, névoa e pós-processo custam ~0. Reduzir a resolução ajuda
+  pouco (0,5 → 6 ms) porque o custo dominante não é por pixel e o FSR 2 tem custo próprio nessa resolução.
+- **Próximos alvos, nesta ordem:** shader do chão (mesma imagem, menos amostras), filtragem da sombra
+  (tamanho do atlas e qualidade do filtro, conferindo o visual), LOD da grama (malha simples quando o tufo
+  tem poucos pixels; aprovado).
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados (sem mudança na simulação).
+
+---
+
+## 2026-09-26 — Desempenho 1: atlas da sombra do sol 4096 → 2048
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `rendering/lights_and_shadows/directional_shadow/size=2048` em `project.godot`. Com 2
+  cascatas e alcance de 40, cada cascata ainda tem ~40 texels por célula, e o desfoque de 1,6 já suaviza a
+  borda: sem diferença visível.
+- **Medição (base tudo ligado, 3024×1890):** 25,5 ms (38–42 FPS) → **22,2 ms (45 FPS)**. Ganho ≈ 3 ms:
+  a filtragem suave lê menos memória de sombra por pixel.
+- **Medido, aguardando decisão do humano:** `light_angular_distance` do sol de 4° para 0° (desliga a
+  penumbra que cresce com a distância, PCSS; o desfoque fixo de 1,6 continua): 22,2 → **17,9 ms (56 FPS)**,
+  ganho ≈ 4,3 ms. Prints: `docs/prints/perf_sombra_com_penumbra.png` e `perf_sombra_sem_penumbra.png`.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-26 — Desempenho 2: LOD da grama por folha achatada; painel com V-Sync, penumbra e captura
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Medição corrigida:** o V-Sync travava o quadro em múltiplos de 1/120 s e escondia a folga real; o painel
+  ganhou **F2** (V-Sync), **F1** (penumbra PCSS do sol), **F11** (captura em resolução total em
+  `docs/prints/captura_N.png`, porque o MCP só transporta 640 px), **F12** (LOD da grama) e um aviso
+  "[JANELA SEM FOCO]" (em segundo plano o macOS reduz o jogo e as leituras não valem).
+- **Números reais (V-Sync desligado, 3024×1890, atlas 2048, mapa de teste, 85.881 tufos):**
+
+  | Cena | ms/quadro | FPS |
+  |---|---|---|
+  | Base (tudo ligado) | 22,2 | 45 |
+  | Sem penumbra (PCSS) | 18,9 | 53 |
+  | Sem grama | 11,1 | 90 |
+  | Sem grama, sem sombra | 7,4 | 136 |
+  | Sem grama, sem sombra, sem chão | 5,3 | 189 |
+  | Nada (nem brilho, névoa, pós) | 3,7 | 273 |
+
+  Custos: grama **11,1 ms**; sombra do sol no chão 3,7; shader do chão 2,1; brilho+névoa+pós 1,6; piso 3,7.
+  CPU do jogo 0,1–0,2 ms. A grama é cara porque são 8,6 M de triângulos minúsculos: cada um ocupa pelo menos
+  um bloco de 2×2 pixels na GPU e roda a filtragem de sombra por pixel.
+- **LOD da grama, três tentativas:**
+  1. Nível do import (130 → 13 triângulos): a touceira vira uma mancha. Reprovado (prints
+     `perf_lod_13tris*.png`, apagados depois).
+  2. Metade das folhas (130 → 65): 22,2 → 16,4 ms, mas o tapete fica visivelmente mais ralo a 50% de escala.
+     Reprovado.
+  3. **Folha achatada** (130 → 30, 72 → 26): todas as folhas ficam, nos mesmos lugares, largura e altura;
+     cada tira curva de ~13 triângulos vira 3 (quad na base + ponta). De cima, a curva de uma folha de poucos
+     pixels não aparece; a malha completa segue a menos de 11 unidades da câmera (cinematográfica e zoom
+     máximo). Prints: `perf_lod_folha3.png` (câmera normal, 1:1), `perf_lod_folha3_meia.png` (50%),
+     `perf_lod_folha3_perto.png` (cinematográfica, malha completa). Ligado por padrão; F12 desliga.
+     Ainda sem medição limpa: o humano estava usando o jogo e a janela perdia o foco. Pela contagem de
+     triângulos (menos que a tentativa 2) a estimativa é ≤ 16 ms (≥ 62 FPS) na cena base.
+- **Implementação:** dois conjuntos de MultiMesh por bloco (perto/longe) com os mesmos tufos; o nó de cada
+  bloco fica no centro dele porque o `VisibilityRange` mede a distância à origem do nó; troca com fade de 2.
+- **Aguardando decisão:** penumbra PCSS (−3,3 ms; prints `perf_sombra_com_penumbra.png` /
+  `perf_sombra_sem_penumbra.png`).
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados (sem mudança na simulação).
+
+---
+
+## 2026-09-26 — Desempenho 3: penumbra do sol desligada (aprovado) e medição limpa do LOD
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Decisões do humano:** penumbra PCSS desligada, aprovada ("2 - aprovo"); LOD da grama aceito ("a única
+  diferença que senti é que ficou mais escuro ou mais claro", sem preferência).
+- **O que foi feito:** `light_angular_distance = 0.0` no sol (`scenes/Main.tscn`); o desfoque fixo de 1,6
+  continua.
+- **Medição limpa (janela com foco, V-Sync desligado, 3024×1890, 85.881 tufos, mapa de teste):**
+
+  | Cena | ms/quadro | FPS |
+  |---|---|---|
+  | Início do dia (atlas 4096, penumbra, malha completa) | 25,5 | 38–42 |
+  | Atlas 2048 | 22,2 | 45 |
+  | + LOD por folha achatada | ~16 (estimado) | ~62 |
+  | + penumbra desligada (**estado atual**) | **12,8** | **78** |
+  | Estado atual com LOD desligado (F12) | 18,2 | 55 |
+
+  O LOD sozinho vale 5,4 ms nesta cena; a penumbra, 3,3; o atlas, 3,3. Meta de 60 FPS estáveis em tela cheia
+  na Retina atingida com toda a grama, sem mudar densidade, luz, névoa nem cores.
+- **Sobre a diferença de brilho que o humano notou no LOD:** a folha achatada tem menos vértices, e o degradê
+  do shader (UV.y) e as normais são interpolados entre menos pontos, então a folha fica um pouco mais uniforme.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80 aprovados (sem mudança na simulação).
+
+---
+
+## 2026-09-26 — Desempenho 4: cena de teste de estresse (5.000 inimigos, 500 máquinas, 10.000 itens)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:**
+  - `src/Simulation/StressWorld.cs` (C# puro, orientado a dados: um array por componente, sem objeto por
+    entidade; RNG xorshift próprio, determinístico). Inimigos andam para pontos aleatórios do campo (1,6
+    células/s); itens correm em 50 circuitos retangulares de esteira (1,875 células/s); máquinas paradas com
+    um progresso. Campo 80×80. Testes em `tests/.../StressWorldTests.cs` (5 novos; total 85 aprovados).
+  - `scenes/Stress.tscn` + `src/View/StressRoot.cs`: mesma luz, névoa e pós do jogo, chão liso, grama do
+    `GrassField` no campo inteiro (468.000 tufos, esteiras e máquinas bloqueiam). Dois modos de desenho
+    trocados pela tecla M: **nós** (um MeshInstance3D por entidade, malhas e materiais compartilhados,
+    posicionado a cada quadro) e **MultiMesh** (um por tipo de malha e por pedaço de 8×8 células; a cada
+    quadro só o buffer de transformações de cada pedaço é reescrito, com caixa justa por quadro para o
+    culling). G esconde a grama, F2 V-Sync, F11 captura, roda aproxima, WASD anda.
+- **Números (V-Sync desligado, 3024×1890, grama ligada; janela sem foco, o humano estava usando a máquina;
+  as leituras se repetiram em duas rodadas):**
+
+  | Câmera | Modo | ms/quadro | CPU simulação | CPU view | draw calls | objetos |
+  |---|---|---|---|---|---|---|
+  | distância 16 (a do jogo) | nós | 15,2 | 0,13 | 2,6 | 156 | 7.158 |
+  | distância 16 | MultiMesh | 16,7 | 0,38 | 3,8 | 552 | 1.194 |
+  | distância 28 | nós | 26,3 | 0,24 | 2,6 | 191 | 12.988 |
+  | distância 28 | MultiMesh | 28,6 | 0,92 | 5,6 | 920 | 1.562 |
+
+  (Com pedaços de 16×16, primeira rodada: MultiMesh 18,5 ms contra nós 14,9 a distância 16; sem grama, a
+  distância 28: nós 16,4, MultiMesh 21,3.)
+- **Leitura:**
+  - A simulação orientada a dados custa 0,4–0,9 ms por tick para 15.500 entidades; sobra muito.
+  - **Para entidades móveis com malhas simples, um nó por entidade é hoje o melhor dos dois:** o Forward+
+    já agrupa MeshInstance3D iguais numa chamada instanciada (156 draw calls para 15.500 entidades) e faz
+    culling exato por objeto, inclusive na sombra. O MultiMesh dinâmico paga o rebucketing e a cópia dos
+    buffers na CPU (3,8–5,6 ms) e desenha instâncias fora da tela nos pedaços parcialmente visíveis.
+  - Mover 15.500 nós custa 2,6 ms de CPU (~0,17 µs por entidade); esse custo cresce linear e passa a mandar
+    perto de 40–60 mil entidades móveis. Aí o MultiMesh (ou o RenderingServer direto) volta a valer, mas com
+    buffers escritos sem cópia e por pedaço só quando algo muda.
+  - **O limite real é a GPU:** a distância 28, com ~13 mil objetos na tela, os dois modos ficam em 26–29 ms.
+    Reduzir isso é LOD/impostor para inimigos longe, sombra só na cascata perto e menos fragmentos, não
+    trocar de API.
+  - Onde o MultiMesh ganha com folga é no que é **estático e numeroso**: grama (468 mil tufos em ~200 draw
+    calls), pisos, muros, itens parados em esteiras.
+- **Prints:** `docs/prints/estresse_perto.png`, `docs/prints/estresse_visao.png`.
+- **Pendência:** repetir a tabela com a janela em foco (basta o humano abrir a cena e apertar F2 e M).
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 85 aprovados.
+
+---
+
+## 2026-09-26 — Desempenho 5: proposta de arquitetura para escala
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `docs/ARQUITETURA_ESCALA.md`: o que as medições dizem, simulação orientada a dados
+  (arrays por componente, slots estáveis, grade espacial, flow field para hordas, esteiras como corredores),
+  o que desenha cada coisa (MultiMesh por pedaço para o estático e numeroso; nó por entidade com malha
+  compartilhada para móveis até ~30 mil; VAT para multidões animadas; RenderingServer direto acima de ~40
+  mil), regras gerais (sem sombra de coisa pequena, LOD em tudo, triângulo pequeno é caro, chão barato),
+  passos concretos em ordem e o que não fazer. Parágrafo-resumo na seção 13 do GDD apontando para o arquivo.
+- Sem mudança de código.

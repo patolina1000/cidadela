@@ -29,9 +29,12 @@ public partial class WorldView : Node3D
     private Node3D? _ghost;
     private ShaderMaterial? _groundMaterial;
     private GrassField _grass = null!;
+    private MeshInstance3D _ground = null!;
 
     /// <summary>Quantos tufos de grama estão desenhados (para o texto de desempenho).</summary>
     public int GrassTufts => _grass.TuftCount;
+    public GrassField Grass => _grass;
+    public MeshInstance3D Ground => _ground;
     private string? _ghostKind;
     private Direction _ghostDirection;
     private StandardMaterial3D _ghostMaterial = null!;
@@ -122,6 +125,7 @@ public partial class WorldView : Node3D
             visual.UpdateFrom(villager, _world.Data, (float)alpha, dt);
 
         _castellan.UpdateFrom(_world.Castellan, (float)alpha, dt);
+        _grass.SetPusher(_castellan.GlobalPosition);
     }
 
     /// <summary>
@@ -606,14 +610,14 @@ public partial class WorldView : Node3D
         _groundMaterial.SetShaderParameter("noise", noise);
         _groundMaterial.SetShaderParameter("map_size", new Vector2(grid.Width, grid.Height));
 
-        var ground = new MeshInstance3D
+        _ground = new MeshInstance3D
         {
             Name = "Ground",
             Mesh = new PlaneMesh { Size = new Vector2(grid.Width, grid.Height) },
             MaterialOverride = _groundMaterial,
             Position = new Vector3(grid.Width / 2f, 0f, grid.Height / 2f),
         };
-        AddChild(ground);
+        AddChild(_ground);
     }
 
     /// <summary>

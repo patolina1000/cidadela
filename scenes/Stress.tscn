@@ -1,12 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://src/View/GameRoot.cs" id="1_root"]
-[ext_resource type="Script" path="res://src/View/WorldView.cs" id="2_world"]
-[ext_resource type="Script" path="res://src/View/CameraRig.cs" id="3_camera"]
-[ext_resource type="Shader" path="res://src/View/Vignette.gdshader" id="4_vignette"]
-
-[sub_resource type="ShaderMaterial" id="Vignette_material"]
-shader = ExtResource("4_vignette")
+[ext_resource type="Script" path="res://src/View/StressRoot.cs" id="1_root"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_crepusculo"]
 sky_top_color = Color(0.2, 0.17, 0.27, 1)
@@ -47,14 +41,8 @@ adjustment_brightness = 1.0
 adjustment_contrast = 1.15
 adjustment_saturation = 0.7
 
-[node name="Main" type="Node3D"]
+[node name="Stress" type="Node3D"]
 script = ExtResource("1_root")
-
-[node name="WorldView" type="Node3D" parent="."]
-script = ExtResource("2_world")
-
-[node name="CameraRig" type="Node3D" parent="."]
-script = ExtResource("3_camera")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.707107, 0.000000, -0.707107, -0.218508, 0.951057, 0.218508, 0.672499, 0.309017, -0.672499, 0, 10, 0)
@@ -70,33 +58,14 @@ directional_shadow_max_distance = 40.0
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_main")
 
-[node name="DebugHud" type="CanvasLayer" parent="."]
+[node name="Hud" type="CanvasLayer" parent="."]
 
-[node name="Vignette" type="ColorRect" parent="DebugHud"]
-material = SubResource("Vignette_material")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="DebugLabel" type="Label" parent="DebugHud"]
+[node name="Label" type="Label" parent="Hud"]
 offset_left = 12.0
 offset_top = 8.0
-offset_right = 700.0
-offset_bottom = 34.0
+offset_right = 1400.0
+offset_bottom = 140.0
 theme_override_colors/font_color = Color(0.929, 0.902, 0.839, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-text = "Tick 0"
-
-[node name="InventoryLabel" type="Label" parent="DebugHud"]
-offset_left = 12.0
-offset_top = 36.0
-offset_right = 900.0
-offset_bottom = 62.0
-theme_override_colors/font_color = Color(0.929, 0.902, 0.839, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-text = "Madeira: 0"
+text = "..."

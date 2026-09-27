@@ -1,36 +1,40 @@
 shader_type spatial;
-render_mode cull_disabled, depth_draw_opaque;
+render_mode cull_disabled;
 
-// Tufos de grama (GDD, seção 17): cor por tufo (cor da instância), ponta mais clara que a base,
-// e balanço de vento que cresce para a ponta. Cada tufo tem sua fase (posição no mundo + um valor
-// aleatório em INSTANCE_CUSTOM.x), então a grama não mexe toda junto.
-uniform float base_shade = 1.0;
-uniform float tip_shade = 1.6;
-uniform float wind_strength = 0.045;
-uniform float wind_speed = 1.3;
-uniform vec2 wind_direction = vec2(0.8, 0.6);
+// Cópia do shader do asset "Stylized Grass Shader" (StayAtHomeDev, MIT; original em assets/grama_stylized),
+// com um acréscimo nosso: a grama se inclina para longe da protagonista e abaixa um pouco quando ela passa.
+// A view atualiza pusher_pos a cada quadro.
 
-varying float height_factor;
+uniform vec3 color : source_color;
+uniform vec3 color2 : source_color;
+uniform sampler2D noise;
+uniform float noiseScale = 20.0;
+
+uniform vec3 pusher_pos = vec3(-1000.0);
+uniform float push_radius = 0.45;     // até onde ela mexe na grama, em células
+uniform float push_strength = 0.08;   // o quanto a ponta sai do lugar
+uniform float grass_height = 0.15;    // altura de referência: a base fica parada, a ponta mexe mais
+
+varying vec3 worldPos;
 
 void vertex() {
-	// UV.y = 0 na base e 1 na ponta (a malha é gerada assim).
-	height_factor = UV.y;
-	vec3 world_origin = MODEL_MATRIX[3].xyz;
-	float phase = dot(world_origin.xz, vec2(0.37, 0.61)) + INSTANCE_CUSTOM.x * 6.2832;
-	// Duas ondas: uma lenta e larga (rajada que passa pelo campo) e uma rápida e pequena (tremor).
-	float gust = sin(TIME * wind_speed * 0.45 + dot(world_origin.xz, wind_direction) * 0.25) * 0.5 + 0.5;
-	float sway = sin(TIME * wind_speed + phase) * (0.35 + 0.65 * gust);
-	sway += sin(TIME * wind_speed * 2.7 + phase * 1.7) * 0.25;
-	vec2 bend = normalize(wind_direction) * sway * wind_strength * UV.y * UV.y;
+	worldPos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+
+	vec2 away = MODEL_MATRIX[3].xz - pusher_pos.xz;
+	float push = 1.0 - smoothstep(0.0, push_radius, length(away));
+	float tip = clamp(worldPos.y / grass_height, 0.0, 1.0);
+	tip *= tip;
+	vec3 offset = vec3(normalize(away + vec2(0.0001)) * push * push_strength * tip, 0.0).xzy;
+	offset.y = -push * 0.4 * worldPos.y;
 	// O deslocamento é no mundo; volta para o espaço do tufo (que tem giro e escala próprios).
-	VERTEX += inverse(mat3(MODEL_MATRIX)) * vec3(bend.x, 0.0, bend.y);
-	// Normal para cima: o tufo acende como o chão, sem lado escuro.
-	NORMAL = inverse(mat3(MODEL_MATRIX)) * vec3(0.0, 1.0, 0.0);
+	VERTEX += inverse(mat3(MODEL_MATRIX)) * offset;
+	worldPos += offset;
 }
 
 void fragment() {
-	float shade = mix(base_shade, tip_shade, height_factor);
-	ALBEDO = COLOR.rgb * shade;
-	ROUGHNESS = 0.95;
-	SPECULAR = 0.1;
+	vec3 noiseLevel = texture(noise, worldPos.xz / noiseScale).rgb;
+	ALBEDO = mix(color, color2, 1.0- UV.y) * mix(color, color2, noiseLevel.r);
+	if (!FRONT_FACING) {
+		NORMAL = -NORMAL;
+	}
 }
