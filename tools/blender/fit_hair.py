@@ -29,10 +29,11 @@ LARGURA = 1.12  # largura da coroa da peruca / largura da cabeça na mesma faixa
 CORA = (0.12, 0.22)  # faixa da coroa, em fração da altura a partir do topo
 TOPO = 0.006  # m acima do topo da cabeça
 FOLGA_ROSTO = 1.08  # a abertura do rosto é a oval da máscara ampliada nisso
-MARGEM = 0.002  # m fora do couro cabeludo
+MARGEM = 0.0015  # m fora do couro cabeludo (a camada de dentro do cabelo encosta a essa distância)
 MAX_PUSH = 0.08  # m: o raio que sai pelo pescoço já é barrado; a nuca redonda do corpo-base engolia até 5 cm
 MAX_HOLE_SIDES = 16
 INFLA_PASSO = 10  # graus entre as direções do campo de inflar
+MAX_PULL = 0.02  # m: quanto a camada de dentro pode ser puxada para a cabeça (fecha vãos)
 PERTO = 0.025  # m: camada da peruca até isso fora da pele é a que encosta na cabeça
 TOUCA_AFASTAMENTO = 0.0008  # m (abaixo do cabelo, que fica a 2 mm)
 TOUCA_SOMBRA = 0.75
@@ -169,21 +170,22 @@ def inflate(bm: bmesh.types.BMesh, head: dict) -> int:
             near = (ia == a) & (ie == e) & (radius < surface + PERTO)
             if not near.any():
                 continue
-            need[e, a] = max(0.0, min(surface - radius[near].max(), MAX_PUSH))
-    # Suaviza o campo (sem degraus entre direções vizinhas), sem baixar os picos.
+            # A camada de dentro encosta na cabeça (afastamento MARGEM): puxa onde há vão, empurra onde entra.
+            need[e, a] = float(np.clip(surface - radius[near].min(), -MAX_PULL, MAX_PUSH))
+    # Suaviza o campo (sem degraus entre direções vizinhas); nunca deixa uma direção entrar na cabeça.
     for _ in range(2):
         smooth = (need + np.roll(need, 1, 1) + np.roll(need, -1, 1)
                   + np.vstack([need[:1], need[:-1]]) + np.vstack([need[1:], need[-1:]])) / 5
-        need = np.maximum(need, smooth)
+        need = np.where(need > 0, np.maximum(need, smooth), smooth)
     shift = need[ie, ia]
     # A cortina longe da cabeça não anda; perto dela, anda tudo; entre os dois, transição suave.
     gap = radius - surface_at[ie, ia]
     fade = np.clip(1 - (gap - PERTO) / PERTO, 0, 1)
     shift = shift * np.where(surface_at[ie, ia] > 0, fade, 0)
     for v, delta, direction in zip(bm.verts, shift, dirs):
-        if delta > 0:
+        if delta != 0:
             v.co += Vector(direction) * float(delta)
-    return int((shift > 0).sum())
+    return int((shift != 0).sum())
 
 
 def texture_cap_from_hair(cap: bpy.types.Object, hair: bpy.types.Object) -> None:

@@ -1900,3 +1900,38 @@ onde errou, correções manuais e quanto tempo levou.
   encurtar a franja no encaixe.
 - **Créditos:** 0.
 - **Correções manuais:** nenhuma.
+
+## 2026-09-27 — Aldeão: acabamento do corpo-base (pele, sombreado, couro cabeludo, queixo) e encaixe dos cabelos
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** 1) pele de cor única azul-pálida fosca, com degradê suave e oclusão leve, sem o remendo do rosto
+  apagado; 2) normais suaves na cabeça e no corpo, sem facetas; 3) couro cabeludo pintado na cor escura do
+  cabelo, com borda suave na testa; 4) cabelos justos na cabeça (sem vãos, franja na testa, sem cobrir os
+  olhos); 5) tirar o caco pontudo do queixo. Prévia de frente, 3/4 e costas com os 5 cabelos.
+- **Feito (`finish_skin` no `normalize.py`, config `acabamento_pele` no `assets.json`):**
+  - funde vértices duplicados e subdivide só a cabeça (1 corte, suave); alisamento Taubin (24 passos, raio
+    0,6 da cabeça) em volta do rosto, o que também some com o caco do queixo (sobra do tampão do rosto);
+  - todas as faces suaves, sem arestas marcadas como duras;
+  - cor por vértice: pele #9FB7CB × degradê de altura (12%) × oclusão (48 raios no hemisfério, força 0,35);
+    acima da linha do cabelo (70% da cabeça na testa, 12% na nuca, borda suave de 8%, orelhas fora) mistura
+    para #4B5A69; as cores são suavizadas entre vizinhos (6 vezes);
+  - **o Godot ignora a cor de vértice do glTF** (`vertex_color_use_as_albedo` falso na importação), então a cor
+    é assada numa textura de 1024 com UV nova (smart project), com 8 px de sangria. A textura antiga da Meshy
+    (e o remendo do rosto) sai do material.
+- **Cabelos (`fit_hair.py`):** o campo de inflar agora também puxa para dentro: a camada interna mais perto
+  de cada direção vai para superfície + 1,5 mm (puxa até 2 cm, empurra até 8 cm), com a cortina de longe
+  atenuada. Os 5 cabelos foram reencaixados na cabeça final.
+- **Problemas e correções:**
+  - rosto manchado: a oclusão com poucos raios fazia ruído; subiu para 48 raios e as cores passaram a ser
+    suavizadas. O relevo que sobrava era da geometria, daí o alisamento mais forte;
+  - com o alisamento mais forte, 1 vértice da borda do plano dos olhos (na têmpora, área transparente)
+    encostou na pele (0,00 mm): numa concavidade, outra face ficava mais perto que a do raio. Agora cada
+    ponto do plano garante a folga pelo ponto mais próximo da pele.
+- **Conferido (`check_face_mask.py`):** em idle, walk, carry, work e sleep, olhos de +0,73 a +1,0 mm e boca de
+  +0,98 a +1,0 mm da pele.
+- **Prévia:** `assets/previews/aldeoes_acabamento.png` (Godot, SubViewport, câmera ortogonal perto).
+- **O que ainda não ficou bom:** os cabelos da Meshy são cheios de mechas soltas; o ondulado deixa ver a
+  touca na nuca e o longo_liso tem manchas da touca nas costas; no rabo_cavalo, a 3/4, uma mecha passa na
+  frente da bochecha. O olho de trás, a 3/4, fica cortado pela silhueta da cabeça (é plano curvo na pele).
+- **Créditos:** 0.
+- **Correções manuais:** nenhuma.

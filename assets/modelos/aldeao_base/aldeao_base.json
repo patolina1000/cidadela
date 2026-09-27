@@ -1,16 +1,16 @@
 {
-  "passada_walk_m_s": 0.207,
-  "passada_carry_m_s": 0.207,
+  "passada_walk_m_s": 0.206,
+  "passada_carry_m_s": 0.206,
   "encaixes": {
     "Cabelo": [
       -0.0,
-      0.4,
-      -0.0061
+      0.3994,
+      -0.0055
     ],
     "Chapéu": [
       -0.0,
-      0.417,
-      -0.0061
+      0.4164,
+      -0.0055
     ]
   }
 }

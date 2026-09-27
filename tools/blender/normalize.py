@@ -30,6 +30,10 @@ CRYSTAL_MATERIAL = "Cristal"
 CRYSTAL_EMISSION_STRENGTH = 3.0
 STRIDE_BONES = ("LeftToeBase", "RightToeBase")
 BLEED = 3  # px além da borda das ilhas de UV pintados no rosto apagado
+BLEED_PX = 8  # px de sangria em volta das ilhas de UV da textura da pele
+AO_RAYS, AO_REACH = 48, 0.08  # oclusão: raios por vértice e alcance (fração da altura do modelo)
+# Linha do cabelo (fração da altura da cabeça acima da base): na testa, na nuca, e a largura da borda.
+HAIRLINE_FRONT, HAIRLINE_BACK, HAIRLINE_SOFT = 0.70, 0.12, 0.08
 RIGID_MARGIN, RIGID_FADE = 1.25, 1.6  # pele rígida até 1,25x o meio-tamanho do plano; some até 1,6x
 LOCOMOTION_CLIPS = ("run",)  # clipes com passada medida para protagonista.json
 LEAN_TOLERANCE = 0.5  # graus
@@ -951,6 +955,191 @@ def flatten_face(obj: bpy.types.Object, positions: np.ndarray, center: np.ndarra
           f"borda de {len(rim)} arestas")
 
 
+def srgb_to_linear(hex_color: str) -> np.ndarray:
+    c = np.array([int(hex_color[i:i + 2], 16) for i in (1, 3, 5)], dtype=np.float64) / 255
+    return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+
+
+def finish_skin(settings: dict) -> None:
+    """Acabamento do corpo-base: pele de cor única, sombreado liso, cabeça mais densa, couro cabeludo.
+
+    - Solda os vértices duplicados nas costuras de UV (sem isso o sombreado liso quebra nas costuras).
+    - Subdivide só a cabeça (uma vez, com arredondamento) e alisa o queixo e o rosto (Taubin), o que
+      também tira a ponta que sobrava embaixo da boca.
+    - Sombreado liso em tudo.
+    - Pele: cor única com um degradê suave de altura, uma oclusão leve (raios) e o couro cabeludo na cor
+      escura do cabelo, com borda suave na linha do cabelo; calculada por vértice e gravada numa textura
+      nova com UV nova (bake_colors_to_texture).
+    """
+    import bmesh
+    from mathutils.bvhtree import BVHTree
+    armature = armature_object()
+    armature.data.pose_position = "REST"
+    bpy.context.view_layer.update()
+    body = max(meshes(), key=lambda o: len(o.data.polygons))
+    mesh = body.data
+    to_world = body.matrix_world
+    base = armature.matrix_world @ armature.pose.bones["Head"].head
+    top = armature.matrix_world @ armature.pose.bones["head_end"].head
+    head_h = top.z - base.z
+
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-6)
+    head_edges = [e for e in bm.edges if all((to_world @ v.co).z > base.z for v in e.verts)]
+    bmesh.ops.subdivide_edges(bm, edges=head_edges, cuts=1, use_grid_fill=True, smooth=1.0)
+    bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 4])
+    # Rosto e queixo: Taubin (alisa sem encolher), mais forte no miolo.
+    face_center = FACE["posicao"]
+    radius = head_h * settings.get("alisar_raio", 0.45)
+    region = [v for v in bm.verts if (to_world @ v.co - face_center).length < radius and (to_world @ v.co).z > base.z - head_h * 0.1]
+    for step in range(settings.get("alisar_passos", 12) * 2):
+        factor = 0.5 if step % 2 == 0 else -0.53
+        moves = {}
+        for v in region:
+            ring = [e.other_vert(v).co for e in v.link_edges]
+            if ring:
+                w = 1 - (to_world @ v.co - face_center).length / radius
+                moves[v] = v.co + (sum(ring, Vector()) / len(ring) - v.co) * factor * w
+        for v, co in moves.items():
+            v.co = co
+    for f in bm.faces:
+        f.smooth = True
+    bm.to_mesh(mesh)
+    bm.free()
+    if "sharp_edge" in mesh.attributes:
+        mesh.attributes.remove(mesh.attributes["sharp_edge"])
+    if "sharp_face" in mesh.attributes:
+        mesh.attributes.remove(mesh.attributes["sharp_face"])
+
+    # Cores dos vértices: degradê de altura, oclusão e couro cabeludo.
+    skin = srgb_to_linear(settings["pele"])
+    hair = srgb_to_linear(settings["cabelo"])
+    world = np.array([(to_world @ v.co)[:] for v in mesh.vertices])
+    normals = np.array([(to_world.to_3x3() @ v.normal).normalized()[:] for v in mesh.vertices])
+    tree = BVHTree.FromPolygons([Vector(p) for p in world], [p.vertices[:] for p in mesh.polygons])
+    low_z, high_z = world[:, 2].min(), world[:, 2].max()
+    rng = np.random.default_rng(1)
+    dirs = rng.normal(size=(AO_RAYS, 3))
+    dirs /= np.linalg.norm(dirs, axis=1)[:, None]
+    reach = (high_z - low_z) * AO_REACH
+    head_center = np.array([(base.x + top.x) / 2, FACE["posicao"].y + head_h * 0.5, base.z + head_h * 0.5])
+    colors = np.zeros((len(world), 4))
+    for i, (p, n) in enumerate(zip(world, normals)):
+        hits = 0
+        for d in dirs:
+            if d @ n < 0:
+                d = -d
+            origin = Vector(p + n * 1e-4)
+            if tree.ray_cast(origin, Vector(d), reach)[0] is not None:
+                hits += 1
+        ao = 1 - settings.get("oclusao", 0.35) * hits / AO_RAYS
+        height = (p[2] - low_z) / (high_z - low_z)
+        shade = 1 - settings.get("degrade", 0.12) * (1 - height)
+        color = skin * shade * ao
+        # Couro cabeludo: acima da linha do cabelo (alta na frente, baixa na nuca), fora das orelhas.
+        rel = p - head_center
+        front = -rel[1] / max(np.hypot(rel[0], rel[1]), 1e-9)  # 1 na frente, -1 atrás
+        line = base.z + head_h * (HAIRLINE_BACK + (HAIRLINE_FRONT - HAIRLINE_BACK) * (front + 1) / 2)
+        ear = abs(rel[0]) > head_h * 0.38 and p[2] < base.z + head_h * 0.62 and front > -0.6
+        t = np.clip((p[2] - line) / (head_h * HAIRLINE_SOFT) + 0.5, 0, 1) if p[2] > base.z else 0.0
+        t = 0.0 if ear else t * t * (3 - 2 * t)
+        color = color * (1 - t) + hair * ao * t
+        colors[i, :3] = color / skin  # o glTF multiplica COLOR_0 pela cor base (a pele)
+        colors[i, 3] = 1
+
+    # Suaviza as cores pelos vizinhos: tira o ruído da oclusão e o serrilhado da linha do cabelo.
+    neighbors = [[] for _ in mesh.vertices]
+    for edge in mesh.edges:
+        a, b = edge.vertices
+        neighbors[a].append(b)
+        neighbors[b].append(a)
+    rgb = colors[:, :3].copy()
+    for _ in range(settings.get("suavizar_cor", 6)):
+        rgb = np.array([(rgb[i] + rgb[n].sum(axis=0)) / (1 + len(n)) if n else rgb[i]
+                        for i, n in enumerate(neighbors)])
+    bake_colors_to_texture(body, rgb * skin, settings.get("textura_px", 1024))
+    print(f"  acabamento da pele: {len(mesh.polygons)} faces (cabeça subdividida), pele {settings['pele']}, "
+          f"couro cabeludo {settings['cabelo']}, oclusão por {AO_RAYS} raios")
+
+
+def bake_colors_to_texture(body: bpy.types.Object, colors: np.ndarray, size: int) -> None:
+    """Grava as cores por vértice numa textura nova, com UV nova (projeção automática), e troca o
+    material para usá-la. O Godot importa o glTF com a cor dos vértices desligada no material; a
+    textura funciona em qualquer lugar."""
+    mesh = body.data
+    for layer in list(mesh.uv_layers):
+        mesh.uv_layers.remove(layer)
+    mesh.uv_layers.new(name="UVMap")
+    bpy.ops.object.select_all(action="DESELECT")
+    body.hide_set(False)
+    body.select_set(True)
+    bpy.context.view_layer.objects.active = body
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.uv.smart_project(angle_limit=1.15, island_margin=0.01)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    uv = mesh.uv_layers.active.data
+    image = np.zeros((size, size, 3), dtype=np.float32)
+    filled = np.zeros((size, size), dtype=bool)
+    mesh.calc_loop_triangles()
+    for tri in mesh.loop_triangles:
+        pix = np.array([uv[l].uv[:] for l in tri.loops]) * size
+        cols = colors[list(tri.vertices)]
+        x0, y0 = np.floor(pix.min(axis=0)).astype(int)
+        x1, y1 = np.ceil(pix.max(axis=0)).astype(int)
+        xs, ys = np.meshgrid(np.arange(max(x0, 0), min(x1, size - 1) + 1), np.arange(max(y0, 0), min(y1, size - 1) + 1))
+        points = np.stack([xs.ravel() + 0.5, ys.ravel() + 0.5], axis=1)
+        a, b, c = pix
+        m = np.array([b - a, c - a]).T
+        if abs(np.linalg.det(m)) < 1e-12:
+            continue
+        lam = np.linalg.solve(m, (points - a).T).T
+        inside = (lam[:, 0] >= -0.02) & (lam[:, 1] >= -0.02) & (lam.sum(axis=1) <= 1.02)
+        if not inside.any():
+            continue
+        lam = np.clip(lam[inside], 0, 1)
+        weights = np.stack([1 - lam.sum(axis=1), lam[:, 0], lam[:, 1]], axis=1).clip(0, 1)
+        px = points[inside].astype(int)
+        image[px[:, 1], px[:, 0]] = weights @ cols
+        filled[px[:, 1], px[:, 0]] = True
+    # Sangria: pixels vazios em volta das ilhas pegam a média dos vizinhos pintados, BLEED_PX vezes.
+    for _ in range(BLEED_PX):
+        acc = np.zeros_like(image)
+        count = np.zeros(filled.shape, dtype=np.float32)
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            shifted_fill = np.roll(filled, (dy, dx), axis=(0, 1))
+            acc += np.roll(image, (dy, dx), axis=(0, 1)) * shifted_fill[..., None]
+            count += shifted_fill
+        grow = ~filled & (count > 0)
+        image[grow] = acc[grow] / count[grow][:, None]
+        filled |= grow
+    rgba = np.ones((size, size, 4), dtype=np.float32)
+    rgba[..., :3] = image
+    texture = bpy.data.images.new(f"{body.name}_pele", size, size, float_buffer=False)
+    texture.colorspace_settings.name = "Non-Color"
+    texture.pixels.foreach_set(rgba.ravel())
+    texture.colorspace_settings.name = "sRGB"
+    # Os valores estão em linear: converte para sRGB antes de gravar (a imagem é 8 bits sRGB).
+    srgb = np.where(image <= 0.0031308, image * 12.92, 1.055 * np.power(np.clip(image, 0, None), 1 / 2.4) - 0.055)
+    rgba[..., :3] = np.clip(srgb, 0, 1)
+    texture.pixels.foreach_set(rgba.ravel())
+    texture.pack()
+    material = mesh.materials[0]
+    nodes, links = material.node_tree.nodes, material.node_tree.links
+    bsdf = next(n for n in nodes if n.type == "BSDF_PRINCIPLED")
+    for link in list(bsdf.inputs["Base Color"].links):
+        links.remove(link)
+    for node in [n for n in nodes if n.type in ("TEX_IMAGE", "VERTEX_COLOR", "MIX")]:
+        nodes.remove(node)
+    tex = nodes.new("ShaderNodeTexImage")
+    tex.image = texture
+    links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    bsdf.inputs["Base Color"].default_value = (1, 1, 1, 1)
+    for attribute in list(mesh.color_attributes):
+        mesh.color_attributes.remove(attribute)
+
+
 def rigid_skin(body: bpy.types.Object, center: tuple, half: tuple, neck_z: float) -> None:
     """A pele debaixo de um plano do rosto passa a seguir 100% o osso Head (o plano segue só ele; o
     queixo e as bochechas tinham peso do pescoço e entravam no plano na caminhada). Borda suave."""
@@ -1024,7 +1213,12 @@ def add_face_planes(settings: dict, asset: dict) -> None:
                 hit, normal, _, _ = tree.ray_cast(origin, Vector((0, 1, 0)), head_width * 4)
                 if hit is None:
                     hit, normal, _, _ = tree.find_nearest(origin)
-                row.append(bm.verts.new(hit + normal.normalized() * offset))
+                point = hit + normal.normalized() * offset
+                # Em concavidades (canto do olho) outra face pode ficar mais perto que a do raio.
+                near, near_normal, _, dist = tree.find_nearest(point)
+                if dist < offset * 0.8:
+                    point = near + near_normal.normalized() * offset
+                row.append(bm.verts.new(point))
             grid.append(row)
         for j in range(ny):
             for i in range(nx):
@@ -1347,6 +1541,8 @@ def main() -> None:
     shrink_textures()
     if "apagar_rosto" in asset:
         erase_face(asset["apagar_rosto"])
+    if "acabamento_pele" in asset:
+        finish_skin(asset["acabamento_pele"])
     if "planos_rosto" in asset:
         add_face_planes(asset["planos_rosto"], asset)
     root = add_root(name)
