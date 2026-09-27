@@ -1679,3 +1679,29 @@ onde errou, correções manuais e quanto tempo levou.
   o veio azul dentro dos troncos, a mancha do minério, o fumo que não chega ao céu). Apresentados ao humano
   para revisão antes de fechar a tarefa.
 - Sem mudança de código. `dotnet build` não se aplica (só JSON).
+
+---
+
+## 2026-09-27 — Biografia, etapa C: a cena da enciclopédia com palco 3D
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:**
+  - `src/View/Biography.cs` lê `data/biography.json` (categorias, entradas; `descoberto` false vira "???" e
+    botão desativado).
+  - `scenes/Biography.tscn` + `src/View/BiographyRoot.cs`: mesma atmosfera do jogo; colunas categorias →
+    entradas → palco → texto (nome, descrição, história). Palco: pátio de terra com grama em volta, pedestal,
+    câmera em órbita (arrastar gira, roda aproxima; o delta vem da posição absoluta, porque eventos sintéticos
+    de teste vêm sem `Relative`). Modelos: `CastellanVisual` (idle, com o cristal), `VillagerVisual`
+    (dirigido por um `DrawState` parado, de frente para a câmera), `BuildingModels` para construções e
+    máquinas, cubos de item e de recurso girando devagar.
+  - Controles embaixo: clipes da entrada (protagonista: idle, run, work; aldeão: idle, walk, carry, work,
+    sleep; máquinas: funcionando/parada, por enquanto só a lâmina e o pulso do modelo, a etapa D troca pelo
+    mundo real); no aldeão, 9 expressões, 5 cabelos e um botão de chapéu.
+  - Ganchos de prévia: `CastellanVisual.PlayClip`, `VillagerVisual.PreviewClip` (clipe forçado em 1×) e
+    `VillagerVisual.ResetLook` (refaz cabelo e chapéu ao vivo). Esc ou "Voltar ao menu" voltam ao menu.
+- **Conferido no jogo:** categorias, entradas, texto, giro por arrasto, troca de expressão (feliz), cabelo
+  (ondulado) e clipe (walk). O aldeão nasceu de costas (direção padrão +Z) e foi virado para −Z; as
+  fileiras de botões estouravam o painel de baixo e passaram a quebrar linha (`HFlowContainer`) num painel
+  mais alto que ocupa também a coluna das entradas.
+- **Prints:** `docs/prints/biografia_protagonista.png`, `biografia_aldeao.png`, `biografia_serraria.png`.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.

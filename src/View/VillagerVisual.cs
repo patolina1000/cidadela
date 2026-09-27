@@ -29,6 +29,9 @@ public partial class VillagerVisual : Node3D
     private const float FaceDecalScale = 1.15f;
     private const float FaceDecalDepth = 0.08f;
 
+    /// <summary>Clipe forçado em 1× (palco da Biografia); null = pelo estado da simulação.</summary>
+    public string? PreviewClip { get; set; }
+
     /// <summary>Força o clipe sleep em todos (tecla N do painel de desempenho), só visual, para conferir o decal.</summary>
     public static bool DebugForceSleep { get; set; }
 
@@ -175,23 +178,34 @@ public partial class VillagerVisual : Node3D
         }
 
         bool sleeping = s.Resting || DebugForceSleep;
-        string clip = sleeping ? "sleep" : moving ? (carrying ? "carry" : "walk") : "idle";
+        string clip = PreviewClip ?? (sleeping ? "sleep" : moving ? (carrying ? "carry" : "walk") : "idle");
         if (_animations.CurrentAnimation != clip && _animations.HasAnimation(clip))
             _animations.Play(clip, ClipBlendSeconds);
 
         // walk/carry no ritmo da velocidade real, até o teto; os outros clipes em 1×.
         float stride = clip == "walk" ? _walkStride : clip == "carry" ? _carryStride : 0f;
         float targetScale = 1f;
-        if (stride > 0f && dt > 0f)
+        if (PreviewClip is null && stride > 0f && dt > 0f)
             targetScale = Mathf.Clamp(walked / dt / stride, 0f, MaxAnimationSpeed);
         _animations.SpeedScale = Mathf.Lerp(_animations.SpeedScale, targetScale, 1f - Mathf.Exp(-StrideSmoothing * dt));
     }
 
     /// <summary>Cabelo sorteado dentro do encaixe "Cabelo" (a peça já vem com a origem no encaixe).</summary>
+    /// <summary>Refaz cabelo e chapéu na próxima atualização (o palco da Biografia troca o cabelo ao vivo).</summary>
+    public void ResetLook()
+    {
+        _lookApplied = false;
+        _hair?.QueueFree();
+        _hair = null;
+        _hairUnderHat?.QueueFree();
+        _hairUnderHat = null;
+        _hatJob = "\0"; // valor que nenhum ofício tem: força o UpdateHat a refazer
+    }
+
     private void ApplyLook(int hairVariant)
     {
         _lookApplied = true;
-        if (FaceSocket is not null)
+        if (FaceSocket is not null && _face is null)
         {
             // Decal projeta no seu -Y local; girado 90° em X, projeta no -Z do encaixe (para dentro do rosto).
             // Só atinge a camada 1 (o corpo); cabelo e chapéu ficam em outra camada.
