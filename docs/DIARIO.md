@@ -1523,3 +1523,22 @@ onde errou, correções manuais e quanto tempo levou.
   cabana cheia, o aldeão espera com carga sobrando e "carregando" vencia; agora esforço só vale coletando
   ou levando a carga.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 91 aprovados.
+
+---
+
+## 2026-09-27 — Aldeão modular, etapa 3: o corpo-base no lugar da cápsula, com os clipes
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `VillagerVisual` reescrito: instancia `assets/modelos/aldeao_base/aldeao_base.glb`
+  (girado 180°, como a protagonista), acha os encaixes "Rosto", "Cabelo" e "Chapéu" e lê `largura_m` dos
+  extras do glTF (0,0898 m). Estados → clipes: parado idle, andando walk, andando com carga carry,
+  descansando sleep; coletando fica em idle com o golpe procedural do pivô. walk e carry tocam no ritmo da
+  velocidade real ÷ passada do JSON (0,207 m/s), com teto de 3×. A carga (cubinho) passou das costas para a
+  frente do peito, onde o clipe carry abraça. Sem o modelo, cai numa cápsula pequena. Foco cinematográfico do
+  aldeão baixado para a altura do modelo (0,25 a 1,8 de distância). Tecla **N** no painel de desempenho força
+  o sleep em todos (só visual), para conferir o decal no clipe deitado.
+- **Conferido no jogo:** os três aldeões aparecem com o modelo, sem aviso de encaixe faltando; idle respira;
+  o sleep deita no chão. Prints: `docs/prints/aldeao_modelo_idle.png`, `aldeao_modelo_sleep.png`.
+- **Import:** o editor marcou as texturas do aldeão como usadas em 3D (compressão VRAM); os `.import` mudados
+  entram neste commit para não oscilar a cada abertura.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
