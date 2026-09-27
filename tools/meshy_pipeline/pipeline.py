@@ -179,7 +179,7 @@ class Runner:
         if step == "rig":
             return "/v1/rigging", {
                 "input_task_id": done["modelo"]["task_id"],
-                "height_meters": RIG_HEIGHT_METERS,
+                "height_meters": asset.get("altura_rig_m", RIG_HEIGHT_METERS),
             }
         if step.startswith("movimento_"):
             motion = asset["movimentos_texto"][step.removeprefix("movimento_")]

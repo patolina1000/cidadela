@@ -15,12 +15,13 @@ Uso:
 import json
 import math
 import re
+import struct
 import sys
 from pathlib import Path
 
 import bpy
 import numpy as np
-from mathutils import Matrix, Vector
+from mathutils import Matrix, Quaternion, Vector
 
 ROOT = Path(__file__).resolve().parents[2]
 TEXTURE_SIZE = 512
@@ -477,6 +478,266 @@ def trunk_lean_pass(clip: str, target: float) -> tuple[float, float]:
     return before, sum(after) / len(after)
 
 
+def armature_object() -> bpy.types.Object:
+    return next(o for o in bpy.data.objects if o.type == "ARMATURE")
+
+
+def use_action(armature: bpy.types.Object, action: bpy.types.Action) -> None:
+    armature.data.pose_position = "POSE"
+    armature.animation_data_create()
+    armature.animation_data.action = action
+    if action.slots:
+        armature.animation_data.action_slot = action.slots[0]
+
+
+def copy_action(source: str, name: str) -> bpy.types.Action:
+    if name in bpy.data.actions:
+        bpy.data.actions.remove(bpy.data.actions[name])
+    action = bpy.data.actions[source].copy()
+    action.name = name
+    action.use_fake_user = True
+    return action
+
+
+def key_times(action: bpy.types.Action, bones: tuple) -> list:
+    """Tempos das chaves de rotação desses ossos (as ações podem ter chaves em tempos fracionados)."""
+    paths = {f'pose.bones["{b}"].rotation_quaternion' for b in bones}
+    return sorted({k.co.x for bag in channelbags(action) for c in bag.fcurves if c.data_path in paths
+                   for k in c.keyframe_points})
+
+
+def rewrite_curves(action: bpy.types.Action, values: dict, prop: str, size: int) -> None:
+    """Regrava as curvas <prop> dos ossos com os valores {osso: {tempo: vetor}} (cria as que faltam)."""
+    bag = channelbags(action)[0]
+    for bone, per_time in values.items():
+        path = f'pose.bones["{bone}"].{prop}'
+        for index in range(size):
+            curve = next((c for c in bag.fcurves if c.data_path == path and c.array_index == index), None)
+            if curve is None:
+                curve = bag.fcurves.new(path, index=index, group_name=bone)
+            curve.keyframe_points.clear()
+            for time, value in sorted(per_time.items()):
+                curve.keyframe_points.insert(time, value[index], options={"FAST"})
+
+
+def bone_tip(armature: bpy.types.Object, name: str) -> Vector:
+    """Ponta útil do osso: a cabeça do filho (as caudas dos ossos da Meshy apontam para longe)."""
+    bone = armature.pose.bones[name]
+    return bone.children[0].head if bone.children else bone.tail
+
+
+def aim(armature: bpy.types.Object, name: str, direction: Vector) -> None:
+    """Gira o osso em volta da cabeça dele até apontar para <direction> (espaço do esqueleto)."""
+    bone = armature.pose.bones[name]
+    current = (bone_tip(armature, name) - bone.head).normalized()
+    turn_by = current.rotation_difference(direction.normalized())
+    head = bone.head.copy()
+    bone.matrix = Matrix.Translation(head) @ turn_by.to_matrix().to_4x4() @ Matrix.Translation(-head) @ bone.matrix
+    bpy.context.view_layer.update()
+
+
+def reach(armature: bpy.types.Object, side: str, hand: Vector, pole: Vector) -> None:
+    """IK de dois ossos: põe a mão em <hand>, com o cotovelo para o lado de <pole>."""
+    arm, fore = f"{side}Arm", f"{side}ForeArm"
+    shoulder = armature.pose.bones[arm].head.copy()
+    upper = (bone_tip(armature, arm) - shoulder).length
+    lower = (bone_tip(armature, fore) - armature.pose.bones[fore].head).length
+    to_hand = hand - shoulder
+    distance = min(to_hand.length, (upper + lower) * 0.999)
+    axis = to_hand.normalized()
+    # Lei dos cossenos: quanto o cotovelo sai da reta ombro-mão.
+    along = (upper ** 2 - lower ** 2 + distance ** 2) / (2 * distance)
+    out = math.sqrt(max(upper ** 2 - along ** 2, 0.0))
+    bend = (pole - axis * pole.dot(axis)).normalized()
+    elbow = shoulder + axis * along + bend * out
+    aim(armature, arm, elbow - shoulder)
+    aim(armature, fore, shoulder + axis * distance - armature.pose.bones[fore].head)
+
+
+def carry_from_walk(settings: dict) -> None:
+    """carry: a caminhada com os braços travados à frente da barriga, segurando a carga.
+
+    As direções do braço e do antebraço (no espaço do tronco) vêm da configuração; elas seguem o
+    giro do tronco em cada quadro, para os braços acompanharem o balanço da caminhada.
+    """
+    armature = armature_object()
+    action = copy_action(settings.get("de", "walk"), "carry")
+    use_action(armature, action)
+    scene = bpy.context.scene
+    bones = armature.pose.bones
+    arm_bones = ("LeftArm", "LeftForeArm", "RightArm", "RightForeArm")
+    rest_spine = bones["Spine"].bone.matrix_local.to_3x3()
+    values = {b: {} for b in arm_bones}
+    for time in key_times(action, arm_bones):
+        set_time(scene, time)
+        torso = bones["Spine"].matrix.to_3x3() @ rest_spine.inverted()
+        for side, sign in (("Left", 1), ("Right", -1)):
+            ux, uy, uz = settings["braco"]
+            fx, fy, fz = settings["antebraco"]
+            aim(armature, f"{side}Arm", torso @ Vector((sign * ux, uy, uz)))
+            aim(armature, f"{side}ForeArm", torso @ Vector((sign * fx, fy, fz)))
+        for b in arm_bones:
+            values[b][time] = bones[b].rotation_quaternion.copy()
+    rewrite_curves(action, values, "rotation_quaternion", 4)
+    armature.animation_data.action = None
+    print("  carry: caminhada com os braços segurando a carga")
+
+
+def crank_work(settings: dict) -> None:
+    """work: parado (a partir do idle), girando uma manivela com as duas mãos.
+
+    As mãos seguem um círculo num plano vertical à frente do corpo (eixo da manivela na direção
+    lateral); o tronco balança um pouco junto com a volta. O clipe tem o tamanho do idle, com um
+    número inteiro de voltas, para fechar o laço.
+    """
+    armature = armature_object()
+    action = copy_action("idle", "work")
+    use_action(armature, action)
+    scene = bpy.context.scene
+    fps = scene.render.fps / scene.render.fps_base
+    bones = armature.pose.bones
+    start, end = action.frame_range
+    turns = max(1, round((end - start) / fps / settings["volta_s"]))
+
+    armature.data.pose_position = "REST"
+    bpy.context.view_layer.update()
+    shoulders = (bones["LeftArm"].head + bones["RightArm"].head) / 2
+    span = (bones["LeftArm"].head - bones["RightArm"].head).length
+    front_y = world_to_armature(armature, Vector((0, world_bounds()[0].y, 0))).y
+    armature.data.pose_position = "POSE"
+    center = Vector((0, front_y, shoulders.z)) + Vector((0, -settings["frente"], -settings["abaixo"])) * span
+    radius = settings["raio"] * span
+    grip = settings["pegada"] * span / 2
+    moved = ("LeftArm", "LeftForeArm", "RightArm", "RightForeArm", "Spine01")
+    values = {b: {} for b in moved}
+    for time in key_times(action, ("Hips",)):
+        set_time(scene, time)
+        angle = 2 * math.pi * turns * (time - start) / (end - start)
+        lean = math.radians(settings["tronco_graus"]) * math.sin(angle)
+        bones["Spine01"].matrix = rotate_about_head(bones["Spine01"].matrix.copy(), Vector((1, 0, 0)), -lean)
+        bpy.context.view_layer.update()
+        hand = center + Vector((0, math.cos(angle), math.sin(angle))) * radius
+        for side, sign in (("Left", 1), ("Right", -1)):
+            reach(armature, side, hand + Vector((sign * grip, 0, 0)), Vector((sign, 0.2, -1)))
+        for b in moved:
+            values[b][time] = bones[b].rotation_quaternion.copy()
+    rewrite_curves(action, values, "rotation_quaternion", 4)
+    armature.animation_data.action = None
+    print(f"  work: manivela, {turns} voltas em {(end - start) / fps:.1f} s")
+
+
+def world_to_armature(armature: bpy.types.Object, point: Vector) -> Vector:
+    return armature.matrix_world.inverted() @ point
+
+
+def ground_clip(clip: str) -> None:
+    """Desce (ou sobe) o clipe inteiro até a malha encostar no chão da pose de repouso.
+
+    O sono da biblioteca deita a uns centímetros do chão (como numa cama).
+    """
+    armature = armature_object()
+    armature.data.pose_position = "REST"
+    bpy.context.view_layer.update()
+    ground = world_bounds()[0].z
+    action = bpy.data.actions[clip]
+    use_action(armature, action)
+    scene = bpy.context.scene
+    start, end = action.frame_range
+    lowest = min(_min_z_at(scene, f) for f in range(int(start), int(end) + 1, 4))
+    drop = (lowest - ground) / armature.matrix_world.to_scale().z
+    hips = armature.pose.bones["Hips"]
+    paths = {'pose.bones["Hips"].location'}
+    times = sorted({k.co.x for bag in channelbags(action) for c in bag.fcurves if c.data_path in paths
+                    for k in c.keyframe_points}) or [start]
+    values = {"Hips": {}}
+    for time in times:
+        set_time(scene, time)
+        hips.matrix = Matrix.Translation((0, 0, -drop)) @ hips.matrix
+        bpy.context.view_layer.update()
+        values["Hips"][time] = hips.location.copy()
+    rewrite_curves(action, values, "location", 3)
+    armature.animation_data.action = None
+    armature.data.pose_position = "REST"
+    print(f"  {clip}: apoiado no chão ({(lowest - ground) * 100:+.1f} cm na escala bruta)")
+
+
+def _min_z_at(scene: bpy.types.Scene, frame: int) -> float:
+    scene.frame_set(frame)
+    return world_bounds()[0].z
+
+
+FACE: dict = {}  # medida do rosto antes do fit (posição no mundo e largura), usada na exportação
+
+
+def measure_face(settings: dict) -> None:
+    """Onde fica a frente do rosto: na superfície da malha, entre a base da cabeça (osso "Head", na
+    altura do pescoço) e o topo ("head_end"), na fração "altura_fracao" (o meio de olhos e boca).
+
+    O marcador em si é gravado direto no glTF depois de exportar (add_face_node): preso a um osso no
+    Blender, um objeto fica relativo à ponta do osso, e as pontas dos ossos da Meshy apontam para longe.
+    """
+    armature = armature_object()
+    armature.data.pose_position = "REST"
+    bpy.context.view_layer.update()
+    base = armature.matrix_world @ armature.pose.bones["Head"].head
+    top = armature.matrix_world @ armature.pose.bones["head_end"].head
+    anchor = base.lerp(top, settings.get("altura_fracao", 0.35))
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    points = []
+    for obj in meshes():
+        mesh = obj.evaluated_get(depsgraph).to_mesh()
+        points += [obj.matrix_world @ v.co for v in mesh.vertices]
+        obj.evaluated_get(depsgraph).to_mesh_clear()
+    low, high = world_bounds()
+    band = (high.z - low.z) * settings.get("faixa", 0.04)
+    near = [p for p in points if abs(p.z - anchor.z) < band]
+    front = [p for p in near if abs(p.x - anchor.x) < band * 2]
+    FACE["posicao"] = Vector((anchor.x, min(p.y for p in front) - band * 0.25, anchor.z))
+    FACE["largura"] = (max(p.x for p in near) - min(p.x for p in near)) * settings.get("largura_fracao", 0.6)
+    print(f"  Rosto: frente da cabeça a {settings.get('altura_fracao', 0.35):.0%} da altura da cabeça")
+
+
+def add_face_node(glb: Path, position: Vector, width: float) -> None:
+    """Acrescenta ao glTF o nó "Rosto", filho da articulação da cabeça (acompanha as animações).
+
+    <position> está no espaço do modelo do glTF (Y para cima, frente +Z). O nó fica sem giro e sem
+    escala no espaço do modelo: o +Z dele aponta para fora do rosto. "largura_m" vai nos extras.
+    """
+    data = glb.read_bytes()
+    json_length = struct.unpack("<I", data[12:16])[0]
+    gltf = json.loads(data[20:20 + json_length])
+    binary = data[20 + json_length:]
+    nodes = gltf["nodes"]
+
+    def local(node: dict) -> Matrix:
+        t = Matrix.Translation(node.get("translation", (0, 0, 0)))
+        x, y, z, w = node.get("rotation", (0, 0, 0, 1))
+        r = Quaternion((w, x, y, z)).to_matrix().to_4x4()
+        sx, sy, sz = node.get("scale", (1, 1, 1))
+        return t @ r @ Matrix.Diagonal((sx, sy, sz, 1))
+
+    parent_of = {child: i for i, n in enumerate(nodes) for child in n.get("children", [])}
+    head = next(i for i, n in enumerate(nodes) if n.get("name") == "Head")
+    chain, node = [], head
+    while node is not None:
+        chain.append(node)
+        node = parent_of.get(node)
+    head_global = Matrix.Identity(4)
+    for index in reversed(chain):
+        head_global = head_global @ local(nodes[index])
+    marker = head_global.inverted() @ Matrix.Translation(position)
+    t, r, sc = marker.decompose()
+    nodes.append({"name": "Rosto", "translation": list(t), "rotation": [r.x, r.y, r.z, r.w],
+                  "scale": list(sc), "extras": {"largura_m": round(width, 4)}})
+    nodes[head].setdefault("children", []).append(len(nodes) - 1)
+
+    text = json.dumps(gltf, separators=(",", ":")).encode()
+    text += b" " * (-len(text) % 4)
+    body = struct.pack("<II", len(text), 0x4E4F534A) + text + binary
+    glb.write_bytes(struct.pack("<III", 0x46546C67, 2, 12 + len(body)) + body)
+    print(f"  Rosto: nó na cabeça, largura {width:.3f} m")
+
+
 def channelbags(action: bpy.types.Action) -> list:
     return [bag for layer in action.layers for strip in layer.strips for bag in strip.channelbags]
 
@@ -640,6 +901,7 @@ def export(root: bpy.types.Object, path: Path, animated: bool) -> None:
         export_yup=True,
         export_animations=animated,
         export_animation_mode="ACTIONS",
+        export_extras=True,  # dados extras dos nós (ex.: largura do "Rosto")
     )
     print(f"  exportado {path.relative_to(ROOT)} ({path.stat().st_size // 1024} KB)")
 
@@ -677,15 +939,28 @@ def main() -> None:
             close_arms(clip, degrees)
         for clip, degrees in asset.get("inclinacao_tronco_graus", {}).items():
             set_trunk_lean(clip, degrees)
+        if asset.get("carregar"):
+            carry_from_walk(asset["carregar"])
+        if asset.get("manivela"):
+            crank_work(asset["manivela"])
+        for clip in asset.get("apoiar_no_chao", []):
+            ground_clip(clip)
+        if "rosto" in asset:
+            measure_face(asset["rosto"])
     if asset.get("cristal_emissivo"):
         make_crystal_material(name)
     shrink_textures()
     root = add_root(name)
     fit(root, asset)
+    if FACE:
+        # Mundo do Blender depois do fit (Z para cima, frente -Y) para o espaço do modelo glTF.
+        world = root.matrix_world @ FACE["posicao"]
+        FACE["gltf"] = Vector((world.x, world.z, -world.y))
+        FACE["largura_m"] = FACE["largura"] * root.scale.x
     if character:
         # O jogo lê isto para tocar as corridas no ritmo da velocidade real, sem deslizar.
         info = {}
-        for clip in LOCOMOTION_CLIPS:
+        for clip in asset.get("clipes_passada", LOCOMOTION_CLIPS):
             if clip in bpy.data.actions:
                 stride = measure_stride(clip)
                 info[f"passada_{clip}_m_s"] = round(stride, 3)
@@ -695,6 +970,8 @@ def main() -> None:
         if obj.type == "ARMATURE":
             obj.data.pose_position = "POSE"
     export(root, folder / f"{name}.glb", animated=character)
+    if FACE:
+        add_face_node(folder / f"{name}.glb", FACE["gltf"], FACE["largura_m"])
 
 
 main()

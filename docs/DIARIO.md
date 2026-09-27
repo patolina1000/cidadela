@@ -1386,3 +1386,49 @@ onde errou, correções manuais e quanto tempo levou.
   mil), regras gerais (sem sombra de coisa pequena, LOD em tudo, triângulo pequeno é caro, chão barato),
   passos concretos em ordem e o que não fazer. Parágrafo-resumo na seção 13 do GDD apontando para o arquivo.
 - Sem mudança de código.
+
+---
+
+## 2026-09-27 — Aldeão, parte 2: primeira variação (cabelo curto bagunçado) para aprovação
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** 5 variações do aldeão (uma por cabelo), Multi-Image to 3D com frente e costas em T-pose,
+  low-poly; rig e animações idle, walk, carry, work (girar manivela) e sleep; metade da altura da
+  protagonista, pivô na base, mesma frente; marcador "Rosto" na frente da cabeça; prévia a 55°.
+  **Primeiro só uma variação**, para conferir se o rig automático aguenta o corpo fora do padrão.
+- **Vistas:** `tools/meshy_pipeline/villager_views.py` recorta frente e costas das 5 variações (curto
+  bagunçado, médio com franja, ondulado e rabo de cavalo em `aldeao_expressoes.png`, que tem os cabelos; o
+  longo liso na folha principal) em `assets/conceitos/aldeao/vistas/`. Pedaços do papel presos entre o
+  cabelo e o pescoço viram fundo (o aldeão não tem cor quente).
+- **Animações (o catálogo da Meshy não tem carregar nem manivela):**
+  - walk: a caminhada grátis que vem com o rig, com os braços abertos 8° (raspavam na barriga);
+  - idle: a respiração feita no Blender (como a da protagonista), com os braços mais abertos por causa
+    da barriga;
+  - carry: a caminhada com os braços travados à frente, abraçando a carga (direções no espaço do
+    tronco, acompanhando o balanço);
+  - work: parado, as mãos seguem o círculo de uma manivela à frente do corpo (IK de dois ossos
+    calculado à mão, gravado em chaves; 5 voltas em 7 s). Na primeira versão as mãos passavam na frente
+    da boca (esconderiam a expressão); baixei a manivela, e ela ficou na altura do peito (braços curtos);
+  - sleep: "Sleep Normally" (267) da biblioteca, deitado de costas; deitava 19,6 cm acima do chão (como
+    numa cama) e foi baixado até encostar.
+- **Rig automático: funcionou.** Na caminhada crua (antes de mexer) as pernas alternam sem cruzar,
+  os braços balançam e não há rasgos nem torções; no sono o corpo redondo deita sem deformar. Só as mãos
+  raspavam na barriga.
+- **Marcador "Rosto":** no Blender, um objeto preso a um osso fica relativo à ponta do osso, e as pontas
+  dos ossos da Meshy apontam para longe (o marcador saía longe da cabeça). Agora o `normalize.py` só mede
+  a frente do rosto e, depois de exportar, acrescenta o nó "Rosto" direto no glTF, como filho da
+  articulação `Head`, sem giro nem escala no espaço do modelo (+Z para fora do rosto) e com
+  `extras.largura_m`. O osso `headfront` do rig fica na altura do pescoço, então o marcador vai a 35% da
+  altura da cabeça (meio de olhos e boca). **Conferido no Godot:** vira `Node3D` dentro de um
+  `BoneAttachment3D`, em (0; 0,296; 0,071) e acompanha a cabeça em walk, work e sleep. Largura: 0,104 m.
+- **Resultado:** `assets/modelos/aldeao_curto_baguncado/aldeao_curto_baguncado.glb`, 0,34 × 0,17 × 0,40 m,
+  clipes `idle`, `walk`, `carry`, `work`, `sleep`; passada de walk e carry 0,202 m/s (no JSON do modelo).
+  Prévia a 55° ao lado da protagonista: `assets/previews/aldeoes.png`.
+- **Ferramentas novas:** `tools/blender/inspect_clip.py` (quadros de frente e de lado e medidas de um
+  clipe), `tools/blender/preview_sheet.py` + `tools/meshy_pipeline/label_sheet.py` (folha a 55° numerada).
+- **Créditos:** 38 (30 modelo + 5 rig + 3 sono). Saldo: 2.896 → 2.858. As outras 4 variações: 152.
+- **O que deu errado:** aspas duplas num comentário quebraram o `assets.json` de novo; a configuração vazia
+  `"rosto": {}` contava como falsa e o marcador não era criado; a ferramenta de inspeção desenhava o
+  marcador no lugar errado (o mesmo problema de ponta de osso no importador do Blender), e foi retirada.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 12:10–13:40 de relógio.
