@@ -35,7 +35,8 @@ public partial class VillagerVisual : Node3D
     /// <summary>Força o clipe sleep em todos (tecla N do painel de desempenho), só visual, para conferir o decal.</summary>
     public static bool DebugForceSleep { get; set; }
 
-    /// <summary>Encaixe "Rosto": nó preso à cabeça, +Z para fora do rosto; null sem modelo.</summary>
+    /// <summary>Encaixe "Rosto": a máscara do rosto em malha (modelo novo) ou, no modelo antigo, um nó preso
+    /// à cabeça (+Z para fora do rosto) onde vai o decal; null sem modelo.</summary>
     public Node3D? FaceSocket { get; private set; }
     /// <summary>Encaixe "Cabelo", no topo da cabeça.</summary>
     public Node3D? HairSocket { get; private set; }
@@ -56,6 +57,9 @@ public partial class VillagerVisual : Node3D
     private Node3D? _hat;
     private string? _hatJob;
     private Decal? _face;
+    // Máscara do rosto em malha (modelo novo): a expressão é a célula do atlas escolhida pelo deslocamento
+    // de UV. Cada aldeão tem a sua cópia do material, para as expressões serem independentes.
+    private StandardMaterial3D? _faceMask;
     private VillagerExpression? _shownExpression;
     private float _yaw;
     private float _swing;
@@ -147,6 +151,12 @@ public partial class VillagerVisual : Node3D
             _shownExpression = s.Expression;
             _face.TextureAlbedo = VillagerLooks.FaceTexture(s.Expression);
         }
+        if (_faceMask is not null && _shownExpression != s.Expression)
+        {
+            _shownExpression = s.Expression;
+            int cell = (int)s.Expression;
+            _faceMask.Uv1Offset = new Vector3(cell % 3 / 3f, cell / 3 / 3f, 0f);
+        }
         System.Numerics.Vector2 p = s.Position;
         Position = new Vector3(p.X + 0.5f, 0f, p.Y + 0.5f);
 
@@ -205,7 +215,13 @@ public partial class VillagerVisual : Node3D
     private void ApplyLook(int hairVariant)
     {
         _lookApplied = true;
-        if (FaceSocket is not null && _face is null)
+        if (FaceSocket is MeshInstance3D mask && _faceMask is null)
+        {
+            // A máscara já está na célula 1 (distraído); o deslocamento anda 1/3 por coluna e por linha.
+            _faceMask = (StandardMaterial3D)((StandardMaterial3D)mask.Mesh.SurfaceGetMaterial(0)).Duplicate();
+            mask.SetSurfaceOverrideMaterial(0, _faceMask);
+        }
+        else if (FaceSocket is not null && _face is null)
         {
             // Decal projeta no seu -Y local; girado 90° em X, projeta no -Z do encaixe (para dentro do rosto).
             // Só atinge a camada 1 (o corpo); cabelo e chapéu ficam em outra camada.

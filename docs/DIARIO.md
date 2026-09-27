@@ -1843,3 +1843,17 @@ onde errou, correções manuais e quanto tempo levou.
 - **Créditos:** 210. Total do aldeão: 438. Saldo: 2.458.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:55–21:40 de relógio.
+
+---
+
+## 2026-09-27 — Expressões do aldeão pela máscara em malha (para testar na Biografia)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na branch `arte` (código do agente do jogo, a pedido do humano).
+- **Pedido:** "merge para eu testar na biografia".
+- **O que foi feito:** o `VillagerVisual` procurava "Rosto" como nó para prender o decal; agora "Rosto" é a
+  máscara em malha. Troca mínima: se "Rosto" é uma `MeshInstance3D`, cada aldeão ganha uma cópia do material
+  dela e a expressão escolhe a célula do atlas pelo `uv1_offset` (coluna e linha de 1/3; a ordem de
+  `VillagerExpression` é a ordem do atlas); o decal só é criado no modelo antigo (nó vazio).
+- **Conferido:** `dotnet build` 0 erros e 0 avisos; `dotnet test` 94 aprovados; render no Godot com a célula
+  "feliz" mostrando o sorriso na máscara, sem projeção no cabelo.
+- Depois, `master` avançada até a `arte`.
