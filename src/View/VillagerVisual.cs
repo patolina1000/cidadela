@@ -43,6 +43,8 @@ public partial class VillagerVisual : Node3D
     private float _walkStride, _carryStride;
     private MeshInstance3D _load = null!;
     private StandardMaterial3D _loadMaterial = null!;
+    private bool _lookApplied;
+    private Node3D? _hair;
     private float _yaw;
     private float _swing;
     private float _bobPhase;
@@ -102,6 +104,8 @@ public partial class VillagerVisual : Node3D
 
     public void UpdateFrom(Villager villager, GameData data, float alpha, float dt)
     {
+        if (!_lookApplied)
+            ApplyLook(villager);
         System.Numerics.Vector2 p = System.Numerics.Vector2.Lerp(villager.PreviousPosition, villager.Position, alpha);
         Position = new Vector3(p.X + 0.5f, 0f, p.Y + 0.5f);
 
@@ -148,6 +152,21 @@ public partial class VillagerVisual : Node3D
         if (stride > 0f && dt > 0f)
             targetScale = Mathf.Clamp(walked / dt / stride, 0f, MaxAnimationSpeed);
         _animations.SpeedScale = Mathf.Lerp(_animations.SpeedScale, targetScale, 1f - Mathf.Exp(-StrideSmoothing * dt));
+    }
+
+    /// <summary>Cabelo sorteado dentro do encaixe "Cabelo" (a peça já vem com a origem no encaixe).</summary>
+    private void ApplyLook(Villager villager)
+    {
+        _lookApplied = true;
+        if (HairSocket is null)
+            return;
+        VillagerLooks.Hair? hair = VillagerLooks.HairFor(villager.HairVariant);
+        _hair = hair is null ? null : VillagerLooks.InstantiateHair(hair.Model);
+        if (_hair is not null)
+        {
+            _hair.Name = "HairPiece";
+            HairSocket.AddChild(_hair);
+        }
     }
 
     /// <summary>Passadas (m/s) de walk e carry, medidas no Blender e gravadas no JSON do modelo; 0 se não houver.</summary>

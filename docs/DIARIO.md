@@ -1542,3 +1542,18 @@ onde errou, correções manuais e quanto tempo levou.
 - **Import:** o editor marcou as texturas do aldeão como usadas em 3D (compressão VRAM); os `.import` mudados
   entram neste commit para não oscilar a cada abertura.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Aldeão modular, etapa 4: cabelos como peças no encaixe "Cabelo"
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `data/villager_looks.json` lista as 5 variações na ordem do sorteio (nome, modelo,
+  versão sob chapéu). `src/View/VillagerLooks.cs` lê o JSON (System.Text.Json, porque os JSON de `data/` têm
+  comentários que o `Json` do Godot não aceita), guarda as `PackedScene` dos GLB em cache e instancia a peça;
+  arquivo ausente (o longo liso, variação 4) = careca com um aviso único. `VillagerVisual` põe a peça
+  dentro do nó "Cabelo" na primeira atualização (a peça já vem com a origem no encaixe, sem ajuste). Um
+  corpo, um rig e um `AnimationPlayer` por aldeão; o cabelo é só uma malha filha da cabeça.
+- **Conferido no jogo:** os três aldeões saíram com cabelos diferentes (franja, curto), acompanhando a cabeça
+  no idle. Print: `docs/prints/aldeao_cabelo.png`.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
