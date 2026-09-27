@@ -2,19 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b3nl5qcp3u30n"
-path="res://.godot/imported/aldeao_base_texture_0.png-3071b15922b52b59764b45461dcb1daf.ctex"
+uid="uid://cnvacjdrasduy"
+path="res://.godot/imported/expressoes.png-45088675caec5be2a4edff4b204b690b.ctex"
 metadata={
 "vram_texture": false
-}
-generator_parameters={
-"md5": "c69540f456b0a5940e3be20d43d143f1"
 }
 
 [deps]
 
-source_file="res://assets/modelos/aldeao_base/aldeao_base_texture_0.png"
-dest_files=["res://.godot/imported/aldeao_base_texture_0.png-3071b15922b52b59764b45461dcb1daf.ctex"]
+source_file="res://assets/texturas/aldeao/expressoes.png"
+dest_files=["res://.godot/imported/expressoes.png-45088675caec5be2a4edff4b204b690b.ctex"]
 
 [params]
 
@@ -26,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

@@ -2,19 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b3nl5qcp3u30n"
-path="res://.godot/imported/aldeao_base_texture_0.png-3071b15922b52b59764b45461dcb1daf.ctex"
+uid="uid://bo8clt0jstv7x"
+path="res://.godot/imported/longo_liso_texture_0.png-cd4327b53af41e453e98548015b627e9.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "c69540f456b0a5940e3be20d43d143f1"
+"md5": "dc97d47a2032bfd8668d2e34708cc9de"
 }
 
 [deps]
 
-source_file="res://assets/modelos/aldeao_base/aldeao_base_texture_0.png"
-dest_files=["res://.godot/imported/aldeao_base_texture_0.png-3071b15922b52b59764b45461dcb1daf.ctex"]
+source_file="res://assets/modelos/aldeao_cabelos/longo_liso_texture_0.png"
+dest_files=["res://.godot/imported/longo_liso_texture_0.png-cd4327b53af41e453e98548015b627e9.ctex"]
 
 [params]
 

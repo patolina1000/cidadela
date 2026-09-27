@@ -5,7 +5,8 @@ com a origem no encaixe "Cabelo") acompanha o osso da cabeça naquele quadro, co
 
 Uso:
   Blender -b --factory-startup --python tools/blender/preview_modular.py -- <saida.png> <clipe> <var1> [<var2> ...]
-  (variável AZIMUTE em graus gira a câmera em volta: 0 = de frente, como no jogo; 180 = por trás)
+  (variável AZIMUTE em graus gira cada aldeão no próprio lugar: 0 = de frente, como no jogo;
+   180 = de costas; 90 = de perfil)
 """
 
 import json
@@ -22,6 +23,12 @@ BASE = "aldeao_base"
 GAME_TILT_DEGREES = 55  # GDD, seção 12
 SPACING = 0.55  # m entre os aldeões
 WIDTH, HEIGHT = 1800, 620
+
+
+def placement(root: bpy.types.Object) -> Matrix:
+    """Posição e giro do aldeão, sem a escala: os encaixes do JSON já estão na escala final."""
+    location, rotation, _ = root.matrix_world.decompose()
+    return Matrix.LocRotScale(location, rotation, None)
 
 
 def imported(path: Path) -> list:
@@ -49,6 +56,9 @@ def main() -> None:
         objs = imported(ROOT / "assets/modelos" / BASE / f"{BASE}.glb")
         root = next(o for o in objs if o.parent is None and o.type == "EMPTY")
         root.location.x += x
+        root.rotation_mode = "XYZ"  # o importador usa quaternion; sem isso o giro é ignorado
+        root.rotation_euler.z = math.radians(float(os.environ.get("AZIMUTE", "0")))
+        bpy.context.view_layer.update()
         armature = next(o for o in objs if o.type == "ARMATURE")
         action = [a for a in bpy.data.actions if a.name.split(".")[0] == clip][-1]
         armature.animation_data_create()
@@ -58,13 +68,13 @@ def main() -> None:
         start, end = action.frame_range
         scene.frame_set(int((start + end) / 2))
         # Giro e posição da cabeça neste quadro em relação à pose de repouso, no mundo.
+        # Cabelo preso ao osso da cabeça: posição de encaixe (espaço do modelo) levada pela pose atual.
         head = armature.pose.bones["Head"]
-        posed = armature.matrix_world @ head.matrix
-        rest = armature.matrix_world @ head.bone.matrix_local
-        delta = posed @ rest.inverted()
+        follow = (armature.matrix_world @ head.matrix @ head.bone.matrix_local.inverted()
+                  @ armature.matrix_world.inverted() @ placement(root))
         hair_objs = [o for o in imported(ROOT / "assets/modelos/aldeao_cabelos" / f"{variant}.glb") if o.type == "MESH"]
         for hair in hair_objs:
-            hair.matrix_world = delta @ Matrix.Translation(anchor + Vector((x, 0, 0)))
+            hair.matrix_world = follow @ Matrix.Translation(anchor)
         labels.append({"texto": f"{i + 1}. {variant}", "x": x})
 
     bpy.ops.mesh.primitive_plane_add(size=len(variants) * SPACING + 2)
@@ -88,9 +98,7 @@ def main() -> None:
     cam.data.ortho_scale = len(variants) * SPACING + 0.2
     tilt = math.radians(GAME_TILT_DEGREES)
     target = Vector((0, 0, 0.2))
-    azimuth = math.radians(float(os.environ.get("AZIMUTE", "0")))
-    horizontal = Vector((math.sin(azimuth), -math.cos(azimuth), 0)) * math.cos(tilt)
-    cam.location = target + (horizontal + Vector((0, 0, math.sin(tilt)))) * 10
+    cam.location = target + Vector((0, -math.cos(tilt), math.sin(tilt))) * 10
     cam.rotation_euler = (target - cam.location).to_track_quat("-Z", "Y").to_euler()
     scene.render.filepath = str(out)
     bpy.ops.render.render(write_still=True)

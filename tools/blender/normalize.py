@@ -29,6 +29,7 @@ FOOTPRINT = 0.9  # base máxima de construções e recursos, para caber em 1 cé
 CRYSTAL_MATERIAL = "Cristal"
 CRYSTAL_EMISSION_STRENGTH = 3.0
 STRIDE_BONES = ("LeftToeBase", "RightToeBase")
+BLEED = 3  # px além da borda das ilhas de UV pintados no rosto apagado
 LOCOMOTION_CLIPS = ("run",)  # clipes com passada medida para protagonista.json
 LEAN_TOLERANCE = 0.5  # graus
 # Laço dos movimentos por texto: ossos comparados, margem ignorada nas pontas e duração do ciclo.
@@ -697,6 +698,258 @@ def measure_face(settings: dict) -> None:
     print(f"  Rosto: frente da cabeça a {settings.get('altura_fracao', 0.35):.0%} da altura da cabeça")
 
 
+def erase_face(settings: dict) -> None:
+    """Apaga o rosto pintado na textura (olhos, sobrancelhas, nariz, boca): o jogo projeta a expressão.
+
+    A textura é picotada em ilhas de UV, então a pintura é feita pela posição 3D de cada pixel: dentro
+    de um elipsoide em volta do rosto (centro atrás do marcador "Rosto"), o pixel recebe a cor média da
+    pele da cabeça em volta do rosto; entre o elipsoide de dentro e o de fora a mistura é suave. Depois
+    a geometria do rosto (olhos em órbitas, nariz, boca) é trocada por uma calota lisa (flatten_face).
+    """
+    armature = armature_object()
+    armature.data.pose_position = "REST"
+    bpy.context.view_layer.update()
+    obj = max(meshes(), key=lambda o: len(o.data.polygons))
+    image = base_color_image(obj.data.materials[0])
+    width, height = image.size
+    pixels = np.empty(width * height * 4, dtype=np.float32)
+    image.pixels.foreach_get(pixels)
+    pixels = pixels.reshape(height, width, 4)
+
+    base = armature.matrix_world @ armature.pose.bones["Head"].head
+    top = armature.matrix_world @ armature.pose.bones["head_end"].head
+    head_height = top.z - base.z
+    head_width = FACE["largura"] / settings.get("largura_fracao", 0.6)
+    center = FACE["posicao"] + Vector((0, 1, 0)) * head_width * settings.get("recuo", 0.3)
+    center.z = base.z + head_height * settings.get("centro_altura", 0.38)
+    radii = np.array([head_width * settings.get("raio_largura", 0.45),
+                      head_width * settings.get("raio_profundidade", 0.45),
+                      head_height * settings.get("raio_altura", 0.3)])
+    inner = settings.get("miolo", 0.7)
+
+    # Posição 3D (pose de repouso, mundo) de cada vértice, e os triângulos com as UVs.
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    evaluated = obj.evaluated_get(depsgraph).to_mesh()
+    positions = np.array([(obj.matrix_world @ v.co)[:] for v in evaluated.vertices])
+    obj.evaluated_get(depsgraph).to_mesh_clear()
+    mesh = obj.data
+    mesh.calc_loop_triangles()
+    uv = mesh.uv_layers.active.data
+    ring_colors, targets = [], []
+    c = np.array(center[:])
+    covered = np.zeros((height, width), dtype=bool)
+    for tri in mesh.loop_triangles:
+        pix = (np.array([uv[l].uv[:] for l in tri.loops]) % 1.0) * [width, height]
+        x0, y0 = np.floor(pix.min(axis=0)).astype(int)
+        x1, y1 = np.ceil(pix.max(axis=0)).astype(int)
+        covered[max(y0, 0):min(y1, height - 1) + 1, max(x0, 0):min(x1, width - 1) + 1] = True
+    for tri in mesh.loop_triangles:
+        corners3d = positions[list(tri.vertices)]
+        distance = np.linalg.norm((corners3d.mean(axis=0) - c) / radii)
+        if distance > 1.6:
+            continue
+        corners_uv = np.array([uv[l].uv[:] for l in tri.loops]) % 1.0
+        pix = corners_uv * [width, height]
+        x0, y0 = np.floor(pix.min(axis=0)).astype(int)
+        x1, y1 = np.ceil(pix.max(axis=0)).astype(int)
+        xs, ys = np.meshgrid(np.arange(x0, x1 + 1), np.arange(y0, y1 + 1))
+        points = np.stack([xs.ravel() + 0.5, ys.ravel() + 0.5], axis=1)
+        # Coordenadas baricêntricas de cada pixel no triângulo de UV.
+        a, b, cc = pix
+        m = np.array([b - a, cc - a]).T
+        if abs(np.linalg.det(m)) < 1e-9:
+            continue
+        lam = np.linalg.solve(m, (points - a).T).T
+        inside = (lam[:, 0] >= -0.01) & (lam[:, 1] >= -0.01) & (lam.sum(axis=1) <= 1.01)
+        if not inside.any():
+            continue
+        lam, points = lam[inside], points[inside].astype(int)
+        points = np.clip(points, 0, [width - 1, height - 1])
+        world = corners3d[0] + lam[:, :1] * (corners3d[1] - corners3d[0]) + lam[:, 1:] * (corners3d[2] - corners3d[0])
+        d = np.linalg.norm((world - c) / radii, axis=1)
+        ring = (d > 1.05) & (d < 1.5)
+        if ring.any():
+            ring_colors.append(pixels[points[ring, 1], points[ring, 0], :3])
+        near = d < 1.0
+        if near.any():
+            targets.append((points[near], d[near]))
+    skin = np.median(np.concatenate(ring_colors), axis=0)
+    painted = 0
+    for points, d in targets:
+        weight = 1 - np.clip((d - inner) / (1 - inner), 0, 1)
+        weight = weight * weight * (3 - 2 * weight)
+        old = pixels[points[:, 1], points[:, 0], :3]
+        pixels[points[:, 1], points[:, 0], :3] = old * (1 - weight[:, None]) + skin * weight[:, None]
+        painted += len(points)
+        if "uv_pele" not in FACE and (weight > 0.99).any():
+            px = points[weight > 0.99][0]
+            FACE["uv_pele"] = ((px[0] + 0.5) / width, (px[1] + 0.5) / height)
+        # Borda da ilha: pixels vizinhos que nenhum triângulo usa também viram pele (a textura é
+        # filtrada e esses pixels sangram para dentro das faces).
+        full = points[weight > 0.99]
+        for dx in range(-BLEED, BLEED + 1):
+            for dy in range(-BLEED, BLEED + 1):
+                xs = np.clip(full[:, 0] + dx, 0, width - 1)
+                ys = np.clip(full[:, 1] + dy, 0, height - 1)
+                free = ~covered[ys, xs]
+                pixels[ys[free], xs[free], :3] = skin
+    image.pixels.foreach_set(pixels.ravel())
+    image.pack()
+    print(f"  rosto apagado da textura: {painted} pixels pintados com a pele {np.round(skin * 255).astype(int)}")
+    flatten_face(obj, positions, c, radii, inner, base, top)
+
+
+def flatten_face(obj: bpy.types.Object, positions: np.ndarray, center: np.ndarray, radii: np.ndarray,
+                 inner: float, base: Vector, top: Vector) -> None:
+    """Troca a geometria do rosto (olhos em órbitas, nariz e boca em relevo) por uma calota lisa.
+
+    As faces dentro do elipsoide do rosto saem. O buraco é triangulado de novo no plano da frente (borda
+    como restrição e pontos em grade dentro); a profundidade de cada ponto novo é uma membrana presa na
+    borda, estufada até a esfera ajustada à cabeça no meio, para continuar a curvatura. As faces novas
+    usam a UV de um pixel de pele e ficam 100% no osso Head.
+    """
+    import bmesh
+    mesh = obj.data
+    to_world = np.array(obj.matrix_world)
+    to_local = np.linalg.inv(to_world)
+    d = np.linalg.norm((positions - center) / radii, axis=1)
+    head = (positions[:, 2] > base.z + (top.z - base.z) * 0.15) & (d > 1.1)
+    pts = positions[head]
+    a = np.hstack([2 * pts, np.ones((len(pts), 1))])
+    solution = np.linalg.lstsq(a, (pts ** 2).sum(axis=1), rcond=None)[0]
+    sphere_center, radius = solution[:3], np.sqrt(solution[3] + (solution[:3] ** 2).sum())
+
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    uv_layer = bm.loops.layers.uv.active
+    deform = bm.verts.layers.deform.active
+    head_group = obj.vertex_groups["Head"].index
+    old = bm.verts.layers.int.new("antigo")  # 1 nos vértices que já existiam
+    for v in bm.verts:
+        v[old] = 1
+    doomed = [f for f in bm.faces if np.mean([d[v.index] for v in f.verts]) < 1.0]
+    material = doomed[0].material_index if doomed else 0
+    bmesh.ops.delete(bm, geom=doomed, context="FACES")
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
+    # Costuras de UV duplicam vértices: solda os da borda que estão na mesma posição.
+    bmesh.ops.remove_doubles(bm, verts=[v for v in bm.verts if any(e.is_boundary for e in v.link_edges)], dist=1e-6)
+
+    # Maior laço de borda = o buraco do rosto (buracos pequenos que já existiam ficam).
+    loops, seen = [], set()
+    for edge in bm.edges:
+        if not edge.is_boundary or edge in seen:
+            continue
+        loop, stack = [], [edge]
+        while stack:
+            e = stack.pop()
+            if e in seen:
+                continue
+            seen.add(e)
+            loop.append(e)
+            for v in e.verts:
+                stack.extend(x for x in v.link_edges if x.is_boundary and x not in seen)
+        loops.append(loop)
+    rim = max(loops, key=len)
+    # Laço ordenado de vértices da borda.
+    rim_set = set(rim)
+    ordered = [rim[0].verts[0]]
+    visited = {ordered[0]}
+    came = None
+    for _ in range(len(rim) + 1):  # borda que se toca num vértice não pode virar laço infinito
+        v = ordered[-1]
+        step = next((e for e in v.link_edges if e in rim_set and e is not came and e.other_vert(v) not in visited),
+                    None)
+        if step is None:
+            break
+        ordered.append(step.other_vert(v))
+        visited.add(ordered[-1])
+        came = step
+    world_rim = np.array([(to_world @ np.append(v.co[:], 1.0))[:3] for v in ordered])
+    # Triangulação no plano da frente (x, z do mundo): borda como restrição + pontos em grade dentro.
+    from mathutils.geometry import delaunay_2d_cdt
+    from mathutils import Vector as V
+    xz = world_rim[:, [0, 2]]
+    spacing = np.linalg.norm(np.diff(np.vstack([xz, xz[:1]]), axis=0), axis=1).mean()
+
+    def inside(point: np.ndarray) -> bool:
+        x, y = point
+        crossings = 0
+        for (x1, y1), (x2, y2) in zip(xz, np.roll(xz, -1, axis=0)):
+            if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+                crossings += 1
+        return crossings % 2 == 1
+
+    low, high = xz.min(axis=0), xz.max(axis=0)
+    grid = [np.array([x, z]) for x in np.arange(low[0], high[0], spacing) for z in np.arange(low[1], high[1], spacing)]
+    grid = [g for g in grid if inside(g) and np.min(np.linalg.norm(xz - g, axis=1)) > spacing * 0.6]
+    n_rim = len(xz)
+    coords = [V((p[0], p[1])) for p in xz] + [V((g[0], g[1])) for g in grid]
+    edges = [(i, (i + 1) % n_rim) for i in range(n_rim)]
+    out_verts, _, out_faces, orig_verts, _, _ = delaunay_2d_cdt(coords, edges, [list(range(n_rim))], 1, 1e-9)
+    # Profundidade (y do mundo): membrana com a borda presa, depois estufada até a esfera no meio.
+    count = len(out_verts)
+    source = [ov[0] if ov else -1 for ov in orig_verts]
+    ys = np.zeros(count)
+    is_rim = np.array([0 <= source[i] < n_rim for i in range(count)])
+    for i in range(count):
+        ys[i] = world_rim[source[i], 1] if is_rim[i] else world_rim[:, 1].mean()
+    neighbors = [set() for _ in range(count)]
+    for face in out_faces:
+        for a_, b_ in zip(face, face[1:] + face[:1]):
+            neighbors[a_].add(b_)
+            neighbors[b_].add(a_)
+    free = np.array([i for i in range(count) if not is_rim[i] and neighbors[i]])
+    lists = [np.array(sorted(neighbors[i])) for i in free]
+    for _ in range(400):
+        ys[free] = [ys[n].mean() for n in lists]
+    points2d = np.array([[p[0], p[1]] for p in out_verts])
+    far = max((np.min(np.linalg.norm(xz - points2d[i], axis=1)) for i in range(count) if not is_rim[i]), default=1.0)
+    new_positions = {}
+    for i in range(count):
+        if is_rim[i]:
+            continue
+        x, z = points2d[i]
+        t = np.min(np.linalg.norm(xz - points2d[i], axis=1)) / far
+        t = t * t * (3 - 2 * t)
+        under = radius ** 2 - (x - sphere_center[0]) ** 2 - (z - sphere_center[2]) ** 2
+        sphere_y = sphere_center[1] - np.sqrt(max(under, 0.0))  # frente é -Y
+        new_positions[i] = np.array([x, ys[i] + (sphere_y - ys[i]) * t, z])
+    verts_out = {}
+    for i in range(count):
+        if is_rim[i]:
+            verts_out[i] = ordered[source[i]]
+        else:
+            vert = bm.verts.new(Vector((to_local @ np.append(new_positions[i], 1.0))[:3]))
+            vert[deform][head_group] = 1.0
+            verts_out[i] = vert
+    interior = [verts_out[i] for i in range(count) if not is_rim[i]]
+    patch = []
+    for face in out_faces:
+        try:
+            f = bm.faces.new([verts_out[i] for i in face])
+        except ValueError:
+            continue
+        patch.append(f)
+    bm.normal_update()
+    # Normais para fora (a frente é -Y no mundo).
+    if patch and sum((to_world[:3, :3] @ np.array(f.normal[:]))[1] for f in patch) > 0:
+        bmesh.ops.reverse_faces(bm, faces=patch)
+    skin_uv = FACE.get("uv_pele")
+    for f in patch:
+        f.material_index = material
+        f.smooth = True  # facetada, a grade da calota aparece em xadrez
+        if skin_uv is not None:
+            for loop in f.loops:
+                loop[uv_layer].uv = skin_uv
+    bm.verts.layers.int.remove(old)
+    bm.to_mesh(mesh)
+    bm.free()
+    mesh.update()
+    doomed = range(len(doomed))
+    print(f"  rosto trocado por calota lisa: {len(doomed)} faces removidas, {len(interior)} vértices novos, "
+          f"borda de {len(rim)} arestas")
+
+
 def measure_head_top(settings: dict) -> None:
     """Topo da cabeça (ponto mais alto da malha perto do eixo), para os nós de encaixe do cabelo e do
     chapéu. Cada nó sobe "acima_fracao" da altura da cabeça a partir do topo."""
@@ -979,6 +1232,8 @@ def main() -> None:
     if asset.get("cristal_emissivo"):
         make_crystal_material(name)
     shrink_textures()
+    if "apagar_rosto" in asset:
+        erase_face(asset["apagar_rosto"])
     root = add_root(name)
     fit(root, asset)
     def to_gltf(point: Vector) -> Vector:

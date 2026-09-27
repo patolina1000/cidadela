@@ -1494,3 +1494,52 @@ onde errou, correções manuais e quanto tempo levou.
 - **Créditos:** 38. Total do aldeão: 190 (4 variações + corpo-base). Saldo: 2.706.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 14:35–16:10 de relógio.
+
+---
+
+## 2026-09-27 — Aldeão modular: correções vistas no jogo (rosto, atlas, cabelos, nuca, longo liso)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** (1) rosto duplicado: apagar o rosto do corpo-base e limpar as bordas do atlas; (2) cabelos com
+  buracos por trás; (3) triângulo cinza na nuca; (4) falta o longo liso; prévia de frente, costas e perfil.
+- **1. Rosto do corpo-base (`erase_face` + `flatten_face` no `normalize.py`, config `apagar_rosto`):**
+  - **O rosto era também forma, não só pintura:** num render cinza liso apareceram os olhos como bolas
+    em órbitas fundas, nariz e boca em relevo. Pintar deixava as órbitas; alisar (Taubin) não achatava;
+    projetar numa esfera dobrava triângulos.
+  - **Solução:** as faces dentro de um elipsoide no rosto saem; o buraco é triangulado de novo no plano
+    da frente (Delaunay com a borda como restrição + grade de pontos) e a profundidade de cada ponto é uma
+    membrana presa na borda, estufada até a esfera da cabeça no meio. Faces novas 100% no osso Head, com a
+    UV de um pixel de pele. Na textura, a região do rosto é pintada com a pele em volta (mediana de um anel,
+    #96B1C3) pela posição 3D de cada pixel, incluindo 3 px além da borda das ilhas de UV (sangravam).
+  - **O que deu errado:** (a) uma edição por script sobrescreveu o `normalize.py` (precedência de um
+    `... if False else ...`); reconstruído da versão commitada mais o código do dia (o diff só acrescenta);
+    (b) aumentar a região para os lados encostou nas orelhas, a borda virou um "8" e o passeio pela borda
+    entrou em laço infinito (19 min de CPU); agora o passeio tem limite e a região só cresce para cima
+    (`centro_altura` 0,41, `raio_altura` 0,36); (c) calota facetada mostrava a grade em xadrez: fica lisa.
+  - **Limite:** a calota tem a cor lisa da pele, sem as manchas de pintura do resto da cabeça; o decal da
+    expressão cobre quase toda.
+- **Atlas de expressões:** agora só os traços ficam opacos (distância de cor até a pele, dentro de uma oval
+  justa); pele, contorno do rosto, orelhas, pescoço e papel ficam transparentes. Sobra um fio fino no meio da
+  testa em algumas células (faz parte do desenho).
+- **2 e 3. Cabelos (`extract_hair.py`):**
+  - **Triângulo na nuca = erro meu:** empurrar o cabelo para fora do couro cabeludo lançava um raio do
+    centro da cabeça; perto do pescoço ele saía pelo pescoço, acertava o ombro e puxava o vértice até lá.
+    Agora só vale raio que acerta a cabeça, e o deslocamento máximo é 1,2 cm.
+  - **Limpeza:** solda de costuras, pedaços soltos fora, bordas (pontas) suavizadas, buracos fechados
+    (inclusive a abertura de baixo), normais recalculadas, material com as duas faces visíveis. Remover
+    "triângulos finos" como pontas quebradas tirava mecha de verdade (mechas são triângulos finos): ficou
+    só para lascas extremas.
+  - **Touca:** os buracos maiores eram falhas do próprio cabelo gerado. Cada cabelo ganhou uma touca: o
+    couro cabeludo do corpo-base (sem rosto e orelhas), 1,5 mm para fora, na cor mediana do cabelo (convertida
+    de sRGB para linear; sem isso saía quase branca), um pouco mais escura. Nenhuma pele aparece mais.
+- **4. Longo liso:** a Meshy gerou desta vez (as falhas anteriores eram do serviço). Recortado como os outros;
+  desce até 8 cm do chão.
+- **Conferido no Godot:** os 5 cabelos carregam presos ao nó "Cabelo" do corpo-base, uma malha cada.
+- **Prévia:** `assets/previews/aldeoes_correcao.png` (frente, costas e perfil, cada aldeão girado no lugar;
+  `preview_modular.py` com `AZIMUTE`).
+- **Resultado por cabelo:** curto, ondulado, longo liso e rabo de cavalo ficaram bons. **O médio com franja
+  é fraco:** por trás a geração original quase não tinha mechas, e sobra a touca lisa (parece capacete).
+  Proposta: gerar esse cabelo como peça própria.
+- **Créditos:** 38 (longo liso). Total do aldeão: 228. Saldo: 2.668.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 16:20–18:30 de relógio.

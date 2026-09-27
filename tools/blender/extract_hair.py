@@ -36,6 +36,16 @@ FECHAMENTO = 3  # passos do fechamento que preenche reflexos claros no meio do c
 # meia largura e altura acima do pescoço.
 FACE_DEPTH, FACE_HALF_WIDTH, FACE_TOP = 0.35, 0.32, 0.62
 SCALP_MARGIN = 0.002  # m: o cabelo fica pelo menos isso fora do couro cabeludo do corpo-base
+MAX_PUSH = 0.012  # m: um vértice nunca é empurrado mais que isso (senão é um erro de raio)
+WELD = 2e-4  # m: vértices mais próximos que isso viram um só (costuras de UV do glTF)
+LOOSE_PIECE = 0.03  # pedaços soltos com menos que isso das faces do cabelo saem
+SLIVER = 80.0  # só lascas extremas (mechas são triângulos finos de propósito; 12 tirava cabelo)
+TIP_SMOOTH = 3  # passadas de suavização nas bordas (pontas)
+# Touca (frações da altura da cabeça): começa CAP_BOTTOM acima da base; rosto e orelhas ficam de fora
+# abaixo da linha do cabelo (CAP_HAIRLINE); afastada CAP_OFFSET do couro cabeludo, um pouco mais escura.
+CAP_BOTTOM, CAP_HAIRLINE, CAP_FACE_DEPTH, CAP_EAR_X = 0.1, 0.72, 0.45, 0.42
+CAP_OFFSET = 0.0015  # m
+CAP_SHADE = 0.75
 
 
 def load(name: str) -> bpy.types.Object:
@@ -188,7 +198,8 @@ def keep_faces(obj: bpy.types.Object, faces: set) -> None:
     print(f"  {len(filled['faces'])} buracos pequenos fechados")
 
 
-def push_outside(hair: bpy.types.Object, base_armature: bpy.types.Object, center: Vector, anchor: Vector) -> None:
+def push_outside(hair: bpy.types.Object, base_armature: bpy.types.Object, center: Vector, anchor: Vector,
+                 head_radius: float, neck_z: float) -> None:
     """Todo vértice do cabelo que cai dentro (ou colado) da cabeça do corpo-base vai para a superfície
     dela mais SCALP_MARGIN, na direção do centro da cabeça; o resto não muda. Sem isso a cabeça careca,
     de formato um pouco diferente, atravessa o cabelo."""
@@ -204,13 +215,136 @@ def push_outside(hair: bpy.types.Object, base_armature: bpy.types.Object, center
         world = v.co + anchor
         direction = (world - center).normalized()
         hit = tree.ray_cast(center, direction)
-        if hit[0] is None:
+        # Só couro cabeludo: raio que sai pelo pescoço acertaria o ombro e puxaria o vértice até lá
+        # (eram os triângulos compridos na nuca).
+        if hit[0] is None or (hit[0] - center).length > head_radius * 1.3 or hit[0].z < neck_z:
             continue
         surface = (hit[0] - center).length + SCALP_MARGIN
+        if surface - (world - center).length > MAX_PUSH:
+            continue
         if (world - center).length < surface:
             v.co = center + direction * surface - anchor
             moved += 1
     print(f"  {moved} vértices empurrados para fora do couro cabeludo")
+
+
+def clean_hair(hair: bpy.types.Object) -> None:
+    """Limpa o cabelo recortado: solda costuras, tira pedaços soltos e pontas quebradas (triângulos
+    finos demais), suaviza as bordas, fecha todos os buracos (inclusive a abertura de baixo, que
+    encostava na cabeça) e recalcula as normais para fora."""
+    bm = bmesh.new()
+    bm.from_mesh(hair.data)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=WELD)
+    # Pontas quebradas: triângulos muito finos e compridos.
+    slivers = []
+    for f in bm.faces:
+        edges = [e.calc_length() for e in f.edges]
+        longest = max(edges)
+        if longest > 0 and f.calc_area() > 0:
+            height = 2 * f.calc_area() / longest
+            if longest / max(height, 1e-9) > SLIVER:
+                slivers.append(f)
+    bmesh.ops.delete(bm, geom=slivers, context="FACES")
+    # Pedaços soltos.
+    pieces, seen = [], set()
+    for f in bm.faces:
+        if f in seen:
+            continue
+        piece, stack = [], [f]
+        seen.add(f)
+        while stack:
+            face = stack.pop()
+            piece.append(face)
+            for e in face.edges:
+                for other in e.link_faces:
+                    if other not in seen:
+                        seen.add(other)
+                        stack.append(other)
+        pieces.append(piece)
+    total = sum(len(p) for p in pieces)
+    loose = [f for p in pieces if len(p) < LOOSE_PIECE * total for f in p]
+    bmesh.ops.delete(bm, geom=loose, context="FACES")
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
+    # Bordas (pontas): suaviza para tirar o serrilhado antes de fechar.
+    rim = [v for v in bm.verts if any(e.is_boundary for e in v.link_edges)]
+    for _ in range(TIP_SMOOTH):
+        bmesh.ops.smooth_vert(bm, verts=rim, factor=0.5, use_axis_x=True, use_axis_y=True, use_axis_z=True)
+    holes = len({e for e in bm.edges if e.is_boundary})
+    filled = bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=0)["faces"]
+    bmesh.ops.triangulate(bm, faces=filled, quad_method="BEAUTY", ngon_method="BEAUTY")
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    left = len([e for e in bm.edges if e.is_boundary])
+    bm.to_mesh(hair.data)
+    bm.free()
+    print(f"  limpeza: {len(slivers)} pontas finas e {len(loose)} faces soltas removidas; "
+          f"{len(filled)} tampas em {holes} arestas de borda; sobram {left} arestas abertas")
+
+
+def mean_hair_color(obj: bpy.types.Object) -> tuple:
+    """Cor média do cabelo (média da textura nos cantos das faces que sobraram)."""
+    mesh = obj.data
+    image = next(n.image for m in mesh.materials for n in m.node_tree.nodes if n.type == "TEX_IMAGE")
+    w, h = image.size
+    pixels = np.empty(w * h * 4, dtype=np.float32)
+    image.pixels.foreach_get(pixels)
+    pixels = pixels.reshape(h, w, 4)
+    uv = mesh.uv_layers.active.data
+    samples = [pixels[min(int((uv[l].uv[1] % 1) * h), h - 1), min(int((uv[l].uv[0] % 1) * w), w - 1), :3]
+               for p in mesh.polygons for l in p.loop_indices]
+    srgb = np.median(np.array(samples), axis=0)
+    # Os pixels da textura estão em sRGB; a cor do material é linear.
+    return tuple(np.where(srgb <= 0.04045, srgb / 12.92, ((srgb + 0.055) / 1.055) ** 2.4))
+
+
+def add_scalp_cap(hair: bpy.types.Object, base_armature: bpy.types.Object, anchor: Vector,
+                  low: Vector, top: Vector, color: tuple) -> None:
+    """Touca: o couro cabeludo do corpo-base (sem o rosto e sem as orelhas), afastado CAP_OFFSET, na cor
+    do cabelo. Fica por baixo das mechas: buracos do cabelo gerado mostram cabelo, não pele."""
+    source = next(o for o in bpy.data.objects if o.type == "MESH" and o.parent == base_armature)
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    mesh = bpy.data.meshes.new_from_object(source.evaluated_get(depsgraph), depsgraph=depsgraph)
+    mesh.transform(source.matrix_world)
+    height = top.z - low.z
+    front_y = min(v.co.y for v in mesh.vertices if v.co.z > low.z)
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    bm.normal_update()
+    keep = set()
+    for f in bm.faces:
+        c = f.calc_center_median()
+        if c.z < low.z + CAP_BOTTOM * height:
+            continue
+        # Rosto (frente, abaixo da linha do cabelo) e orelhas (lados, meia altura) ficam de fora.
+        face = c.y < front_y + CAP_FACE_DEPTH * height and c.z < low.z + CAP_HAIRLINE * height
+        ear = abs(c.x - low.x) > CAP_EAR_X * height and c.z < low.z + CAP_HAIRLINE * height
+        if not face and not ear:
+            keep.add(f)
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if f not in keep], context="FACES")
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=WELD)
+    bm.normal_update()
+    for v in bm.verts:
+        v.co += v.normal * CAP_OFFSET - anchor
+    for f in bm.faces:
+        f.smooth = True
+    bm.to_mesh(mesh)
+    bm.free()
+    material = bpy.data.materials.new("touca")
+    bsdf = material.node_tree.nodes["Principled BSDF"]
+    bsdf.inputs["Base Color"].default_value = (*[c * CAP_SHADE for c in color], 1)
+    bsdf.inputs["Roughness"].default_value = 0.8
+    material.use_backface_culling = False
+    mesh.materials.clear()
+    mesh.materials.append(material)
+    cap = bpy.data.objects.new("touca", mesh)
+    bpy.context.scene.collection.objects.link(cap)
+    # Junta a touca ao cabelo (um objeto só, dois materiais).
+    bpy.ops.object.select_all(action="DESELECT")
+    cap.select_set(True)
+    hair.select_set(True)
+    bpy.context.view_layer.objects.active = hair
+    bpy.ops.object.join()
+    print(f"  touca: {len(mesh.polygons)} faces na cor do cabelo")
 
 
 def main() -> None:
@@ -234,7 +368,9 @@ def main() -> None:
         for v in hair.data.vertices:
             p = base_low + (v.co - low) * scale
             v.co = center + (p - center) * FOLGA - anchor
-        push_outside(hair, base_armature, center, anchor)
+        push_outside(hair, base_armature, center, anchor, (base_top - base_low).length * 0.6, base_low.z)
+        clean_hair(hair)
+        add_scalp_cap(hair, base_armature, anchor, base_low, base_top, mean_hair_color(hair))
         for material in hair.data.materials:
             material.use_backface_culling = False
         for obj in list(bpy.data.objects):

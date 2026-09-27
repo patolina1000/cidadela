@@ -1,0 +1,11 @@
+{
+  "passada_walk_m_s": 0.262,
+  "passada_carry_m_s": 0.262,
+  "encaixes": {
+    "Rosto": [
+      -0.0003,
+      0.3238,
+      0.0685
+    ]
+  }
+}
