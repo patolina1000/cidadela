@@ -1557,3 +1557,20 @@ onde errou, correções manuais e quanto tempo levou.
 - **Conferido no jogo:** os três aldeões saíram com cabelos diferentes (franja, curto), acompanhando a cabeça
   no idle. Print: `docs/prints/aldeao_cabelo.png`.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Aldeão modular, etapa 5: expressão por Decal no encaixe "Rosto"
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **O que foi feito:** `VillagerLooks.FaceTexture` fatia o atlas `assets/texturas/aldeao/expressoes.png`
+  (3×3, 256 px por célula) em 9 texturas na primeira vez (o `Decal` não lê região de atlas). `VillagerVisual`
+  cria um `Decal` filho do encaixe "Rosto", girado 90° em X para projetar no −Z do encaixe (para dentro do
+  rosto), com lado = `largura_m` × 1,15 e profundidade 0,08 (curta, para não alcançar a nuca); troca a
+  textura quando `Villager.Expression` muda. O decal só atinge a camada 1 (o corpo): as peças de cabelo
+  (e os chapéus, na etapa 6) ficam na camada 2, então o rosto nunca aparece sobre o cabelo.
+- **Verificação visual pendente:** a janela do jogo ficou em segundo plano durante as capturas (o humano
+  estava usando a máquina) e as três capturas F11 saíram idênticas. Falta conferir o decal nos cinco clipes
+  (frente, costas, dormindo) e a orientação da textura (pode estar de cabeça para baixo: aí é girar o decal
+  180° em Y).
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.

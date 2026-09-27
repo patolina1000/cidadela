@@ -25,6 +25,9 @@ public partial class VillagerVisual : Node3D
     /// <summary>Teto da velocidade da animação em relação à passada natural (decisão de 27/09/2026).</summary>
     private const float MaxAnimationSpeed = 3f;
     private const float FallbackFaceWidth = 0.09f;
+    // Decal do rosto: um pouco mais largo que o rosto medido; profundidade curta para não chegar à nuca.
+    private const float FaceDecalScale = 1.15f;
+    private const float FaceDecalDepth = 0.08f;
 
     /// <summary>Força o clipe sleep em todos (tecla N do painel de desempenho), só visual, para conferir o decal.</summary>
     public static bool DebugForceSleep { get; set; }
@@ -45,6 +48,8 @@ public partial class VillagerVisual : Node3D
     private StandardMaterial3D _loadMaterial = null!;
     private bool _lookApplied;
     private Node3D? _hair;
+    private Decal? _face;
+    private VillagerExpression? _shownExpression;
     private float _yaw;
     private float _swing;
     private float _bobPhase;
@@ -106,6 +111,11 @@ public partial class VillagerVisual : Node3D
     {
         if (!_lookApplied)
             ApplyLook(villager);
+        if (_face is not null && _shownExpression != villager.Expression)
+        {
+            _shownExpression = villager.Expression;
+            _face.TextureAlbedo = VillagerLooks.FaceTexture(villager.Expression);
+        }
         System.Numerics.Vector2 p = System.Numerics.Vector2.Lerp(villager.PreviousPosition, villager.Position, alpha);
         Position = new Vector3(p.X + 0.5f, 0f, p.Y + 0.5f);
 
@@ -158,6 +168,24 @@ public partial class VillagerVisual : Node3D
     private void ApplyLook(Villager villager)
     {
         _lookApplied = true;
+        if (FaceSocket is not null)
+        {
+            // Decal projeta no seu -Y local; girado 90° em X, projeta no -Z do encaixe (para dentro do rosto).
+            // Só atinge a camada 1 (o corpo); cabelo e chapéu ficam em outra camada.
+            float side = FaceWidth * FaceDecalScale;
+            _face = new Decal
+            {
+                Name = "Face",
+                Size = new Vector3(side, FaceDecalDepth, side),
+                RotationDegrees = new Vector3(90f, 0f, 0f),
+                CullMask = 1u,
+                AlbedoMix = 1f,
+                NormalFade = 0.3f,
+                UpperFade = 0.3f,
+                LowerFade = 0.3f,
+            };
+            FaceSocket.AddChild(_face);
+        }
         if (HairSocket is null)
             return;
         VillagerLooks.Hair? hair = VillagerLooks.HairFor(villager.HairVariant);

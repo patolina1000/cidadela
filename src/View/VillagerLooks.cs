@@ -15,6 +15,13 @@ public static class VillagerLooks
 
     private const string LooksPath = "res://data/villager_looks.json";
     private const string HairDir = "res://assets/modelos/aldeao_cabelos/";
+    private const string FacesPath = "res://assets/texturas/aldeao/expressoes.png";
+    private const int FaceGrid = 3;
+
+    /// <summary>Camada de render das peças de cabeça (cabelo, chapéu): o decal do rosto não as atinge.</summary>
+    public const uint HeadPieceLayer = 1u << 1;
+
+    private static Texture2D[]? _faces;
 
     internal static readonly JsonDocumentOptions JsonOptions = new() { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
     private static List<Hair>? _hairs;
@@ -28,13 +35,54 @@ public static class VillagerLooks
         return variant >= 1 && variant <= hairs.Count ? hairs[variant - 1] : null;
     }
 
+    /// <summary>
+    /// Textura de uma expressão: o atlas 3×3 é fatiado uma vez em 9 texturas (Decal não lê região de atlas).
+    /// null se o atlas não existe.
+    /// </summary>
+    public static Texture2D? FaceTexture(Cidadela.Simulation.VillagerExpression expression)
+    {
+        if (_faces is null)
+        {
+            _faces = new Texture2D[FaceGrid * FaceGrid];
+            if (!ResourceLoader.Exists(FacesPath))
+            {
+                GD.PushWarning($"Aldeão: atlas de expressões {FacesPath} não encontrado.");
+                return null;
+            }
+            Image atlas = GD.Load<Texture2D>(FacesPath).GetImage();
+            if (atlas.IsCompressed())
+                atlas.Decompress();
+            int cell = atlas.GetWidth() / FaceGrid;
+            for (int i = 0; i < _faces.Length; i++)
+            {
+                Image face = atlas.GetRegion(new Rect2I(i % FaceGrid * cell, i / FaceGrid * cell, cell, cell));
+                face.GenerateMipmaps();
+                _faces[i] = ImageTexture.CreateFromImage(face);
+            }
+        }
+        int index = (int)expression;
+        return index >= 0 && index < _faces.Length ? _faces[index] : null;
+    }
+
     /// <summary>Instancia a peça de cabelo <paramref name="model"/>; null (careca) se o arquivo não existe.</summary>
     public static Node3D? InstantiateHair(string model)
     {
         if (string.IsNullOrEmpty(model))
             return null;
         PackedScene? scene = Scene(HairDir + model + ".glb", $"cabelo \"{model}\"");
-        return scene?.Instantiate<Node3D>();
+        Node3D? piece = scene?.Instantiate<Node3D>();
+        if (piece is not null)
+            SetLayer(piece, HeadPieceLayer);
+        return piece;
+    }
+
+    /// <summary>Põe todas as malhas de uma peça numa camada de render.</summary>
+    public static void SetLayer(Node3D piece, uint layer)
+    {
+        if (piece is VisualInstance3D visual)
+            visual.Layers = layer;
+        foreach (Node child in piece.FindChildren("*", nameof(VisualInstance3D), recursive: true, owned: false))
+            ((VisualInstance3D)child).Layers = layer;
     }
 
     private static List<Hair> Hairs()
