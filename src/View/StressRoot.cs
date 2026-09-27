@@ -102,14 +102,7 @@ public partial class StressRoot : Node3D
         ApplyMode();
     }
 
-    private GameData LoadGameData() => _gameData ??= GameData.Parse(
-        FileAccess.GetFileAsString("res://data/items.json"),
-        FileAccess.GetFileAsString("res://data/resources.json"),
-        FileAccess.GetFileAsString("res://data/castellan.json"),
-        FileAccess.GetFileAsString("res://data/villagers.json"),
-        FileAccess.GetFileAsString("res://data/buildings.json"),
-        FileAccess.GetFileAsString("res://data/recipes.json"),
-        FileAccess.GetFileAsString("res://data/terrain.json"));
+    private GameData LoadGameData() => _gameData ??= GameFiles.LoadData();
 
     /// <summary>Recria os aldeões animados: N em volta do centro da câmera, em círculos de raio 1,5 a 6.</summary>
     private void SetVillagerCount(int count)

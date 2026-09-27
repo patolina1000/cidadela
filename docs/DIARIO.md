@@ -1638,3 +1638,29 @@ onde errou, correções manuais e quanto tempo levou.
 - **Prints:** `docs/prints/estresse_aldeoes_50.png`, `estresse_aldeoes_500.png`.
 - `MapPath` do GameRoot voltou para `mapa_teste.json`.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+
+---
+
+## 2026-09-27 — Menu inicial
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Pedido (tarefa 2 de 3):** tela no estilo do jogo (névoa roxa, escuro), protagonista em idle com o cristal
+  brilhando e aldeões por perto; botões Novo jogo, Continuar (desativado sem save), Biografia, Configurações
+  (esboço) e Sair.
+- **Antes:** o GDD vivo foi exportado e comparado com o commit: sem diferenças. A `arte` não tem commits novos
+  (o rosto apagado da textura ainda não chegou; a tarefa 1 espera).
+- **O que foi feito:**
+  - `scenes/Menu.tscn` (cena principal agora; `Main.tscn` continua sendo o jogo) com o mesmo céu, névoa e sol
+    do jogo, e `src/View/MenuRoot.cs`: campo de grama 24×24, `CastellanVisual` no centro (idle e cristal
+    aceso, sem simulação), 4 `VillagerVisual` com cabelos, expressões e chapéus variados via `DrawState`,
+    câmera baixa com um balanço lento. Painel escuro à esquerda com os botões; o grupo fica à direita do
+    centro para não ser coberto.
+  - Continuar olha `GameFiles.HasSave()` (`user://save.json`); não existe sistema de save, então nasce
+    desativado com dica "Nenhum jogo salvo.". Biografia abre `scenes/Biography.tscn` quando ela existir.
+    Configurações: painel com Tela cheia e V-Sync funcionando e um volume desabilitado (não há som).
+  - `src/View/GameFiles.cs`: caminhos dos JSON e `LoadData()`; o `StressRoot` passou a usar (tinha cópia).
+  - `scenes/vignette_material.tres` para reaproveitar a vinheta fora do `Main.tscn`.
+- **Conferido no jogo:** menu, painel de configurações e Novo jogo (carrega o jogo). O editor abriu `Main.tscn`
+  no primeiro `project_run mode=main` (configuração antiga em memória); rodando a cena do menu direto, ok.
+- **Prints:** `docs/prints/menu_inicial.png`, `menu_configuracoes.png`.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
