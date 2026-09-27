@@ -1080,3 +1080,37 @@ onde errou, correções manuais e quanto tempo levou.
   `GrassPurple`. Depois, `master` avançada até a `arte`.
 - **Medido na tela:** grama #251D34, terra #120B12. `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 80.
 - **Tempo:** 06:45–07:00 de relógio.
+
+---
+
+## 2026-09-27 — Aldeão, parte 1: atlas de expressões
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** recortar o rosto das 9 cabeças do conceito (sem o cabelo, borda em degradê transparente) e
+  montar um atlas 3×3 em `assets/texturas/aldeao/expressoes.png`, na ordem 1 distraído, 2 esforço, 3 feliz,
+  4 sonolento, 5 dormindo, 6 espantado, 7 preocupado, 8 chorando, 9 bravo. A subseção "Aldeão:
+  implementação v1" não está no GDD (nem na cópia da `master`); segui o pedido.
+- **Atenção: os nomes dos conceitos vieram trocados.** `aldeao_cabelos.png` tem as 9 expressões e
+  `aldeao_expressoes.png` tem as variações de cabelo em T-pose. Usei cada um pelo conteúdo.
+- **Qual cabeça virou qual célula** (posição na folha: linha, coluna):
+
+  | Célula | Expressão | Cabeça | Por quê |
+  |---|---|---|---|
+  | 1 | distraído | 2,2 | olhar parado para a frente, boca em "o" pequeno |
+  | 2 | esforço | 3,2 | sobrancelhas tensas, dentes cerrados, ombros erguidos |
+  | 3 | feliz | 1,2 | sorriso aberto |
+  | 4 | sonolento | 2,1 | pálpebras caídas |
+  | 5 | dormindo | 3,3 | olhos fechados, boca aberta |
+  | 6 | espantado | 3,1 | olhos arregalados, boca em "O" grande |
+  | 7 | preocupado | 2,3 | sobrancelhas erguidas, olhar desviado para cima |
+  | 8 | chorando | 1,1 | lágrimas |
+  | 9 | bravo | 1,3 | sobrancelhas franzidas |
+
+- **O que foi feito (0 créditos):** `tools/meshy_pipeline/villager_faces.py` recorta um quadrado de 220 px
+  centrado entre os olhos e a boca de cada cabeça (as sobrancelhas entram, porque fazem parte da expressão),
+  aplica uma máscara oval com degradê até transparente e monta o atlas: 768 × 768 px, células de 256 px,
+  fundo transparente. Prévia numerada sobre a cor da pele em `assets/previews/aldeao_expressoes.png`.
+- **Limites:** alguns fios da franja passam sobre a testa e entram no recorte (a franja cobre as
+  sobrancelhas no conceito); no "dormindo" a borda de baixo pega uma ponta do cabelo, quase toda apagada
+  pelo degradê.
+- **Correções manuais:** nenhuma.
