@@ -3980,4 +3980,17 @@ onde errou, correções manuais e quanto tempo levou.
     idle → run de novo 0,19°. É o atraso de um quadro entre o tempo lido e a pose aplicada; nenhum osso preso.
   - Prints: `docs/prints/prova_operacao_pose_inteira_run_antes.png`, `…_run_depois.png` e `…_idle_depois.png`.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 19:48–19:52 de relógio.
+- **Tempo:** 19:48–19:50 de relógio.
+
+---
+
+## 2026-09-29 — `docs/prova_operacao.md`: pose inteira provada, sem pendências
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`. Só documentação.
+- **O que foi feito:** o item 7 passou a descrever o problema (trilhas constantes apagadas pelo importador e
+  `deterministic = false`: pernas congeladas na pose da corrida, palma a 9,5–12,1 mm) e a correção provada
+  (`remove_immutable_tracks = false`: 0,00° e 2,44 mm vindo do run e do idle; idle ↔ run sem osso preso). A
+  pendência saiu; a seção 5 fica sem pendências desta prova. As ressalvas dos itens 2 e 4 que apontavam para o
+  problema saíram.
+- Corrigi o horário da entrada anterior (terminou às 19:50).
+- **Tempo:** 19:50–19:51 de relógio.
