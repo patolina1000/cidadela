@@ -3038,3 +3038,27 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** nada.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 17:15–17:35 de relógio.
+
+---
+
+## 2026-09-29 — Protagonista v1 arquivada na tag `protagonista-v1-arquivado`
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** antes de refazer a protagonista (v2, no mesmo processo do aldeão v2), arquivar a v1 numa tag
+  anotada no HEAD do master, como foi feito com `aldeao-v1-arquivado`, conferir os arquivos com `git ls-tree` e
+  enviar a tag. Nada da v1 é apagado nem mudado: ela fica no jogo até a v2 ficar pronta.
+- **O que foi feito:**
+  - Master conferido: igual ao `origin/master` (0 à frente, 0 atrás).
+  - Tag anotada `protagonista-v1-arquivado` (objeto `4aae26d`) no commit `77b617c`. A mensagem lista o que ela
+    preserva: `assets/modelos/protagonista/*`, `assets/conceitos/protagonista*`,
+    `assets/previews/protagonista_comparacao.png`, `src/View/CastellanVisual.cs`, `data/castellan.json` e
+    `docs/prints/biografia_protagonista.png`.
+  - `git ls-tree` na tag: os 19 arquivos estão lá (GLB, JSON, 2 texturas e seus `.import`; 3 conceitos e seus
+    `.import`; prévia de comparação; `CastellanVisual.cs`; `castellan.json`; print da Biografia).
+  - Push da tag para o origin, conferido com `git ls-remote`.
+- **O que deu errado:** a árvore não estava 100% limpa. O Godot gerou `SetPenalizedCommand.cs.uid` e
+  `SetSpeedTierCommand.cs.uid` para os comandos do commit anterior, que foi feito sem eles. Os outros `.uid` de
+  `src/Simulation` são versionados, então os dois entram neste commit. A tag não é afetada: ela aponta para o
+  HEAD, e esses arquivos não fazem parte do que ela preserva.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 17:25–17:30 de relógio.
