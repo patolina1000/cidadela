@@ -2520,3 +2520,12 @@ onde errou, correções manuais e quanto tempo levou.
 - **Ajuste comum:** a folga-alvo ao retalho subiu de 2,0 para 2,5 mm porque a decimação move os vértices depois
   do empurrão (o cabelo 1 ficava em 1,5 mm; refeito: 2,27 mm; o 4 será refeito no fim com os demais).
 - **Créditos:** 20. **Tempo:** ~20 min.
+
+## 2026-09-29 — Aldeão v2, passo 12c: cabelo 3 (ondulado volumoso), 20 créditos
+
+- **Cabelo 3:** 1 geração (saldo 2.338 → 2.318); 3.084 vértices fundidos em 1.562; rosto 13% (404 + 36 do
+  pescoço); 3 pedaços (36 faces soltas fora); 29 faces de franja apagadas abaixo da linha dos olhos; 30 vértices
+  empurrados a 2,5 mm do retalho; 2.615 → **760 triângulos**. Folga: repouso 1,1 mm do corpo e **2,48 mm do
+  retalho dos olhos**; idle -3,0 mm nos ombros (z 0,203: as ondas até o queixo tocam os ombros quando a cabeça
+  balança); run -30 mm nos ombros (z 0,174; problema conhecido, aceito). Prévia `cabelo_3_previa.png`.
+- **Créditos:** 20. **Tempo:** ~10 min.
