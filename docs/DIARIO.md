@@ -3806,3 +3806,28 @@ onde errou, correções manuais e quanto tempo levou.
   `.import` de todo clipe e do corpo (`_subresources` → `nodes` → `PATH:AnimationPlayer` →
   `optimizer/enabled = false`), porque ele apaga chaves com perda.
 - **Tempo:** 19:37 de relógio (poucos minutos).
+
+---
+
+## 2026-09-29 — Conferência com o corpo novo e os clipes sem otimizador
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`, com o MCP godot-ai.
+- **Pedido:** palma-manopla com os clipes IMPORTADOS pelo editor (esperado: igual à leitura direta, 2,44 mm);
+  run sem pose repetida no começo; passada perto de 0,383; VelocidadeAldeao; cabelos, retalhos e expressões.
+- **Resultado:**
+  - Palma-manopla, pior mão, postos A / B, clipes importados: **2,44 / 2,44 mm** nos 48 quadros (quadros 28 e
+    44), **2,43 / 2,43 mm** entre quadros e **2,45 / 2,45 mm** girando. Igual à leitura direta. As trilhas
+    importadas têm as 49 chaves.
+  - Run do corpo importado: 0,708 s, 18 chaves por trilha, primeira em t = 0. O quadro 0 difere do quadro 1 em
+    até 22,5 mm (sem pose repetida) e coincide com o fim (laço fechado).
+  - Passada (mediana do recuo dos dedos, um ponto por quadro, no corpo importado): **0,383 m/s**.
+  - VelocidadeAldeao: 1,49× / 2,09× / 2,61× / 3,13×.
+  - Biografia: cabelo visível no encaixe, Olhos e Boca visíveis, as 9 expressões nos mesmos quadros do atlas de
+    antes, piscar funcionando, idle e run tocando. Folha: `docs/prints/aldeao_v2_corpo_t0_expressoes.png` (o
+    "bravo" pegou um piscar).
+- **O que deu errado:** a primeira medida ainda deu 3,9 mm: o editor não tinha reimportado nada depois do merge
+  (os `.scn` importados eram das 18:38 e 19:17). A primeira chamada de reimportação pelo MCP respondeu "ok" sem
+  efeito; depois de um escaneamento e uma segunda chamada, os arquivos foram reimportados e as medidas acima
+  saíram. A árvore continuou limpa.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:37–19:40 de relógio.
