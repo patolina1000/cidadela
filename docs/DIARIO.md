@@ -3490,4 +3490,4 @@ onde errou, correções manuais e quanto tempo levou.
   acoplada igual acima do mínimo (veio desta prova, a confirmar no balanceamento).
 - **O que deu errado:** nada.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 18:58–19:03 de relógio.
+- **Tempo:** 18:58–19:00 de relógio.
