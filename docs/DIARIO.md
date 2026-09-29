@@ -3611,3 +3611,18 @@ onde errou, correções manuais e quanto tempo levou.
   `arte` e na `master` continua `animation/fps=30`. Não mexi (território da arte).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:12–19:16 de relógio.
+
+---
+
+## 2026-09-29 — Contrato de animação: formato do `clipes.json` da arte, passada e 24 fps no corpo
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`. Só documentação.
+- **Pedido:** trocar o exemplo do `clipes.json` no `docs/animacao_contrato.md` pelo formato que a arte entregou
+  (blocos `posto` e `peca`) e registrar: no aldeão a passada continua `passadaRun` no `rosto.json`; corpos novos
+  usam `passada_m_s` no `clipes.json`; a regra de 24 fps vale também para o `.import` do corpo.
+- **O que foi feito:** o exemplo agora é o bloco do posto A da variante r06, com `arquivo`, `posto` (nome, alça,
+  posição dos pés e giro no espaço da peça, fórmula da fase, referência) e `peca`; `passada_m_s` fica como campo
+  opcional de locomoção. As três regras entraram (passada em "clipes.json", 24 fps em "FORMATO DO CLIPE").
+- **O que deu errado:** nada.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:16–19:18 de relógio.

@@ -34,21 +34,36 @@ máquinas vierem.
 - Sufixo `-loop` para laço. O Godot tira o sufixo ao importar.
 - O `.import` do clipe fixa `animation/fps = 24`. A ARTE gera e commita esse `.import`, rodando o Godot sem janela
   na worktree da arte.
+- A regra de 24 fps vale também para o `.import` do corpo (os clipes base que ele carrega).
 
 ## clipes.json
 
-- Um em cada pasta de clipes, com uma entrada por clipe:
+- Um em cada pasta de clipes, com um bloco por clipe; em operação, um clipe (e um bloco) por posto. Formato
+  entregue pela arte na prova (`assets/modelos/prova_operacao/variante_r06/clipes.json`):
   ```
-  { "<nome>": {
-      "duracao_s": 0.0, "quadros": 0, "fps": 24,
-      "passada_m_s": 0.0,          // só em locomoção
-      "conta_na_fracao": 0.0,      // só se tiver golpe
-      "posto": {                   // só em operação
-        "posicao_m": [x, y, z], "giro_em_y_graus": 0.0,   // posto em relação à peça
-        "fase": "fórmula que liga a fase da peça ao quadro do clipe"
-      }
+  { "girar_roda-loop": {
+      "arquivo": "clipes/girar_roda.glb",
+      "duracao_s": 2.0, "quadros": 48, "fps": 24,
+      "passada_m_s": 0.0,                 // só em locomoção
+      "conta_na_fracao": 0.5,             // só se tiver golpe
+      "conta_significa": "o que acontece nesse instante",
+      "posto": {                          // só em operação
+        "nome": "A", "alca": "A",
+        "posicao_m": [0.0, -0.19, 0.1751],  // pés do aldeão no espaço da peça
+        "giro_em_y_graus": 180.0,           // 0 = aldeão olhando +Z da peça
+        "fase": "quadro = fase_da_peca × quadros; primeira chave em t = 0; sem inverter nem defasar",
+        "referencia": "espaço da peça (glTF): pivô no eixo, eixo em +Z"
+      },
+      "peca": {                           // só em operação
+        "arquivo": "roda.glb", "raio_alca_m": 0.06,
+        "giro": "−360° × fase em volta do +Z local (fase 0 = alça A no topo)"
+      },
+      "falta_max_mm": 2.5                 // medido no Blender
   } }
   ```
+- Passada:
+  - no aldeão v2 ela continua como `passadaRun` no `rosto.json` (contrato do aldeão);
+  - corpos novos (a protagonista v2 e os seguintes) usam `passada_m_s` no `clipes.json`.
 
 ## OPERAÇÃO
 
