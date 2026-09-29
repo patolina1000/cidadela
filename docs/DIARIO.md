@@ -3491,3 +3491,25 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** nada.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 18:58–19:00 de relógio.
+
+---
+
+## 2026-09-29 — Contrato de animação comum ao aldeão e à protagonista (`docs/animacao_contrato.md`)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`. Só documentação; nenhum código mudou.
+- **Pedido:** transformar o que a prova de operação provou num contrato de animação comum aos dois personagens:
+  esqueleto, corpo, clipes novos, formato do clipe, `clipes.json`, operação, ergonomia, encaixes e o jogo
+  estrito. Acrescentar ao contrato do aldeão uma linha dizendo que o novo vale junto.
+- **O que foi feito:**
+  - `docs/animacao_contrato.md`, no estilo do contrato do aldeão, com "Mudanças só com aval do Arthur" no
+    topo e as regras pedidas. O sha256 do corpo do aldeão aprovado está registrado nele.
+  - Encaixes: a divergência do osso do Peito ficou registrada sem decisão. O aldeão usa `Spine02` (o de baixo
+    da coluna no Meshy) e a protagonista v1 usava `Spine` (o de cima). Fica em aberto até o cristal de classe.
+  - `docs/aldeao_v2_contrato.md`: linha no topo apontando para o contrato de animação.
+- **Escolhas minhas, para o Arthur conferir:** o formato de exemplo do `clipes.json` dá nomes aos campos
+  (`passada_m_s`, `posto.posicao_m`, `posto.giro_em_y_graus`, `posto.fase`). O `clipes.json` da prova guarda o
+  inverso (a roda no espaço do aldeão), e o `rosto.json` do aldeão chama a passada de `passadaRun`. Os nomes
+  finais precisam ser combinados com a arte.
+- **O que deu errado:** nada.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:02–19:05 de relógio.

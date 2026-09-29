@@ -1,5 +1,7 @@
 # CONTRATO ALDEÃO V2 — interface entre arte e jogo
 
+Vale junto com `docs/animacao_contrato.md` (esqueleto, clipes, operação, ergonomia e encaixes, comuns aos dois personagens).
+
 Mudanças só com aval do Arthur: quem precisar mudar algo, para e pergunta.
 
 ## ENTREGAS DA ARTE
