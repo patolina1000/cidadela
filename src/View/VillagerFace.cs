@@ -52,8 +52,8 @@ public sealed class VillagerFace
         if (frame < 0)
         {
             if (_warned.Add(what + ":" + frameName))
-                GD.PushWarning($"Aldeão: quadro de {what} \"{frameName}\" não existe no atlas; usando o quadro 0.");
-            frame = 0;
+                GD.PushWarning($"Aldeão: quadro de {what} \"{frameName}\" não existe no atlas; mantendo o quadro atual.");
+            frame = current < 0 ? 0 : current;
         }
         if (frame == current)
             return;

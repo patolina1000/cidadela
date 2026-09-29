@@ -3,26 +3,31 @@ namespace Cidadela.Simulation;
 /// <summary>
 /// Decide os quadros de olhos e boca de um aldeão a partir da expressão e cuida do piscar: intervalo
 /// aleatório entre <see cref="MinBlinkInterval"/> e <see cref="MaxBlinkInterval"/> segundos, semente fixa
-/// pelo id (cada aldeão pisca no seu ritmo, sempre o mesmo), olhos fechados por <see cref="ClosedSeconds"/>.
-/// Não pisca dormindo nem sonolento. C# puro: a view só lê <see cref="Eyes"/> e <see cref="Mouth"/>.
+/// pelo id (cada aldeão pisca no seu ritmo, sempre o mesmo). O piscar tem três quadros, meio fechado →
+/// fechado → meio fechado (<see cref="HalfClosedSeconds"/> + <see cref="ClosedSeconds"/> +
+/// <see cref="HalfClosedSeconds"/>, cerca de 0,15 s no total), e volta ao quadro da expressão. Os nomes dos
+/// quadros vêm da <see cref="FaceTable"/> (rosto.json). Não pisca dormindo nem sonolento. C# puro: a view só
+/// lê <see cref="Eyes"/> e <see cref="Mouth"/>.
 /// </summary>
 public sealed class FaceAnimator
 {
     public const float MinBlinkInterval = 2f;
     public const float MaxBlinkInterval = 6f;
-    public const float ClosedSeconds = 0.12f;
+    public const float HalfClosedSeconds = 0.04f;
+    public const float ClosedSeconds = 0.07f;
+    public const float BlinkSeconds = HalfClosedSeconds + ClosedSeconds + HalfClosedSeconds;
 
     private readonly FaceTable _table;
     private uint _rng;
     private float _untilBlink;
-    private float _closedLeft;
+    private float _blinkElapsed = -1f; // < 0 = não está piscando
 
     /// <summary>Nome do quadro dos olhos a mostrar agora.</summary>
     public string Eyes { get; private set; }
     /// <summary>Nome do quadro da boca a mostrar agora.</summary>
     public string Mouth { get; private set; }
-    /// <summary>Se os olhos estão fechados por um piscar.</summary>
-    public bool Blinking => _closedLeft > 0f;
+    /// <summary>Se está no meio de um piscar (em qualquer das três fases).</summary>
+    public bool Blinking => _blinkElapsed >= 0f;
 
     public FaceAnimator(int id, FaceTable table)
     {
@@ -40,25 +45,31 @@ public sealed class FaceAnimator
 
         if (expression is VillagerExpression.Sleeping or VillagerExpression.Sleepy)
         {
-            _closedLeft = 0f;
+            _blinkElapsed = -1f;
             Eyes = eyes;
             return;
         }
 
-        if (_closedLeft > 0f)
+        if (Blinking)
         {
-            _closedLeft -= dt;
+            _blinkElapsed += dt;
+            if (_blinkElapsed >= BlinkSeconds)
+                _blinkElapsed = -1f;
         }
         else
         {
             _untilBlink -= dt;
             if (_untilBlink <= 0f)
             {
-                _closedLeft = ClosedSeconds;
+                _blinkElapsed = 0f;
                 _untilBlink = NextInterval();
             }
         }
-        Eyes = _closedLeft > 0f ? _table.ClosedEyes : eyes;
+
+        Eyes = !Blinking ? eyes
+            : _blinkElapsed < HalfClosedSeconds ? _table.HalfClosedEyes
+            : _blinkElapsed < HalfClosedSeconds + ClosedSeconds ? _table.ClosedEyes
+            : _table.HalfClosedEyes;
     }
 
     private float NextInterval()

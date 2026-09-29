@@ -5,22 +5,26 @@ using System.Text.Json;
 namespace Cidadela.Simulation;
 
 /// <summary>
-/// Tabela expressão → (quadro dos olhos, quadro da boca), por nome de quadro. Lê o mesmo formato de
-/// data/villager_expressions.json e do rosto.json da arte (contrato v2, campo "expressoes"): um objeto
-/// {"expressoes": {nome: {"olhos": ..., "boca": ...}}}. O quadro dos olhos fechados (piscar) vem de
-/// "olhosFechados"; sem ele, vale "fechado".
+/// Tabela expressão → (quadro dos olhos, quadro da boca), por nome de quadro, mais os quadros do piscar. Lê
+/// o mesmo formato de data/villager_expressions.json e do rosto.json da arte (contrato v2):
+/// {"expressoes": {nome: {"olhos": ..., "boca": ...}}, "piscar": {"meioFechado": ..., "fechado": ...}}.
+/// Sem "piscar", valem "meio_fechado" e "fechado".
 /// </summary>
 public sealed class FaceTable
 {
+    public const string DefaultHalfClosedEyes = "meio_fechado";
     public const string DefaultClosedEyes = "fechado";
 
-    /// <summary>Quadro dos olhos usado ao piscar.</summary>
+    /// <summary>Quadro dos olhos na primeira e na última fase do piscar.</summary>
+    public string HalfClosedEyes { get; }
+    /// <summary>Quadro dos olhos no meio do piscar.</summary>
     public string ClosedEyes { get; }
 
     private readonly Dictionary<VillagerExpression, (string Eyes, string Mouth)> _frames = new();
 
-    private FaceTable(string closedEyes)
+    private FaceTable(string halfClosedEyes, string closedEyes)
     {
+        HalfClosedEyes = halfClosedEyes;
         ClosedEyes = closedEyes;
     }
 
@@ -36,8 +40,15 @@ public sealed class FaceTable
             AllowTrailingCommas = true,
         });
         JsonElement root = doc.RootElement;
-        string closed = root.TryGetProperty("olhosFechados", out JsonElement c) ? c.GetString() ?? DefaultClosedEyes : DefaultClosedEyes;
-        var table = new FaceTable(closed);
+        string half = DefaultHalfClosedEyes, closed = DefaultClosedEyes;
+        if (root.TryGetProperty("piscar", out JsonElement blink))
+        {
+            if (blink.TryGetProperty("meioFechado", out JsonElement h) && h.GetString() is { Length: > 0 } hs)
+                half = hs;
+            if (blink.TryGetProperty("fechado", out JsonElement c) && c.GetString() is { Length: > 0 } cs)
+                closed = cs;
+        }
+        var table = new FaceTable(half, closed);
         if (!root.TryGetProperty("expressoes", out JsonElement expressions))
             throw new FormatException("Tabela de expressões sem o campo \"expressoes\".");
         foreach (VillagerExpression expression in VillagerExpressions.All)

@@ -2072,3 +2072,31 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** nada.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:12–01:22 de relógio.
+
+---
+
+## 2026-09-29 — Aldeão v2: piscar em três quadros (meio fechado → fechado → meio fechado)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Pedido:** o piscar da arte tem três quadros; tocar a sequência em ~0,15 s (0,04 + 0,07 + 0,04 s), lendo os
+  nomes dos quadros do `rosto.json`; atualizar os testes xUnit.
+- **O que foi feito:**
+  - `FaceAnimator`: `HalfClosedSeconds` 0,04, `ClosedSeconds` 0,07, `BlinkSeconds` 0,15; o piscar conta o
+    tempo desde o início e escolhe meio fechado, fechado ou meio fechado pela fase; dormindo ou sonolento
+    corta o piscar na hora, como antes.
+  - `FaceTable`: campo `"piscar": { "meioFechado", "fechado" }` no mesmo JSON das expressões (o `rosto.json`
+    da arte ou `data/villager_expressions.json`); sem o campo valem "meio_fechado" e "fechado". O campo
+    `olhosFechados` saiu.
+  - Atlas provisório dos olhos: 4 colunas × 3 linhas para caber o décimo quadro, `meio_fechado` (pálpebra até
+    o meio da pupila). `VillagerFace`: quadro que não existe no atlas mantém o atual (antes pulava para o 0,
+    o que faria um piscar piscar a expressão errada se a arte não entregar o meio fechado).
+  - Testes: 9 no `FaceAnimatorTests` (sequência meio → fechado → meio em todo piscar, duração de cada fase,
+    total ~0,15 s, nomes lidos do JSON com padrões, os anteriores adaptados). `dotnet test`: **105 aprovados**.
+    `dotnet build`: 0 erros, 0 avisos. FaceTest conferida (atlas novo, sem erro).
+- **O que deu errado:** o teste da duração das fases falhou por 0,000000007 s (a fase fechada mediu 13 passos
+  de 5 ms e o limite era 13 passos em ponto flutuante); tolerância passou a 1,5 passo.
+- **Atenção (contrato):** o `rosto.json` do contrato não tem o campo `piscar`; o jogo o lê com os nomes padrão
+  "meio_fechado" e "fechado" se ele faltar, mas a arte precisa saber que o atlas dos olhos deve ter os dois
+  quadros. Não mexi no contrato: fica para o humano acrescentar a linha.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 01:25–01:35 de relógio.

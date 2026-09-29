@@ -12,13 +12,13 @@ namespace Cidadela.View;
 /// </summary>
 public static class FaceAtlasPlaceholder
 {
-    public const int EyesColumns = 3, EyesRows = 3, EyesCellWidth = 96, EyesCellHeight = 48;
+    public const int EyesColumns = 4, EyesRows = 3, EyesCellWidth = 96, EyesCellHeight = 48;
     public const int MouthColumns = 3, MouthRows = 2, MouthCellWidth = 64, MouthCellHeight = 32;
     public const int Margin = 8;
 
-    /// <summary>Quadros dos olhos, na ordem do atlas (0 = distraído, como pede o contrato).</summary>
+    /// <summary>Quadros dos olhos, na ordem do atlas (0 = distraído, como pede o contrato; meio_fechado é do piscar).</summary>
     public static readonly string[] EyesFrames =
-        { "distraido", "esforco", "feliz", "sonolento", "fechado", "espantado", "preocupado", "chorando", "bravo" };
+        { "distraido", "esforco", "feliz", "sonolento", "fechado", "espantado", "preocupado", "chorando", "bravo", "meio_fechado" };
 
     /// <summary>Quadros da boca, na ordem do atlas (0 = entreaberta).</summary>
     public static readonly string[] MouthFrames = { "entreaberta", "neutra", "sorriso", "esforco", "o", "triste" };
@@ -88,6 +88,10 @@ public static class FaceAtlasPlaceholder
                     break;
                 case "fechado":
                     Rect(img, cx - 9, cy - 1, 18, 3, Ink);
+                    break;
+                case "meio_fechado":
+                    Eye(img, cx, cy, 9, 3);
+                    Disc(img, cx, cy - 5, 11, Ink, (dx, dy) => dy <= 0); // pálpebra até o meio da pupila
                     break;
                 case "espantado":
                     Eye(img, cx, cy, 12, 2);

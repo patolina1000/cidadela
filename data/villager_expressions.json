@@ -2,8 +2,9 @@
   // Expressões do aldeão (GDD, tabela de expressões): cada uma vira um quadro dos olhos e um da boca.
   // Os nomes de quadro são PROVISÓRIOS (o atlas de teste é gerado por código); a arte entrega os nomes reais
   // no rosto.json (contrato v2, campo "expressoes"), que, quando existir, vale no lugar deste arquivo.
-  // olhosFechados: quadro dos olhos usado ao piscar.
-  "olhosFechados": "fechado",
+  // piscar: os quadros dos olhos do piscar, que toca meio fechado → fechado → meio fechado (~0,15 s) e volta
+  //   ao quadro da expressão. Sem este campo valem "meio_fechado" e "fechado".
+  "piscar": { "meioFechado": "meio_fechado", "fechado": "fechado" },
   "expressoes": {
     "distraido":  { "olhos": "distraido",  "boca": "entreaberta" },
     "esforco":    { "olhos": "esforco",    "boca": "esforco" },
