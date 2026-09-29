@@ -2545,3 +2545,25 @@ onde errou, correções manuais e quanto tempo levou.
   (rev 90) logo após a v1: corpo, rosto A1 e janela ±45°, retalhos, clipes Idle_3 e Run_02, cabelos, tamanhos
   em tela medidos e custo (160 créditos). Reexportado para `docs/GDD.md` (só essa subseção e a data mudaram).
 - **Créditos:** 20 (cabelo 5); etapa dos cabelos: 100. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Encerramento do dia (agente de arte, branch `arte`)
+
+- **Pronto do aldeão v2:** contrato arte × jogo lido e seguido; atlas de expressões na direção A1 (`rosto/olhos.png`,
+  `boca.png`, `rosto.json` com as 9 expressões, `ossoCabeca`, `ossoPeito`, `passadaRun`); corpo gerado na Meshy,
+  limpo (2.424 triângulos, material "pele", 0,40 m), com rig da Meshy, clipes `idle-loop` (Idle_3) e `run-loop`
+  (Run_02) em laço fechado e os retalhos "Olhos" (±45°, altura b) e "Boca" presos ao Head, tudo em
+  `assets/modelos/aldeao_v2/aldeao_corpo.glb`; 5 perucas em `cabelos/cabelo_1..5.glb` (758 a 760 triângulos,
+  material "cabelo", rígidas no Head, franja sobre no máximo a metade de cima de um olho, 2,5 mm do retalho);
+  prévias e GIFs em `assets/previews/aldeao_v2/`; ferramentas em `tools/arte/aldeao_v2/` (preparador de vistas,
+  atlas, limpeza, rig, retalhos, extração de perucas, GIFs, prévias); GDD vivo com a subseção
+  "Aldeão: implementação v2" e reexportado.
+- **Pendente:** integração no jogo pelo agente de código (`aldeao_corpo.glb`, os 5 cabelos, `rosto.json` e a regra
+  da franja no contrato); julgamento final no jogo com cabelo e shader toon; problema conhecido das mechas
+  longas nos ombros e braços na corrida, a rever no zoom máximo; `cabelo_N_sob_chapeu.glb` (previsto no contrato,
+  não começado); `passadaWalk` do contrato não existe porque o aldeão só tem idle e run (o contrato cita walk;
+  o agente do jogo decide se muda). A remoção do aldeão v1 na `arte` acontece sozinha no próximo merge da
+  `master` (ela já o removeu no commit `edc1291`).
+- **Créditos da Meshy gastos hoje no v2:** **160** (corpo 40: só-frente e multi-imagem; rig 5 + clipes 6 + clipes
+  extras 9 = 20; cabelos 5 × 20 = 100). Saldo final 2.298. Sem correções manuais além de copiar o `.env`.
+- Os quatro `.import` soltos em `docs/prints/` (prints do agente de jogo) entram neste commit para a árvore ficar
+  limpa.
