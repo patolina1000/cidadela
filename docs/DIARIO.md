@@ -2567,3 +2567,23 @@ onde errou, correções manuais e quanto tempo levou.
   extras 9 = 20; cabelos 5 × 20 = 100). Saldo final 2.298. Sem correções manuais além de copiar o `.env`.
 - Os quatro `.import` soltos em `docs/prints/` (prints do agente de jogo) entram neste commit para a árvore ficar
   limpa.
+
+## 2026-09-29 — Protagonista v2, passo 1: referências da v1 para as folhas do ChatGPT
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** refazer a protagonista (v2) pelo processo do aldeão v2. Primeiro passo, sem gerar nada na Meshy:
+  renders da v1 (`assets/modelos/protagonista/protagonista.glb`) em repouso, com a textura original e o cristal
+  com a emissão normal, para servir de referência às folhas do ChatGPT.
+- **Feito:** `tools/arte/protagonista_v2/prot_lib.py` (importa em repouso, regiões por osso, câmera do jogo e
+  material toon por nós; reaproveita o `corpo_lib.py` do aldeão) e `referencia_v1.py` (Blender headless).
+  Câmera ortográfica, mesma escala nas três vistas (0,80 m = 1.536 px num quadro de 2.048), frente, perfil
+  esquerdo (câmera em +X do Blender, o lado do osso LeftHand) e costas; close da cabeça em 1.024, do osso `neck`
+  ao topo. Luz: mundo branco 0,85 + sol fraco e largo sem sombra; fundo #D9D9D9 visto só pela câmera (nó Light
+  Path), sem texto. Cristal com a força de emissão do GLB (3,0), sem o reforço de 3× que o jogo aplica.
+  Saída: `assets/conceitos/protagonista_v2/referencia/v1_{frente,lado,costas,cabeca_frente,cabeca_lado}.png`;
+  pasta `assets/conceitos/protagonista_v2/folhas/` criada (com `.gitkeep`) para as folhas.
+- **O que deu errado:** o primeiro close de lado saiu fora do centro, porque a caixa da cabeça incluía o cabelo
+  longo das costas (preso ao Head); o recorte passou a ir do pescoço ao topo. Um "Icosphere" de 2 m que aparece ao
+  importar não é do GLB: é a forma de osso que o importador do Blender cria (desligada com `disable_bone_shape`).
+- **Observação:** a pose de repouso da v1 é T (braços na horizontal), não A como a do aldeão v2.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
