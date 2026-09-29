@@ -2954,3 +2954,25 @@ onde errou, correções manuais e quanto tempo levou.
   cheia); jogo com 10 aldeões: 57 FPS com V-Sync no zoom padrão, 145 FPS no zoom máximo. Testes: 105.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 04:18 de relógio.
+
+---
+
+## 2026-09-29 — Repositório público no GitHub e proteção contra vazamento de chave
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Pedido:** subir o projeto para o GitHub (feito antes: `patolina1000/cidadela`, criado privado e depois
+  tornado público a pedido, com `master`, `arte` e a tag `aldeao-v1-arquivado`); instalar um hook de
+  pre-commit que bloqueie segredos nas duas pastas; conferir secret scanning e push protection no GitHub.
+- **O que foi feito:**
+  - `gitleaks` 8.30.1 pelo Homebrew. Hook versionado em `tools/git-hooks/pre-commit` (roda
+    `gitleaks git --pre-commit --staged --redact`; sem o gitleaks instalado, bloqueia o commit e avisa) e
+    `git config core.hooksPath tools/git-hooks`. As duas pastas (`cidadela` e `cidadela-arte`) compartilham o
+    mesmo `.git` e a mesma configuração, então o hook vale nas duas; confirmado com `git config` na worktree.
+  - Varredura do histórico inteiro (121 commits, 4 MB): nenhum segredo.
+  - Teste do hook: um token falso no formato do GitHub (`ghp_…`) bloqueou o commit. O primeiro teste, com a
+    chave de exemplo da AWS (`AKIAIOSFODNN7EXAMPLE`), passou porque o gitleaks ignora as chaves de exemplo da
+    documentação; o commit de teste que escapou foi desfeito na hora (não chegou ao GitHub).
+  - GitHub: `secret_scanning` e `secret_scanning_push_protection` estavam desligados no repositório e foram
+    ligados pela API (`gh api -X PATCH`); conferido depois: os dois "enabled".
+- **Correções manuais:** nenhuma.
+- **Tempo:** 16:50–16:58 de relógio.

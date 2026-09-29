@@ -1,0 +1,14 @@
+#!/bin/sh
+# Bloqueia commits com segredos (chaves de API, tokens, senhas) usando o gitleaks.
+# Vale para as duas pastas (cidadela e cidadela-arte): elas compartilham o mesmo .git, e o
+# core.hooksPath aponta para esta pasta. Instalar: brew install gitleaks
+if ! command -v gitleaks >/dev/null 2>&1; then
+    echo "pre-commit: gitleaks não encontrado (brew install gitleaks). Commit bloqueado por segurança." >&2
+    exit 1
+fi
+gitleaks git --pre-commit --staged --redact --no-banner
+status=$?
+if [ $status -ne 0 ]; then
+    echo "pre-commit: possível segredo no que está sendo commitado. Tire do commit ou, se for falso positivo, anote em .gitleaks.toml." >&2
+    exit $status
+fi
