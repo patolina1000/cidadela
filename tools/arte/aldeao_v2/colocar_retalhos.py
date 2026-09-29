@@ -5,8 +5,8 @@ padrão. Retalhos curvos a 1,5 mm da pele, UV 0..1, materiais "rosto_olhos" e "r
 misturado), peso 100% no osso "Head". Depois confere nos quadros do idle-loop e do run-loop a distância de cada
 vértice dos retalhos à pele (nunca negativa = nunca atravessa) e renderiza dois quadros.
 
-Exporta NORMALIZADO (decisão de 29/09/2026): Armature com escala 1, em metros (rig_lib.apply_armature_scale;
-sem efeito se a entrada já vier normalizada do montar_rig.py).
+Exporta pelo contrato de animação (rig_lib.export_contract_glb): Armature com escala 1, em metros, primeira chave
+de cada clipe em t = 0, 24 fps (sem efeito se a entrada já vier assim do montar_rig.py).
 
 Uso:
   /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/arte/aldeao_v2/colocar_retalhos.py -- <pasta_previa> [<entrada.glb> <saida.glb>]
@@ -24,7 +24,7 @@ from mathutils import Vector
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from corpo_lib import (EYES_FRAC, MOUTH_FRAC, ROOT, ROSTO, SKIN, face_patch, flat_material, game_camera_offset,  # noqa: E402
                        head_box, import_glb, load_rosto, set_cell, set_smooth, setup_scene, shoot, twilight_lights, window_rect)
-from rig_lib import apply_armature_scale, clearance, evaluated_points, play  # noqa: E402
+from rig_lib import clearance, evaluated_points, export_contract_glb, play  # noqa: E402
 
 ARGS = sys.argv[sys.argv.index("--") + 1:]
 BODY_IN = Path(ARGS[1]) if len(ARGS) > 2 else ROOT / "assets/modelos/aldeao_v2/aldeao_corpo.glb"
@@ -156,13 +156,8 @@ def main() -> None:
     for t in ad.nla_tracks:
         t.mute = False
     scene.frame_set(0)
-    report["normalizacao"] = apply_armature_scale(armature, [body, eyes, mouth])  # exporta sempre em metros
-    bpy.ops.object.select_all(action="DESELECT")
-    for o in (armature, body, eyes, mouth):
-        o.select_set(True)
-    bpy.ops.export_scene.gltf(filepath=str(BODY), export_format="GLB", use_selection=True, export_yup=True, export_apply=False,
-                              export_animations=True, export_animation_mode="NLA_TRACKS", export_skins=True, export_materials="EXPORT",
-                              export_force_sampling=True, export_frame_range=False, export_optimize_animation_size=False, export_image_format="AUTO")
+    # Contrato de animação: metros, primeira chave em t = 0, 24 fps (rig_lib.export_contract_glb).
+    report["exportacao"] = export_contract_glb(armature, [armature, body, eyes, mouth], BODY)
     bpy.ops.wm.read_factory_settings(use_empty=True)
     objs = import_glb(BODY)
     report["conferencia"] = {"objetos": [(o.type, o.name) for o in objs], "animacoes": [a.name for a in bpy.data.actions], "materiais": [m.name for m in bpy.data.materials],

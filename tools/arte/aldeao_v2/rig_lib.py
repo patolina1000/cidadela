@@ -254,24 +254,58 @@ def clearance(body, patch):
     return min(d), max(d)
 
 
-def export_rig_glb(armature, objects, path) -> None:
-    """Exporta o armature e as malhas com cada ação numa faixa NLA (o modo ACTIONS do Blender 5.1 perdia
-    quadros), o esqueleto em POSE (em REST sairia tudo parado) e sem otimizar o tamanho da animação."""
+CLIP_FPS = 24  # contrato de animação (docs/animacao_contrato.md)
+
+
+def shift_actions_to_zero(actions) -> dict:
+    """Desloca as chaves de cada ação para a primeira ficar no quadro 0 (primeira chave em t = 0)."""
+    out = {}
+    for action in actions:
+        curves = action_fcurves(action)
+        start = min(k.co[0] for c in curves for k in c.keyframe_points)
+        for c in curves:
+            for k in c.keyframe_points:
+                k.co[0] -= start
+                k.handle_left[0] -= start
+                k.handle_right[0] -= start
+            c.update()
+        out[action.name] = -start
+    return out
+
+
+def export_contract_glb(armature, objects, path, actions=None) -> dict:
+    """Única saída de GLB com animação, pelo contrato de animação: Armature em metros (apply_armature_scale nas
+    malhas de `objects`), primeira chave de cada ação em t = 0, cena a 24 fps, uma faixa NLA por ação começando no
+    quadro 0 (o modo ACTIONS do Blender 5.1 perdia quadros), esqueleto em POSE (em REST sairia tudo parado), sem
+    otimizar o tamanho da animação. Serve para o corpo (com malhas) e para os GLBs de clipe (só o armature)."""
+    scene = bpy.context.scene
+    scene.render.fps, scene.render.fps_base = CLIP_FPS, 1.0
+    actions = list(bpy.data.actions) if actions is None else list(actions)
+    info = {"normalizacao": apply_armature_scale(armature, [o for o in objects if o.type == "MESH"]),
+            "deslocamento_quadros": shift_actions_to_zero(actions), "fps": CLIP_FPS}
     armature.data.pose_position = "POSE"
     armature.animation_data_create()
     armature.animation_data.action = None
     for track in list(armature.animation_data.nla_tracks):
         armature.animation_data.nla_tracks.remove(track)
-    for action in bpy.data.actions:
+    for action in actions:
         track = armature.animation_data.nla_tracks.new()
         track.name = action.name
-        strip = track.strips.new(action.name, int(action.frame_range[0]), action)
+        strip = track.strips.new(action.name, 0, action)
         if getattr(action, "slots", None) and hasattr(strip, "action_slot"):
             strip.action_slot = action.slots[0]
+    scene.frame_set(0)
     bpy.ops.object.select_all(action="DESELECT")
     for o in objects:
         o.select_set(True)
+    path.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.export_scene.gltf(filepath=str(path), export_format="GLB", use_selection=True, export_yup=True, export_apply=False,
                               export_animations=True, export_animation_mode="NLA_TRACKS", export_skins=True, export_materials="EXPORT",
                               export_force_sampling=True, export_frame_range=False, export_optimize_animation_size=False,
-                              export_image_format="AUTO")
+                              export_image_format="AUTO", export_anim_slide_to_zero=True)
+    return info
+
+
+def export_rig_glb(armature, objects, path) -> dict:
+    """Nome antigo (normalizar_corpo.py): hoje é o export_contract_glb."""
+    return export_contract_glb(armature, objects, path)

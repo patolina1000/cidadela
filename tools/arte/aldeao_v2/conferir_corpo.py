@@ -2,7 +2,8 @@
 em Blender headless. Mede:
 1. nomes: ossos, clipes, materiais, malhas; escala do nó Armature no glTF;
 2. maior distância entre vértices correspondentes (corpo, Olhos, Boca; correspondência pela posição em repouso)
-   nos quadros de 0, 25, 50 e 75% de idle-loop e run-loop, em mm;
+   em TODOS os quadros de idle-loop e run-loop, alinhados pelo começo de cada clipe (o quadro k de um arquivo que
+   começa em 0 contra o k+1 de um que começa em 1), em mm; também a duração e o laço de cada clipe;
 3. folga dos retalhos Olhos e Boca à pele (mm, com sinal) nos 6 quadros por clipe que o colocar_retalhos.py confere;
 4. cabelos 1 a 5 presos como o jogo prende (encaixe no osso Head compensando o repouso global do osso e a
    transformação do esqueleto): maior diferença de vértice entre os dois arquivos nos mesmos quadros do item 2, e a
@@ -24,7 +25,7 @@ from mathutils import kdtree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from corpo_lib import ROOT, import_glb  # noqa: E402
-from rig_lib import clearance, evaluated_points, play, signed_distances  # noqa: E402
+from rig_lib import clearance, evaluated_points, loop_gap, play, signed_distances  # noqa: E402
 
 CLIPS = ("idle-loop", "run-loop")
 FRACTIONS = (0.0, 0.25, 0.5, 0.75)
@@ -101,16 +102,27 @@ def compare(a_path: Path, b_path: Path) -> dict:
     for x in (a, b):
         x["arm"].data.pose_position = "POSE"
 
-    verts, hair_rows, per_mesh = {}, {}, {}
+    verts, hair_rows, per_mesh, clip_info = {}, {}, {}, {}
     for clip in CLIPS:
-        start, end = a["actions"][clip].frame_range
-        for f in FRACTIONS:
-            frame = int(round(start + f * (end - start)))
+        start, end = (int(v) for v in a["actions"][clip].frame_range)
+        sb, eb = (int(v) for v in b["actions"][clip].frame_range)
+        clip_info[clip] = {"quadros_a": [start, end], "quadros_b": [sb, eb], "mesma_duracao": end - start == eb - sb,
+                           "laco_cm": [round(loop_gap(a["arm"], a["actions"][clip]) * 100, 4), round(loop_gap(b["arm"], b["actions"][clip]) * 100, 4)]}
+        # Quadro k do b contra o quadro correspondente do a, alinhados pelo começo de cada clipe (ex.: b começa em 0 e
+        # a em 1: quadro k do b contra k+1 do a). Todos os quadros.
+        fraction_frames = {int(round(start + f * (end - start))): f for f in FRACTIONS}
+        worst_v, worst_h = (0.0, None), (0.0, None)
+        for frame in range(start, end + 1):
+            # O quadro da cena é um só: cada arquivo é avaliado logo depois de receber o seu quadro.
             set_frame(a, clip, frame)
-            set_frame(b, clip, frame)
+            pa = {n: evaluated_points(a["meshes"][n]) for n in names}
+            ha = np.array(hair_matrix(a))
+            set_frame(b, clip, frame - start + sb)
+            pb = {n: evaluated_points(b["meshes"][n]) for n in names}
+            hb = np.array(hair_matrix(b))
             per = {}
             for n in names:
-                d = np.linalg.norm(evaluated_points(a["meshes"][n]) - evaluated_points(b["meshes"][n])[maps[n]], axis=1)
+                d = np.linalg.norm(pa[n] - pb[n][maps[n]], axis=1)
                 per[n] = float(d.max())
                 over = int((d > 1e-5).sum())
                 per_mesh.setdefault(n, {"max_mm": 0.0, "vertices_acima_0_01_mm": 0, "coluna_x_mm": None})
@@ -121,16 +133,27 @@ def compare(a_path: Path, b_path: Path) -> dict:
                         xs = rest_x[n][d > 1e-5]
                         per_mesh[n]["coluna_x_mm"] = [round(float(xs.min()) * 1000, 2), round(float(xs.max()) * 1000, 2)]
             vmax = max(per.values())
-            ha, hb = np.array(hair_matrix(a)), np.array(hair_matrix(b))
             hmax = 0.0
             for _, pts, _ in hairs:
                 h4 = np.c_[pts, np.ones(len(pts))]
                 hmax = max(hmax, float(np.linalg.norm((h4 @ ha.T - h4 @ hb.T)[:, :3], axis=1).max()))
-            key = f"{clip}@{int(f * 100)}%"
-            verts[key] = round(vmax * 1000, 5)
-            hair_rows[key] = round(hmax * 1000, 5)
+            if vmax > worst_v[0]:
+                worst_v = (vmax, frame)
+            if hmax > worst_h[0]:
+                worst_h = (hmax, frame)
+            if frame in fraction_frames:
+                key = f"{clip}@{int(fraction_frames[frame] * 100)}%"
+                verts[key] = round(vmax * 1000, 5)
+                hair_rows[key] = round(hmax * 1000, 5)
+        clip_info[clip]["quadros_comparados"] = end - start + 1
+        clip_info[clip]["vertices_max_mm"] = round(worst_v[0] * 1000, 5)
+        clip_info[clip]["pior_quadro_a"] = worst_v[1]
+        clip_info[clip]["cabelos_max_mm"] = round(worst_h[0] * 1000, 5)
+    out["clipes"] = clip_info
     out["vertices_max_mm_por_quadro"] = verts
-    out["vertices_max_mm"] = max(verts.values())
+    out["vertices_max_mm"] = max(c["vertices_max_mm"] for c in clip_info.values())
+    out["cabelos_max_mm_por_quadro"] = hair_rows
+    out["cabelos_max_mm"] = max(c["cabelos_max_mm"] for c in clip_info.values())
     out["vertices_por_malha"] = per_mesh
     out["cabelos_max_mm_por_quadro"] = hair_rows
     out["cabelos_max_mm"] = max(hair_rows.values())

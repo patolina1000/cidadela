@@ -2898,3 +2898,28 @@ onde errou, correções manuais e quanto tempo levou.
   8 de 22 trilhas (10 s, quase invisível). Corrigir pede reexportar o corpo com as chaves a partir de 0 (o
   `montar_rig.py` pelo `export_clip` do contrato), o que muda o sha256 do aprovado: fica para o aval do Arthur.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Aldeão v2: corpo reexportado com as chaves a partir de t = 0 (processo pelo contrato)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** com o aval do Arthur, o `montar_rig.py` e o `colocar_retalhos.py` exportam os clipes do corpo com a
+  primeira chave em t = 0 pelo mesmo caminho do `operacao_lib.export_clip`; rodar do zero, conferir contra o aprovado
+  (quadro k do novo contra k+1 do atual) e substituir se tudo passar; segunda execução byte a byte; sha256 novo.
+- **Feito:** `rig_lib.export_contract_glb` (Armature em metros, chaves de cada ação deslocadas para o quadro 0, cena
+  a 24 fps, uma faixa NLA por ação a partir do 0, POSE) é agora a única saída de GLB com animação: o
+  `operacao_lib.export_clip` a chama só com o armature; o `montar_rig.py` e o `colocar_retalhos.py` a chamam com as
+  malhas; `export_rig_glb` virou um nome antigo dela. `conferir_corpo.py` passou a comparar **todos** os quadros,
+  alinhados pelo começo de cada clipe, e a registrar duração e laço.
+- **O que deu errado:** a primeira conferência deu 67 mm. Era erro meu no `conferir_corpo.py`: o quadro da cena é um
+  só, e os dois arquivos eram avaliados depois de o segundo receber o seu quadro. Corrigido: cada arquivo é avaliado
+  logo depois de receber o quadro. Um teste à parte confirmou antes que o quadro k do novo = k+1 do antigo (0,0 mm).
+- **Conferência (novo × aprovado anterior `11c7d12b…`):** 240 quadros do idle e 18 do run: vértices de corpo, Olhos e
+  Boca **0,0 mm**; cabelos 1 a 5 **0,0 mm** (1,5 mm do corpo); mesmos quadros de duração (idle 240, run 18), laço igual
+  (run 0,59 cm somados em 5 ossos, idle 0,0); passada **0,383 m/s**; folga dos retalhos **1,40 a 3,16 mm**; mesmos
+  nomes; Armature sem escala. Chaves no GLB: idle de 0 a 9,9583 s, run de 0 a 0,7083 s (antes: de 1/24 s a 10,0 e a
+  0,75 s; o ciclo é o mesmo, só começa um quadro antes).
+- **Troca e reprodução:** aprovado substituído; segunda execução do zero **idêntica byte a byte**.
+  **sha256 novo: `3138cbf652d0d840c2ab911b676bb20d3116f14172e15163c8232a3fa74b49a2`** (988.148 bytes), registrado no
+  `aldeao_corpo_reproducao.json` (com o histórico). Relatórios `aldeao_corpo_rig.json` e `_retalhos.json` trocados
+  pelos da execução nova. O contrato de animação (na `master`) cita o sha antigo: o agente do jogo atualiza.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~50 min.

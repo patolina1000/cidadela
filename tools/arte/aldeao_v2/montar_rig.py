@@ -11,8 +11,9 @@ A Meshy não aceitou o GLB limpo ("Pose estimation failed"), então o rig foi fe
 5. Mede a passada do run (m/s: velocidade com que o pé de apoio recua, mediana; método do v1).
 6. rosto.json: ossoCabeca, ossoPeito, passadaRun. Exporta assets/modelos/aldeao_v2/aldeao_corpo.glb com o rig
    e os dois clipes (sem os retalhos do rosto ainda) e reimporta para conferir.
-7. Exporta NORMALIZADO (decisão de 29/09/2026): antes de exportar, a escala do objeto armature vai para os ossos,
-   a malha e as curvas de posição (rig_lib.apply_armature_scale); o nó Armature sai com escala 1, em metros.
+7. Exporta pelo contrato de animação (rig_lib.export_contract_glb, o mesmo caminho dos clipes): a escala do objeto
+   armature vai para os ossos, a malha e as curvas de posição (Armature com escala 1, em metros), a primeira chave de
+   cada clipe fica em t = 0 e a cena exporta a 24 fps.
 
 Uso:
   /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/arte/aldeao_v2/montar_rig.py [-- <saida.glb>]
@@ -29,7 +30,7 @@ from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from corpo_lib import ROOT, ROSTO, import_glb, mesh_points, triangle_count  # noqa: E402
-from rig_lib import (apply_armature_scale, close_loop, loop_gap, measure_stride, normalize_rig, remove_root_motion,  # noqa: E402
+from rig_lib import (close_loop, export_contract_glb, loop_gap, measure_stride, normalize_rig, remove_root_motion,  # noqa: E402
                      rest_points, transfer_weights)
 
 RIG_DIR = ROOT / "assets/conceitos/aldeao_v2/meshy/rig"
@@ -105,25 +106,8 @@ def main() -> None:
     rosto["passadaRun"] = round(stride, 3)
     if not ARGS:
         (ROSTO / "rosto.json").write_text(json.dumps(rosto, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    report["normalizacao"] = apply_armature_scale(armature, [clean])  # exporta sempre em metros
-
-    # Cada clipe numa faixa da NLA (o exportador em modo ACTIONS não amostrava as ações com slot no Blender 5.1:
-    # saíam só 2 quadros por canal). Sem otimização de tamanho, para manter todos os quadros.
-    armature.animation_data.action = None
-    for track in list(armature.animation_data.nla_tracks):
-        armature.animation_data.nla_tracks.remove(track)
-    for action in bpy.data.actions:
-        track = armature.animation_data.nla_tracks.new()
-        track.name = action.name
-        strip = track.strips.new(action.name, int(action.frame_range[0]), action)
-        if getattr(action, "slots", None) and hasattr(strip, "action_slot"):
-            strip.action_slot = action.slots[0]
-    bpy.ops.object.select_all(action="DESELECT")
-    armature.select_set(True)
-    clean.select_set(True)
-    bpy.ops.export_scene.gltf(filepath=str(OUT), export_format="GLB", use_selection=True, export_yup=True, export_apply=False,
-                              export_animations=True, export_animation_mode="NLA_TRACKS", export_skins=True, export_materials="EXPORT",
-                              export_force_sampling=True, export_frame_range=False, export_optimize_animation_size=False)
+    # Contrato de animação: metros, primeira chave em t = 0, 24 fps (rig_lib.export_contract_glb).
+    report["exportacao"] = export_contract_glb(armature, [armature, clean], OUT)
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     objs = import_glb(OUT)
