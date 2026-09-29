@@ -89,6 +89,47 @@ public static class VillagerLooks
         return node;
     }
 
+    /// <summary>
+    /// O cabelo pedido ou, se o arquivo dele não existe, o primeiro cabelo da lista que existir (aviso único).
+    /// null só se nenhum existe.
+    /// </summary>
+    public static Node3D? InstantiateHairOrFallback(string model)
+    {
+        LoadLooks();
+        if (ResourceLoader.Exists(_hairDir + model + ".glb"))
+            return InstantiateHair(model);
+        foreach (Hair hair in _hairs)
+        {
+            if (!ResourceLoader.Exists(_hairDir + hair.Model + ".glb"))
+                continue;
+            if (_warned.Add("fallback:" + model))
+                GD.PushWarning($"Aldeão: cabelo \"{model}\" ainda não existe; usando \"{hair.Model}\" no lugar.");
+            return InstantiateHair(hair.Model);
+        }
+        return null;
+    }
+
+    private static bool _speedChecked;
+
+    /// <summary>
+    /// Regra de velocidade (29/09/2026): velocidade ÷ passadaRun entre 1,0× e 1,5×. Fora disso, avisa uma vez
+    /// com os números (o humano decide entre aldeão mais lento e passada mais longa); o visual prende a
+    /// reprodução no limite e os pés deslizam o resto.
+    /// </summary>
+    public static void CheckSpeedRule(float cellsPerSecond)
+    {
+        if (_speedChecked)
+            return;
+        _speedChecked = true;
+        float stride = Face().StrideRun;
+        if (stride <= 0f)
+            return;
+        float ratio = cellsPerSecond / stride; // 1 célula = 1 m
+        if (ratio < VillagerVisual.MinAnimationSpeed || ratio > VillagerVisual.MaxAnimationSpeed)
+            GD.PushWarning($"Aldeão: velocidade {cellsPerSecond:0.###} m/s ÷ passadaRun {stride:0.###} m/s = {ratio:0.00}×, fora de 1,0×–1,5×. " +
+                $"Ou a velocidade cai para {stride * VillagerVisual.MaxAnimationSpeed:0.###} m/s, ou a passada sobe para {cellsPerSecond / VillagerVisual.MaxAnimationSpeed:0.###} m/s ou mais.");
+    }
+
     public static FaceInfo Face()
     {
         if (_face is not null)

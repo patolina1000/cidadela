@@ -5,8 +5,8 @@ using Godot;
 namespace Cidadela.View;
 
 /// <summary>
-/// Cena de teste do rosto (scenes/tests/FaceTest.tscn): um aldeão placeholder (esfera no lugar da cabeça, os
-/// dois retalhos curvos e o atlas provisório gerado por código) de perto, percorrendo as 9 expressões do GDD
+/// Cena de teste do rosto (scenes/tests/FaceTest.tscn): um aldeão (o corpo da arte quando existe; senão, ou com
+/// <see cref="UsePlaceholder"/>, o placeholder de esfera com os retalhos e o atlas provisório) de perto, percorrendo as 9 expressões do GDD
 /// a cada <see cref="SecondsPerExpression"/> segundos e piscando pelo <see cref="FaceAnimator"/>. Os atlas
 /// aparecem embaixo, para conferir qual célula está no rosto.
 /// Teclas: Espaço pausa a troca; H desce o cabelo sobre os olhos (o cabelo opaco tem de esconder o rosto onde
@@ -20,6 +20,8 @@ public partial class FaceTestRoot : Node3D
 
     [Export] public bool StartWithCrowd;
     [Export] public bool StartWithHairOverEyes;
+    /// <summary>Força o placeholder mesmo com o corpo da arte presente.</summary>
+    [Export] public bool UsePlaceholder;
 
     private VillagerVisual _visual = null!;
     private readonly List<VillagerVisual> _crowd = new();
@@ -43,7 +45,7 @@ public partial class FaceTestRoot : Node3D
         sun.LookAt(new Vector3(0f, 0.3f, 0f), Vector3.Up);
 
         // O aldeão fica na célula (0, 0): o visual soma 0,5, então a posição de desenho é (-0,5, -0,5).
-        _visual = new VillagerVisual { Name = "Villager", ForcePlaceholder = true, Seed = 1 };
+        _visual = new VillagerVisual { Name = "Villager", ForcePlaceholder = UsePlaceholder, Seed = 1 };
         AddChild(_visual);
 
         var camera = new Camera3D { Name = "Camera", Fov = 28f, Current = true };
@@ -60,18 +62,26 @@ public partial class FaceTestRoot : Node3D
         _label.AddThemeConstantOverride("outline_size", 6);
         hud.AddChild(_label);
 
-        // Os dois atlas provisórios, para conferir a célula escolhida.
-        var eyes = new TextureRect { Texture = VillagerLooks.EyesAtlas(), Position = new Vector2(16f, 470f), Scale = new Vector2(0.55f, 0.55f) };
-        var mouth = new TextureRect { Texture = VillagerLooks.MouthAtlas(), Position = new Vector2(190f, 470f), Scale = new Vector2(0.55f, 0.55f) };
+        // Os dois atlas (da arte ou provisórios), para conferir a célula escolhida.
+        bool provisional = VillagerLooks.Face().Provisional;
+        // Escalados para ~160 px de largura, qualquer que seja o tamanho do atlas.
+        Texture2D eyesAtlas = VillagerLooks.EyesAtlas(), mouthAtlas = VillagerLooks.MouthAtlas();
+        var eyes = new TextureRect { Texture = eyesAtlas, Position = new Vector2(16f, 470f), Scale = Vector2.One * (160f / eyesAtlas.GetWidth()) };
+        var mouth = new TextureRect { Texture = mouthAtlas, Position = new Vector2(190f, 470f), Scale = Vector2.One * (160f / mouthAtlas.GetWidth()) };
         hud.AddChild(eyes);
         hud.AddChild(mouth);
-        var caption = new Label { Text = "olhos.png (provisório)              boca.png (provisório)", Position = new Vector2(16f, 550f) };
+        string tag = provisional ? "(provisório)" : "(da arte)";
+        var caption = new Label { Text = $"olhos.png {tag}              boca.png {tag}", Position = new Vector2(16f, 575f) };
         caption.AddThemeFontSizeOverride("font_size", 14);
         caption.AddThemeColorOverride("font_color", new Color(Palette.Bone, 0.7f));
         hud.AddChild(caption);
 
         if (StartWithCrowd)
+        {
+            // Medição de desempenho só vale em tela cheia na Retina; lançada pelo editor a janela abre pequena.
+            DisplayServer.WindowSetMode(DisplayServer.WindowMode.Fullscreen);
             ToggleCrowd();
+        }
         if (StartWithHairOverEyes)
             ToggleHairOverEyes();
     }
@@ -109,7 +119,7 @@ public partial class FaceTestRoot : Node3D
         }
         for (int i = 0; i < CrowdSize; i++)
         {
-            var v = new VillagerVisual { Name = $"Crowd_{i}", ForcePlaceholder = true, Seed = 100 + i };
+            var v = new VillagerVisual { Name = $"Crowd_{i}", ForcePlaceholder = UsePlaceholder, Seed = 100 + i };
             AddChild(v);
             _crowd.Add(v);
         }

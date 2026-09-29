@@ -21,8 +21,11 @@ public partial class VillagerVisual : Node3D
     private const float SwingSmoothing = 30f;
     private const float ClipBlendSeconds = 0.15f;
     private const float StrideSmoothing = 10f;
-    /// <summary>Teto da velocidade da animação em relação à passada natural (decisão de 27/09/2026).</summary>
-    private const float MaxAnimationSpeed = 3f;
+    /// <summary>
+    /// Regra de velocidade (29/09/2026): a reprodução do run é velocidade ÷ passadaRun e fica entre 1,0× e
+    /// 1,5×, para os pés não deslizarem nem a corrida parecer acelerada. A velocidade em data/ deve caber nisso.
+    /// </summary>
+    public const float MinAnimationSpeed = 1f, MaxAnimationSpeed = 1.5f;
     private const float PatchGap = 0.0015f; // retalhos 1,5 mm fora da pele (contrato: 1 a 2 mm)
 
     // Placeholder: cápsula de 0,30 m e cabeça de raio 0,095 (altura total ≈ 0,43 m, a do contrato).
@@ -135,8 +138,12 @@ public partial class VillagerVisual : Node3D
 
         (HairSocket, HatSocket) = (Socket(skeleton, skeletonInModel, info.HeadBone, "Cabelo"), Socket(skeleton, skeletonInModel, info.HeadBone, "Chapéu"));
         ChestSocket = Socket(skeleton, skeletonInModel, info.ChestBone, "Peito");
+        // Topo da cabeça (chapéu e tufo provisório): o osso "head_end" do rig da Meshy, ou o topo da malha.
+        int headEnd = skeleton.FindBone("head_end");
         int head = skeleton.FindBone(info.HeadBone);
-        _headTop = head >= 0 ? (skeletonInModel * skeleton.GetBoneGlobalRest(head)).Origin + new Vector3(0f, 0.06f, 0f) : new Vector3(0f, 0.4f, 0f);
+        _headTop = headEnd >= 0 ? (skeletonInModel * skeleton.GetBoneGlobalRest(headEnd)).Origin
+            : head >= 0 ? (skeletonInModel * skeleton.GetBoneGlobalRest(head)).Origin + new Vector3(0f, 0.15f, 0f)
+            : new Vector3(0f, 0.4f, 0f);
     }
 
     /// <summary>
@@ -306,10 +313,12 @@ public partial class VillagerVisual : Node3D
         if (_animations.CurrentAnimation != clip && _animations.HasAnimation(clip))
             _animations.Play(clip, ClipBlendSeconds);
 
-        // Clipe de movimento no ritmo da velocidade real, até o teto; os outros em 1×.
+        // Clipe de movimento no ritmo da velocidade real ÷ passada, preso entre 1,0× e 1,5×; os outros em 1×.
         float targetScale = 1f;
         if (PreviewClip is null && clip is "run" or "carry" && _runStride > 0f && dt > 0f)
-            targetScale = Mathf.Clamp(walked / dt / _runStride, 0f, MaxAnimationSpeed);
+            targetScale = Mathf.Clamp(walked / dt / _runStride, MinAnimationSpeed, MaxAnimationSpeed);
+        if (data is not null)
+            VillagerLooks.CheckSpeedRule(data.Villagers.CellsPerSecond);
         _animations.SpeedScale = Mathf.Lerp(_animations.SpeedScale, targetScale, 1f - Mathf.Exp(-StrideSmoothing * dt));
     }
 
@@ -346,7 +355,8 @@ public partial class VillagerVisual : Node3D
         if (HairSocket is null)
             return;
         _hairInfo = VillagerLooks.HairFor(hairVariant);
-        _hair = _hairInfo is not null && !IsPlaceholder ? VillagerLooks.InstantiateHair(_hairInfo.Model) : null;
+        // Enquanto os outros cabelos não chegam, quem não tem o seu usa o primeiro que existir (hoje o cabelo 4).
+        _hair = _hairInfo is not null && !IsPlaceholder ? VillagerLooks.InstantiateHairOrFallback(_hairInfo.Model) : null;
         if (_hair is null)
         {
             // Tufo provisório: calota um pouco diferente por variação, para as variações se distinguirem.

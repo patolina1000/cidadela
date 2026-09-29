@@ -2754,3 +2754,51 @@ onde errou, correções manuais e quanto tempo levou.
 - **Prévia:** `assets/previews/aldeao_v2/cabelo_4_previa.png` (frente, lado, 3/4, jogo; 112 px, 44 px e 44 px ×
   crepúsculo; rosto distraído).
 - **Créditos:** 20. **Gerações:** 1 de 2. **Correções manuais:** nenhuma. **Tempo:** ~2 h.
+
+---
+
+## 2026-09-29 — Aldeão v2 no jogo: merge da `arte`, carregador ligado à arte, regra de velocidade, prints e FPS
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`, com o MCP godot-ai.
+- **Pedido:** merge da `arte` (corpo com rig, idle Idle_3 e run Run_02, retalhos Olhos e Boca, atlas, rosto.json,
+  cabelo 4); diário com as entradas dos dois; nada do v1 voltando. Depois: ligar o carregador (toon, rosto em
+  blend, cabelo 4 para todos, cores de `villager_looks.json`), aplicar a regra de velocidade e mostrar os
+  números se passar de 1,5×, prints no crepúsculo com ~10 aldeões (zoom padrão e máximo) e FPS com 500.
+- **Merge (`cf141e2`):** conflitos em `.gitignore` (entram as regras de `tools/arte`; a linha do `hair_state`
+  do v1 não volta), `docs/GDD.md` (linha de exportação da `master`) e `docs/DIARIO.md` (bloco do agente do
+  jogo e depois o da arte, com uma nota; as entradas da arte só têm duração, não horário, então não dava
+  para intercalar). Nenhum arquivo do v1 removido voltou (a `arte` não os tinha tocado). O merge trouxe
+  `aldeao_corpo_limpo.glb` e JSONs de apoio na mesma pasta; o Godot importa o GLB extra como cena (inofensivo).
+- **Carregador:**
+  - Retalhos "Olhos" e "Boca" do GLB (skin no Head, materiais BLEND com o atlas embutido) recebem o material
+    compartilhado do `VillagerFace.gdshader`; o corpo, o toon da pele; o cabelo, o toon do cabelo. Cores de
+    `data/villager_looks.json` (#AEBFD3 e #6F7F96).
+  - Topo da cabeça pelo osso `head_end` (o Head nasce na base do pescoço, y = 0,246; o topo está em 0,40);
+    sem ele, Head + 0,15; sem esqueleto, 0,40. Chapéu de palha e tufo provisório usam isso.
+  - Cabelo: quem não tem o seu arquivo usa o primeiro que existir (`InstantiateHairOrFallback`; hoje só o
+    `cabelo_4`), com aviso único por cabelo. Quando os outros chegarem, cada variação volta ao seu sozinha.
+  - Regra de velocidade: a reprodução do run é velocidade ÷ passadaRun presa entre **1,0× e 1,5×**
+    (`MinAnimationSpeed`/`MaxAnimationSpeed`; o teto antigo de 3× saiu). Ao carregar, `CheckSpeedRule` avisa
+    uma vez com os números se a velocidade de `data/` estiver fora da faixa. Nada mudou em `data/`.
+  - **Números:** 1,2 m/s ÷ 0,383 m/s (o `passadaRun` entregue) = **3,13×**, fora de 1,0×–1,5×.
+    (a) velocidade para 1,5×: **0,575 células/s** (viagem de 12 células: 21 s); (b) manter 1,2: passada de
+    **0,80 m/s** (1,5×) a 1,2 m/s (1,0×). Enquanto isso o run toca a 1,5× e os pés deslizam o resto.
+  - `data/maps/mapa_teste.json`: 10 aldeões livres em volta do Castelão (eram 3), para os prints e porque o
+    GDD diz que eles ficam perto do Coração.
+  - FaceTest: usa o corpo da arte quando existe (`UsePlaceholder` força o antigo); os atlas embaixo passaram a
+    ser os da arte, escalados para 160 px; a cena da multidão abre em tela cheia para a medição valer.
+- **Conferido no jogo (3840×2160):** 10 aldeões com o corpo da arte, cabelo 4, rosto piscando, no crepúsculo;
+  prints `docs/prints/aldeao_v2_jogo_zoom_padrao.png` (câmera padrão, 60 FPS com V-Sync) e
+  `aldeao_v2_jogo_zoom_maximo.png` (12 cliques de roda, 69 FPS). A captura em 1280 px estourou o transporte
+  do MCP; em 960 px passou. **500 aldeões da arte** na FaceTestCrowd (esqueleto animado, rosto em blend,
+  cabelo): **80 FPS em 3840×2160** (98 FPS quando a janela abriu em 1152×648). Print `aldeao_v2_arte_500.png`.
+- **O que deu errado:**
+  - Seis PNGs `assets/previews/exec-<uuid>.png` tinham entrado no commit `67a1e19` por um `git add -A` meu
+    (capturas do MCP salvas ali) e depois sumiram do disco; saíram do índice neste commit.
+  - O painel dos atlas na FaceTest ficou gigante com o atlas real (1536 px); `Size` num `TextureRect` não
+    segura, `Scale` sim.
+  - Um erro "Resource file not found: res://" apareceu no log do editor durante o scan de importação; não se
+    repetiu no jogo e não tem origem no nosso código (caminho vazio).
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 105 aprovados.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 03:05–03:35 de relógio.
