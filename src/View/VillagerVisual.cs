@@ -35,6 +35,23 @@ public partial class VillagerVisual : Node3D
     /// <summary>Clipe forçado em 1× (palco da Biografia); null = pelo estado da simulação.</summary>
     public string? PreviewClip { get; set; }
 
+    /// <summary>
+    /// Clipe posicionado pela fase (operar uma máquina): o quadro vem de <see cref="PosedPhase"/> por seek, nunca
+    /// tocado solto. null = volta ao comportamento normal. Tem prioridade sobre <see cref="PreviewClip"/>.
+    /// </summary>
+    public string? PosedClip { get; set; }
+    /// <summary>Fração do clipe posicionado, de 0 a 1 (dá a volta).</summary>
+    public float PosedPhase { get; set; }
+    /// <summary>Mistura ao entrar e sair do clipe posicionado.</summary>
+    public float PosedBlendSeconds { get; set; } = 0.2f;
+
+    /// <summary>O AnimationPlayer do corpo da arte (null no placeholder), para acrescentar clipes de outros arquivos.</summary>
+    public AnimationPlayer? Animations => _animations;
+    /// <summary>O esqueleto do corpo da arte (null no placeholder).</summary>
+    public Skeleton3D? Skeleton { get; private set; }
+    /// <summary>A raiz do glTF do corpo (espaço do aldeão da arte: frente em +Z).</summary>
+    public Node3D? Model { get; private set; }
+
 
     /// <summary>Encaixe "Cabelo" (espaço do corpo em pose de repouso, preso ao osso da cabeça).</summary>
     public Node3D? HairSocket { get; private set; }
@@ -88,6 +105,7 @@ public partial class VillagerVisual : Node3D
     private void BuildModel(Node3D model)
     {
         model.Name = "Model";
+        Model = model;
         model.RotationDegrees = new Vector3(0f, 180f, 0f); // frente do glTF em +Z; o aldeão olha para -Z
         _pivot.AddChild(model);
         VillagerLooks.FaceInfo info = VillagerLooks.Face();
@@ -126,6 +144,7 @@ public partial class VillagerVisual : Node3D
             GD.PushWarning("Aldeão: o corpo não tem Skeleton3D; sem encaixes de cabeça e peito.");
             return;
         }
+        Skeleton = skeleton;
 
         // Transformação do esqueleto em relação ao modelo: os encaixes ficam no espaço do corpo.
         Transform3D skeletonInModel = Transform3D.Identity;
@@ -305,15 +324,42 @@ public partial class VillagerVisual : Node3D
             return;
         }
 
+        if (PosedClip is string posed && _animations.HasAnimation(posed))
+        {
+            UpdatePosed(posed, dt);
+            return;
+        }
+        bool leavingPosed = _animations.CallbackModeProcess == AnimationMixer.AnimationCallbackModeProcess.Manual;
+        if (leavingPosed)
+            _animations.CallbackModeProcess = AnimationMixer.AnimationCallbackModeProcess.Idle;
+
         string clip = PreviewClip ?? ClipFor(moving, carrying, s.Resting);
         if (_animations.CurrentAnimation != clip && _animations.HasAnimation(clip))
-            _animations.Play(clip, ClipBlendSeconds);
+            _animations.Play(clip, leavingPosed ? PosedBlendSeconds : ClipBlendSeconds);
 
         // Clipe de movimento sempre no ritmo da velocidade real ÷ passada (os pés não deslizam); os outros em 1×.
         float targetScale = 1f;
         if (PreviewClip is null && clip is "run" or "carry" && _runStride > 0f && dt > 0f)
             targetScale = Mathf.Max(walked / dt / _runStride, 0.01f);
         _animations.SpeedScale = Mathf.Lerp(_animations.SpeedScale, targetScale, 1f - Mathf.Exp(-StrideSmoothing * dt));
+    }
+
+    /// <summary>
+    /// Clipe posicionado: o player passa a ser avançado à mão; a cada quadro volta dt antes do tempo da fase e
+    /// avança dt, então termina exatamente no quadro da fase e a mistura de entrada anda no tempo real.
+    /// </summary>
+    private void UpdatePosed(string clip, float dt)
+    {
+        AnimationPlayer player = _animations!;
+        player.CallbackModeProcess = AnimationMixer.AnimationCallbackModeProcess.Manual;
+        player.SpeedScale = 1f;
+        if (player.CurrentAnimation != clip)
+            player.Play(clip, PosedBlendSeconds);
+        double length = player.GetAnimation(clip).Length;
+        double time = Mathf.PosMod(PosedPhase, 1f) * length;
+        double step = Mathf.Max(dt, 0f);
+        player.Seek(Mathf.PosMod(time - step, length), update: false);
+        player.Advance(step);
     }
 
     /// <summary>

@@ -3421,3 +3421,52 @@ onde errou, correções manuais e quanto tempo levou.
     versionar; a arte deve commitá-los na branch dela.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 18:40–18:47 de relógio.
+
+---
+
+## 2026-09-29 — Prova de operação no jogo: clipes de GLB separado e a cena ProvaOperacao
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`, com o MCP godot-ai.
+- **Pedido:** classe da view que acrescenta clipes de GLBs separados (só esqueleto e animação) ao AnimationPlayer
+  de um corpo, como AnimationLibrary nova, tirando o `-loop` e ligando o loop; cena `ProvaOperacao.tscn` com a
+  roda r06 e dois aldeões, A posicionado pela fase da roda (seek), B ao contrário (0,5 − t), contadores de voltas
+  e golpes, teclas 1 e 2 (dano simulado) com entrada no quadro certo e mistura de 0,2 s, mínimo de operadores
+  configurável, câmera do jogo com zoom e distância palma-manopla na tela.
+- **O que foi feito:**
+  - `src/View/ExternalClips.cs`: carrega o GLB de clipes, copia cada animação para uma `AnimationLibrary`
+    ("operacao/girar_roda"), redireciona as trilhas para o esqueleto do corpo (descarta osso inexistente, com
+    aviso), converte as trilhas de posição pela razão das escalas dos esqueletos e, com a duração informada,
+    corta o começo do clipe (ver abaixo).
+  - `VillagerVisual`: `PosedClip`, `PosedPhase` e `PosedBlendSeconds` (0,2 s). No modo posicionado o player
+    passa a ser avançado à mão: a cada quadro volta dt antes do tempo da fase e avança dt, então para exatamente
+    no quadro da fase e a mistura anda no tempo real. Expõe `Animations`, `Skeleton` e `Model`. Fora desse modo
+    nada muda (a VelocidadeAldeao continua em 1,49× / 2,09× / 2,61× / 3,13×).
+  - `scenes/tests/ProvaOperacao.tscn` + `ProvaOperacaoRoot.cs`: tudo sai do `clipes.json` da variante r06
+    (duração, fração do golpe, raio, posição e giro da roda no espaço do aldeão) e do `girar_roda.json` da arte
+    (comprimento dos ossos das mãos até a palma, distância da manopla ao disco). O eixo da roda fica no X do
+    mundo, para a câmera do jogo ver os dois de perfil; Q e E giram a câmera em 45°. A alça B está na face −Z,
+    180° depois da A, o que confere com a regra 0,5 − t. Golpe: quando o quadro do aldeão passa por
+    `conta_na_fracao`. Fora do posto, o aldeão recua 0,45 m e fica em idle. A roda acelera e desacelera
+    suavemente (2,5/s), com a mesma velocidade para 1 ou 2 operadores.
+- **Medido no jogo:**
+  - Distância palma-manopla nos 48 quadros do clipe, com a roda pausada: **no máximo 3,6 mm** (quadro 28, o
+    mesmo pior quadro do Blender, que mede 2,5 mm). Entre os quadros chega a 5,8 mm; girando, o máximo por volta
+    fica em 3,7 mm.
+  - A volta com a roda parada entra no quadro da fase: 152 mm no primeiro quadro, 4 mm aos 0,2 s.
+  - Golpes batem com as voltas (A em t = 0,5 + k; B em t = k). Mínimo 1: um operador mantém 0,50 volta/s;
+    nenhum para a roda em cerca de 2,5 s. Mínimo 2: com um fora, a roda para; ele volta, ela retoma.
+  - Prints: `docs/prints/prova_operacao_dois.png`, `prova_operacao_um_fora.png`, `prova_operacao_45.png`.
+- **O que deu errado:**
+  - **O clipe da arte está na escala antiga:** o `girar_roda.glb` (raiz e variante r06) foi exportado antes da
+    normalização, com a Armature em 0,004 e as translações dos ossos nessa unidade (Hips a 31 unidades, contra
+    0,124 m no corpo). As rotações de repouso batem com o corpo normalizado em 0,04°, e as translações × 0,004
+    batem em 0,005 mm; a classe converte pela razão das escalas. Vale a arte reexportar o clipe normalizado.
+  - **Duração do clipe:** o Blender exporta o quadro 1 em 1/24 s (chaves de 1/24 a 49/24) e o importador do Godot
+    reamostra a 30 fps a partir de 0. O clipe importado ficava com 2,0417 s e o começo parado, e a fase 0 caía
+    antes do primeiro quadro: 7,5 mm de erro. Com a duração do `clipes.json` (2,0 s), a classe corta o começo;
+    o erro caiu para 3,6 mm. O 1,1 mm que sobra contra o Blender vem da reamostragem a 30 fps; com
+    `animation/fps = 24` no `.import` do clipe (território da arte) deve sumir.
+  - A primeira versão contou um golpe a mais no começo (contagem sem valor inicial); corrigida.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 116 aprovados (simulação intocada).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 18:47–19:00 de relógio.
