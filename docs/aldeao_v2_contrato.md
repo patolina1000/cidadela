@@ -59,7 +59,8 @@ Mudanças só com aval do Arthur: quem precisar mudar algo, para e pergunta.
 - Uma malha cada, com no máximo 800 triângulos.
 - Um único material chamado "cabelo", cor chapada. Rígidos, sem pesos de osso.
 - Modelados no MESMO espaço do corpo em pose de repouso. O jogo prende no encaixe "Cabelo" compensando GetBoneGlobalRest do osso da cabeça.
-- Nenhum cabelo cobre o retalho "Olhos".
+- No máximo 2 cabelos (hoje o 2 e o 3) podem cobrir até a metade de cima de um olho; o retalho não muda; o cabelo mantém folga mínima de 2 mm e nunca atravessa o retalho.
+  (Mudança de 29/09/2026; antes: "Nenhum cabelo cobre o retalho Olhos".)
 
 ## CORES (provisórias, ficam em data/villager_looks.json)
 

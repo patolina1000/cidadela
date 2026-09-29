@@ -2124,3 +2124,17 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** nada.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:38–01:43 de relógio.
+
+---
+
+## 2026-09-29 — Contrato do aldeão v2: cabelos podem cobrir a metade de cima de um olho
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Pedido (mudança aprovada pelo humano):** na seção CABELOS, "Nenhum cabelo cobre o retalho Olhos" vira "No
+  máximo 2 cabelos (hoje o 2 e o 3) podem cobrir até a metade de cima de um olho; o retalho não muda; o cabelo
+  mantém folga mínima de 2 mm e nunca atravessa o retalho."
+- **O que foi feito:** `docs/aldeao_v2_contrato.md` atualizado, com a data e o texto anterior anotados. Só
+  documento: nada no código depende dessa regra (o rosto não escreve profundidade e o cabelo opaco o cobre
+  onde passar na frente, conferido na FaceTest de hoje).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 01:45 de relógio.
