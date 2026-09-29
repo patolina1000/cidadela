@@ -40,9 +40,9 @@ Números em `auditoria.json` (gerado por `tools/arte/prova_operacao/auditoria.py
 ## 3. O que isso complica para clipes que não vêm da Meshy
 
 **IK no Blender**
-- Os ossos 250× compridos quebram o IK: a ponta da cadeia fica a metros do punho. Solução proposta (testada no passo 3):
+- Os ossos 250× compridos quebram o IK: a ponta da cadeia fica a metros do punho. Solução (testada no passo 3; funcionou):
   em modo de edição, encurtar cada osso até o filho **sem mudar direção nem rolagem** (a matriz de repouso não
-  muda, então os clipes continuam valendo). A mão, que não tem
+  muda, então os clipes continuam valendo; medido no passo 3: 0,00002° e 0,005 mm). A mão, que não tem
   filho, ganha o comprimento até o centro da palma.
 - Rolagens de ±90° nos braços, diferentes entre os lados: o ângulo do polo do IK (cotovelo) tem que ser achado
   por lado; não existe um valor único.
@@ -74,3 +74,15 @@ Números em `auditoria.json` (gerado por `tools/arte/prova_operacao/auditoria.py
 - Para segurar uma alça isso ajuda: o bloco já lê como punho. A alça tem que caber "dentro" do punho visualmente
   (≥ 12 mm de diâmetro) e o contato é pelo centro da palma.
 - Closes a 512 px: `mao_esquerda.png`, `mao_direita.png`.
+
+## 5. Resultado da prova (passos 2 a 4)
+
+- **Normalização (passo 2):** segura. Vértices iguais a 0,0085 mm nos dois clipes; o jogo não muda código.
+- **IK no esqueleto aprovado (passo 3):** escala e rolagens **não** impediram nada. Com o comprimento real nos
+  ossos do braço e um ângulo de polo por lado, o IK resolve e o clipe exportado (só esqueleto) toca igual no
+  `aldeao_corpo.glb` aprovado, nos dois lados da roda.
+- **O que impede as mãos de fecharem na alça de 0,10 m é a proporção:** ombro à palma = 123 mm, e a manopla
+  precisa ficar a ≥ 103 mm dos ombros para não entrar na barriga (que avança 65 mm). Um círculo de 0,10 m de raio
+  no peito vai da altura do joelho à do queixo; falta até **35 mm** de braço embaixo e do lado oposto (só 1 dos 48
+  quadros fecha a ≤ 5 mm). Com o tronco acompanhando pouco, as mãos fecham **até 0,06 m de raio** (≤ 2,5 mm).
+  Detalhes em `girar_roda.json` e `variante_r06/`.

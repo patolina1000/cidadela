@@ -2668,3 +2668,35 @@ onde errou, correções manuais e quanto tempo levou.
   depende da escala. O que muda: valores em espaço de osso passam a metros (posição do Hips nos clipes, IK por
   código), e o importador do Blender passa a criar ossos com comprimento de verdade.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Prova de operação, passo 3: clipe "girar_roda-loop" por IK no Blender (sem Meshy)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** roda provisória vertical (eixo horizontal na altura do peito, uma alça em cada face a 0,10 m do
+  eixo, defasadas 180°); aldeão com o esqueleto aprovado (sem normalizar), pés fixos, as duas mãos na alça por IK
+  durante uma volta, tronco acompanhando pouco, sem avanço de raiz; laço fechado < 1 cm; exportar só esqueleto +
+  clipe, a roda e `clipes.json`. Se as mãos não fecharem, registrar exatamente por quê.
+- **Feito (`tools/arte/prova_operacao/girar_roda.py`):**
+  1. comprimento real nos ossos do braço (braço e antebraço até o filho; mão até o centro da palma), mudando só
+     `length`: repouso muda 0,00002° e 0,005 mm, ou seja, nada;
+  2. IK nas duas mãos (cadeia mão-antebraço-braço, ponta no centro da palma, sem esticar, rigidez 0,5 na mão),
+     polo no cotovelo com ângulo escolhido por lado (sai diferente em cada lado por causa das rolagens de ±90°);
+  3. tronco: metade em Spine02, metade em Spine01, inclinação de 4° a 12° (mais com a alça embaixo), giro de ±8° e
+     flexão lateral de ±4° para o lado da alça; Hips parado (faixa de posição 0);
+  4. 48 quadros a 24 fps (1 volta = 2 s, escolha minha), bake visual; laço 0,0 cm sem misturar nada;
+  5. alça: manopla de 12 mm de raio na ponta de uma haste de 5 cm; cada mão de um lado da manopla (±18 mm);
+     plano das manoplas a 10,3 cm dos ombros, pelo perfil da barriga + 32 mm de folga; eixo a 0,19 m.
+- **Entregas:** `assets/modelos/prova_operacao/clipes/girar_roda.glb` (só esqueleto + `girar_roda-loop`; conferido na
+  reimportação: 1 objeto ARMATURE), `roda.glb` (pivô no eixo, frente +Z = face da alça A; alça A no topo e B embaixo
+  na fase 0; material "madeira" #4A3B3A), `clipes.json` (2,0 s; fase 0 = alça A no topo; conta em 0,5 = alça A
+  passa embaixo, escolha minha; ângulo da roda −360° × fase em volta do +Z; lado oposto toca o clipe ao contrário
+  com fase 0,5 − t). Medidas em `assets/previews/prova_operacao/girar_roda.json`.
+- **O problema (a informação que importa): as mãos NÃO fecham na alça de 0,10 m.** Não é escala nem rolagem: é a
+  proporção. Ombro à palma = 123 mm; a manopla fica a ≥ 103 mm dos ombros para não entrar na barriga (que avança
+  65 mm); um círculo de 0,10 m no peito desce à altura do joelho. Falta até **35,4 mm** (pior no quadro 29, fase
+  0,58: alça embaixo, do lado oposto à mão direita); só 1 dos 48 quadros fica a ≤ 5 mm. Varredura com o mesmo
+  método: raio 0,05 → 0 mm; **0,06 → 2,3 mm**; 0,07 → 9,7 mm; 0,08 → 19 mm; 0,10 → 35 mm.
+- **Variante (extra, para provar o método):** raio 0,06 m em `assets/modelos/prova_operacao/variante_r06/` (mesmos
+  arquivos): fecha nos 48 quadros, falta máxima 2,5 mm. Nenhum arquivo aprovado mudou.
+- **O que deu errado:** a primeira versão do giro do tronco tinha os sinais embolados; reescrita antes de rodar.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.

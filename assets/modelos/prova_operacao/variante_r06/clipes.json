@@ -1,0 +1,24 @@
+{
+  "girar_roda-loop": {
+    "duracao_s": 2.0,
+    "quadros": 48,
+    "fps": 24,
+    "fase0": "alça A (face +Z da roda) no topo",
+    "conta_na_fracao": 0.5,
+    "conta_significa": "a alça A passa embaixo (fim da empurrada para baixo)",
+    "roda": {
+      "arquivo": "roda.glb",
+      "raio_alca_m": 0.06,
+      "angulo": "em volta do +Z local da roda: -360° × fase (fase 0 = alça A no topo)",
+      "posicao_no_espaco_do_aldeao_m": [
+        0.0,
+        0.19,
+        0.1751
+      ],
+      "giro_em_y_no_espaco_do_aldeao_graus": 180.0,
+      "nota": "espaço do aldeão = glTF, aldeão olhando +Z; a roda fica na frente dele com a face +Z virada para ele"
+    },
+    "lado_oposto": "o segundo aldeão, do outro lado, segura a alça B: toca o mesmo clipe AO CONTRÁRIO com fase 0,5 − t (visto do outro lado a roda gira no sentido oposto); com +0,5 para a frente as mãos só coincidem em 2 instantes",
+    "falta_max_mm": 2.5
+  }
+}
