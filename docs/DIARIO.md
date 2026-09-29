@@ -2823,3 +2823,18 @@ onde errou, correções manuais e quanto tempo levou.
   repouso igual ao do `aldeao_corpo.glb` a **0,0054 mm** e 0,00002°; palma-manopla nos 48 quadros igual à de antes
   a **0,1 mm** (arredondamento): raiz 35,4 mm (antes 35,4), variante **2,4 mm** (antes 2,5).
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Prova de operação: girar_roda.py exporta pelo contrato e gera um clipe por posto
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido (passo 4 do pedido):** `operacao_lib.py` e `girar_roda.py` exportando sempre pelo contrato (metros, t = 0,
+  24 fps). Feito antes do passo 2 porque o clipe do posto B sai deste script.
+- **Feito:** `operacao_lib.export_clip` (commit anterior) passa a ser a única saída de clipe do `girar_roda.py`; o bake
+  vai do quadro 0 ao 48 (quadro = fase da roda × 48); a cena exporta a 24 fps. O script gera **um clipe por posto**:
+  para cada posto, cena nova com o corpo aprovado, IK para a manopla da alça daquele posto (A: fase p; B: a alça B,
+  que para o aldeão do outro lado está na fase 0,5 − p do círculo dele), bake, laço e exportação num GLB próprio.
+  O `clipes.json` sai com um bloco por posto (posição e giro em relação à roda, fórmula da fase sem inverter).
+  Uma conferência interna (assert) coloca cada posto em volta da roda física e confere que a manopla cai no alvo.
+- **Pendência:** o `gif_roda.py` (GIFs da prova) ainda usa o atalho de tocar o clipe A ao contrário e a primeira
+  chave no quadro 1; precisa ser atualizado antes de refazer os GIFs.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
