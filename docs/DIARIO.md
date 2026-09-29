@@ -3610,7 +3610,7 @@ onde errou, correções manuais e quanto tempo levou.
   `animation/fps=24` **não veio no merge**. Ele está modificado e não commitado na worktree da arte; na branch
   `arte` e na `master` continua `animation/fps=30`. Não mexi (território da arte).
 - **Correções manuais:** nenhuma.
-- **Tempo:** 19:12–19:16 de relógio.
+- **Tempo:** 19:12–19:15 de relógio.
 
 ---
 
@@ -3625,4 +3625,58 @@ onde errou, correções manuais e quanto tempo levou.
   opcional de locomoção. As três regras entraram (passada em "clipes.json", 24 fps em "FORMATO DO CLIPE").
 - **O que deu errado:** nada.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 19:16–19:18 de relógio.
+- **Tempo:** 19:15 de relógio (poucos minutos).
+
+---
+
+## 2026-09-29 — ExternalClips estrito e um clipe por posto na ProvaOperacao
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`, com o MCP godot-ai.
+- **Pedido:** `ExternalClips` estrito (sem converter escala nem cortar o começo; recusa com aviso por escala,
+  repouso acima de 0,01 mm ou primeira chave fora de 0); a ProvaOperacao lendo o `clipes.json` novo, com o GLB
+  próprio de cada posto e sem inverter; medir palma-manopla; provar a recusa com o clipe antigo; com o corpo a
+  24 fps, conferir a VelocidadeAldeao e a passada.
+- **O que foi feito:**
+  - `ExternalClips`: sem conversão nem corte. Recusa, com um aviso que lista todos os motivos: escala da
+    Armature diferente da do corpo, ossos diferentes, repouso acima de 0,01 mm, primeira chave fora de t = 0 e,
+    com a duração do `clipes.json` informada, duração diferente em mais de meio quadro. Ganhou uma sobrecarga
+    que recebe a cena já instanciada.
+  - `ProvaOperacaoRoot`: um bloco por posto (`arquivo`, `posto`, `peca`), cada aldeão com a sua biblioteca
+    ("operacao_A/girar_roda", "operacao_B/girar_roda_b"), posicionado pela fase da roda sem inverter nem
+    defasar; golpe quando a fase passa por `conta_na_fracao`. Gancho de teste `LoadClipFile(posto, caminho, fps)`,
+    que lê um GLB em tempo de execução (GLTFDocument) e passa pelo mesmo `ExternalClips`.
+- **Medidas (palma-manopla, pior mão):**
+
+  | Clipe | 48 quadros, pausada | entre quadros | girando |
+  |---|---|---|---|
+  | importado pelo editor, A / B | 3,89 / 3,43 mm | 3,88 / 3,38 mm | 3,91 / 3,44 mm |
+  | lido em tempo de execução, 24 fps, A / B | 2,44 / 2,44 mm | 2,43 / 2,43 mm | 2,45 / 2,45 mm |
+
+  O pior quadro é o 28 no A e o 44 no B, os mesmos do Blender (2,4 a 2,5 mm).
+- **Por que o importado dá 3,9 mm:** o importador do Godot tem o otimizador de animação ligado por padrão e
+  apaga chaves com perda: as trilhas ficam com 36 a 48 chaves em vez de 49. Lido sem o importador (49 chaves),
+  o erro é o do Blender. A correção é desligar o otimizador no `.import` dos clipes (`_subresources`), que é da
+  arte, e vale como regra nova do contrato (precisa do aval do Arthur).
+- **Recusa provada:** o `girar_roda.glb` de antes (`a2e3b80`, sha256 `ee8867d4…`) lido pelo gancho gera, no log
+  do jogo:
+  `Clipes recusados: …/girar_roda_antigo.glb fora do contrato de animação: Armature em escala 0,004 (corpo: 1);
+  o clipe "girar_roda-loop" dura 2,0417 s e o clipes.json diz 2,0000 s (começo atrasado ou fim a mais; a
+  primeira chave tem que estar em t = 0).`
+  A verificação de primeira chave, sozinha, não pega esse caso: o importador do Godot (e o GLTFDocument)
+  sempre recria uma chave em t = 0 segurando o primeiro quadro. Por isso entrou a verificação pela duração.
+- **Corpo a 24 fps:**
+  - O `.import` do corpo commitado continua em `animation/fps=30` (a arte não commitou o de 24; ver o merge).
+    Medi com o corpo lido a 24 fps em tempo de execução.
+  - A VelocidadeAldeao continua em 1,49× / 2,09× / 2,61× / 3,13× (a reprodução não depende do fps).
+  - Passada pelo método da arte (mediana da velocidade de recuo dos dedos, um ponto por quadro): **0,383 m/s a
+    24 fps** no ciclo real. Achado: os clipes do corpo (`run-loop` e `idle-loop`) também começam em t = 1/24 no
+    GLB; o Godot recria a chave em t = 0 igual à de 1/24 (0 mm de diferença), então cada volta do run ganha um
+    quadro parado e dura 0,75 s em vez de 0,708 s. Contando esse quadro, a mesma medida dá 0,303 m/s a 24 fps
+    (0,384 a 30 fps). O corpo também precisa da regra "primeira chave em t = 0" (território da arte).
+- Prints: `docs/prints/prova_operacao_postos.png` e `prova_operacao_postos_45.png`.
+- O editor Godot fechou sozinho durante um escaneamento de arquivos (sem relatório de travamento); reabri no
+  mesmo projeto e ele reconectou ao MCP.
+- Corrigi os horários das duas entradas anteriores (tinham fim estimado à frente do relógio).
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 116 aprovados (simulação intocada).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:15–19:24 de relógio.

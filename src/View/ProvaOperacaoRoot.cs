@@ -7,15 +7,16 @@ namespace Cidadela.View;
 
 /// <summary>
 /// Prova de operação (scenes/tests/ProvaOperacao.tscn), no padrão da VelocidadeAldeao: no crepúsculo do jogo, a
-/// roda da variante r06 da arte e dois aldeões, um em cada alça, com o clipe girar_roda (GLB separado, carregado
-/// por <see cref="ExternalClips"/>). Tudo vem de assets/modelos/prova_operacao/variante_r06/clipes.json.
+/// roda da variante r06 da arte e um aldeão em cada posto, cada um com o clipe próprio do posto (GLB separado,
+/// carregado por <see cref="ExternalClips"/> em modo estrito). Tudo vem de
+/// assets/modelos/prova_operacao/variante_r06/clipes.json, um bloco por posto (docs/animacao_contrato.md).
 /// - A roda gira em volta do +Z local: −360° × fase (fase 0 = alça A no topo). O eixo da roda fica no X do mundo
 ///   para a câmera do jogo ver os dois de perfil.
-/// - Aldeão A (alça A) é POSICIONADO pela fase da roda (seek). Aldeão B (alça B, 180° depois, na face −Z) toca o
-///   mesmo clipe ao contrário, com fase 0,5 − t. Provisório: a regra final é um clipe por posto, gerado por IK.
-/// - Golpe: cada vez que o quadro do aldeão passa por conta_na_fracao. Teclas 1 e 2 tiram ou devolvem cada um
-///   (dano simulado): fora do posto ele recua e fica em idle; ao voltar, entra no quadro da fase com 0,2 s de
-///   mistura. Abaixo do mínimo de operadores a roda desacelera até parar; com 1 ou 2 a velocidade é a mesma.
+/// - Cada aldeão é POSICIONADO pela fase da roda (seek): quadro = fase × quadros, sem inverter nem defasar.
+/// - Golpe: quando a fase da roda passa por conta_na_fracao do clipe do posto. Teclas 1 e 2 tiram ou devolvem
+///   cada um (dano simulado): fora do posto ele recua e fica em idle; ao voltar, entra no quadro da fase com
+///   0,2 s de mistura. Abaixo do mínimo de operadores a roda desacelera até parar; com 1 ou 2 a velocidade é a
+///   mesma.
 /// - Câmera do jogo (55°), com zoom na roda do mouse até bem perto e Q/E para girar em passos de 45°.
 /// - Mostra a distância palma-manopla de cada mão: a palma é a ponta do osso da mão com o comprimento medido
 ///   pela arte (girar_roda.json), e o alvo é a manopla ± 18 mm no X do aldeão, como no Blender.
@@ -24,10 +25,7 @@ public partial class ProvaOperacaoRoot : Node3D
 {
     private const string Dir = "res://assets/modelos/prova_operacao/variante_r06/";
     private const string ClipsJson = Dir + "clipes.json";
-    private const string WheelGlb = Dir + "roda.glb";
-    private const string ClipGlb = Dir + "clipes/girar_roda.glb";
     private const string ReportJson = "res://assets/previews/prova_operacao/variante_r06/girar_roda.json";
-    private const string ClipKey = "girar_roda-loop";
     private const string Library = "operacao";
     // Meia distância entre as mãos na manopla (tools/arte/prova_operacao/operacao_lib.py, GRIP_HALF); não está nos JSON.
     private const float GripHalf = 0.018f;
@@ -46,25 +44,26 @@ public partial class ProvaOperacaoRoot : Node3D
         public required Vector3 Post;
         public required Vector3 Forward;
         public required Vector3 HandleLocal;
-        public required bool Reversed;
+        public required string Clip;
+        public required float StrikeAt;
         public required Label3D Label;
         public bool OnPost = true;
         public int Strikes;
         public long LastCount;
         public float LeftMm = -1f, RightMm = -1f, TurnMaxMm, PrevTurnMaxMm = -1f;
-        public float ClipPhase(double wheel) => Reversed ? (float)Mathf.PosMod(0.5 - wheel, 1.0) : (float)Mathf.PosMod(wheel, 1.0);
-        // Quantas vezes a roda chegou à fase em que o quadro deste aldeão vale a fração do golpe (A: t = fração;
-        // B, ao contrário: t = 0,5 − fração). A roda só anda para a frente, então a contagem só cresce.
-        public long Count(double wheel, float fraction) => (long)Mathf.Floor(wheel - (Reversed ? 0.5 - fraction : fraction));
+        // Quantas vezes a roda passou pela fração do golpe; a roda só anda para a frente, então só cresce.
+        public long Count(double wheel) => (long)Mathf.Floor(wheel - StrikeAt);
     }
 
     private readonly List<Operator> _ops = new();
+    private readonly Dictionary<string, float> _durations = new(); // duracao_s de cada clipe, do clipes.json
     private GameData _data = null!;
     private Node3D _wheel = null!;
     private Vector3 _center;
     private Basis _wheelBasis;
     private double _phase;
-    private float _speed, _turnSpeed, _strikeAt, _handLeft, _handRight, _radius;
+    private float _speed, _turnSpeed, _handLeft, _handRight, _radius, _handleOut;
+    private int _frames;
     private bool _paused;
     private long _lastTurn;
     private Camera3D _camera = null!;
@@ -74,36 +73,48 @@ public partial class ProvaOperacaoRoot : Node3D
     public override void _Ready()
     {
         _data = GameFiles.LoadData();
-        var clip = Json.ParseString(FileAccess.GetFileAsString(ClipsJson)).AsGodotDictionary()[ClipKey].AsGodotDictionary();
-        var wheelInfo = clip["roda"].AsGodotDictionary();
+        var clips = Json.ParseString(FileAccess.GetFileAsString(ClipsJson)).AsGodotDictionary();
         var report = Json.ParseString(FileAccess.GetFileAsString(ReportJson)).AsGodotDictionary();
         var lengths = report["esqueleto"].AsGodotDictionary()["comprimentos_m"].AsGodotDictionary();
-        float duration = clip["duracao_s"].AsSingle();
-        _turnSpeed = 1f / duration;
-        _strikeAt = clip["conta_na_fracao"].AsSingle();
-        _radius = wheelInfo["raio_alca_m"].AsSingle();
-        float handleOut = report["roda"].AsGodotDictionary()["knob_y_m"].AsSingle();
-        var p = wheelInfo["posicao_no_espaco_do_aldeao_m"].AsFloat32Array();
-        var wheelInVillager = new Vector3(p[0], p[1], p[2]);
-        float wheelYaw = Mathf.DegToRad(wheelInfo["giro_em_y_no_espaco_do_aldeao_graus"].AsSingle());
         _handLeft = lengths["LeftHand"].AsSingle();
         _handRight = lengths["RightHand"].AsSingle();
+        _handleOut = report["roda"].AsGodotDictionary()["knob_y_m"].AsSingle();
 
         BuildGround();
 
-        // A roda: face +Z para o aldeão A. Eixo no X do mundo.
+        // A peça é a mesma em todos os blocos: o primeiro dá o arquivo, o raio, a duração e a altura do eixo
+        // (os pés do posto estão a posicao_m.y do eixo).
         _wheelBasis = new Basis(Vector3.Up, Mathf.Pi / 2f);
-        _center = new Vector3(FieldSize / 2f, wheelInVillager.Y, FieldSize / 2f);
-        _wheel = new Node3D { Name = "Roda", Position = _center, Basis = _wheelBasis };
-        AddChild(_wheel);
-        _wheel.AddChild(GD.Load<PackedScene>(WheelGlb).Instantiate<Node3D>());
-
-        // Espaço do aldeão da arte = yaw do VillagerVisual × 180° (a frente do glTF é +Z). A: roda = aldeão × giro
-        // em Y do JSON; B, do outro lado, vê a face −Z, então roda = aldeão.
-        Basis villagerA = _wheelBasis * new Basis(Vector3.Up, -wheelYaw);
-        Basis villagerB = _wheelBasis;
-        AddOperator("A", villagerA, wheelInVillager, new Vector3(0f, _radius, handleOut), reversed: false, seed: 1);
-        AddOperator("B", villagerB, wheelInVillager, new Vector3(0f, -_radius, -handleOut), reversed: true, seed: 4);
+        bool first = true;
+        int seed = 1;
+        foreach (Variant key in clips.Keys)
+        {
+            var clip = clips[key].AsGodotDictionary();
+            var post = clip["posto"].AsGodotDictionary();
+            var piece = clip["peca"].AsGodotDictionary();
+            float[] p = post["posicao_m"].AsFloat32Array();
+            var feetInWheel = new Vector3(p[0], p[1], p[2]);
+            if (first)
+            {
+                first = false;
+                _turnSpeed = 1f / clip["duracao_s"].AsSingle();
+                _frames = clip["quadros"].AsInt32();
+                _radius = piece["raio_alca_m"].AsSingle();
+                _center = new Vector3(FieldSize / 2f, -feetInWheel.Y, FieldSize / 2f);
+                _wheel = new Node3D { Name = "Roda", Position = _center, Basis = _wheelBasis };
+                AddChild(_wheel);
+                _wheel.AddChild(GD.Load<PackedScene>(Dir + piece["arquivo"].AsString()).Instantiate<Node3D>());
+            }
+            // Espaço do aldeão da arte (frente +Z) no espaço da roda: giro em Y do posto.
+            Basis villager = _wheelBasis * new Basis(Vector3.Up, Mathf.DegToRad(post["giro_em_y_graus"].AsSingle()));
+            Vector3 feet = _center + _wheelBasis * feetInWheel;
+            // A alça A fica na face +Z da roda; a B, 180° depois, na face −Z.
+            Vector3 handle = post["alca"].AsString() == "A" ? new Vector3(0f, _radius, _handleOut) : new Vector3(0f, -_radius, -_handleOut);
+            _durations[key.AsString()] = clip["duracao_s"].AsSingle();
+            AddOperator(post["nome"].AsString(), villager, feet, handle, Dir + clip["arquivo"].AsString(),
+                clip["conta_na_fracao"].AsSingle(), seed);
+            seed += 3;
+        }
 
         _camera = new Camera3D { Name = "Camera", Fov = 45f, Current = true };
         AddChild(_camera);
@@ -123,18 +134,17 @@ public partial class ProvaOperacaoRoot : Node3D
             DrawOperator(op, 10f);
     }
 
-    private void AddOperator(string name, Basis villagerSpace, Vector3 wheelInVillager, Vector3 handleLocal, bool reversed, int seed)
+    private void AddOperator(string name, Basis villagerSpace, Vector3 feet, Vector3 handleLocal, string clipGlb, float strikeAt, int seed)
     {
-        Vector3 post = _center - villagerSpace * wheelInVillager;
-        post.Y = 0f;
+        feet.Y = 0f;
         Vector3 forward = villagerSpace * Vector3.Back; // +Z do glTF no mundo
         var visual = new VillagerVisual { Name = $"Aldeao{name}", Seed = seed };
         AddChild(visual);
-        string clipName = $"{Library}/girar_roda";
+        string library = $"{Library}_{name}";
+        string clipName = "";
         if (visual.Animations is AnimationPlayer player)
         {
-            var durations = new Dictionary<string, float> { [ClipKey] = 1f / _turnSpeed };
-            List<string> added = ExternalClips.AddLibrary(player, ClipGlb, Library, durations);
+            List<string> added = ExternalClips.AddLibrary(player, clipGlb, library, _durations);
             if (added.Count > 0)
                 clipName = added[0];
         }
@@ -145,9 +155,12 @@ public partial class ProvaOperacaoRoot : Node3D
             HorizontalAlignment = HorizontalAlignment.Center,
         };
         AddChild(label);
-        visual.PosedClip = clipName;
-        var op = new Operator { Name = name, Visual = visual, Post = post, Forward = forward, HandleLocal = handleLocal, Reversed = reversed, Label = label };
-        op.LastCount = op.Count(_phase, _strikeAt);
+        var op = new Operator
+        {
+            Name = name, Visual = visual, Post = feet, Forward = forward, HandleLocal = handleLocal, Clip = clipName,
+            StrikeAt = strikeAt, Label = label,
+        };
+        op.LastCount = op.Count(_phase);
         _ops.Add(op);
     }
 
@@ -197,7 +210,38 @@ public partial class ProvaOperacaoRoot : Node3D
             return;
         Operator op = _ops[index];
         op.OnPost = !op.OnPost;
-        op.LastCount = op.Count(_phase, _strikeAt);
+        op.LastCount = op.Count(_phase);
+    }
+
+    /// <summary>
+    /// Troca o clipe de um posto por um GLB lido em tempo de execução (GLTFDocument, sem o importador do editor
+    /// nem o otimizador dele), passando pelo mesmo <see cref="ExternalClips"/> estrito. Para testes: comparar com o
+    /// clipe importado e provar a recusa de arquivos fora do contrato. Devolve quantos clipes entraram.
+    /// </summary>
+    public int LoadClipFile(int index, string path, int bakeFps)
+    {
+        Operator op = _ops[index];
+        if (op.Visual.Animations is not AnimationPlayer player)
+            return 0;
+        var document = new GltfDocument();
+        var state = new GltfState();
+        if (document.AppendFromFile(path, state) != Error.Ok)
+        {
+            GD.PushWarning($"Clipes: não consegui ler {path}.");
+            return 0;
+        }
+        Node root = document.GenerateScene(state, bakeFps);
+        try
+        {
+            List<string> added = ExternalClips.AddLibrary(player, root, path, $"{Library}_{op.Name}_arquivo", _durations);
+            if (added.Count > 0)
+                op.Clip = added[0];
+            return added.Count;
+        }
+        finally
+        {
+            root.Free();
+        }
     }
 
     /// <summary>Fase acumulada da roda (voltas); pública para medir quadro a quadro com a roda pausada.</summary>
@@ -227,7 +271,7 @@ public partial class ProvaOperacaoRoot : Node3D
         _lastTurn = turn;
         foreach (Operator op in _ops)
         {
-            long count = op.Count(_phase, _strikeAt);
+            long count = op.Count(_phase);
             if (op.OnPost)
                 op.Strikes += (int)System.Math.Max(count - op.LastCount, 0);
             op.LastCount = count;
@@ -249,10 +293,10 @@ public partial class ProvaOperacaoRoot : Node3D
     {
         VillagerVisual v = op.Visual;
         Vector3 at = op.OnPost ? op.Post : op.Post - op.Forward * StepBack;
-        if (op.OnPost)
+        if (op.OnPost && op.Clip.Length > 0)
         {
-            v.PosedClip = $"{Library}/girar_roda";
-            v.PosedPhase = op.ClipPhase(_phase);
+            v.PosedClip = op.Clip;
+            v.PosedPhase = (float)Mathf.PosMod(_phase, 1.0);
             v.PreviewClip = null;
         }
         else
@@ -293,13 +337,13 @@ public partial class ProvaOperacaoRoot : Node3D
         string Mm(float mm) => mm < 0f ? "—" : mm.ToString("0.0", ci) + " mm";
         var lines = new List<string>
         {
-            $"Prova de operação  ·  roda r06 (alça a {_radius.ToString("0.00", ci)} m)  ·  clipe girar_roda ({(1f / _turnSpeed).ToString("0.0", ci)} s por volta)  ·  {Engine.GetFramesPerSecond():0} FPS",
+            $"Prova de operação  ·  roda r06 (alça a {_radius.ToString("0.00", ci)} m)  ·  um clipe por posto ({(1f / _turnSpeed).ToString("0.0", ci)} s por volta)  ·  {Engine.GetFramesPerSecond():0} FPS",
             $"fase da roda {Mathf.PosMod(_phase, 1.0).ToString("0.000", ci)}  ·  {_speed.ToString("0.00", ci)} volta/s  ·  voltas {_lastTurn}  ·  operadores {operating} (mínimo {MinOperators}){(_paused ? "  ·  PAUSADA" : "")}",
         };
         foreach (Operator op in _ops)
         {
-            string where = op.OnPost ? $"quadro {op.ClipPhase(_phase).ToString("0.000", ci)}" : "fora do posto";
-            lines.Add($"{op.Name} (alça {op.Name}{(op.Reversed ? ", ao contrário: 0,5 − t" : "")}): {where}  ·  golpes {op.Strikes}  ·  palma-manopla esq {Mm(op.LeftMm)}, dir {Mm(op.RightMm)}  ·  máx da última volta {Mm(op.OnPost ? op.PrevTurnMaxMm : -1f)}");
+            string where = op.Clip.Length == 0 ? "CLIPE RECUSADO (ver o log)" : op.OnPost ? $"quadro {(Mathf.PosMod(_phase, 1.0) * _frames).ToString("0.0", ci)} de {_frames}" : "fora do posto";
+            lines.Add($"{op.Name} ({op.Clip}): {where}  ·  golpes {op.Strikes}  ·  palma-manopla esq {Mm(op.LeftMm)}, dir {Mm(op.RightMm)}  ·  máx da última volta {Mm(op.OnPost ? op.PrevTurnMaxMm : -1f)}");
         }
         lines.Add("1 e 2 tiram ou devolvem cada aldeão  ·  − e = mudam o mínimo de operadores  ·  Espaço pausa a roda  ·  roda do mouse aproxima  ·  Q e E giram a câmera  ·  Esc volta ao menu");
         return string.Join("\n", lines);
