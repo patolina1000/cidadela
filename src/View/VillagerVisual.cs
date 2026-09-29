@@ -372,6 +372,7 @@ public partial class VillagerVisual : Node3D
         }
         _hair.Name = "HairPiece";
         HairSocket.AddChild(_hair);
+        VillagerLooks.ApplyHairTone(_hair, VillagerLooks.HairToneFor(Seed));
     }
 
     /// <summary>
@@ -408,6 +409,7 @@ public partial class VillagerVisual : Node3D
             {
                 _hairUnderHat.Name = "HairUnderHat";
                 HairSocket!.AddChild(_hairUnderHat);
+                VillagerLooks.ApplyHairTone(_hairUnderHat, VillagerLooks.HairToneFor(Seed));
             }
         }
     }

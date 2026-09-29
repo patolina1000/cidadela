@@ -4,12 +4,21 @@
   //   Enquanto os arquivos não existem, a view usa um placeholder (cápsula com cabeça esférica e os retalhos
   //   do rosto com um atlas provisório gerado por código).
   // corPele / corCabelo: cores provisórias do contrato; o jogo pinta o material "pele" e "cabelo" com elas.
+  // tonsCabelo: tons escuros e dessaturados perto de corCabelo, sorteados pelo id do aldeão independente do
+  //   formato do cabelo (de cima, os cabelos 2, 3 e 4 viram a mesma cúpula; o tom os separa). Vão por
+  //   instance uniform, sem duplicar material. Lista vazia = todos com corCabelo.
   // cabelos: as variações na ordem do sorteio (Villager.HairVariant 1..5). model = arquivo em
   //   assets/modelos/aldeao_v2/cabelos/<model>.glb; underHat = versão sob chapéu (cobre "parcial"); vazio = esconder.
   "corpo": "res://assets/modelos/aldeao_v2/aldeao_corpo.glb",
   "rosto": "res://assets/modelos/aldeao_v2/rosto/rosto.json",
   "corPele": "AEBFD3",
   "corCabelo": "6F7F96",
+  "tonsCabelo": [
+    "63799B",   // mais azul
+    "737A86",   // mais cinza
+    "776F92",   // mais arroxeado
+    "55606F"    // mais escuro
+  ],
   "cabelos": [
     { "name": "Cabelo 1", "model": "cabelo_1", "underHat": "" },
     { "name": "Cabelo 2", "model": "cabelo_2", "underHat": "" },

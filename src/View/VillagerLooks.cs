@@ -47,6 +47,7 @@ public static class VillagerLooks
     private static string _bodyPath = "", _facePath = "", _hairDir = "";
     private static Color _skinColor = new("AEBFD3"), _hairColor = new("6F7F96");
     private static readonly List<Hair> _hairs = new();
+    private static readonly List<Color> _hairTones = new();
     private static Dictionary<string, HeadPiece>? _pieces;
     private static string _workerPiece = "";
     private static FaceInfo? _face;
@@ -57,6 +58,27 @@ public static class VillagerLooks
 
     public static Color SkinColor { get { LoadLooks(); return _skinColor; } }
     public static Color HairColor { get { LoadLooks(); return _hairColor; } }
+
+    /// <summary>
+    /// Tom do cabelo sorteado pelo id, independente do formato (outra mistura do id que a de
+    /// <see cref="Villager.HairVariant"/>). Sem lista de tons, a cor base.
+    /// </summary>
+    public static Color HairToneFor(int seed)
+    {
+        LoadLooks();
+        if (_hairTones.Count == 0)
+            return _hairColor;
+        return _hairTones[(int)(((uint)seed * 0x9E3779B1u) >> 8) % _hairTones.Count];
+    }
+
+    /// <summary>Aplica o tom a todas as malhas de uma peça de cabelo (parâmetro de instância do shader toon).</summary>
+    public static void ApplyHairTone(Node3D hair, Color tone)
+    {
+        if (hair is MeshInstance3D single)
+            single.SetInstanceShaderParameter("tint", tone);
+        foreach (MeshInstance3D mesh in Descendants<MeshInstance3D>(hair))
+            mesh.SetInstanceShaderParameter("tint", tone);
+    }
 
     /// <summary>Cabelo da variação 1..N; null se a variação não existe no JSON.</summary>
     public static Hair? HairFor(int variant)
@@ -86,6 +108,7 @@ public static class VillagerLooks
             return null;
         foreach (MeshInstance3D mesh in Descendants<MeshInstance3D>(node))
             mesh.MaterialOverride = HairMaterial();
+        ApplyHairTone(node, HairColor); // tom padrão; o visual troca pelo sorteado
         return node;
     }
 
@@ -154,7 +177,8 @@ public static class VillagerLooks
     /// <summary>Material toon da pele (compartilhado por todos os aldeões).</summary>
     public static ShaderMaterial SkinMaterial() => _skinMaterial ??= Toon(SkinColor);
 
-    public static ShaderMaterial HairMaterial() => _hairMaterial ??= Toon(HairColor);
+    /// <summary>Material toon do cabelo: branco, a cor vem do "tint" por instância (<see cref="ApplyHairTone"/>).</summary>
+    public static ShaderMaterial HairMaterial() => _hairMaterial ??= Toon(Colors.White);
 
     public static ShaderMaterial EyesMaterial() => _eyesMaterial ??= FaceMaterial(EyesAtlas(), Face().Eyes);
 
@@ -234,6 +258,9 @@ public static class VillagerLooks
             _skinColor = new Color(skin.GetString() ?? "AEBFD3");
         if (root.TryGetProperty("corCabelo", out JsonElement hair))
             _hairColor = new Color(hair.GetString() ?? "6F7F96");
+        if (root.TryGetProperty("tonsCabelo", out JsonElement tones))
+            foreach (JsonElement tone in tones.EnumerateArray())
+                _hairTones.Add(new Color(tone.GetString() ?? "6F7F96"));
         if (root.TryGetProperty("cabelos", out JsonElement hairs))
             foreach (JsonElement h in hairs.EnumerateArray())
                 _hairs.Add(new Hair(

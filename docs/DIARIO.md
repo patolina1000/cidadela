@@ -2862,3 +2862,41 @@ onde errou, correções manuais e quanto tempo levou.
   (rev 90) logo após a v1: corpo, rosto A1 e janela ±45°, retalhos, clipes Idle_3 e Run_02, cabelos, tamanhos
   em tela medidos e custo (160 créditos). Reexportado para `docs/GDD.md` (só essa subseção e a data mudaram).
 - **Créditos:** 20 (cabelo 5); etapa dos cabelos: 100. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+---
+
+## 2026-09-29 — Aldeão v2 completo: segundo merge da `arte` (5 cabelos, GDD v2), tons de cabelo por instância, prints e FPS
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`, com o MCP godot-ai.
+- **Pedido:** merge da `arte` de novo (cabelos 1 a 5 e a subseção "Aldeão: implementação v2" do GDD), com as
+  entradas dos dois lados no diário e a subseção da arte no GDD; cabelo sorteado pelo id; 4 tons de cabelo em
+  `data/villager_looks.json`, sorteados pelo id independente do formato, por instance uniform sem duplicar
+  material; depois o mesmo do pedido anterior (toon, rosto em blend, regra de velocidade com números,
+  prints no crepúsculo com ~10 aldeões variados em zoom padrão e máximo, FPS com 500).
+- **Merge (`397443c`):** conflitos só em `docs/GDD.md` (linha de exportação; ficou a da arte, rev 90; a
+  subseção v2 entrou sem conflito, na linha 802) e `docs/DIARIO.md` (jogo e depois arte, com nota). Os 5
+  cabelos têm 758 a 760 triângulos, material "cabelo", no espaço do corpo (y de 0,19 a 0,425 m); o `rosto.json`
+  continua com `passadaRun: 0.383`. Nenhum arquivo do v1 voltou.
+- **Tons de cabelo:**
+  - `Toon.gdshader` ganhou `instance uniform vec4 tint` (padrão branco) multiplicando o albedo: o corpo
+    continua com a cor da pele no material; o cabelo usa um material branco compartilhado e recebe a cor por
+    instância (`SetInstanceShaderParameter("tint", ...)`), inclusive o tufo provisório e o cabelo sob chapéu.
+  - `data/villager_looks.json`: `tonsCabelo` = #63799B (mais azul), #737A86 (mais cinza), #776F92 (mais
+    arroxeado), #55606F (mais escuro), em volta de #6F7F96. `VillagerLooks.HairToneFor(id)` sorteia com uma
+    mistura do id diferente da do formato (`Villager.HairVariant`), então formato e tom são independentes.
+    Lista vazia = todos com `corCabelo`.
+  - O cabelo de reserva (`InstantiateHairOrFallback`) não é mais usado: os 5 existem; fica para quando faltar.
+- **Regra de velocidade (inalterada, `data/` intocado):** 1,2 m/s ÷ 0,383 m/s = **3,13×**, fora de 1,0×–1,5×.
+  (a) 0,575 células/s para 1,5×; (b) manter 1,2 e passada de 0,80 m/s ou mais. O run toca preso a 1,5×.
+- **Conferido no jogo (3840×2160, capturas em 960 px):** 10 aldeões em volta da protagonista com os 5
+  cabelos e os 4 tons, rosto piscando, no crepúsculo: `docs/prints/aldeao_v2_cabelos_zoom_padrao.png`
+  (57 FPS com V-Sync), `aldeao_v2_cabelos_zoom_maximo.png` (145 FPS) e, de brinde,
+  `aldeao_v2_cabelos_cinematografica.png` (o humano entrou na câmera cinematográfica num aldeão durante a
+  sessão; ficou o melhor close dos cabelos). **500 aldeões da arte** com os 5 cabelos e tons na
+  FaceTestCrowd em tela cheia: **89 FPS em 3840×2160**. Print `aldeao_v2_arte_500_cabelos.png`.
+- **O que deu errado:** a primeira rodada de roda do mouse para o zoom máximo não pegou porque a janela
+  estava em uso pelo humano (o jogo estava na câmera cinematográfica); repetida depois, funcionou. O
+  classificador do Claude Code falhou uma vez ao avaliar o merge (erro transitório); repetido, passou.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 105 aprovados (sem mudança na simulação).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 03:40–04:05 de relógio.
