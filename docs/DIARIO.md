@@ -2174,3 +2174,26 @@ onde errou, correções manuais e quanto tempo levou.
      encaixes percorre as transformações do esqueleto até o modelo e deve compensar, mas só o jogo confirma.
 - **Correções manuais:** nenhuma. Nada no código mudou.
 - **Tempo:** 02:30–02:40 de relógio.
+
+---
+
+## 2026-09-29 — Aldeão v2: velocidade × passada da corrida (Run_02), conta para o humano decidir
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master` (sem merge da `arte`).
+- **Pedido:** clipes escolhidos idle = Idle_3 e run = Run_02, passada natural da Run_02 ≈ 0,35 m/s (o valor
+  final virá em `passadaRun`). Regra: reprodução do run = velocidade ÷ passadaRun, entre 1,0× e 1,5×.
+  Converter a velocidade atual (1,2 células/s) para m/s e calcular a reprodução; se passar de 1,5×, não mudar
+  nada e mostrar as duas saídas.
+- **Conta (1 célula = 1 m, decisão de 25/09/2026):** 1,2 células/s = 1,2 m/s; reprodução = 1,2 ÷ 0,35 =
+  **3,43×**, bem acima de 1,5×. Nada mudou no código nem em `data/`.
+- **Saídas:**
+  - (a) aldeão mais lento: 0,35 × 1,5 = **0,525 células/s** (reprodução 1,5×); a 1,0× seria 0,35. Uma viagem
+    de 12 células (raio da cabana) passa de 10 s para 23 s; o Castelão corre a 2,4, quase 5× mais rápido.
+  - (b) manter 1,2: pedir à arte uma corrida com passada entre **0,80 m/s** (1,5×) e **1,2 m/s** (1,0×).
+    O `rosto.json` entregue hoje diz `passadaRun: 0.785` (velocidade da raiz medida pela arte), que daria
+    1,53×, no limite; a passada pelos pés que o `rig.json` registra (0,502) daria 2,4×.
+- **Observação para quando a regra entrar no código:** o carregador hoje limita a reprodução a 3× (herança do
+  v1); com a regra, o teto vira 1,5× e o piso 1,0×, e a velocidade em `data/villagers.json` passa a ser
+  derivada da passada (ou conferida contra ela ao carregar).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 02:45 de relógio.
