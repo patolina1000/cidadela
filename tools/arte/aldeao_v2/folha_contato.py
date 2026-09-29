@@ -71,7 +71,7 @@ def main() -> None:
             row.append(tile(renders / f"{name}_escala.png", "escala: protagonista"))
         r = m["rosto"]
         text = (f"{m['triangulos']} triângulos | cabeça {1000 * (m['cabeca']['x'][1] - m['cabeca']['x'][0]):.0f} x "
-                f"{1000 * (m['cabeca']['z'][1] - m['cabeca']['z'][0]):.0f} mm | área dos olhos: desvio da esfera RMS "
+                f"{1000 * (m['cabeca']['z'][1] - m['cabeca']['z'][0]):.0f} mm | área dos olhos: rugosidade RMS "
                 f"{r.get('olhos', {}).get('rms_mm', '?')} mm, máx {r.get('olhos', {}).get('max_mm', '?')} mm | boca: RMS "
                 f"{r.get('boca', {}).get('rms_mm', '?')} mm, máx {r.get('boca', {}).get('max_mm', '?')} mm")
         rows.append((row, text))

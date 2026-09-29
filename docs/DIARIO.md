@@ -2267,3 +2267,28 @@ onde errou, correções manuais e quanto tempo levou.
   `estudo_rosto_a.png` restaurados com `git checkout`; preparador rodado na folha nova do rabo de cavalo (cabelo
   escuro, 4 vistas consistentes; a "lado" é perfil).
 - **Créditos:** 40. **Gerações na Meshy:** 2 de 6. **Correções manuais:** o humano copiou o `.env`. **Tempo:** ~40 min.
+
+## 2026-09-29 — Aldeão v2, passo 4: limpeza do corpo escolhido (corpo_so_frente_1)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** corpo só-frente escolhido (barriga redonda, rosto mais liso); sem gerar mais nada. Limpeza por script:
+  escala 0,40 m, pés em y = 0, pivô entre os pés, frente +Z do glTF; simetria em X pelo lado melhor; alisar (meta
+  na área dos olhos: RMS ≤ 1,5 mm e máximo ≤ 3 mm); corrigir a dobra do peito se aparecer; decimar a ≤ 2.500
+  triângulos preservando as juntas; um material "pele". Folha de contato com sombreado suave.
+- **Feito:** `tools/arte/aldeao_v2/corpo_lib.py` (funções comuns: importar, caixa da cabeça pelo pescoço,
+  rugosidade do rosto, retalhos, cena) e `limpar_corpo.py`: malha única com duplicados fundidos; escala e pivô
+  pelo contrato; simetria por bisseção em x = 0 + espelho com fusão (ficou o lado -x, o mais liso); cabeça
+  subdividida uma vez e alisada por Taubin (λ 0,5, μ -0,53; 20 passos na cabeça, 6 no corpo, 25 extras na
+  frente do peito abaixo do pescoço, onde a folha tinha a dobra); decimação por colapso com simetria e um grupo
+  de vértices que segura ombros, cotovelos, quadris e joelhos (peso 0,12); material "pele" chapado; faces
+  suaves. Saída: `assets/modelos/aldeao_v2/aldeao_corpo.glb` (ainda sem rig e sem retalhos) e
+  `aldeao_corpo_limpeza.json`. `render_corpo.py` passou a usar a lib e a aceitar `suave`.
+- **Métrica corrigida (importante para ler os números):** o "desvio de uma esfera" das folhas anteriores media o
+  formato em ovo da cabeça, não o amassado (a janela dos olhos vai quase de orelha a orelha). A rugosidade agora
+  é o desvio de um **elipsoide ajustado**. Com ela, a malha crua da Meshy já tinha RMS 0,48 mm e máximo 1,8 mm
+  na área dos olhos: o aspecto de papel amassado das folhas anteriores era o **sombreado facetado** (faces
+  planas), não a posição dos vértices. A limpeza terminou em RMS 0,54 mm e máximo 1,8 mm (dentro da meta), com
+  2.424 triângulos, cabeça 155 × 180 mm, 244 triângulos na faixa dos joelhos. A dobra do peito não aparece.
+- **Prévia:** `assets/previews/aldeao_v2/corpo_limpo_contato.png` (frente com as janelas, lado, 3/4, câmera do jogo,
+  escala com a protagonista), sombreado suave.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~50 min.
