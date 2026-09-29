@@ -310,5 +310,130 @@
     },
     "distancia_frente_x_topo_dif_pct": 6.5,
     "frente_para_tras_perfil_x_topo_dif_pct": 50.2
+  },
+  "cabelo": {
+    "frente": {
+      "cabelo_caixa": [
+        331,
+        221,
+        694,
+        712
+      ],
+      "cabelo_largura_px": 363,
+      "cabelo_altura_px": 491,
+      "pele_caixa": [
+        264,
+        219,
+        758,
+        804
+      ]
+    },
+    "lado": {
+      "cabelo_caixa": [
+        324,
+        98,
+        716,
+        925
+      ],
+      "cabelo_largura_px": 392,
+      "cabelo_altura_px": 827,
+      "pele_caixa": [
+        307,
+        97,
+        718,
+        927
+      ]
+    },
+    "costas": {
+      "cabelo_caixa": [
+        328,
+        84,
+        697,
+        941
+      ],
+      "cabelo_largura_px": 369,
+      "cabelo_altura_px": 857,
+      "pele_caixa": [
+        257,
+        82,
+        767,
+        942
+      ]
+    },
+    "topo": {
+      "cabelo_caixa": [
+        361,
+        221,
+        657,
+        804
+      ],
+      "cabelo_largura_px": 296,
+      "cabelo_altura_px": 583,
+      "pele_caixa": [
+        258,
+        218,
+        766,
+        806
+      ]
+    }
+  },
+  "cabelo_comparacao": {
+    "nota": "posições (y) em px da folha original; tamanhos em px do quadro de 1024 (escala folha→quadro 1.182)",
+    "topo_do_cabelo_y_folha": {
+      "frente": 38.7,
+      "lado": 29.8,
+      "costas": 31.7
+    },
+    "fundo_do_cabelo_y_folha": {
+      "lado": 730.3,
+      "costas": 757.2,
+      "frente_visivel": 454.2
+    },
+    "comprimento_lado_x_costas_dif_pct": 3.6,
+    "largura_px": {
+      "frente": 363,
+      "costas": 369,
+      "topo": 296
+    },
+    "largura_frente_x_costas_dif_pct": 1.6,
+    "largura_costas_x_topo_dif_pct": 22.0,
+    "frente_para_tras_px": {
+      "lado": 392,
+      "topo": 583
+    },
+    "frente_para_tras_lado_x_topo_dif_pct": 39.2,
+    "queixo_frente_y_folha": 353.5,
+    "topo_do_cabelo_dif_max_px_folha": 8.9,
+    "topo_do_cabelo_dif_max_pct_da_cabeca": 2.8,
+    "fundo_lado_x_costas_px_folha": 26.9
+  },
+  "cabeca_proporcao": {
+    "corpo": {
+      "topo": 83,
+      "mais_larga_y": 139,
+      "largura_max": 115,
+      "pescoco_y": 215,
+      "queixo_y": 206,
+      "largura_sobre_altura": 0.935
+    },
+    "chifres": {
+      "topo": 101,
+      "mais_larga_y": 336,
+      "largura_max": 432,
+      "pescoco_y": 634,
+      "queixo_y": 587,
+      "largura_sobre_altura": 0.889
+    },
+    "cabelo": {
+      "topo": 263,
+      "mais_larga_y": 431,
+      "largura_max": 258,
+      "pescoco_y": 606,
+      "queixo_y": 593,
+      "topo_e_a_linha_do_cabelo": true,
+      "topo_do_cabelo_y": 221,
+      "rosto_visivel_largura_sobre_altura": 0.782,
+      "ate_o_topo_do_cabelo_largura_sobre_altura": 0.694
+    }
   }
 }

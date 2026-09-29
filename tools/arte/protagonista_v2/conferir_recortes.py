@@ -136,6 +136,84 @@ def horns(name, count):
     return out, bbox(skin), skin
 
 
+HAIR_LUM = 125  # cabelo azul-acinzentado escuro (~80 de tom); a pele na sombra fica acima de ~140
+
+
+def dark_and_skin(name, lum_max, strict=False):
+    """Máscara da figura, do escuro (cabelo ou chifre) e da pele. strict: pele = clara e azulada (B − R > 12 e
+    tom > 140), para a borda da silhueta do cabelo, onde o escuro se mistura com o fundo cinza, não contar como pele
+    (só no cabelo; nas cabeças carecas isso cortaria o sombreado da borda)."""
+    rgb, mask, lum = load(name)
+    dark = ndimage.binary_opening(mask & (lum < lum_max), iterations=1)
+    skin = mask & ~dark
+    if strict:
+        skin = ndimage.binary_opening(skin & (rgb[:, :, 2] - rgb[:, :, 0] > 12) & (lum > 140), iterations=1)
+    return mask, dark, skin
+
+
+def neck_row(skin, cx, y0, y1):
+    """Linha mais estreita do trecho central da pele entre y0 e y1 (o pescoço)."""
+    wid = {}
+    for y in range(y0, y1):
+        r = central_run(skin[y], cx)
+        if r:
+            wid[y] = r[1] - r[0]
+    return min(wid, key=wid.get)
+
+
+def head_profile(skin, dark, head_frac=0.6, top=None):
+    """Perfil da cabeça na vista de frente: meia-largura do trecho central da pele por linha, do topo da pele até o
+    busto; linha mais larga; pescoço (menor largura abaixo dela, até 1,5 largura máxima para baixo); queixo = primeira
+    linha abaixo da mais larga em que a largura cai abaixo de pescoço + 30% da diferença (a curva do queixo encontra o
+    pescoço). Marca, por linha, se as duas bordas encostam em cabelo (até 3 px para fora)."""
+    sx0, sy0, sx1, sy1 = bbox(skin)
+    if top is not None:  # topo da pele estrita: a borda misturada do escuro com o fundo não é pele
+        sy0 = top
+    cx = int(np.nonzero(skin[sy0:sy0 + max(3, (sy1 - sy0) // 30)])[1].mean())
+    rows = {}
+    for y in range(sy0, sy1):
+        r = central_run(skin[y], cx)
+        if r:
+            hair_l = dark is not None and dark[y, max(0, r[0] - 3):r[0]].any()
+            hair_r = dark is not None and dark[y, r[1]:r[1] + 3].any()
+            rows[y] = (r[0], r[1], hair_l and hair_r)
+    widths = {y: r[1] - r[0] for y, r in rows.items()}
+    upper = [y for y in widths if y < sy0 + (sy1 - sy0) * head_frac]  # a cabeça fica nesse alto da figura
+    widest = max(upper, key=widths.get)
+    wmax = widths[widest]
+    below = [y for y in widths if widest < y <= widest + 1.5 * wmax]
+    neck = min(below, key=widths.get)
+    cut = widths[neck] + 0.3 * (wmax - widths[neck])
+    chin = next(y for y in sorted(below) if widths[y] < cut)
+    return {"topo": sy0, "mais_larga_y": widest, "largura_max": wmax, "pescoco_y": neck, "pescoco_largura": widths[neck],
+            "queixo_y": chin, "cx": cx, "_rows": rows}
+
+
+def sheet_boxes(sheet: str) -> list:
+    """Caixas das figuras na folha original (mesmo método e limiar do preparar_vistas), em ordem de leitura."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "aldeao_v2"))
+    from preparar_vistas import figures
+    rgb = np.asarray(Image.open(ROOT / f"assets/conceitos/protagonista_v2/folhas/{sheet}.png").convert("RGB"))
+    return [box for _, box in figures(rgb, 8)]
+
+
+def to_sheet_y(view_mask, sheet_box, y):
+    """Linha do quadro de 1024 → linha da folha original (o preparador centraliza cada vista no seu quadro)."""
+    x0, y0, x1, y1 = bbox(view_mask)
+    scale = (y1 - y0) / (sheet_box[3] - sheet_box[1])
+    return sheet_box[1] + (y - y0) / scale
+
+
+def hair_view(name):
+    mask, dark, skin = dark_and_skin(name, HAIR_LUM)
+    hx0, hy0, hx1, hy1 = bbox(dark)
+    out = {"cabelo_caixa": [hx0, hy0, hx1, hy1], "cabelo_largura_px": hx1 - hx0, "cabelo_altura_px": hy1 - hy0}
+    if skin.any():
+        out["pele_caixa"] = list(bbox(skin))
+    return out
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     rep = {"corpo": {v: body(f"corpo_{v}") for v in ("frente", "lado", "costas")}}
@@ -189,9 +267,66 @@ def main():
     cc = rep["chifres_comparacao"]
     cc["distancia_frente_x_topo_dif_pct"] = pct(cc["distancia_entre_centros_px"]["frente"], cc["distancia_entre_centros_px"]["topo"])
     cc["frente_para_tras_perfil_x_topo_dif_pct"] = pct(side["largura_px"], max(t[0]["altura_px"], t[1]["altura_px"]))
-    (OUT / "recortes.json").write_text(json.dumps(rep, indent=2, ensure_ascii=False) + "\n")
+    # Cabelo
+    rep["cabelo"] = {v: hair_view(f"cabelo_{v}") for v in ("frente", "lado", "costas", "topo")}
+    hv = rep["cabelo"]
+    # Posições na folha original (as vistas dividem escala e chão lá); tamanhos no quadro de 1024.
+    boxes = dict(zip(("frente", "lado", "costas", "topo"), sheet_boxes("cabelo")))
+    fig = {v: load(f"cabelo_{v}")[1] for v in boxes}
+    sheet_y = {v: (lambda yy, v=v: round(float(to_sheet_y(fig[v], boxes[v], yy)), 1)) for v in boxes}
+    scale_1024 = (bbox(fig["frente"])[3] - bbox(fig["frente"])[1]) / (boxes["frente"][3] - boxes["frente"][1])
+    rep["cabelo_comparacao"] = {
+        "nota": "posições (y) em px da folha original; tamanhos em px do quadro de 1024 (escala folha→quadro "
+                f"{round(scale_1024, 3)})",
+        "topo_do_cabelo_y_folha": {v: sheet_y[v](hv[v]["cabelo_caixa"][1]) for v in ("frente", "lado", "costas")},
+        "fundo_do_cabelo_y_folha": {"lado": sheet_y["lado"](hv["lado"]["cabelo_caixa"][3]), "costas": sheet_y["costas"](hv["costas"]["cabelo_caixa"][3]),
+                                    "frente_visivel": sheet_y["frente"](hv["frente"]["cabelo_caixa"][3])},
+        "comprimento_lado_x_costas_dif_pct": pct(hv["lado"]["cabelo_caixa"][3] - hv["lado"]["cabelo_caixa"][1],
+                                                 hv["costas"]["cabelo_caixa"][3] - hv["costas"]["cabelo_caixa"][1]),
+        "largura_px": {"frente": hv["frente"]["cabelo_largura_px"], "costas": hv["costas"]["cabelo_largura_px"], "topo": hv["topo"]["cabelo_largura_px"]},
+        "largura_frente_x_costas_dif_pct": pct(hv["frente"]["cabelo_largura_px"], hv["costas"]["cabelo_largura_px"]),
+        "largura_costas_x_topo_dif_pct": pct(hv["costas"]["cabelo_largura_px"], hv["topo"]["cabelo_largura_px"]),
+        "frente_para_tras_px": {"lado": hv["lado"]["cabelo_largura_px"], "topo": hv["topo"]["cabelo_altura_px"]},
+        "frente_para_tras_lado_x_topo_dif_pct": pct(hv["lado"]["cabelo_largura_px"], hv["topo"]["cabelo_altura_px"]),
+    }
+    # Proporção da cabeça nas três folhas (vista de frente): largura máxima ÷ (topo ao queixo). Nas carecas é direta;
+    # no cabelo o alto está coberto: o perfil da cabeça do corpo é ajustado às bordas visíveis (queixo fixo, só a
+    # altura livre). O mesmo ajuste nos chifres (careca) mostra o erro do método.
+    profs = {"corpo": head_profile(load("corpo_frente")[1], None, head_frac=0.18)}
+    for sheet_name, lum_max in (("chifres", HORN_LUM), ("cabelo", HAIR_LUM)):
+        mask, dark, skin = dark_and_skin(f"{sheet_name}_frente", lum_max)
+        strict = dark_and_skin(f"{sheet_name}_frente", lum_max, strict=True)[2]
+        profs[sheet_name] = head_profile(skin, dark, top=bbox(strict)[1])
+        profs[sheet_name]["_skin"] = skin
+    heads = {}
+    for k, pr in profs.items():
+        h = pr["queixo_y"] - pr["topo"]
+        entry = {x: pr[x] for x in ("topo", "mais_larga_y", "largura_max", "pescoco_y", "queixo_y")}
+        entry["_cx"] = pr["cx"]
+        if k == "cabelo":
+            hair_top = rep["cabelo"]["frente"]["cabelo_caixa"][1]
+            entry["topo_e_a_linha_do_cabelo"] = True
+            entry["topo_do_cabelo_y"] = hair_top
+            entry["rosto_visivel_largura_sobre_altura"] = round(pr["largura_max"] / h, 3)
+            entry["ate_o_topo_do_cabelo_largura_sobre_altura"] = round(pr["largura_max"] / (pr["queixo_y"] - hair_top), 3)
+        else:
+            entry["largura_sobre_altura"] = round(pr["largura_max"] / h, 3)
+        heads[k] = entry
+    rep["cabeca_proporcao"] = heads
+    cc2 = rep["cabelo_comparacao"]
+    cc2["queixo_frente_y_folha"] = sheet_y["frente"](heads["cabelo"]["queixo_y"])
+    tops = cc2["topo_do_cabelo_y_folha"]
+    cc2["topo_do_cabelo_dif_max_px_folha"] = round(max(tops.values()) - min(tops.values()), 1)
+    head_h_sheet = cc2["queixo_frente_y_folha"] - tops["frente"]
+    cc2["topo_do_cabelo_dif_max_pct_da_cabeca"] = round(cc2["topo_do_cabelo_dif_max_px_folha"] / head_h_sheet * 100, 1)
+    fb = cc2["fundo_do_cabelo_y_folha"]
+    cc2["fundo_lado_x_costas_px_folha"] = round(abs(fb["lado"] - fb["costas"]), 1)
+    clean = json.loads(json.dumps({k: v for k, v in rep.items()}, default=lambda o: None))
+    for v in clean["cabeca_proporcao"].values():
+        v.pop("_cx", None)
+    (OUT / "recortes.json").write_text(json.dumps(clean, indent=2, ensure_ascii=False) + "\n")
     sheet(rep, faces)
-    print(json.dumps({k: rep[k] for k in ("corpo_comparacao", "rosto", "chifres_comparacao")}, indent=1, ensure_ascii=False))
+    print(json.dumps({k: rep[k] for k in ("cabelo_comparacao", "cabeca_proporcao")}, indent=1, ensure_ascii=False))
 
 
 def tile(name, draw_fn, scale):
@@ -219,13 +354,31 @@ def sheet(rep, faces):
             for fx0, fx1, fc in m["pes"]:
                 d.rectangle([fx0, y1 - int(0.04 * (y1 - y0)), fx1, y1], outline=(200, 120, 40), width=3)
             d.line([(m["eixo_cabeca_x"], y0), (m["eixo_cabeca_x"], y1)], fill=(150, 150, 150), width=1)
+            if v == "frente":
+                hc_ = rep["cabeca_proporcao"]["corpo"]
+                d.line([(m["eixo_cabeca_x"] - 90, hc_["queixo_y"]), (m["eixo_cabeca_x"] + 90, hc_["queixo_y"])], fill=(200, 60, 200), width=3)
         body_tiles.append((v, m, tile(f"corpo_{v}", draw, S)))
     horn_tiles = []
     for v in ("frente", "lado", "costas", "topo"):
         def draw(d, v=v):
             for hbx in rep["chifres"][v]:
                 d.rectangle(hbx["caixa"], outline=(220, 60, 60), width=3)
+            if v == "frente":
+                hc_ = rep["cabeca_proporcao"]["chifres"]
+                for yy, col in ((hc_["topo"], (60, 160, 60)), (hc_["queixo_y"], (60, 120, 200))):
+                    d.line([(250, yy), (774, yy)], fill=col, width=3)
+                d.line([(hc_["_cx"] - hc_["largura_max"] // 2, hc_["mais_larga_y"]), (hc_["_cx"] + hc_["largura_max"] // 2, hc_["mais_larga_y"])], fill=(60, 160, 60), width=3)
         horn_tiles.append((v, tile(f"chifres_{v}", draw, 0.36)))
+    hair_tiles = []
+    for v in ("frente", "lado", "costas", "topo"):
+        def draw(d, v=v):
+            d.rectangle(rep["cabelo"][v]["cabelo_caixa"], outline=(220, 60, 60), width=3)
+            if v == "frente":
+                hc_ = rep["cabeca_proporcao"]["cabelo"]
+                for yy, col in ((hc_["topo_do_cabelo_y"], (200, 60, 200)), (hc_["topo"], (60, 160, 60)), (hc_["queixo_y"], (60, 120, 200))):
+                    d.line([(300, yy), (724, yy)], fill=col, width=3)
+                d.line([(512 - hc_["largura_max"] // 2, hc_["mais_larga_y"]), (512 + hc_["largura_max"] // 2, hc_["mais_larga_y"])], fill=(60, 160, 60), width=3)
+        hair_tiles.append((v, tile(f"cabelo_{v}", draw, 0.36)))
     face_tiles = []
     for k, fz in faces.items():
         name = k
@@ -242,8 +395,8 @@ def sheet(rep, faces):
         face_tiles.append((k, crop.resize(size, Image.LANCZOS), heat.resize(size, Image.NEAREST)))
 
     W = 1560
-    Hs = 60 + max(t.height for _, _, t in body_tiles) + 40 + max(t.height for _, t in horn_tiles) + 40 + max(ft[1].height for ft in face_tiles) + 60
-    out = Image.new("RGB", (W, Hs + 150), (248, 247, 250))
+    Hs = 60 + max(t.height for _, _, t in body_tiles) + 40 + max(t.height for _, t in horn_tiles) + 40 + max(t.height for _, t in hair_tiles) + 40 + max(ft[1].height for ft in face_tiles) + 60
+    out = Image.new("RGB", (W, Hs + 330), (248, 247, 250))
     d = ImageDraw.Draw(out)
     d.text((16, 12), "Protagonista v2 — conferência dos recortes (corpo: 0,5×; chifres: 0,36×; px medidos no quadro de 1024)", fill=(30, 30, 40), font=big)
     x, y = 16, 50
@@ -276,11 +429,17 @@ def sheet(rep, faces):
         x += t.width + 10
     y += max(t.height for _, t in horn_tiles) + 40
     x = 16
+    for v, t in hair_tiles:
+        out.paste(t, (x, y))
+        d.text((x + 6, y + 4), f"cabelo {v}", fill=(30, 30, 40), font=font)
+        x += t.width + 10
+    y += max(t.height for _, t in hair_tiles) + 40
+    x = 16
     for k, crop, heat in face_tiles:
         out.paste(crop, (x, y))
         out.paste(heat, (x + crop.width + 6, y))
         r = rep["rosto"][k]
-        d.text((x, y - 20), f"rosto ({k}): resíduo dp {r['residuo_quadratico_dp']}, passa-alta máx {r['passa_alta_max']}; cabeça l/a {r['cabeca_largura_sobre_altura']}", fill=(30, 30, 40), font=small)
+        d.text((x, y - 20), f"rosto ({k}): resíduo dp {r['residuo_quadratico_dp']}, passa-alta máx {r['passa_alta_max']}", fill=(30, 30, 40), font=small)
         x += crop.width * 2 + 40
     ch = rep["chifres_comparacao"]
     lines = [
@@ -296,6 +455,22 @@ def sheet(rep, faces):
     ]
     for i, line in enumerate(lines):
         d.text((16, y + max(ft[1].height for ft in face_tiles) + 20 + i * 22), line, fill=(30, 30, 40) if i else (120, 40, 40), font=small if i else font)
+    hc, hp_ = rep["cabelo_comparacao"], rep["cabeca_proporcao"]
+    hl = [
+        "CABELO",
+        f"topo do cabelo na folha: {hc['topo_do_cabelo_y_folha']['frente']} / {hc['topo_do_cabelo_y_folha']['lado']} / {hc['topo_do_cabelo_y_folha']['costas']} px (frente/lado/costas; dif. máx {hc['topo_do_cabelo_dif_max_pct_da_cabeca']}% da cabeça)",
+        f"fundo na folha: lado {hc['fundo_do_cabelo_y_folha']['lado']}, costas {hc['fundo_do_cabelo_y_folha']['costas']} px (dif. {hc['fundo_lado_x_costas_px_folha']} px; comprimento {hc['comprimento_lado_x_costas_dif_pct']}%); na frente some atrás do busto em {hc['fundo_do_cabelo_y_folha']['frente_visivel']}",
+        f"largura: frente {hc['largura_px']['frente']}, costas {hc['largura_px']['costas']}, topo {hc['largura_px']['topo']} px (frente×costas {hc['largura_frente_x_costas_dif_pct']}%, costas×topo {hc['largura_costas_x_topo_dif_pct']}%)",
+        f"frente para trás: lado {hc['frente_para_tras_px']['lado']}, topo {hc['frente_para_tras_px']['topo']} px ({hc['frente_para_tras_lado_x_topo_dif_pct']}%)",
+        "frente, perfil e costas coerentes; o topo, como nos chifres, não bate (mais estreito e mais longo para trás: parece vista oblíqua de cima e de trás)",
+        "CABEÇA, largura ÷ altura (largura máxima ÷ topo ao queixo, vista de frente)",
+        f"corpo {hp_['corpo']['largura_sobre_altura']} · chifres {hp_['chifres']['largura_sobre_altura']} · cabelo: alto coberto, entre "
+        f"{hp_['cabelo']['ate_o_topo_do_cabelo_largura_sobre_altura']} (topo no topo do cabelo) e {hp_['cabelo']['rosto_visivel_largura_sobre_altura']} (topo na linha do cabelo)",
+        "linhas: verde topo e largura máxima, azul/magenta queixo; no cabelo, magenta = topo do cabelo",
+    ]
+    ty = y + max(ft[1].height for ft in face_tiles) + 20 + 7 * 22 + 16
+    for i, line in enumerate(hl):
+        d.text((16, ty + i * 22), line, fill=(120, 40, 40) if line.isupper() or line.startswith("CABEÇA") else (30, 30, 40), font=small if not (line.isupper() or line.startswith("CABEÇA")) else font)
     out.save(OUT / "recortes.png")
 
 

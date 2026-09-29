@@ -3021,3 +3021,36 @@ onde errou, correções manuais e quanto tempo levou.
   de um terço. Recomendação: gerar na Meshy com frente, perfil e costas e deixar o topo de fora (como no plano dos
   cabelos do aldeão: o topo só entra se o resultado vier errado).
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.
+
+## 2026-09-29 — Protagonista v2: recortes do cabelo e proporção da cabeça nas três folhas
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** preparador na folha refeita e aprovada do cabelo (frente, perfil esquerdo, costas, topo, sobre busto
+  careca); cabelo na folha de conferência; coerência das quatro vistas; largura ÷ altura da cabeça nas três folhas.
+- **Feito:** `preparar_vistas.py --limiar 8` → `vistas/cabelo_{frente,lado,costas,topo}.png` (4 figuras inteiras);
+  `conferir_recortes.py` com a fileira do cabelo e as medidas novas; folha `cabelo.png` versionada.
+- **O que deu errado e foi corrigido no caminho:**
+  - o preparador centraliza cada vista no seu quadro, então posição (y) não se compara entre vistas de alturas
+    diferentes; as posições do cabelo passaram a ser medidas na folha original (mesma escala e chão), e os tamanhos no
+    quadro de 1024;
+  - a borda da silhueta, onde o escuro (cabelo, chifre) se mistura com o fundo, contava como pele e puxava o "topo"
+    da cabeça para a ponta dos chifres e para o alto do cabelo: o topo passou a vir da pele estrita (clara e azulada),
+    e as larguras e o queixo, da pele normal (a estrita cortaria o sombreado da borda das cabeças carecas);
+  - dois métodos descartados: elipse nas bordas laterais (errava 0,08 a 0,10 nas carecas: a cabeça em ovo é mais larga
+    em cima) e o ajuste do perfil da cabeça do corpo às bordas visíveis (errava 9% na altura dos chifres e punha o topo
+    do cabelo abaixo da linha do cabelo).
+  - A proporção que dei na entrada anterior (0,87 e 0,86, com o "pescoço" como fim da cabeça) fica substituída: o
+    pescoço é comprido e a linha mais estreita escorrega nele; o marco agora é o queixo.
+- **Cabelo:** frente, perfil e costas coerentes. Na folha original, topo do cabelo em 38,7 / 29,8 / 31,7 px (dif. 2,8%
+  da altura da cabeça); fundo no perfil e nas costas 730 / 757 px (comprimento 3,6%; nas costas a ponta do meio desce
+  mais); na frente o cabelo some atrás do busto (fica todo atrás dos ombros, como pede o contrato); largura 363 / 369 px
+  frente/costas (1,6%). O **topo não bate**: 22% mais estreito que as costas e 39% mais longo de frente para trás que o
+  perfil, a mesma incoerência do topo dos chifres; nas duas folhas o "topo" parece uma vista oblíqua de cima e de trás
+  (alonga o que vai para trás). Recomendação igual: Meshy com frente, perfil e costas.
+- **Cabeça, largura máxima ÷ (topo ao queixo), vista de frente:** corpo **0,935**; chifres **0,889** (a cabeça do busto
+  é ~5% mais estreita em relação à altura que a do corpo); cabelo: o alto do crânio está coberto, então só dá a faixa
+  **0,694** (topo da cabeça no topo do cabelo) a **0,782** (na linha do cabelo), com a largura do rosto visível. Se o
+  busto do cabelo tem mesmo a cabeça do corpo, o cabelo cobre cerca de 25 a 45 px de cada lado da testa (no quadro de
+  1024) e a calota é fina; a folha sozinha não prova isso. Para a extração: chifres com escala por eixo (~5% mais largo
+  que alto); cabelo com âncoras medidas à mão, como no aldeão (`PRIOR` do `extrair_peruca.py`).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
