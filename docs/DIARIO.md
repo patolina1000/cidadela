@@ -3831,3 +3831,34 @@ onde errou, correções manuais e quanto tempo levou.
   saíram. A árvore continuou limpa.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:37–19:40 de relógio.
+
+---
+
+## 2026-09-29 — Teste das trilhas removidas: entrar no posto vindo do run e do idle
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`, com o MCP godot-ai. Só descrição; nada corrigido.
+- **Pedido:** o aldeão entra no posto vindo do run, no meio de uma passada, e depois vindo do idle; dizer se as
+  pernas voltam à pose do clipe de operação ou congelam, e o valor de `deterministic`.
+- **Como:** `ProvaOperacaoRoot.OffPostClip` (novo, padrão "idle") escolhe o clipe de quem está fora do posto.
+  Um script temporário tirou o aldeão A, pôs em "run", esperou os pés chegarem a 95% do afastamento máximo
+  (0,12 m) e devolveu ao posto; depois repetiu com "idle". A referência é o clipe lido do GLB sem apagar as
+  trilhas constantes: pernas, pescoço e cabeça ficam parados no repouso durante todo o clipe (variação 0°).
+- **Resultado:**
+  - `deterministic` do AnimationPlayer do corpo: **false** (sem animação RESET).
+  - O clipe importado só tem trilhas de rotação de `Hips`, `Spine02`, `Spine01`, braços e `RightShoulder`.
+    Faltam as pernas, `neck`, `Head`, `Spine` (o osso de cima da coluna), `LeftShoulder` e a posição do quadril.
+  - **Vindo do run: as pernas congelam na pose da corrida.** Diferença para a pose do clipe, em graus, aos 0,8 s
+    e aos 3,3 s (iguais: congelado): LeftUpLeg 41, LeftLeg 133, LeftFoot 9, RightUpLeg 25, RightLeg 47,
+    RightFoot 34, neck 22, Head 9. A pose congelada é a do fim da mistura de 0,2 s, não a do instante da troca.
+  - **Vindo do idle: as pernas congelam na pose do idle** (15 a 30° da pose do clipe, iguais antes e depois).
+  - **Efeito nas mãos:** como `Spine`, `LeftShoulder` e a posição do quadril também congelam, a palma sai da
+    manopla: 9,5 / 9,7 mm depois de vir do run e 12,1 mm depois de vir do idle, contra 2,4 mm no aldeão que
+    começou no posto. As medidas do passo anterior valem só para quem entrou no posto direto do repouso.
+  - Prints: `docs/prints/prova_operacao_entrada_run_antes.png`, `prova_operacao_entrada_run_depois.png` e
+    `prova_operacao_entrada_idle_depois.png`. A câmera do jogo vê de cima; as pernas aparecem pouco, e os números
+    acima são a evidência principal.
+- **Correção (da arte, não aplicada):** exportar o clipe com trilhas de todos os ossos, inclusive os parados, e
+  importar com `animation/remove_immutable_tracks` desligado. A alternativa do lado do jogo seria
+  `deterministic = true` com uma animação RESET; fica para decisão.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:40–19:47 de relógio.

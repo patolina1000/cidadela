@@ -36,6 +36,8 @@ public partial class ProvaOperacaoRoot : Node3D
 
     /// <summary>Mínimo de operadores para a roda girar (teclas − e =).</summary>
     [Export] public int MinOperators = 1;
+    /// <summary>Clipe de quem está fora do posto (teste: "run" para entrar no posto vindo da corrida).</summary>
+    [Export] public string OffPostClip = "idle";
 
     private sealed class Operator
     {
@@ -302,7 +304,7 @@ public partial class ProvaOperacaoRoot : Node3D
         else
         {
             v.PosedClip = null;
-            v.PreviewClip = "idle";
+            v.PreviewClip = OffPostClip;
         }
         var state = new VillagerVisual.DrawState(new System.Numerics.Vector2(at.X - 0.5f, at.Z - 0.5f),
             new System.Numerics.Vector2(op.Forward.X, op.Forward.Z), op.Name == "A" ? 1 : 3,
