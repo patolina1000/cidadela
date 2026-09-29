@@ -2489,3 +2489,23 @@ onde errou, correções manuais e quanto tempo levou.
 - **Prévia:** `assets/previews/aldeao_v2/cabelo_4_previa.png` (frente, lado, 3/4, jogo; 112 px, 44 px e 44 px ×
   crepúsculo; rosto distraído).
 - **Créditos:** 20. **Gerações:** 1 de 2. **Correções manuais:** nenhuma. **Tempo:** ~2 h.
+
+## 2026-09-29 — Aldeão v2, passo 12a: cabelo 1 (curto bagunçado), 20 créditos
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** os outros 4 cabelos pelo método do piloto, medindo as três âncoras da cabeça em cada folha; cabelo 1
+  com pontas finas: mostrar antes de simplificar demais se não couber em 800 triângulos.
+- **Âncoras medidas nas vistas de frente (largura da cabeça / silhueta, altura / silhueta, topo abaixo do topo):**
+  1: 0,78 / 0,80 / 0,10; 2: 0,75 / 0,83 / 0,06; 3: 0,70 / 0,82 / 0,07; 5: 0,88 / 0,86 / 0,05 (o 4 ficou 0,75 /
+  0,74 / 0,05). Vêm da face visível e do queixo medidos pelo preparador, mais a espessura estimada da calota.
+  A semente do crescimento de região passou para a altura da boca (38%), onde nunca há franja.
+- **Cabelo 1:** Meshy 1 geração (saldo 2.378 → 2.358); 3.357 vértices fundidos em 1.554; rosto = 20% das faces
+  (631 de rosto + 13 do toco de pescoço removidas); 5 pedaços (7 faces soltas fora); 22 faces de franja apagadas
+  abaixo da linha dos olhos; decimação 2.430 → **759 triângulos**. Folga: repouso 1,5 mm do corpo e 1,5 mm do
+  retalho dos olhos (32 vértices de franja na frente dele); idle 1,6 mm; run 1,2 mm (nada atravessa: cabelo
+  curto não chega aos ombros). Comparação 2.400 × 800 triângulos a 44 e 112 px em
+  `assets/previews/aldeao_v2/cabelo_1_decimacao.png`: a 44 px igual; a 112 px as pontas em folha só ficam um pouco
+  mais macias, sem virar bolota. Fiquei com 800. Prévia: `cabelo_1_previa.png`.
+- **Plano:** `PLANO_CABELOS.md` ganhou a seção de problemas conhecidos (pontas nos ombros/braços na corrida,
+  aceito; rever no zoom máximo; âncoras por folha; vértices duplicados).
+- **Créditos:** 20. **Tempo:** ~30 min.
