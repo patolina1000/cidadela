@@ -2916,3 +2916,41 @@ onde errou, correções manuais e quanto tempo levou.
   mudança na simulação.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 04:10–04:16 de relógio.
+
+---
+
+## 2026-09-29 — Fechamento do dia: estado da integração do aldeão v2
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Estado:** nenhuma tarefa no meio; árvore limpa, `dotnet build` com 0 erros e 0 avisos, `dotnet test` com
+  105 aprovados. Último commit antes deste: `5e5062d`.
+- **Pronto (aldeão v2 no jogo):**
+  - Corpo da arte com rig (24 ossos; Head e Spine02), clipes `idle` (Idle_3) e `run` (Run_02) em loop, shader toon
+    comum (`Toon.gdshaderinc`) na pele e no cabelo, rosto por retalhos "Olhos" e "Boca" com o atlas da arte em
+    alpha blend, piscar em três quadros pelo `FaceAnimator` (C# puro, testado), 9 expressões ligadas aos
+    estados da simulação.
+  - 5 cabelos sorteados pelo id, 4 tons por instance uniform (independentes do formato), cabelo de reserva
+    quando faltar arquivo, chapéu de palha provisório de quem tem cabana, encaixes Cabelo, Chapéu e Peito
+    criados nos ossos com a pose de repouso compensada.
+  - Simulação do aldeão de volta (cabanas, coleta, entrega, expressões), 10 aldeões no mapa de teste,
+    Biografia com a entrada "Os Segundos" e os controles; cenas de teste `FaceTest` e `FaceTestCrowd`.
+  - Contrato em `docs/aldeao_v2_contrato.md` (com as três mudanças aprovadas) e a subseção v2 no GDD (da arte).
+- **Falta da integração:**
+  - **Velocidade × passada (decisão sua pendente):** 1,2 m/s ÷ passadaRun 0,383 m/s = **3,13×**, fora de
+    1,0×–1,5×; `data/villagers.json` intocado. (a) 0,575 células/s para 1,5×; (b) manter 1,2 com passada de
+    0,80 m/s ou mais. Até lá o run toca preso a 1,5× e os pés deslizam; o jogo avisa uma vez no log.
+  - Clipes `carry`, `work` e `sleep`: ainda não existem; o mapa de estados (`VillagerVisual.ClipFor`) tem as
+    linhas marcadas para ligá-los. Com eles voltam o operador ao lado das máquinas na Biografia e o descanso
+    deitado.
+  - Cabelos sob chapéu (`cabelo_N_sob_chapeu.glb`): não entregues; a regra "parcial" esconde o cabelo.
+  - Encaixe "Peito": criado, sem uso (cristal da classe, futuro). Chapéus como GLB: só o provisório.
+  - Menu inicial e cena de estresse continuam sem aldeões (opcional; a v1 tinha 4 no menu e as teclas 0–3
+    no estresse).
+  - Documentos: o `rosto.json` da arte chama o quadro 0 dos olhos de "aberto" (contrato: "distraido") e
+    traz um `passadaWalk: 0.0` sobrando; o campo `piscar` não está no contrato (o jogo usa os padrões
+    "meio_fechado" e "fechado", que existem). `aldeao_corpo_limpo.glb` e as texturas extraídas pelo importador
+    ficaram em `assets/modelos/aldeao_v2/` (inofensivo).
+- **Números do dia:** 500 aldeões da arte com cabelos e tons a **89 FPS em 3840×2160** (FaceTestCrowd, tela
+  cheia); jogo com 10 aldeões: 57 FPS com V-Sync no zoom padrão, 145 FPS no zoom máximo. Testes: 105.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 04:18 de relógio.
