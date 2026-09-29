@@ -16,6 +16,7 @@ public partial class WorldView : Node3D
     private const int GroundNoiseSize = 256;
 
     private SimWorld _world = null!;
+    private readonly Dictionary<Villager, VillagerVisual> _villagerNodes = new();
     private readonly Dictionary<ResourceNode, ResourceVisual> _resourceVisuals = new();
     private readonly Dictionary<Building, Node3D> _buildingNodes = new();
     private readonly Dictionary<int, MeshInstance3D> _itemNodes = new();
@@ -72,6 +73,14 @@ public partial class WorldView : Node3D
             _resourceVisuals[resource] = new ResourceVisual { Root = root, LastRemaining = resource.Remaining };
         }
 
+
+        foreach (Villager villager in world.Villagers)
+        {
+            var visual = new VillagerVisual { Name = $"Villager_{villager.Id}", Seed = villager.Id };
+            AddChild(visual);
+            _villagerNodes[villager] = visual;
+        }
+
         _castellan = new CastellanVisual { Name = "Castellan" };
         AddChild(_castellan);
         _effects = new Effects { Name = "Effects" };
@@ -111,6 +120,9 @@ public partial class WorldView : Node3D
         RenderBeltItems((float)alpha);
         RenderChestTakes();
         RenderMachines(dt);
+
+        foreach ((Villager villager, VillagerVisual visual) in _villagerNodes)
+            visual.UpdateFrom(villager, _world.Data, (float)alpha, dt);
 
         _castellan.UpdateFrom(_world.Castellan, (float)alpha, dt);
         _grass.SetPusher(_castellan.GlobalPosition);
@@ -310,7 +322,7 @@ public partial class WorldView : Node3D
     }
 
     /// <summary>
-    /// O que dá para focar perto de um ponto do chão: o Castelão a menos de ~1 célula,
+    /// O que dá para focar perto de um ponto do chão: Castelão ou aldeão a menos de ~1 célula,
     /// senão a construção ou o recurso da célula. null se não há nada.
     /// </summary>
     public FocusTarget? FindFocus(Vector3 ground)
@@ -329,6 +341,9 @@ public partial class WorldView : Node3D
         }
         if (nearest == _castellan)
             return new FocusTarget(_castellan, 0.8f, 3.2f, DescribeCastellan);
+        foreach ((Villager villager, VillagerVisual visual) in _villagerNodes)
+            if (visual == nearest)
+                return new FocusTarget(visual, 0.25f, 1.8f, () => DescribeVillager(villager));
 
         var cell = new GridPos(Mathf.FloorToInt(ground.X), Mathf.FloorToInt(ground.Z));
         if (_world.BuildingAt(cell) is Building building && _buildingNodes.TryGetValue(building, out Node3D? bNode))
@@ -345,10 +360,11 @@ public partial class WorldView : Node3D
     /// <summary>O Castelão como alvo padrão da câmera cinematográfica.</summary>
     public FocusTarget CastellanFocus() => new(_castellan, 0.8f, 3.2f, DescribeCastellan);
 
-    /// <summary>Quem se mexe e pode ser focado (aguardando o novo aldeão: só o Castelão por enquanto).</summary>
     private IEnumerable<Node3D> AnimatedNodes()
     {
         yield return _castellan;
+        foreach (VillagerVisual visual in _villagerNodes.Values)
+            yield return visual;
     }
 
     private string DescribeCastellan()
@@ -359,6 +375,13 @@ public partial class WorldView : Node3D
             : "Castelão";
     }
 
+    private string DescribeVillager(Villager villager)
+    {
+        if (villager.Home?.Workplace is not Workplace work)
+            return "Aldeão  —  sem ofício";
+        return $"Aldeão {work.Job.Name}  —  {VillagerTaskText(villager, work)}";
+    }
+
     private List<string> ShowableLines(Building building) => building switch
     {
         { Storage: Inventory storage } => ChestLines(building, storage),
@@ -367,15 +390,34 @@ public partial class WorldView : Node3D
         _ => new List<string> { building.Type.Name },
     };
 
+    private string VillagerTaskText(Villager worker, Workplace work)
+    {
+        string resource = _world.Data.Item(work.Job.Resource).Name;
+        return worker.Task switch
+        {
+            VillagerTask.GoingToResource => $"indo buscar {resource}",
+            VillagerTask.Gathering => $"coletando ({worker.CarryingCount}/{worker.Stats.Carry})",
+            VillagerTask.ReturningHome => $"levando {worker.CarryingCount} {resource}",
+            _ when work.Free <= 0 => "parado: cabana cheia",
+            _ => $"parado: sem {resource} no raio de {work.Job.Radius:0} células",
+        };
+    }
+
     private List<string> WorkplaceLines(Building building, Workplace work)
     {
         string resource = _world.Data.Item(work.Job.Resource).Name;
-        return new List<string>
+        var lines = new List<string>
         {
             building.Type.Name,
             $"Guardado: {work.Stored.Count(work.Job.Resource)}/{work.Job.Capacity} {resource}",
-            "Sem trabalhador: aguardando o novo aldeão",
         };
+        if (work.Worker is not Villager worker)
+        {
+            lines.Add("Sem trabalhador: nenhum aldeão livre");
+            return lines;
+        }
+        lines.Add($"{work.Job.Name}: {VillagerTaskText(worker, work)}");
+        return lines;
     }
 
     private IEnumerable<string> Contents(Inventory inventory)

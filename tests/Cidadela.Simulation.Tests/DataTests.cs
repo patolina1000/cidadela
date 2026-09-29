@@ -12,6 +12,7 @@ public class DataTests
             TestWorlds.DataFile("items.json"),
             TestWorlds.DataFile("resources.json"),
             TestWorlds.DataFile("castellan.json"),
+            TestWorlds.DataFile("villagers.json"),
             TestWorlds.DataFile("buildings.json"),
             TestWorlds.DataFile("recipes.json"),
             TestWorlds.DataFile("terrain.json"));
@@ -52,7 +53,7 @@ public class DataTests
     [Fact]
     public void BuildingCostMustUseKnownResources()
     {
-        Assert.Throws<FormatException>(() => GameData.Parse(TestWorlds.Items, TestWorlds.Resources, TestWorlds.CastellanStats,
+        Assert.Throws<FormatException>(() => GameData.Parse(TestWorlds.Items, TestWorlds.Resources, TestWorlds.CastellanStats, TestWorlds.VillagerStats,
             """{ "belt": { "name": "Esteira", "cost": { "gold": 1 }, "solid": false } }""", "{}"));
     }
 
@@ -63,7 +64,7 @@ public class DataTests
     public void InvalidRecipesAreRejected(string recipes)
     {
         Assert.Throws<FormatException>(() => GameData.Parse(TestWorlds.Items, TestWorlds.Resources,
-            TestWorlds.CastellanStats, TestWorlds.Buildings, recipes));
+            TestWorlds.CastellanStats, TestWorlds.VillagerStats, TestWorlds.Buildings, recipes));
     }
 
     [Fact]

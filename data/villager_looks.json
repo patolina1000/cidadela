@@ -1,0 +1,20 @@
+{
+  // Aparência do aldeão v2 (docs/aldeao_v2_contrato.md). Só a view lê este arquivo.
+  // corpo: GLB do corpo-base (careca, sem rosto); rosto: rosto.json da arte (atlas, ossos, passada).
+  //   Enquanto os arquivos não existem, a view usa um placeholder (cápsula com cabeça esférica e os retalhos
+  //   do rosto com um atlas provisório gerado por código).
+  // corPele / corCabelo: cores provisórias do contrato; o jogo pinta o material "pele" e "cabelo" com elas.
+  // cabelos: as variações na ordem do sorteio (Villager.HairVariant 1..5). model = arquivo em
+  //   assets/modelos/aldeao_v2/cabelos/<model>.glb; underHat = versão sob chapéu (cobre "parcial"); vazio = esconder.
+  "corpo": "res://assets/modelos/aldeao_v2/aldeao_corpo.glb",
+  "rosto": "res://assets/modelos/aldeao_v2/rosto/rosto.json",
+  "corPele": "AEBFD3",
+  "corCabelo": "6F7F96",
+  "cabelos": [
+    { "name": "Cabelo 1", "model": "cabelo_1", "underHat": "" },
+    { "name": "Cabelo 2", "model": "cabelo_2", "underHat": "" },
+    { "name": "Cabelo 3", "model": "cabelo_3", "underHat": "" },
+    { "name": "Cabelo 4", "model": "cabelo_4", "underHat": "" },
+    { "name": "Cabelo 5", "model": "cabelo_5", "underHat": "" }
+  ]
+}

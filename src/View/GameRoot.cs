@@ -19,6 +19,7 @@ public partial class GameRoot : Node3D
     [Export(PropertyHint.File, "*.json")] public string ItemsPath = "res://data/items.json";
     [Export(PropertyHint.File, "*.json")] public string ResourcesPath = "res://data/resources.json";
     [Export(PropertyHint.File, "*.json")] public string CastellanPath = "res://data/castellan.json";
+    [Export(PropertyHint.File, "*.json")] public string VillagersPath = "res://data/villagers.json";
     [Export(PropertyHint.File, "*.json")] public string BuildingsPath = "res://data/buildings.json";
     [Export(PropertyHint.File, "*.json")] public string RecipesPath = "res://data/recipes.json";
     [Export(PropertyHint.File, "*.json")] public string TerrainPath = "res://data/terrain.json";
@@ -53,6 +54,7 @@ public partial class GameRoot : Node3D
             FileAccess.GetFileAsString(ItemsPath),
             FileAccess.GetFileAsString(ResourcesPath),
             FileAccess.GetFileAsString(CastellanPath),
+            FileAccess.GetFileAsString(VillagersPath),
             FileAccess.GetFileAsString(BuildingsPath),
             FileAccess.GetFileAsString(RecipesPath),
             FileAccess.GetFileAsString(TerrainPath));
@@ -138,7 +140,7 @@ public partial class GameRoot : Node3D
     }
 
     /// <summary>
-    /// Entra na câmera cinematográfica no que está sob o cursor (Castelão, construção, recurso;
+    /// Entra na câmera cinematográfica no que está sob o cursor (Castelão, aldeão, construção, recurso;
     /// sem nada, o Castelão) ou sai dela. Solta o que estava escolhido para não construir sem querer.
     /// </summary>
     private void ToggleCinematic()

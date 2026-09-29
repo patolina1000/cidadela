@@ -12,7 +12,7 @@ public class TerrainTests
         """;
 
     private static GameData Data() => GameData.Parse(TestWorlds.Items, TestWorlds.Resources, TestWorlds.CastellanStats,
-        TestWorlds.Buildings, TestWorlds.Recipes, Terrains);
+        TestWorlds.VillagerStats, TestWorlds.Buildings, TestWorlds.Recipes, Terrains);
 
     private static SimWorld Map(GameData data, string terrain) => MapLoader.Parse($$"""
         { "width": 12, "height": 12, "castellan": { "x": 10, "z": 10 }, "terrain": {{terrain}} }

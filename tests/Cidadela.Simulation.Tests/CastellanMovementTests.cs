@@ -18,7 +18,7 @@ public class CastellanMovementTests
     public void SpeedMustBePositive()
     {
         Assert.Throws<System.FormatException>(() => GameData.Parse(TestWorlds.Items, TestWorlds.Resources,
-            """{ "speed": 0.0 }""", TestWorlds.Buildings, TestWorlds.Recipes));
+            """{ "speed": 0.0 }""", TestWorlds.VillagerStats, TestWorlds.Buildings, TestWorlds.Recipes));
     }
 
     [Fact]

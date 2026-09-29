@@ -1,0 +1,16 @@
+{
+  // Peças de cabeça do aldeão (chapéus). Só a view lê este arquivo. Cada peça vai no encaixe "Chapéu", que o
+  // jogo cria no osso da cabeça (docs/aldeao_v2_contrato.md), uma camada acima do cabelo.
+  // cobre: o que a peça faz com o cabelo.
+  //   "nenhum"  = o cabelo inteiro aparece (tiara, flor);
+  //   "parcial" = usa a versão "sob chapéu" do cabelo (underHat em villager_looks.json); se não existir, esconde o cabelo;
+  //   "total"   = esconde o cabelo (capuz, elmo).
+  // model: GLB em assets/modelos/aldeao_v2/chapeus/<model>.glb, modelado no espaço do corpo em pose de repouso
+  //   (como os cabelos); vazio = forma provisória (chapéu de palha) na cor do ofício, até a arte existir.
+  // job: ofício que usa a peça (chave de data/buildings.json → job); vazio = peça avulsa.
+  "pieces": [
+    { "kind": "chapeu_palha", "name": "Chapéu de palha", "cobre": "parcial", "model": "", "job": "" }
+  ],
+  // Qual peça cada situação usa hoje: aldeão com cabana veste "worker".
+  "worker": "chapeu_palha"
+}
