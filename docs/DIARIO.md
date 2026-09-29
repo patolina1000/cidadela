@@ -3061,7 +3061,7 @@ onde errou, correções manuais e quanto tempo levou.
   `src/Simulation` são versionados, então os dois entram neste commit. A tag não é afetada: ela aponta para o
   HEAD, e esses arquivos não fazem parte do que ela preserva.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 17:25–17:30 de relógio.
+- **Tempo:** 17:25–17:29 de relógio.
 
 ---
 
@@ -3087,4 +3087,4 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** a primeira versão do inventário tinha números de linha de `CastellanVisual.cs`
   desalinhados em poucas linhas; corrigidos conferindo com `grep -n`.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 17:30–17:45 de relógio.
+- **Tempo:** 17:29–17:32 de relógio.
