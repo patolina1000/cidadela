@@ -2923,3 +2923,26 @@ onde errou, correções manuais e quanto tempo levou.
   `aldeao_corpo_reproducao.json` (com o histórico). Relatórios `aldeao_corpo_rig.json` e `_retalhos.json` trocados
   pelos da execução nova. O contrato de animação (na `master`) cita o sha antigo: o agente do jogo atualiza.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~50 min.
+
+## 2026-09-29 — Otimizador de animação do importador do Godot desligado (corpo e clipes)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** desligar o otimizador de animação do importador no `.import` do `aldeao_corpo.glb` e dos 4 GLBs de clipe
+  da prova, mantendo `animation/fps = 24`; reimportar sem janela; conferir que as trilhas têm todas as chaves e que o
+  run do corpo não repete pose no começo.
+- **A opção certa no Godot 4.7:** `optimizer/enabled` é opção do nó AnimationPlayer da cena importada (achei o nome
+  nas strings do binário 4.7.2; a categoria é a dos nós), então vai em
+  `_subresources={"nodes": {"PATH:AnimationPlayer": {"optimizer/enabled": false}}}` (o AnimationPlayer é filho direto da
+  raiz nos 5 GLBs, conferido no Godot). Nos 5 `.import` só o `_subresources` mudou; `animation/fps=24` ficou.
+- **Conferência no Godot (depois de reimportar os 5):**
+  - clipes da prova: todas as trilhas com **49 chaves** (antes 48), 2,0 s, loop ligado, chaves em múltiplos de 1/24 s;
+  - corpo: `idle` 240 chaves em todas as 23 trilhas (9,958 s), `run` **18 chaves** em todas as 23 trilhas (0,708 s), loop
+    ligado, chaves em múltiplos de 1/24 s; no `run`, **nenhuma** das 22 rotações repete a pose entre as chaves 0 e 1
+    (antes: 22 de 22, pela chave inventada em t = 0). O número de chaves no Godot é igual ao do arquivo (49, 240, 18):
+    nenhuma chave é criada nem tirada. As poucas rotações quase paradas no começo do `idle` e dos clipes da prova são do
+    próprio clipe (ossos que quase não mexem naquele instante).
+- **Observação:** outra opção, `animation/remove_immutable_tracks=true` (global, não mexi), tira as trilhas constantes:
+  por isso o Godot mostra 10 a 12 trilhas nos clipes e 23 no corpo, contra 72 canais no arquivo (posição e escala
+  constantes dos ossos). Os clipes da prova ainda têm 1 ou 2 trilhas de escala quase 1 (ruído do bake do Blender).
+  Se um dia uma troca de clipe herdar a pose de um osso que o clipe novo não anima, é essa opção que se revê.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
