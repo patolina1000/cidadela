@@ -2719,3 +2719,26 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** na primeira rodada a cena ficou 19 cm abaixo do chão (centralizei a roda também em z);
   corrigido para centralizar só em x/y.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Aldeão v2: prévias restauradas e normalização oficial da escala (Armature em metros)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** restaurar as 19 prévias apagadas no disco; normalizar agora o `aldeao_corpo.glb` aprovado (escala 1, em
+  metros), mantendo nomes; conferir vértices (< 0,01 mm), folga dos retalhos (1,4 a 3,2 mm) e cabelos; substituir só
+  se tudo passar.
+- **Prévias:** `git checkout` das 19; `git status` limpo; nada a commitar (eram iguais às do repositório).
+- **Feito:** `rig_lib.apply_armature_scale` (o método da prova, agora geral: malhas com qualquer inversa de pai),
+  `rig_lib.export_rig_glb` (NLA, POSE, sem otimizar), as funções de folga movidas do `colocar_retalhos.py` para o
+  `rig_lib`, `tools/arte/aldeao_v2/conferir_corpo.py` (compara dois GLBs do corpo: nomes, vértices, folga dos
+  retalhos, cabelos presos como o jogo prende) e `normalizar_corpo.py` (normaliza num temporário, confere e só então
+  substitui). Relatório: `assets/modelos/aldeao_v2/aldeao_corpo_normalizacao.json`.
+- **Conferência (todas as metas passaram; o aprovado foi substituído):**
+  - vértices (corpo, Olhos, Boca), 0/25/50/75% de idle-loop e run-loop: **0,0085 mm** no máximo;
+  - folga dos retalhos nos 12 quadros do `colocar_retalhos.py`: **1,40 a 3,16 mm**, igual à do arquivo antigo;
+  - cabelos 1 a 5 presos pela fórmula do `VillagerVisual.Socket` nos mesmos 8 quadros: **0,0012 mm**; todos a 1,5 mm
+    do corpo em repouso;
+  - nomes iguais (clipes `idle-loop`, `run-loop`; materiais `pele`, `rosto_olhos`, `rosto_boca`; malhas `aldeao_corpo`,
+    `Olhos`, `Boca`; 24 ossos); nó Armature do glTF sem escala (translação de 6,6 mm mantida).
+- **rosto.json:** nada muda. `ossoCabeca` e `ossoPeito` são nomes; `passadaRun` (0,383 m/s) foi medida no mundo;
+  o atlas é em pixels.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
