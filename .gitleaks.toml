@@ -1,0 +1,11 @@
+# Configuração do gitleaks (hook tools/git-hooks/pre-commit): regras padrão + falsos positivos anotados.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Falsos positivos conferidos à mão"
+regexTarget = "line"
+regexes = [
+  # tools/arte/godot_import.py: nome de uma opção do importador do Godot, não é chave.
+  '''OPTIMIZER_KEY = "optimizer/enabled"''',
+]
