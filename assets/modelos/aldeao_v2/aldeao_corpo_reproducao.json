@@ -1,82 +1,81 @@
 {
-  "gltf_armature": {
-    "a": {
-      "scale": null,
-      "translation": [
-        3.322361226310022e-05,
-        0,
-        -0.006598751991987228
-      ],
-      "rotation": null
+  "estado": "o aldeao_corpo.glb aprovado É a saída do processo do zero (montar_rig.py + colocar_retalhos.py), desde 29/09/2026 ~18:35",
+  "sha256_aldeao_corpo_glb": "11c7d12bc4c522808546f61f3136031e2fce0cc6ccf9e789abd02779d110febf",
+  "segunda_execucao_do_zero": "idêntica byte a byte (cmp) ao aprovado",
+  "conferencia_da_troca": {
+    "a": "aprovado anterior (normalizado, commit 2faec15)",
+    "b": "refeito do zero",
+    "vertices_por_malha": {
+      "Boca": {
+        "max_mm": 0.00118,
+        "vertices_acima_0_01_mm": 0,
+        "coluna_x_mm": null
+      },
+      "Olhos": {
+        "max_mm": 0.27341,
+        "vertices_acima_0_01_mm": 21,
+        "coluna_x_mm": [
+          -0.05,
+          0.14
+        ]
+      },
+      "aldeao_corpo": {
+        "max_mm": 0.00867,
+        "vertices_acima_0_01_mm": 0,
+        "coluna_x_mm": null
+      }
     },
-    "b": {
-      "scale": null,
-      "translation": [
-        3.322361226310022e-05,
-        0,
-        -0.006598751991987228
+    "cabelos_max_mm": 0.00119,
+    "folga_retalhos_mm": {
+      "a": [
+        1.4,
+        3.16
       ],
-      "rotation": null
+      "b": [
+        1.4,
+        3.16
+      ]
+    },
+    "nomes_iguais": {
+      "ossos": true,
+      "clipes": true,
+      "materiais": true,
+      "malhas": true
+    },
+    "gltf_armature": {
+      "a": {
+        "scale": null,
+        "translation": [
+          3.322361226310022e-05,
+          0,
+          -0.006598751991987228
+        ],
+        "rotation": null
+      },
+      "b": {
+        "scale": null,
+        "translation": [
+          3.322361226310022e-05,
+          0,
+          -0.006598751991987228
+        ],
+        "rotation": null
+      }
+    },
+    "vertices": {
+      "Boca": [
+        153,
+        153
+      ],
+      "Olhos": [
+        693,
+        693
+      ],
+      "aldeao_corpo": [
+        2559,
+        2557
+      ]
     }
   },
-  "nomes_iguais": {
-    "ossos": true,
-    "clipes": true,
-    "materiais": true,
-    "malhas": true
-  },
-  "vertices": {
-    "Boca": [
-      153,
-      153
-    ],
-    "Olhos": [
-      693,
-      693
-    ],
-    "aldeao_corpo": [
-      2559,
-      2557
-    ]
-  },
-  "repouso_max_mm": 0.2732,
-  "vertices_max_mm_por_quadro": {
-    "idle-loop@0%": 0.27309,
-    "idle-loop@25%": 0.273,
-    "idle-loop@50%": 0.27316,
-    "idle-loop@75%": 0.27302,
-    "run-loop@0%": 0.27291,
-    "run-loop@25%": 0.27288,
-    "run-loop@50%": 0.27341,
-    "run-loop@75%": 0.27325
-  },
-  "vertices_max_mm": 0.27341,
-  "cabelos_max_mm": 0.00119,
-  "cabelos_repouso_min_ate_corpo_mm": {
-    "cabelo_1": 1.5,
-    "cabelo_2": 1.5,
-    "cabelo_3": 1.5,
-    "cabelo_4": 1.5,
-    "cabelo_5": 1.5
-  },
-  "folga_retalhos": {
-    "a": [
-      1.4,
-      3.16
-    ],
-    "b": [
-      1.4,
-      3.16
-    ]
-  },
-  "a": "assets/modelos/aldeao_v2/aldeao_corpo.glb (aprovado, normalizado no commit 2faec15)",
-  "b": "refeito do zero: montar_rig.py + colocar_retalhos.py (saídas temporárias)",
-  "diferenca_por_malha_repouso_mm": {
-    "aldeao_corpo": 0.0003,
-    "Boca": 0.0001,
-    "Olhos": 0.2732
-  },
-  "olhos_vertices_acima_de_0_01_mm": "21 de 693: a coluna central inteira (ângulo 0, sobre a costura da simetria em x = 0)",
-  "duas_execucoes_do_zero": "idênticas byte a byte (rig e corpo)",
-  "retalho_refeito_sobre_o_aprovado_antigo_em_0_004": "mesma diferença (0,2731 mm): não vem da normalização"
+  "nota": "a única diferença para o aprovado anterior foi a coluna central do retalho Olhos (21 vértices sobre a costura x = 0, até 0,27 mm)"
 }

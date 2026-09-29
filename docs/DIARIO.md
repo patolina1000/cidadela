@@ -2788,3 +2788,21 @@ onde errou, correções manuais e quanto tempo levou.
 - **Observação para a protagonista:** na v1, o cabelo longo preso aos ossos do tronco entra na medida da "barriga";
   na v2 vale conferir isso quando o corpo existir.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.
+
+## 2026-09-29 — Aldeão v2: aprovado trocado pela saída do processo (reprodução byte a byte)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** com o aval do Arthur, trocar o `aldeao_corpo.glb` aprovado pela versão refeita do zero, depois de
+  conferir; rodar o processo mais uma vez e confirmar que sai idêntico byte a byte; registrar o hash.
+- **Conferência (refeito × aprovado anterior, `conferir_corpo.py`, que agora dá a diferença por malha):** corpo
+  **0,0087 mm**, Boca **0,0012 mm**; Olhos **0,273 mm** em 21 vértices, todos com x entre −0,05 e +0,14 mm (a coluna
+  central, como esperado); folga dos retalhos **1,40 a 3,16 mm** nos dois; cabelos 1 a 5 **0,0012 mm** (todos a 1,5 mm
+  do corpo); mesmos nomes de ossos, clipes, materiais e malhas; nó Armature sem escala. Tudo como esperado, então o
+  aprovado foi trocado.
+- **Segunda execução do zero** (`montar_rig.py -- <tmp>` e `colocar_retalhos.py -- <prévia> <tmp> <tmp>`): **idêntica
+  byte a byte** ao novo aprovado (`cmp`).
+- **Hash (SHA-256) do `assets/modelos/aldeao_v2/aldeao_corpo.glb`:**
+  `11c7d12bc4c522808546f61f3136031e2fce0cc6ccf9e789abd02779d110febf` (988.156 bytes).
+- Os relatórios ao lado (`aldeao_corpo_rig.json`, `aldeao_corpo_retalhos.json`) foram trocados pelos da execução nova
+  (só ruído de ponto flutuante e o campo `normalizacao`); `aldeao_corpo_reproducao.json` registra a troca e o hash.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.

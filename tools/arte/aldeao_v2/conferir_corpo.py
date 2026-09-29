@@ -82,7 +82,7 @@ def compare(a_path: Path, b_path: Path) -> dict:
         x["arm"].data.pose_position = "REST"
     bpy.context.view_layer.update()
     names = sorted(set(a["meshes"]) & set(b["meshes"]))
-    maps, rest_gap = {}, 0.0
+    maps, rest_gap, rest_x = {}, 0.0, {}
     for n in names:
         pa, pb = evaluated_points(a["meshes"][n]), evaluated_points(b["meshes"][n])
         tree = kdtree.KDTree(len(pb))
@@ -91,6 +91,7 @@ def compare(a_path: Path, b_path: Path) -> dict:
         tree.balance()
         found = [tree.find(p) for p in pa]
         maps[n] = np.array([f[1] for f in found])
+        rest_x[n] = pa[:, 0]
         rest_gap = max(rest_gap, max(f[2] for f in found))
     out["vertices"] = {n: [len(a["meshes"][n].data.vertices), len(b["meshes"][n].data.vertices)] for n in names}
     out["repouso_max_mm"] = round(rest_gap * 1000, 5)
@@ -100,15 +101,26 @@ def compare(a_path: Path, b_path: Path) -> dict:
     for x in (a, b):
         x["arm"].data.pose_position = "POSE"
 
-    verts, hair_rows = {}, {}
+    verts, hair_rows, per_mesh = {}, {}, {}
     for clip in CLIPS:
         start, end = a["actions"][clip].frame_range
         for f in FRACTIONS:
             frame = int(round(start + f * (end - start)))
             set_frame(a, clip, frame)
             set_frame(b, clip, frame)
-            vmax = max(float(np.linalg.norm(evaluated_points(a["meshes"][n]) - evaluated_points(b["meshes"][n])[maps[n]], axis=1).max())
-                       for n in names)
+            per = {}
+            for n in names:
+                d = np.linalg.norm(evaluated_points(a["meshes"][n]) - evaluated_points(b["meshes"][n])[maps[n]], axis=1)
+                per[n] = float(d.max())
+                over = int((d > 1e-5).sum())
+                per_mesh.setdefault(n, {"max_mm": 0.0, "vertices_acima_0_01_mm": 0, "coluna_x_mm": None})
+                if per[n] * 1000 > per_mesh[n]["max_mm"]:
+                    per_mesh[n]["max_mm"] = round(per[n] * 1000, 5)
+                    per_mesh[n]["vertices_acima_0_01_mm"] = over
+                    if over:  # onde ficam os que diferem, em x no repouso (a costura da simetria é x = 0)
+                        xs = rest_x[n][d > 1e-5]
+                        per_mesh[n]["coluna_x_mm"] = [round(float(xs.min()) * 1000, 2), round(float(xs.max()) * 1000, 2)]
+            vmax = max(per.values())
             ha, hb = np.array(hair_matrix(a)), np.array(hair_matrix(b))
             hmax = 0.0
             for _, pts, _ in hairs:
@@ -119,6 +131,7 @@ def compare(a_path: Path, b_path: Path) -> dict:
             hair_rows[key] = round(hmax * 1000, 5)
     out["vertices_max_mm_por_quadro"] = verts
     out["vertices_max_mm"] = max(verts.values())
+    out["vertices_por_malha"] = per_mesh
     out["cabelos_max_mm_por_quadro"] = hair_rows
     out["cabelos_max_mm"] = max(hair_rows.values())
 
