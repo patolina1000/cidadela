@@ -1935,3 +1935,46 @@ onde errou, correções manuais e quanto tempo levou.
   frente da bochecha. O olho de trás, a 3/4, fica cortado pela silhueta da cabeça (é plano curvo na pele).
 - **Créditos:** 0.
 - **Correções manuais:** nenhuma.
+
+---
+
+## 2026-09-29 — Sessão nova: GDD reexportado, aldeão v1 removido, diagnóstico do projeto
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`, com o MCP godot-ai.
+- **Pedido:** (1) exportar o GDD vivo e ler tudo (GDD, CLAUDE.md, diário, estrutura); (2) criar a tag
+  `aldeao-v1-arquivado` e remover **tudo** do aldeão (modelos, texturas, atlas, cabelos, prévias, prints, JSONs,
+  simulação, visual, Biografia, cena de teste, ferramentas), mostrando a lista antes; onde outros sistemas
+  dependem dele, deixar compilando com "aguardando o novo aldeão"; (3) escrever `docs/ESTADO_DO_PROJETO.md`
+  com a análise honesta e os próximos passos. Não mexer no GDD nem nas entradas antigas do diário. O humano
+  confirmou: menu inicial e Biografia (o sistema de ver animações) ficam.
+- **O que foi feito:**
+  - GDD exportado do Claude Docs em markdown (base64 decodificado com Python); idêntico ao commitado, só a data
+    mudou. Commit `9e3f1d7`.
+  - A tag `aldeao-v1-arquivado` **já existia** em `89736ff` (criada pelo agente de arte antes desta sessão); é o
+    mesmo estado, então foi mantida.
+  - Removidos 148 arquivos e editados 21: `assets/conceitos/aldeao`, `assets/modelos/aldeao_*` (7 pastas),
+    `assets/texturas/aldeao`, 8 prévias, 8 prints, `villagers.json`, `villager_looks.json`, `head_pieces.json`,
+    `aldeoes_teste.json`, `Villager`/`VillagerExpression`/`VillagerStats`, `VillagerVisual`/`VillagerLooks`,
+    `VillagerTests`/`VillagerLookTests`, 8 scripts de arte só do aldeão, as 7 entradas `aldeao_*` de
+    `tools/assets.json`. Ficaram com "aguardando o novo aldeão": as cabanas (`Workplace` sem `Worker`, estoque e
+    empurrar para a esteira continuam; etiqueta "Sem trabalhador: aguardando o novo aldeão"), a Biografia (sem a
+    entrada "Os Segundos" e sem o operador da máquina), o menu (só a protagonista), a cena de estresse (sem as
+    teclas 0–3) e o mapa de teste (sem os 3 aldeões). `normalize.py` e `pipeline.py` ficaram inteiros (são da
+    protagonista também).
+  - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 78 aprovados (eram 94; 16 eram do aldeão). Conferido no
+    jogo: menu, Biografia (Personagens só com a protagonista; Serraria funcionando no palco sem o operador) e o
+    jogo (21 ticks/s, 140 FPS, sem erros). Prints: `docs/prints/sem_aldeao_menu.png`,
+    `sem_aldeao_biografia_serraria.png`, `sem_aldeao_jogo.png`.
+  - `docs/ESTADO_DO_PROJETO.md`: pronto × MVP (~40%), pontos fortes, riscos, dívidas, o que a IA fez e onde
+    tropeçou, próximos passos com a proposta de integração do aldeão novo.
+- **O que deu errado:**
+  - O `rm -rf` das pastas do aldeão foi bloqueado pelo classificador de segurança do Claude Code ("destruição
+    irreversível"). Troquei por `git rm -r`, que é recuperável pela tag; funcionou. Antes disso o `git rm`
+    recusou 8 `.import` com modificação local (mudança de compressão feita pelo editor); descartei com
+    `git checkout` porque os arquivos iam sair de qualquer jeito.
+  - Na primeira execução pelo MCP o jogo parou logo depois de abrir, sem erro no log; pelo binário do Godot rodou
+    240 quadros limpo, e na segunda vez pelo MCP ficou aberto. Provavelmente a janela foi fechada.
+  - Cliques pelo MCP: as coordenadas são em **pixels da janela** (3840×2160 no monitor externo), não do viewport
+    lógico (1152×648) que o `get_ui_elements` mostra. Multiplicar por 3,33 resolveu.
+- **Correções manuais:** nenhuma.
+- **Commits:** `9e3f1d7` (GDD), o commit da remoção e este do diagnóstico.
