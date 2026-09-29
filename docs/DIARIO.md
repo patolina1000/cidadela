@@ -3994,3 +3994,26 @@ onde errou, correções manuais e quanto tempo levou.
   problema saíram.
 - Corrigi o horário da entrada anterior (terminou às 19:50).
 - **Tempo:** 19:50–19:51 de relógio.
+
+---
+
+## 2026-09-29 — Contrato da protagonista v2 e estrutura de equipamento
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`. Só documentação e um arquivo de dados; nenhum código.
+- **Pedido:** `docs/protagonista_v2_contrato.md` no estilo do contrato do aldeão, valendo junto com o contrato de
+  animação (entregas, escala, corpo em 8 regiões e roupa íntima, esqueleto, rosto, cabelo com pesos, chifres,
+  cristal, shader, cores, clipes, equipamento); `data/equipment.json` só com a estrutura.
+- **O que foi feito:**
+  - Lidos o contrato de animação, o do aldeão, o inventário da v1 e as seções 17 e 20 e "O protagonista" do GDD.
+  - `docs/protagonista_v2_contrato.md` com as seções pedidas, na ordem pedida.
+  - `data/equipment.json`: regiões, 7 slots (tipos e encaixe), 7 posturas, limites de triângulos por tipo e três
+    peças de exemplo sem modelo (`calca_simples`, `tunica_simples`, `sapato_simples`) com as regiões que escondem,
+    tudo comentado. Nenhum código lê o arquivo.
+  - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 116 aprovados (os testes copiam `data/`).
+- **Escolhas minhas, para conferir:** os nomes e a divisão dos slots (cabeca, tronco, pernas, pes, capa,
+  mao_direita, mao_esquerda; "Costas" fica só como destino da arma ao operar); "roupa_intima" entrou na lista de
+  regiões, para a calça poder escondê-la; a calça esconde quadril, roupa íntima, coxas e canelas; a túnica
+  esconde só o tronco (sem mangas) e tem janela no peito (`cristalFrente_mm` 0); o caminho futuro dos modelos
+  (`assets/modelos/protagonista_v2/equipamento/`).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:58–20:03 de relógio.

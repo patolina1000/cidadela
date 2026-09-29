@@ -1,0 +1,50 @@
+{
+  // Equipamento da protagonista v2 (docs/protagonista_v2_contrato.md, seção EQUIPAMENTO). Só a estrutura:
+  // nenhum código lê este arquivo ainda, e as peças de exemplo não têm modelo.
+  //
+  // regioes: as malhas do corpo que uma peça pode esconder (o corpo vem dividido nelas).
+  // slots: onde cada peça é vestida.
+  //   tipos: os tipos de peça que cabem no slot (as chaves de "limitesTriangulos").
+  //   encaixe: peças rígidas vão presas a este encaixe do contrato de animação; vazio = roupa com pesos no
+  //     mesmo esqueleto, no espaço do corpo em repouso.
+  // Ao operar máquina, a arma da mão vai para o encaixe "Costas" (não é slot: ninguém veste nada ali).
+  // posturas: cada arma declara uma. Os clipes seguem idle_<postura> e run_<postura>; sem o clipe da postura,
+  //   vale o da "desarmada". A parte de cima do corpo muda por postura com filtro por osso; as pernas são as
+  //   mesmas.
+  // limitesTriangulos: o máximo de triângulos de cada tipo de peça.
+  // pecas: as peças; o id é a chave.
+  //   nome: texto do jogo. slot e tipo: de "slots" e "limitesTriangulos". modelo: o GLB em
+  //     assets/modelos/protagonista_v2/equipamento/<modelo>.glb; vazio = ainda não existe.
+  //   esconde: regiões do corpo que a peça cobre (o jogo esconde essas malhas quando ela está vestida).
+  //   cobre (só peças de cabeça): o que acontece com o cabelo: "nenhum", "parcial" ou "total". Os chifres
+  //     nunca somem.
+  //   cristalFrente_mm (só peças de tronco): quantos mm o cristal avança à frente da peça; 0 = a peça tem uma
+  //     janela no peito.
+  //   postura (só armas): uma de "posturas".
+  "regioes": ["cabeca", "tronco", "bracos", "maos", "quadril", "roupa_intima", "coxas", "canelas", "pes"],
+  "slots": {
+    "cabeca":       { "tipos": ["chapeu", "elmo"], "encaixe": "Chapéu" },
+    "tronco":       { "tipos": ["tunica", "robe"], "encaixe": "" },
+    "pernas":       { "tipos": ["calca"], "encaixe": "" },
+    "pes":          { "tipos": ["sapato", "bota", "sandalia", "armadura_pe"], "encaixe": "" },
+    "capa":         { "tipos": ["capa"], "encaixe": "" },
+    "mao_direita":  { "tipos": ["arma_uma_mao", "arma_duas_maos", "cajado", "arco", "varinha"], "encaixe": "MaoDireita" },
+    "mao_esquerda": { "tipos": ["escudo", "tomo"], "encaixe": "MaoEsquerda" }
+  },
+  "posturas": ["desarmada", "uma_mao", "duas_maos", "arco", "cajado", "escudo", "magia_leve"],
+  "limitesTriangulos": {
+    "calca": 600, "tunica": 700, "robe": 900, "capa": 500,
+    "sapato": 200, "bota": 300, "sandalia": 200, "armadura_pe": 400,
+    "chapeu": 400, "elmo": 500,
+    "arma_uma_mao": 400, "arma_duas_maos": 500, "cajado": 500, "arco": 400, "varinha": 150,
+    "tomo": 250, "escudo": 300
+  },
+  "pecas": {
+    "calca_simples":  { "nome": "Calça simples",  "slot": "pernas", "tipo": "calca",  "modelo": "",
+                        "esconde": ["quadril", "roupa_intima", "coxas", "canelas"] },
+    "tunica_simples": { "nome": "Túnica simples", "slot": "tronco", "tipo": "tunica", "modelo": "",
+                        "esconde": ["tronco"], "cristalFrente_mm": 0 },
+    "sapato_simples": { "nome": "Sapato simples", "slot": "pes",    "tipo": "sapato", "modelo": "",
+                        "esconde": ["pes"] }
+  }
+}
