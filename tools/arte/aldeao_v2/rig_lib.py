@@ -141,3 +141,41 @@ def measure_stride(armature, action) -> float:
     return float(np.median(speeds))
 
 
+
+
+def close_loop(action, fraction=0.25, min_frames=4) -> int:
+    """Fecha o laço sem pulo: nos últimos `fraction` quadros de cada curva, mistura o valor com o do primeiro
+    quadro (peso 0 -> 1, suave), de modo que o último quadro fique igual ao primeiro. Quaternions com o sinal
+    do primeiro quadro. Devolve o número de quadros misturados."""
+    curves = action_fcurves(action)
+    start, end = action.frame_range
+    n = int(end - start)
+    tail = max(min_frames, int(round(n * fraction)))
+    quats = {}
+    for c in curves:
+        if c.data_path.endswith("rotation_quaternion"):
+            quats.setdefault(c.data_path, {})[c.array_index] = c
+    for path, comps in quats.items():  # q e -q são a mesma rotação: alinha o sinal de cada quadro ao do anterior
+        keys = [sorted(comps)[i] for i in range(len(comps))]
+        pts = [comps[k].keyframe_points for k in keys]
+        count = min(len(pk) for pk in pts)
+        prev = [pts[i][0].co[1] for i in range(len(keys))]
+        for j in range(1, count):
+            cur = [pts[i][j].co[1] for i in range(len(keys))]
+            if sum(a * b for a, b in zip(prev, cur)) < 0:
+                for i in range(len(keys)):
+                    pts[i][j].co[1] = -cur[i]
+                cur = [-v for v in cur]
+            prev = cur
+    for c in curves:
+        pts = c.keyframe_points
+        if len(pts) < 2:
+            continue
+        first = pts[0].co[1]
+        m = len(pts)
+        for j in range(max(0, m - tail), m):
+            t = (j - (m - 1 - tail)) / tail  # 0 no início da cauda, 1 no último quadro
+            w = t * t * (3 - 2 * t)
+            pts[j].co[1] = pts[j].co[1] * (1 - w) + first * w
+        c.update()
+    return tail

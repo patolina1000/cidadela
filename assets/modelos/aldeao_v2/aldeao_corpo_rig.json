@@ -21,21 +21,25 @@
     "idle-loop": {
       "quadros": [
         0,
-        96
+        239
       ],
-      "duracao_s": 4.0,
-      "diferenca_fim_inicio_m": 0.0057
+      "duracao_s": 9.967,
+      "laco_antes_m": 0.0002,
+      "laco_depois_m": 0.0,
+      "quadros_misturados": 60
     },
     "run-loop": {
       "quadros": [
         0,
-        12
+        17
       ],
-      "duracao_s": 0.533,
-      "diferenca_fim_inicio_m": 0.0932,
-      "velocidade_raiz_m_s": 0.785,
-      "passada_pelos_pes_m_s": 0.502,
-      "passada_m_s": 0.785
+      "duracao_s": 0.733,
+      "laco_antes_m": 0.0426,
+      "laco_depois_m": 0.0059,
+      "quadros_misturados": 4,
+      "velocidade_raiz_m_s": 0.008,
+      "passada_pelos_pes_m_s": 0.383,
+      "passada_m_s": 0.383
     }
   },
   "conferencia": {
@@ -57,7 +61,7 @@
     "materiais": [
       "pele"
     ],
-    "altura_m": 0.45557739213109016,
-    "pes_z": -0.008414734154939651
+    "altura_m": 0.40254184929654,
+    "pes_z": -0.006493720691651106
   }
 }

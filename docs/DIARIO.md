@@ -2437,3 +2437,20 @@ onde errou, correções manuais e quanto tempo levou.
   paleta por opção, sem alfa); a vista de lado ao nível do chão não mostrava a grade (câmera 22° acima).
 - **Saída:** `assets/previews/aldeao_v2/clipes/<opção>_jogo.gif`, `<opção>_lado.gif` e `_opcoes.png` (3,9 MB).
 - **Créditos:** 9. **Correções manuais:** nenhuma. **Tempo:** ~1 h 30 (metade em render).
+
+## 2026-09-29 — Aldeão v2, passo 10: clipes trocados (Idle_3 e Run_02), laços fechados, passada refeita
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** idle-loop = Idle_3, run-loop = Run_02 no `aldeao_corpo.glb`, mantendo os retalhos e conferindo a
+  folga; fechar os laços misturando os últimos quadros com os primeiros (meta: salto < 1 cm; antes 2,8 e
+  4,3 cm); refazer a passada pelos pés; GIFs dos dois clipes corrigidos.
+- **Feito:** `montar_rig.py` passou a ler `extras_14_243_252.glb` (mapa Idle_3 → idle-loop, Run_02 → run-loop) e
+  ganhou `close_loop` (`rig_lib.py`): nos últimos 25% dos quadros (mínimo 4), cada curva é misturada com o valor
+  do primeiro quadro com peso suave de 0 a 1, e os quaternions são alinhados em sinal quadro a quadro. Laço
+  (soma em 5 ossos): idle 0,0 cm (60 quadros misturados de 239); run de 4,3 cm para **0,6 cm** (4 quadros de 17).
+  Passada da Run_02 pelos pés: **0,383 m/s** (`rosto.json` atualizado). `colocar_retalhos.py` rodado de novo:
+  folga dos retalhos entre 1,4 e 3,2 mm nos 6 quadros conferidos de cada clipe (na corrida a pele comprime até
+  1,4 mm; nunca atravessa). Materiais: pele, rosto_olhos, rosto_boca.
+- **GIFs:** `assets/previews/aldeao_v2/clipes_finais/idle_Idle_3_{jogo,lado}.gif` e `run_Run_02_{jogo,lado}.gif`
+  (jogo a 44 px ampliado 3×; lado a 256 px; chão em grade na passada). O idle de 10 s vai a 12 fps.
+- **Créditos:** 0 neste passo. **Correções manuais:** nenhuma. **Tempo:** ~30 min.

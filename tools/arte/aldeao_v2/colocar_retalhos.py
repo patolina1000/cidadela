@@ -27,7 +27,7 @@ BODY = ROOT / "assets/modelos/aldeao_v2/aldeao_corpo.glb"
 PHI_MAX, RAISE_B, OFFSET = 45, 0.10, 0.002  # 2 mm: o máximo do contrato, para nunca atravessar
 RIGID_MARGIN = 0.015  # m: a pele até isso em volta das janelas passa a seguir só o osso Head
 HEAD_BONE = "Head"
-CHECK_FRAMES = {"idle-loop": (0, 24, 48, 72, 96), "run-loop": (0, 3, 6, 9, 12)}
+CHECK_POINTS = 6  # quadros conferidos por clipe, distribuídos pelo ciclo
 
 
 def lit_material(name, image_path, cols, rows):
@@ -155,9 +155,10 @@ def main() -> None:
     armature.data.pose_position = "POSE"
     for t in ad.nla_tracks:
         t.mute = True
-    for clip, frames in CHECK_FRAMES.items():
+    for clip in ("idle-loop", "run-loop"):
         play(armature, bpy.data.actions[clip])
-        for f in frames:
+        a, b = (int(x) for x in bpy.data.actions[clip].frame_range)
+        for f in [a + (b - a) * i // (CHECK_POINTS - 1) for i in range(CHECK_POINTS)]:
             scene.frame_set(f)
             report["folga_mm"][f"{clip}@{f}"] = {p.name: [round(v, 2) for v in clearance(body, p)] for p in (eyes, mouth)}
     worst = min(v[0] for frame in report["folga_mm"].values() for v in frame.values())
@@ -170,8 +171,9 @@ def main() -> None:
     pts = evaluated_points(body)
     low, high = pts.min(axis=0), pts.max(axis=0)
     center = Vector(((low[0] + high[0]) / 2, (low[1] + high[1]) / 2, (low[2] + high[2]) / 2))
-    for clip, f in (("idle-loop", 48), ("run-loop", 6)):
+    for clip in ("idle-loop", "run-loop"):
         play(armature, bpy.data.actions[clip])
+        f = int(sum(bpy.data.actions[clip].frame_range) / 2)
         scene.frame_set(f)
         shoot(scene, center + game_camera_offset(3), center, 0.6, out / f"retalhos_{clip}_{f}_jogo.png")
         shoot(scene, center + Vector((2.1, -2.1, 0.6)), center, 0.6, out / f"retalhos_{clip}_{f}_tres_quartos.png")

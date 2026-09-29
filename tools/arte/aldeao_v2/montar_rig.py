@@ -26,19 +26,20 @@ from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from corpo_lib import ROOT, ROSTO, import_glb, mesh_points, triangle_count  # noqa: E402
-from rig_lib import loop_gap, measure_stride, normalize_rig, remove_root_motion, rest_points, transfer_weights  # noqa: E402
+from rig_lib import close_loop, loop_gap, measure_stride, normalize_rig, remove_root_motion, rest_points, transfer_weights  # noqa: E402
 
 RIG_DIR = ROOT / "assets/conceitos/aldeao_v2/meshy/rig"
 CLEAN = ROOT / "assets/modelos/aldeao_v2/aldeao_corpo_limpo.glb"
 OUT = ROOT / "assets/modelos/aldeao_v2/aldeao_corpo.glb"
-CLIPS = {"Idle": "idle-loop", "Male_Head_Down_Charge": "run-loop"}
+ANIM_SOURCE = RIG_DIR / "extras_14_243_252.glb"  # escolha de 29/09/2026: Idle_3 e Run_02
+CLIPS = {"Idle_3": "idle-loop", "Run_02": "run-loop"}
 HEAD_BONE, CHEST_BONE = "Head", "Spine02"
 
 
 def main() -> None:
     bpy.ops.wm.read_factory_settings(use_empty=True)
     scene = bpy.context.scene
-    objs = import_glb(RIG_DIR / "animacoes.glb")
+    objs = import_glb(ANIM_SOURCE)
     armature = next(o for o in objs if o.type == "ARMATURE")
     raw = next(o for o in objs if o.type == "MESH")
     for a in bpy.data.actions:
@@ -70,14 +71,17 @@ def main() -> None:
         if action.name in CLIPS:
             if CLIPS[action.name] == "run-loop":
                 root_speed = remove_root_motion(armature, action)
+            gap_before = loop_gap(armature, action)
+            tail = close_loop(action)
             gap = loop_gap(armature, action)
             action.name = CLIPS[action.name]
             fps = scene.render.fps / scene.render.fps_base
-            clips[action.name] = {"quadros": [int(f) for f in action.frame_range], "duracao_s": round((action.frame_range[1] - action.frame_range[0]) / fps, 3), "diferenca_fim_inicio_m": round(gap, 4)}
+            clips[action.name] = {"quadros": [int(f) for f in action.frame_range], "duracao_s": round((action.frame_range[1] - action.frame_range[0]) / fps, 3),
+                                  "laco_antes_m": round(gap_before, 4), "laco_depois_m": round(gap, 4), "quadros_misturados": tail}
         else:
             bpy.data.actions.remove(action)
     stride_feet = measure_stride(armature, bpy.data.actions["run-loop"])
-    clips["run-loop"]["velocidade_raiz_m_s"] = round(root_speed, 3)
+    clips["run-loop"]["velocidade_raiz_m_s"] = round(root_speed or 0.0, 3)
     clips["run-loop"]["passada_pelos_pes_m_s"] = round(stride_feet, 3) if not np.isnan(stride_feet) else None
     # Depois de tirar o avanço da raiz, a velocidade em que os pés não deslizam é a medida pelos pés no clipe
     # no lugar (o avanço original da investida incluía escorregão: 0,785 contra 0,502 m/s).
