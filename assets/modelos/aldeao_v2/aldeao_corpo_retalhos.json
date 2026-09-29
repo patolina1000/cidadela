@@ -1,0 +1,194 @@
+{
+  "janela_olhos_m": [
+    -0.05473395759067322,
+    0.3551628822245202,
+    0.05473392033777025,
+    0.28100655255181206
+  ],
+  "phi_max_graus": 45.0,
+  "janela_boca_m": [
+    -0.012666369703682984,
+    0.279491494913671,
+    0.03236954523758455,
+    0.2550847139021325
+  ],
+  "folga_mm": {
+    "idle-loop@0": {
+      "Olhos": [
+        2.0,
+        3.03
+      ],
+      "Boca": [
+        1.99,
+        2.33
+      ]
+    },
+    "idle-loop@47": {
+      "Olhos": [
+        2.0,
+        3.07
+      ],
+      "Boca": [
+        1.99,
+        2.39
+      ]
+    },
+    "idle-loop@95": {
+      "Olhos": [
+        2.0,
+        3.1
+      ],
+      "Boca": [
+        1.99,
+        2.4
+      ]
+    },
+    "idle-loop@143": {
+      "Olhos": [
+        2.0,
+        3.16
+      ],
+      "Boca": [
+        1.99,
+        2.45
+      ]
+    },
+    "idle-loop@191": {
+      "Olhos": [
+        2.0,
+        3.09
+      ],
+      "Boca": [
+        1.99,
+        2.43
+      ]
+    },
+    "idle-loop@239": {
+      "Olhos": [
+        2.0,
+        3.03
+      ],
+      "Boca": [
+        1.99,
+        2.33
+      ]
+    },
+    "run-loop@0": {
+      "Olhos": [
+        1.58,
+        2.0
+      ],
+      "Boca": [
+        1.52,
+        2.0
+      ]
+    },
+    "run-loop@3": {
+      "Olhos": [
+        1.4,
+        2.0
+      ],
+      "Boca": [
+        1.42,
+        2.0
+      ]
+    },
+    "run-loop@6": {
+      "Olhos": [
+        1.44,
+        2.0
+      ],
+      "Boca": [
+        1.53,
+        2.0
+      ]
+    },
+    "run-loop@10": {
+      "Olhos": [
+        1.41,
+        2.0
+      ],
+      "Boca": [
+        1.48,
+        2.0
+      ]
+    },
+    "run-loop@13": {
+      "Olhos": [
+        1.48,
+        2.0
+      ],
+      "Boca": [
+        1.43,
+        2.0
+      ]
+    },
+    "run-loop@17": {
+      "Olhos": [
+        1.58,
+        2.0
+      ],
+      "Boca": [
+        1.52,
+        2.0
+      ]
+    }
+  },
+  "offset_mm": 2.0,
+  "folga_minima_mm": 1.4,
+  "conferencia": {
+    "objetos": [
+      [
+        "MESH",
+        "aldeao_corpo"
+      ],
+      [
+        "ARMATURE",
+        "Armature"
+      ],
+      [
+        "MESH",
+        "Boca"
+      ],
+      [
+        "MESH",
+        "Olhos"
+      ]
+    ],
+    "animacoes": [
+      "idle-loop",
+      "run-loop"
+    ],
+    "materiais": [
+      "pele",
+      "rosto_boca",
+      "rosto_olhos"
+    ],
+    "grupos_olhos": [
+      "Hips",
+      "LeftUpLeg",
+      "LeftLeg",
+      "LeftFoot",
+      "LeftToeBase",
+      "RightUpLeg",
+      "RightLeg",
+      "RightFoot",
+      "RightToeBase",
+      "Spine02",
+      "Spine01",
+      "Spine",
+      "LeftShoulder",
+      "LeftArm",
+      "LeftForeArm",
+      "LeftHand",
+      "RightShoulder",
+      "RightArm",
+      "RightForeArm",
+      "RightHand",
+      "neck",
+      "Head",
+      "head_end",
+      "headfront"
+    ]
+  }
+}

@@ -2197,3 +2197,560 @@ onde errou, correções manuais e quanto tempo levou.
   derivada da passada (ou conferida contra ela ao carregar).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 02:45 de relógio.
+
+---
+
+> **Entradas do agente de arte (branch `arte`) do mesmo dia, 29/09/2026, trazidas pelo merge.**
+> Elas não têm horário de relógio, só duração; a ordem interna é a original. As entradas acima são do agente do jogo.
+
+## 2026-09-29 — Aldeão v2: preparação (merge, GDD, lista de remoção do v1 e plano do pipeline)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`, sessão nova.
+- **Pedido:** 1) `git merge master`, reexportar o GDD vivo e ler `docs/ESTADO_DO_PROJETO.md`; 2) listar (sem apagar)
+  tudo do aldeão antigo na branch `arte`, separando as ferramentas genéricas do pipeline; 3) preparar o pipeline
+  para o aldeão v2 (folhas técnicas: corpo careca sem rosto + 5 perucas em `assets/conceitos/aldeao_v2/`) com
+  passo a passo e custo, sem gerar nada.
+- **O que o repositório mostrava (diferente do pedido):**
+  - `master` e `arte` estão no mesmo commit (`89736ff`): o merge não trouxe nada. Não existe a tag
+    `aldeao-v1-arquivado` nem o arquivo `docs/ESTADO_DO_PROJETO.md`; o checkout principal só tem `.import`
+    modificados. Ou o outro agente ainda não commitou, ou trabalhou em outra cópia.
+  - Criei a tag `aldeao-v1-arquivado` em `89736ff` (o último estado com o aldeão v1 inteiro) para servir de
+    arquivo antes da remoção. Se o outro agente criar a dele, uma das duas some.
+  - O código do jogo ainda usa o aldeão v1: `src/View/VillagerVisual.cs` (`assets/modelos/aldeao_base/`),
+    `src/View/VillagerLooks.cs` (`assets/modelos/aldeao_cabelos/`, `assets/texturas/aldeao/expressoes.png`),
+    `data/villager_looks.json`, `data/head_pieces.json` e `data/biography.json`. Apagar os assets sem a mudança de
+    código deixa o aldeão sem modelo no jogo; a remoção só deve ir para a `master` junto com essa mudança, ou o v2
+    deve manter os mesmos caminhos (recomendado, ver plano).
+- **GDD:** exportado do Claude Docs (rev 89, 68 KB): idêntico ao `docs/GDD.md` local, só a data do cabeçalho mudou.
+  Nada no GDD fala do v2 ainda; a direção de arte do aldeão continua a de "Aldeão: implementação v1".
+- **Lista de remoção do aldeão v1 (aguardando aprovação; nada foi apagado):**
+  - Conceitos: `assets/conceitos/aldeao/` inteira (folha, careca, cabelos, expressões e `vistas/` com 12 recortes).
+  - Modelos: `assets/modelos/aldeao_base/`, `aldeao_cabelos/`, `aldeao_curto_baguncado/`, `aldeao_medio_franja/`,
+    `aldeao_ondulado/`, `aldeao_longo_liso/`, `aldeao_rabo_cavalo/` (GLB, JSON, texturas e `.import`). As pastas
+    `bruto/` dentro delas (~125 MB) estão fora do git: a tag não as guarda; os brutos da Meshy expiram em 3 dias lá.
+  - Texturas: `assets/texturas/aldeao/expressoes.png` (atlas recortado do conceito, substituído pelos planos).
+  - Prévias: `assets/previews/aldeao_expressoes.png`, `aldeoes.png`, `aldeoes_modular.png`, `aldeoes_correcao.png`,
+    `aldeoes_correcao2.png`, `aldeoes_acabamento.png`, `expressoes_tracos.png`, `rosto_v3.png`.
+  - Ferramentas só do v1: `tools/meshy_pipeline/villager_views.py` (recortes das 5 variações do conceito),
+    `villager_faces.py` (atlas de expressões do conceito), `hair_pieces.py` (perucas por Image to Image: as folhas
+    novas já trazem as perucas prontas), `tools/blender/extract_hair.py` (cabelo recortado das variações,
+    substituído pelas perucas); estado `hair_state.json` e as entradas `aldeao_*` do `state.json` (fora do git).
+  - `tools/assets.json`: as 6 entradas `aldeao_base`, `aldeao_curto_baguncado`, `aldeao_medio_franja`,
+    `aldeao_ondulado`, `aldeao_longo_liso`, `aldeao_rabo_cavalo` e a parte do `_comentario` sobre o v1.
+- **O que fica (genérico ou reaproveitável no v2):**
+  - Meshy: `pipeline.py` (gera, faz rig, anima, baixa), `textures.py`, `crop_concept.py` (recorte de vistas),
+    `compare_sheet.py`, `label_sheet.py`, `face_sprites.py` (folhas de olhos e bocas por código, 0 créditos) e as
+    folhas `assets/texturas/aldeao/olhos.*` e `bocas.*` que ele gera.
+  - Blender: `normalize.py` (as funções do aldeão, como `finish_skin`, `add_face_planes`, `measure_head_top`,
+    `carry_from_walk` e `crank_work`, só rodam quando o asset tem a chave no JSON: o v2 vai usá-las), `fit_hair.py`
+    (encaixe de peruca no corpo-base), `check_face_mask.py`, `preview_modular.py`, `preview_sheet.py`,
+    `render_views.py`, `inspect_clip.py`, `floor_plates.py`.
+  - Separação proposta (sem mover nada ainda): os três de cabeça (`fit_hair.py`, `check_face_mask.py`,
+    `preview_modular.py`) e o `face_sprites.py` são "personagem modular", não "aldeão v1"; ganham caminhos por
+    parâmetro (hoje `aldeao_base` e `aldeao_cabelos` estão fixos neles) na primeira tarefa do v2.
+- **Plano do pipeline do v2 (0 créditos até o passo 3):**
+  1. Folhas em `assets/conceitos/aldeao_v2/` (o que colocar está no `LEIAME.md` da pasta). Se vierem com várias
+     vistas por página, recorte por script em `vistas/`.
+  2. `tools/assets.json`: entrada `aldeao_base` nova (mesmas chaves do v1 que continuam valendo: altura 0,4 m,
+     rig a 1,0 m, sleep da biblioteca, walk do rig, idle/carry/work no Blender, `planos_rosto`, `nos_cabeca`;
+     `apagar_rosto` sai, porque o corpo já vem sem rosto; `acabamento_pele` só se a textura da Meshy não vier
+     chapada) e um tipo novo `peca` no `pipeline.py` para as 5 perucas (Multi-Image to 3D sem rig nem animação,
+     brutos em `assets/modelos/aldeao_cabelos/bruto/`), no lugar do `hair_pieces.py`.
+  3. Corpo: `pipeline.py --run --only aldeao_base` → `normalize.py aldeao_base` → `inspect_clip.py` e
+     `render_views.py` + `compare_sheet.py` contra as folhas. Aprovação do corpo antes das perucas.
+  4. Perucas: `pipeline.py --run --only cabelo_*` → `fit_hair.py` por variação → `preview_modular.py` (5 cabelos a
+     55°) e `check_face_mask.py`.
+  5. Conferência no jogo pela Biografia (screenshot) e diário. Mantendo os nomes `aldeao_base` e
+     `aldeao_cabelos/<var>.glb`, o agente de código não precisa mudar nada.
+- **Custo estimado (médias medidas no `state.json`: Multi-Image to 3D 30, rig 5, animação 3 por clipe):**
+  corpo 38 créditos; 5 perucas 150; total 188. Com uma nova tentativa do corpo e duas de peruca, 286.
+  Proposta de `limite_creditos`: 300. As folhas prontas dispensam o Image to Image do v1 (60 créditos a menos).
+  O saldo atual não foi lido: a chave da Meshy fica no `.env` do checkout principal e a leitura foi barrada nesta
+  sessão.
+- **Feito neste commit:** tag, cabeçalho do GDD, `assets/conceitos/aldeao_v2/LEIAME.md`, esta entrada.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~50 min.
+
+## 2026-09-29 — Aldeão v2: contrato arte × jogo recebido e plano do pipeline revisado
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** o Arthur trouxe o "Contrato aldeão v2" (interface entre arte e jogo). Guardado inteiro em
+  `assets/modelos/aldeao_v2/CONTRATO.md`; o `LEIAME.md` das folhas foi alinhado a ele (perucas `cabelo_1..5`).
+- **O que muda no plano da entrada anterior:**
+  - caminhos novos: `assets/modelos/aldeao_v2/aldeao_corpo.glb`, `cabelos/cabelo_N.glb`, `rosto/olhos.png`,
+    `boca.png`, `rosto.json`. Os caminhos do v1 não são mais reaproveitados: o agente de código muda o jogo para
+    eles, então a remoção do v1 pode ir junto com essa mudança;
+  - corpo e cabelos em **cor chapada, sem textura**: a Meshy sai em "mesh only" (20 créditos em vez de 30, tabela
+    da API lida em 29/09/2026). Saem do pipeline `acabamento_pele`, `apagar_rosto` e a textura assada do v1;
+  - o jogo cria os encaixes ("Cabelo", "Chapéu", "Peito"): saem `nos_cabeca` e o campo `encaixes` do JSON; os
+    cabelos são exportados no espaço do corpo em pose de repouso, sem armature e sem pesos (o `fit_hair.py` hoje
+    move a origem para o encaixe e exporta com o rig; muda);
+  - limites de triângulos: corpo ≤ 2.500 (pedir `polycount` 2500 à Meshy e conferir; decimar se passar),
+    cabelo ≤ 800 (a Meshy entrega ~3.000: decimar no Blender no `fit_hair.py`);
+  - materiais com nome fixo: "pele" (corpo), "cabelo" (perucas), "rosto_olhos" e "rosto_boca" (retalhos);
+  - retalhos "Olhos" e "Boca" com UV 0..1 na célula (no v1 a UV ficava na célula 1 e o jogo deslocava) e proporção
+    igual à da célula: as folhas do v1 já são 2:1 (512×256 e 256×128), então os retalhos continuam 2:1;
+  - `rosto.json` novo (formato do contrato): a parte do atlas (`colunas`, `linhas`, `celulaPx`, `margemPx`,
+    `quadros`) vem do `face_sprites.py`, e `ossoCabeca` e `passadaWalk` vêm do `normalize.py`. No rig da Meshy o
+    osso da cabeça se chama "Head" (conferido no GLB do v1);
+  - clipes idle, walk, carry, work e sleep, todos em loop.
+- **Mudanças de ferramenta a fazer quando as folhas chegarem (todas 0 créditos):**
+  1. `pipeline.py`: campo `textura: false` por asset (`should_texture` falso), tipo `peca` (só Multi-Image to 3D,
+     sem rig nem animação) e pasta de saída por asset (`aldeao_v2/`, `aldeao_v2/cabelos/bruto/`).
+  2. `face_sprites.py`: saída em `assets/modelos/aldeao_v2/rosto/` (`olhos.png`, `boca.png`), margem transparente
+     ≥ 8 px conferida por célula, e escrita da parte do atlas no `rosto.json`. Quadro 0 (padrão): olhos
+     "distraido", boca "entreaberta" (o par padrão do v1); os outros na ordem do v1.
+  3. `normalize.py`: modo "contrato v2" para o corpo: material único "pele" chapado, retalhos com UV 0..1 e
+     materiais nomeados, sem encaixes, clipes em loop, `rosto.json` completado.
+  4. `fit_hair.py`: encaixe na cabeça do corpo v2 (abertura em volta do retalho "Olhos"), decimação a ≤ 800
+     triângulos, material "cabelo", exportação rígida no espaço do corpo.
+  5. `check_face_mask.py` e `preview_modular.py`: caminhos do v2 por parâmetro; a prévia prende o cabelo ao osso
+     "Head" compensando a pose de repouso, como o jogo.
+- **Custo revisado (tabela de preços da API da Meshy, 29/09/2026):**
+  corpo: Multi-Image to 3D só malha 20 + rig 5 + sleep 3 = 28; 5 perucas só malha: 100; total 128.
+  Com uma nova tentativa do corpo e duas de peruca: 196. Proposta de `limite_creditos`: 200.
+- **Pontos que assumi (avisar se for diferente):** o loop dos clipes vai marcado no GLB pelo sufixo `-loop` no
+  nome (o Godot tira o sufixo e importa o clipe em loop; no v1 o loop ficava por conta do jogo); o quadro 0 dos
+  atlas é o par distraído/entreaberta; a altura 0,40 m é conferida na prévia lado a lado com a protagonista.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
+
+## 2026-09-29 — Aldeão v2, partes A e B: estrutura, preparador de vistas e atlas de expressões
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`. Território: `assets/` e
+  `tools/arte/`; nada em `src/`, `scenes/` ou `data/`.
+- **Pedido:** ler o contrato oficial (`git show master:docs/aldeao_v2_contrato.md`, sem merge) e comparar com os
+  três pontos assumidos ontem; criar a estrutura do v2 com um preparador de vistas (Parte A); gerar o atlas de
+  expressões no formato do contrato, com prévia e mapa expressão → quadros (Parte B); parar antes da Meshy
+  (Parte C). Reaproveitar o que servir dos scripts do v1 na tag `aldeao-v1-arquivado`.
+- **Contrato oficial × o que eu tinha:** o texto é o mesmo que guardei ontem; a cópia em
+  `assets/modelos/aldeao_v2/CONTRATO.md` saiu (a oficial é a da `master`). Dos três pontos assumidos: o contrato
+  não diz como o loop é marcado (sigo com o sufixo `-loop` no GLB até ordem contrária); o quadro 0 é o padrão e
+  passa a ser `aberto` / `entreaberta` (nomes do pedido, não os do v1); a altura 0,40 m é conferida lado a lado
+  com a protagonista. Nada muda.
+- **Estado da `master` (só lido):** o aldeão v1 foi removido inteiro no commit `edc1291` (116 arquivos em
+  `assets/`, 8 scripts em `tools/`, código, dados e testes); `docs/ESTADO_DO_PROJETO.md` existe e pede que o
+  modelo seja julgado na câmera do jogo desde a primeira versão. Na `arte` os arquivos do v1 ainda estão; no
+  próximo merge da `master` o git os apaga sozinho (ninguém os mudou aqui).
+- **Meshy (docs.meshy.ai, lidos em 29/09/2026), para a Parte C:** `POST /openapi/v1/image-to-3d` e
+  `/openapi/v1/multi-image-to-3d` (1 a 4 imagens, a primeira é a frente). Parâmetros: `should_texture: false`
+  (20 créditos em vez de 30), `pose_mode: "a-pose"` (ou `t-pose`), `should_remesh: true` + `topology: "triangle"`
+  + `target_polycount` (100 a 300.000; 2.500 para o corpo, 800 para as perucas), `symmetry_mode: "auto"`,
+  `ai_model: "latest"`. O GLB vem em `model_urls.glb` da tarefa concluída.
+- **Parte A (`a35365a`):** pastas `assets/conceitos/aldeao_v2/{folhas,vistas}/`, `assets/modelos/aldeao_v2/`,
+  `tools/arte/aldeao_v2/` com projeto uv próprio (`tools/arte/pyproject.toml`). `preparar_vistas.py` (reaproveita
+  a ideia do `crop_concept.py` do v1, sem as correções manuais dele): fundo = cor mais comum da folha; figura =
+  região que difere do fundo, com abertura para sumir linhas finas; descarta o que encosta na borda, molduras
+  (região do tamanho da folha) e regiões pequenas (textos, setas); ordem de leitura; cada figura centrada num
+  quadrado de 1024 px com 8% de margem e fundo #EBEBEB, mesma escala por folha; prévia por folha.
+  Testado nas folhas antigas: na do aldeão v1 acha 5 figuras (cabeças, T-pose frente e costas, manivela) e o
+  `--vistas frente:3,costas:4` escolhe as certas; na da protagonista, com fundo desenhado, só funciona com
+  `--recorte` da região dos bonecos. As folhas do ChatGPT devem vir com fundo liso, então o caso normal é o
+  simples.
+- **Parte B:** `desenhar_rosto.py` desenha com o Pillow em 4x e reduz (LANCZOS), fundo transparente, e confere
+  que nenhum quadro invade a margem de 16 px. Olhos 3×3 de 512×256 (2:1): aberto (0), fechado, meio_fechado,
+  arregalado, feliz, apertado, preocupado, bravo, lagrima. Boca 4×2 de 256×128 (2:1, última célula vazia):
+  entreaberta (0), sorriso, o, tensa, triste, brava, dormindo. Olhos desalinhados de propósito (o direito menor e
+  8 px mais alto) e pupilas divergentes no `aberto`; brilho da pupila em #EDE6D6; traço #1B1E26 de 6 px;
+  sobrancelhas finas em todos os quadros (sem elas preocupado e bravo não leem). `rosto.json` no formato do
+  contrato, com `ossoCabeca` e `passadaWalk` vazios até o corpo existir, e a chave extra `expressoes`
+  (proposta, fora do contrato): distraido = aberto + entreaberta, esforco = apertado + tensa, feliz = feliz +
+  sorriso, sonolento = meio_fechado + entreaberta, dormindo = fechado + dormindo, espantado = arregalado + o,
+  preocupado = preocupado + triste, chorando = lagrima + triste, bravo = bravo + brava.
+  Prévia: `assets/previews/aldeao_v2/expressoes.png` (as 9 sobre um círculo cor de pele #9FB7CB).
+- **O que deu errado:** `bincount` estourou com `uint8` (corrigido com `int64`); o fundo pela mediana da moldura
+  falhava em pergaminho (trocado pela cor mais comum); a vinheta do pergaminho virava uma "figura" do tamanho da
+  folha (regra da moldura); rótulos da prévia se sobrepunham (duas linhas).
+- **Créditos:** 0. **Gerações na Meshy:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 10.
+
+## 2026-09-29 — Aldeão v2: estudo de direção do rosto (A Olheiras, B Vazio, C Tinta)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** a prévia das expressões ficou infantil (emoji). Antes de refazer o atlas, escolher uma direção:
+  três direções × três expressões (distraído, feliz, bravo), sobre pele #AEBFD3, em 256 px e 48 px, mais uma
+  linha escurecida pelo crepúsculo (× #6A5B7C). Regras: sem sobrancelhas, emoção pelas pálpebras e pupilas,
+  assimetria sempre, traço de tinta à mão em #1B1620, boca pequena e torta com interior escuro. Sem mudar o
+  atlas, o `rosto.json` nem os nomes dos quadros.
+- **Feito:** `tools/arte/aldeao_v2/estudo_rosto.py` (separado do `desenhar_rosto.py`), prévia em
+  `assets/previews/aldeao_v2/estudo_rosto.png`. Traço de tinta: discos ao longo do caminho com raio e desvio
+  lateral por ruído suave (soma de senos), espessura variável e leve irregularidade. Pálpebras: máscara de alfa
+  recortada por uma curva que vai de borda a borda do olho, com inclinação e curvatura por expressão; a borda em
+  tinta. Olhos assimétricos (o da direita menor e 7 px mais alto), pupilas apontando para lugares diferentes.
+  A: esclera branco osso, pupila pequena, pálpebra superior cobrindo 1/3 no padrão, olheira #2B2140
+  semitransparente desfocada. B: oval escuro sem esclera com um brilho fora de centro (posição diferente em cada
+  olho); as pálpebras recortam o oval. C: contorno rabiscado em dois traços, sem esclera pintada (a pele aparece
+  dentro), pupilas de tamanhos diferentes; a espiral do atordoado não entrou porque não há quadro atordoado no
+  estudo. Bocas comuns: oval torto fora de centro (distraído), abertura fina com um canto subindo (feliz),
+  abertura torta com três dentinhos tortos (bravo).
+- **Problemas e correções:** a curva da pálpebra passava da borda do olho e deixava ganchos nas pontas (corrigido:
+  a curva termina na elipse do olho, na altura do corte); no feliz, a pálpebra de cima curvada para baixo e a de
+  baixo para cima faziam gravata-borboleta (a de cima ficou quase reta); a olheira estava grande demais (menor e
+  mais desfocada).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~35 min.
+
+## 2026-09-29 — Aldeão v2: estudo 2 do rosto, quatro variações da direção A (mais adulto e mais triste)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** o estudo 1 lembrou Roblox (olhos colados como adesivos, boca em ponto ou tracinho). Seguir da
+  direção A (olheiras) com olho afundado: linha forte só na pálpebra de cima (grossa no meio, afinando nas
+  pontas), pálpebra de baixo quase sem linha, esclera branco osso com a sombra da pálpebra no alto, tristeza como
+  padrão (cantos externos caídos, pálpebra mais pesada por fora, pupilas para baixo e para o lado), olheiras mais
+  fortes com borda definida por dentro e desfoque só por fora, cobrindo a bolsa; olhos mais afastados e mais
+  baixos; boca só uma dobra fina no padrão. Quatro variações (A1 Fundos, A2 Caídos, A3 Sem boca, A4 Vidrados) ×
+  quatro expressões (distraído, feliz como alívio cansado, bravo, chorando com risco escuro). O texto do pedido
+  chegou cortado em "PRÉVIA: Não use fundo"; assumi "sem fundo chapado atrás do rosto" e desenhei cada rosto
+  sobre uma cabeça oval com volume suave; 256 px e 48 px; linha de crepúsculo (× #6A5B7C).
+- **Feito:** `tools/arte/aldeao_v2/estudo_rosto_a.py` (reusa o traço de tinta e o ruído do `estudo_rosto.py`),
+  prévia em `assets/previews/aldeao_v2/estudo_rosto_a.png`. O olho é uma forma com canto de dentro e canto de
+  fora caído (dois arcos); a pálpebra de cima é uma curva que cobre uma fração diferente em cada canto (mais por
+  fora no padrão; mais por dentro no bravo); a linha dos cílios tem espessura por função (seno elevado a 0,55,
+  mais pesada por fora); a pálpebra de baixo é um traço de 1 px a 37% de opacidade; a cavidade é uma faixa
+  desfocada da cor da esclera misturada com o roxo, presa à esclera; a olheira é uma elipse com alfa parcial
+  (borda nítida) mais um crescente de bolsa, e o desfoque é somado só por fora (máximo entre nítido e desfocado);
+  a lágrima é um risco quase reto em #2B2140 afinando para baixo. A4 tem a linha de umidade clara na pálpebra
+  de baixo e pupila pequena; A3 não tem boca no distraído nem no feliz.
+- **Problemas e correções:** a primeira olheira era um bloco sólido, quase uma máscara (alfa menor, região
+  nítida menor, bolsa como crescente em vez de elipse cheia); o risco da lágrima serpenteava (ondulação de 2,5 px
+  para 0,7 px, mais comprido e quase vertical).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.
+
+## 2026-09-29 — Aldeão v2: atlas de expressões na direção A1 "Fundos" (aprovada), com três prévias
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** direção A1 aprovada; refazer o atlas inteiro nesse estilo com metas de silhueta por expressão
+  (reconhecível a 48 px só pelas pálpebras e olheira), boca como variações da dobra fina (dentinhos com traço
+  fino, nada de bloco preto), sombreado sem direção de luz, célula dos olhos contendo a olheira inteira com
+  desfoque, bordas em alfa suave. Entregar `olhos.png`, `boca.png`, `rosto.json` (formato do contrato, mapa das 9)
+  e três prévias; nomes de quadros mantidos.
+- **Feito (`tools/arte/aldeao_v2/desenhar_rosto.py`, reescrito):** desenho em 6x num rosto de referência de 256 px
+  e recorte de duas janelas: olhos (24, 78)–(232, 208) → célula **512×320** (8:5; a de 2:1 não cabia a olheira
+  com desfoque nem a lágrima), boca (110, 170)–(174, 202) → célula 256×128 (2:1). Margem de 16 px conferida por
+  célula (a lágrima estourou na primeira rodada; encurtada para 40 px). Olhos 3×3, boca 4×2. Silhuetas: aberto
+  cobre 1/3 (mais por fora); meio_fechado 2/3 com a pupila meio escondida; fechado só a linha dos cílios grossa
+  curvada para baixo; feliz com a pálpebra de baixo subindo 44% e a de cima leve (meia-lua deitada, linha de
+  baixo mais forte para a silhueta); bravo reta e dura cobrindo metade, inclinada para o nariz; arregalado com
+  o olho redondo (forma própria) e pupilas de 3 px; preocupado reto, canto interno mais alto, pálpebra de baixo
+  um pouco erguida; apertado com as duas pálpebras fechando numa fenda; lagrima = preocupado + risco grosso
+  (6,5 px afinando, #2B2140 com miolo em tinta) da olheira até a bochecha, mais curto no outro olho. Bocas: dobra
+  fina fraca (entreaberta), dobra alongada com um canto subindo (sorriso), oval pequeno torto com o interior
+  escuro (o), dobra apertada com três dentinhos de traço fino (tensa), dobra funda com cantos para baixo
+  (triste), dobra entreaberta escura com dentinhos (brava), dobra frouxa com um respiro escuro (dormindo).
+  As prévias montam o rosto a partir das CÉLULAS do atlas (não do desenho direto), então conferem o recorte.
+- **rosto.json:** `olhos` 3×3 de [512, 320], `boca` 4×2 de [256, 128], `margemPx` 16, quadros com os índices
+  já definidos, `ossoCabeca` e `passadaWalk` vazios até o corpo, `expressoes` com as 9 (chave extra proposta).
+  As janelas do rosto (onde cada retalho fica na cabeça) estão no script, para o passo dos planos do corpo.
+- **Prévias:** `assets/previews/aldeao_v2/expressoes.png` (9 sobre a esfera, 256 e 48 px),
+  `expressoes_48px_crepusculo.png` (9 a 48 px × #6A5B7C, sem legenda), `piscar.png` (aberto → meio_fechado →
+  fechado → meio_fechado → aberto).
+- **O que ainda pode confundir a 48 px:** esforço, sonolento e bravo são três fendas; a diferença é a posição da
+  fenda (meio, baixo, inclinada). Preocupado e chorando só se distinguem pelo risco da lágrima, de propósito.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Aldeão v2: ajuste de bravo, preocupado e feliz pelo ângulo e abertura do olho
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** estilo aprovado, com 6 das 9 expressões e o piscar. No teste a 48 px no crepúsculo, bravo,
+  preocupado e feliz viravam a fenda do sonolento. Ajustar só esses três pelo ângulo e pela abertura (bravo:
+  linha reta e grossa a ~20° descendo para o nariz, cortando o topo da pupila, pupilas no canto interno, os dois
+  olhos formando um V achatado; preocupado: só 1/4 coberto, inclinação contrária, V invertido, pupilas para cima
+  e para o lado; feliz: pálpebra de cima quase aberta e a de baixo subindo em curva bem convexa, meia-lua); boca
+  do espantado menor. Refazer a tira de 48 px e o atlas final com o `rosto.json`.
+- **Causa:** a pálpebra "reta" do atlas anterior era uma reta entre os dois cantos do olho, então a inclinação
+  vinha só da queda do canto externo (7 px) e não dava para controlar o ângulo.
+- **Feito (`desenhar_rosto.py`):** pálpebra reta nova definida por altura no centro e ângulo, estendida além do
+  olho e recortada pela forma dele (teste de ponto no polígono); a máscara é a forma com o piso multiplicada pelo
+  "abaixo da linha"; a linha dos cílios sem afinar por fora (peso igual). Bravo: 44% no centro, +20°, pupilas a
+  9 px para dentro, linha 5,4 px. Preocupado: 25%, -18°, pupilas (5, -6) e (2, -7), pálpebra de baixo erguida
+  10%. Feliz: pálpebra de cima 6 a 10%, a de baixo sobe 52% com perfil convexo (seno^0,9) e linha de 2 px a 90%
+  de opacidade. Boca do espantado: oval de 11×8 px em vez de 16×11. Chorando manteve a silhueta anterior, como
+  aprovado. Todas as prévias foram regeradas pelo mesmo script (a tira de 48 px é a que importa).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~25 min.
+
+## 2026-09-29 — Aldeão v2: folhas do ChatGPT (passos 0 a 3); Meshy travada por falta da chave
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** passo 0, comparação antes/depois de feliz, preocupado e bravo a 96 px no crepúsculo; passo 1,
+  identificar e renomear as 6 folhas (nomes `exec-*`) e relatar vistas, problemas para a Meshy, franja sobre o
+  retalho "Olhos" e diferença de cabeça; passo 2, preparador no corpo, Meshy (só-frente × multi-imagem, sem
+  textura, pose A, 2.500 triângulos, até 6 gerações) e folha de contato com a área dos retalhos marcada; passo 3,
+  preparador nos cabelos e `PLANO_CABELOS.md`.
+- **Onde estavam as folhas:** não em `assets/conceitos/aldeao_v2/folhas/` do worktree, mas em `assets/previews/`
+  do checkout principal (`Projetos/cidadela`). Copiadas para a pasta certa e renomeadas pelo conteúdo (conferido
+  olhando cada imagem): `aldeao_corpo_folha` (3 vistas), `cabelo_1_curto_baguncado` (mechas em folha),
+  `cabelo_2_medio_franja_lado` (chanel, franja para um lado), `cabelo_3_ondulado` (volumoso até o queixo),
+  `cabelo_4_longo_liso` (liso até os ombros, repartido no meio), `cabelo_5_rabo_de_cavalo` (cor da pele).
+- **Passo 0 (`b6bbb1f`):** `comparar_ajuste.py` monta antes (atlas do commit `46195ba`) × depois a 96 px ×
+  #6A5B7C: `assets/previews/aldeao_v2/comparacao_ajuste.png`.
+- **Passo 1 (`3b74705`):** relatório no chat e resumido aqui. Corpo: frente, lado e costas consistentes, pose A,
+  cabeça em ovo com 43% da altura (l/a 0,93; profundidade/altura 0,91), dobra pequena no peito perto do pescoço na
+  frente (não retocada), na vista de lado a cabeça inclina um pouco para a frente. Cabelos: 4 vistas cada (a
+  "lado" de 1, 2 e 3 é 3/4; de 4 e 5 é perfil), consistentes entre si; todas com cabeça, mais redonda que a do
+  corpo (face visível l/a: 1 = 1,14; 2 = 1,11; 3 = 0,96; 4 = 0,95; 5 = 1,05). Franja sobre a janela dos olhos
+  (28% a 83% da altura da cabeça): 2 e 3 invadem de um lado até ~50%; 4 invade só os cantos externos; 1 encosta
+  no alto da janela; 5 livre. Folha 5 sem contraste cabelo/pele.
+- **Passo 2 (este commit):** vistas do corpo em `assets/conceitos/aldeao_v2/vistas/` (prévia `_previa_aldeao_corpo_folha.png`).
+  Ferramentas prontas: `meshy_corpo.py` (so_frente = Image to 3D; multi = Multi-Image com frente, lado, costas;
+  `should_texture` falso, `pose_mode` a-pose, `should_remesh` + `target_polycount` 2500, trava de 6 gerações,
+  estado fora do git), `render_corpo.py` (Blender headless: material chapado, frente, lado, 3/4, câmera do jogo
+  e escala com a protagonista; mede a caixa da cabeça pelo pescoço e a lisura da área dos retalhos como desvio
+  RMS/máximo de uma esfera ajustada) e `folha_contato.py` (monta a folha e marca as janelas dos olhos e da boca
+  na frente). Testados no `aldeao_base.glb` do v1 como substituto (saída no scratchpad).
+  **Não gerado:** a chave da Meshy não existe neste worktree (`tools/arte/.env` ou `tools/meshy_pipeline/.env`)
+  nem no ambiente, e ler o `.env` do checkout principal foi barrado nesta sessão. Falta o humano copiar o
+  arquivo; aí é `uv run meshy_corpo.py --run` e a folha de contato.
+- **Passo 3 (commit seguinte):** vistas dos 5 cabelos em `vistas/` e `tools/arte/aldeao_v2/PLANO_CABELOS.md`
+  (gerar cabeça + cabelo a 3.000; achar a cabeça por elipsoide ajustado ao rosto liso; classificar faces por
+  distância; transformar o elipsoide da folha no da cabeça do corpo; empurrar para fora; abrir a janela dos
+  olhos; decimar a ≤ 800 com orçamento por cabelo, o 1 em ~730; exportar rígido). Recomenda refazer a folha 5.
+- **Créditos:** 0. **Gerações na Meshy:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 40.
+
+## 2026-09-29 — Aldeão v2, passo 2 concluído: corpo na Meshy (só-frente × multi-imagem) e folha de contato
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** com a chave copiada (ficou em `cidadela-arte/.env`, na raiz; `git check-ignore` confirma que `.env` é
+  ignorado em qualquer pasta; o script passou a aceitar a raiz), gerar o corpo em duas entradas (até 6 gerações),
+  renderizar e parar na folha de contato. Também: regra da franja no plano dos cabelos, restaurar os dois estudos
+  do rosto apagados sem querer, e rodar o preparador na folha nova do rabo de cavalo.
+- **Meshy (2 gerações, 40 créditos; saldo 2.458 → 2.418):** `so_frente` (Image to 3D com a frente) e `multi`
+  (Multi-Image com frente, lado e costas), ambas `should_texture` falso, `pose_mode` a-pose, remesh em
+  triângulos com `target_polycount` 2500, `symmetry_mode` auto, `ai_model` latest. As duas deram certo na
+  primeira tentativa (~3 min cada). Brutos: `assets/conceitos/aldeao_v2/meshy/corpo_so_frente_1.glb` e
+  `corpo_multi_1.glb` (~100 KB cada).
+- **Folha de contato (`assets/previews/aldeao_v2/corpo_contato.png`):** por resultado, frente com as janelas dos
+  retalhos marcadas (vermelho olhos, azul boca, cinza a caixa da cabeça), lado, 3/4, câmera do jogo a 55° e a
+  frente com a protagonista ao lado em escala (aldeão a 0,40 m). Medidas (modelo escalado a 0,40 m):
+  - so_frente: 2.611 triângulos; cabeça 154 × 178 mm (44% da altura); área dos olhos a 2,3 mm RMS de uma esfera
+    ajustada, máximo 5,0 mm;
+  - multi: 2.620 triângulos; cabeça 164 × 180 mm; área dos olhos 3,9 mm RMS, máximo 12,9 mm (tem uma ondulação);
+  - a área da boca tem só 6 vértices nos dois (malha muito aberta ali), então a medida não vale; visualmente é
+    lisa nos dois.
+- **Leitura:** os dois passam de 2.500 triângulos (o remesh da Meshy não é exato): decimar na limpeza. O só-frente
+  tem a cabeça mais lisa e mais próxima do ovo da folha; o multi respeita melhor a profundidade do corpo e a
+  inclinação da cabeça da vista de lado, mas a dobra do peito perto do pescoço apareceu nele como uma área
+  amassada (anotado para a limpeza), e a cabeça saiu maior e com a ondulação na testa. Nenhuma limpeza, rig ou
+  animação feita.
+- **Outros:** `PLANO_CABELOS.md` com a regra da franja (cobre no máximo a metade de cima de um olho; retalho
+  "Olhos" não muda; folga mínima de 2 mm; nunca atravessa) e a nota da folha 5 refeita; `estudo_rosto.png` e
+  `estudo_rosto_a.png` restaurados com `git checkout`; preparador rodado na folha nova do rabo de cavalo (cabelo
+  escuro, 4 vistas consistentes; a "lado" é perfil).
+- **Créditos:** 40. **Gerações na Meshy:** 2 de 6. **Correções manuais:** o humano copiou o `.env`. **Tempo:** ~40 min.
+
+## 2026-09-29 — Aldeão v2, passo 4: limpeza do corpo escolhido (corpo_so_frente_1)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** corpo só-frente escolhido (barriga redonda, rosto mais liso); sem gerar mais nada. Limpeza por script:
+  escala 0,40 m, pés em y = 0, pivô entre os pés, frente +Z do glTF; simetria em X pelo lado melhor; alisar (meta
+  na área dos olhos: RMS ≤ 1,5 mm e máximo ≤ 3 mm); corrigir a dobra do peito se aparecer; decimar a ≤ 2.500
+  triângulos preservando as juntas; um material "pele". Folha de contato com sombreado suave.
+- **Feito:** `tools/arte/aldeao_v2/corpo_lib.py` (funções comuns: importar, caixa da cabeça pelo pescoço,
+  rugosidade do rosto, retalhos, cena) e `limpar_corpo.py`: malha única com duplicados fundidos; escala e pivô
+  pelo contrato; simetria por bisseção em x = 0 + espelho com fusão (ficou o lado -x, o mais liso); cabeça
+  subdividida uma vez e alisada por Taubin (λ 0,5, μ -0,53; 20 passos na cabeça, 6 no corpo, 25 extras na
+  frente do peito abaixo do pescoço, onde a folha tinha a dobra); decimação por colapso com simetria e um grupo
+  de vértices que segura ombros, cotovelos, quadris e joelhos (peso 0,12); material "pele" chapado; faces
+  suaves. Saída: `assets/modelos/aldeao_v2/aldeao_corpo.glb` (ainda sem rig e sem retalhos) e
+  `aldeao_corpo_limpeza.json`. `render_corpo.py` passou a usar a lib e a aceitar `suave`.
+- **Métrica corrigida (importante para ler os números):** o "desvio de uma esfera" das folhas anteriores media o
+  formato em ovo da cabeça, não o amassado (a janela dos olhos vai quase de orelha a orelha). A rugosidade agora
+  é o desvio de um **elipsoide ajustado**. Com ela, a malha crua da Meshy já tinha RMS 0,48 mm e máximo 1,8 mm
+  na área dos olhos: o aspecto de papel amassado das folhas anteriores era o **sombreado facetado** (faces
+  planas), não a posição dos vértices. A limpeza terminou em RMS 0,54 mm e máximo 1,8 mm (dentro da meta), com
+  2.424 triângulos, cabeça 155 × 180 mm, 244 triângulos na faixa dos joelhos. A dobra do peito não aparece.
+- **Prévia:** `assets/previews/aldeao_v2/corpo_limpo_contato.png` (frente com as janelas, lado, 3/4, câmera do jogo,
+  escala com a protagonista), sombreado suave.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~50 min.
+
+## 2026-09-29 — Aldeão v2, passo 5: prova do rosto no corpo limpo (retalhos + atlas, câmera do jogo)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** criar os retalhos "Olhos" e "Boca" na cabeça limpa, como no contrato, com o atlas final; renderizar
+  as 9 expressões na câmera do jogo (55°) a 48 e 96 px de altura do aldeão, mais a linha de crepúsculo, em três
+  variações: (a) janela atual, (b) janela dos olhos 10% mais alta, (c) cabeça inclinada 10° para cima na pose de
+  repouso. Dizer qual lê melhor de cima. Sem rig nem animação.
+- **Feito:** `face_patch` na `corpo_lib.py` (grade projetada na pele, 1,5 mm pela normal, UV 0..1, proporção da
+  célula), `patch_material` (emissão + transparência pelo alfa do atlas, célula pelo nó Mapping), `prova_rosto.py`
+  (Blender: 3 variações × 9 expressões, fundo transparente, 512 px) e `prova_rosto_folha.py` (montagem a 96 px,
+  48 px e 48 px × #6A5B7C). Prévia: `assets/previews/aldeao_v2/prova_rosto.png`.
+- **Problemas e correções:**
+  - a janela dos olhos (97% da largura máxima da cabeça) cai fora da silhueta na altura dos olhos, onde o ovo é
+    mais estreito: raios paralelos não achavam pele nos cantos. Raios convergentes de um ponto atrás da cabeça
+    acharam, mas espremeram o retalho para metade da largura. Solução final: **projeção cilíndrica** em volta do
+    eixo vertical da cabeça, cada coluna num ângulo até ±72° (corda igual à largura da janela): o retalho
+    acompanha os lados da cabeça e toda coluna acha pele;
+  - a primeira versão da variação c inclinou a cabeça para baixo (sinal da rotação); conferido pelo ponto mais à
+    frente da cabeça, que agora sobe 10 mm.
+- **Leitura (na folha):** de cima, a **c** lê melhor: a face vira para a câmera, os olhos ficam maiores e menos
+  achatados. A **b** vem logo atrás: os olhos saem da base da silhueta e ficam no meio da área visível, sem mudar
+  a postura. A **a** é a pior: os olhos ficam colados na borda de baixo da cabeça e a testa domina. A 48 px só o
+  espantado (branco dos olhos) se distingue de longe em qualquer variação; a 96 px as nove leem nas três, com a
+  c mais clara. A c fixa o queixo erguido na pose de repouso, o que muda o personagem; a b não muda nada.
+  Sugestão: b, ou b com uns 5° de inclinação, se o queixo erguido agradar.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Aldeão v2, passo 7: nova prova do rosto (tamanhos reais, janela por ângulo, olhos maiores, luz do jogo)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** corpo limpo aprovado; variação b escolhida; a prova anterior deixou os olhos como fendas nas laterais
+  (janela de 97% da largura, projeção até ±72°). Medir o tamanho real no jogo e usar na prova; janela dos olhos
+  até ±35° e ±45° com a altura da b; olhos 30% maiores na célula; material fiel ao jogo; folha com as duas larguras
+  (o texto do pedido chegou cortado no item 5; assumi: duas larguras × três zooms + linha de crepúsculo).
+- **Tamanho real (`tools/arte/aldeao_v2/medir_zoom.py`):** a câmera do jogo (`CameraRig.cs`: perspectiva, FOV 45°
+  vertical, inclinação 55°, 16 m no zoom 1, zoom 0,4 a 2,5) reproduzida no Blender em 3024×1890, medindo a
+  caixa de pixels do modelo. Protagonista (GLB de 0,80 m): 28 / 68 / 179 px nos zooms 0,4 / 1 / 2,5. Aldeão de
+  0,40 m: 19 / 44 / 112 px (medido direto; pela proporção 0,40/0,75 sobre a protagonista daria 15 / 36 / 95, mas
+  a cabeça grande e a profundidade do corpo contam na caixa). Validação pelo godot-ai: o jogo abriu no menu
+  (janela de 3840×2160), a captura em resolução cheia estourou o limite de 4 MB do MCP e a de 1024 px veio
+  congelada com a janela em segundo plano; a medida usada é a do Blender, que é a mesma conta da câmera.
+- **Atlas (`desenhar_rosto.py`):** olhos e olheiras 30% maiores (raios, pupilas, cílios) dentro da mesma célula,
+  centros aproximados de 82/174 para 88/168 para caber com a olheira; rabo do desfoque cortado abaixo de 12/255;
+  resíduo de 1 a 2 de alfa do LANCZOS na margem zerado. Formato do `rosto.json` e nomes dos quadros iguais.
+- **Prova (`prova_rosto.py`, `prova_rosto_folha.py`):** `face_patch` aceita ângulo máximo: a largura vira a corda
+  do ângulo e a altura segue a proporção 8:5 da célula, centrada na janela da b. Janela dos olhos: ±35° = 89 mm
+  de largura; ±45° = 109 mm (antes: 146 mm a ±72°). Pele #AEBFD3 fosca (rugosidade 1, sem especular), sol frio
+  fraco quase de cima, ambiente roxo-acinzentado; retalhos difusos com a mesma luz. Folha
+  `assets/previews/aldeao_v2/prova_rosto_2.png`: 19, 44 e 112 px e 44 px × crepúsculo, para as duas larguras.
+- **Leitura:** as duas tiram a cara de alienígena. A ±45° lê melhor a 44 px (olhos maiores e mais separados) e
+  ainda fica inteira na frente do rosto; a ±35° junta os olhos demais. A 19 px nada lê em nenhuma. Sugestão: ±45°.
+- **Créditos:** 0 nesta parte (o rig está no passo 6). **Correções manuais:** nenhuma. **Tempo:** ~1 h 20.
+
+## 2026-09-29 — Aldeão v2, passo 6: rig da Meshy e dois clipes (idle-loop, run-loop) no corpo limpo
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** rig do Meshy no `aldeao_corpo.glb` aprovado (parar se rig + 2 animações passassem de 50 créditos);
+  só idle e run, em loop com o sufixo `-loop`; run = corridinha desajeitada de passos curtos, a mais curta e
+  pesada da biblioteca; registrar `ossoCabeca`, `ossoPeito` e `passadaRun` no `rosto.json`; sem os retalhos.
+- **Preço (docs.meshy.ai):** rig 5, animação 3 por ação → 11 créditos previstos e gastos (saldo 2.418 → 2.407).
+- **Biblioteca (`GET /openapi/v1/animations/library`, 678 ações, grátis):** candidatos de corrida vistos pelos
+  GIFs de prévia (`preview_url`): Run_02 (23 quadros), Run_03 (25), RunFast (15), Lean_Forward_Sprint (16),
+  Male_Head_Down_Charge (14), Quick_Walk, Skip_Forward, Unsteady_Walk, Penguin_walk (andares). Escolhido
+  **512 Male_Head_Down_Charge**: o ciclo mais curto (14 quadros, 0,53 s) e o mais pesado (cabeça baixa, braços
+  bombeando). Idle: **0 Idle** (4 s). Alternativa se a investida parecer exagerada: Run_02 por mais 3 créditos.
+- **O que deu errado no rig:** `POST /v1/rigging` com `model_url` = data URI do GLB limpo respondeu 422 "Pose
+  estimation failed" duas vezes (a 0,40 m e numa cópia a 1,0 m), sem cobrar. Saída: rig sobre a tarefa original
+  da Meshy (`input_task_id` de corpo_so_frente_1, `height_meters` 1,0), como o v1 fazia, e **transferência de
+  pesos** para a malha limpa no Blender (`montar_rig.py`: Data Transfer por face mais próxima, grupos por nome,
+  0 vértices sem peso; a malha crua com rig e a limpa coincidem em < 0,5 mm na caixa).
+- **Clipes:** a investida tem deslocamento de raiz (o quadril avança 0,785 m/s); tirei o avanço horizontal do
+  quadril quadro a quadro (reta ajustada, balanço vertical mantido), e a **velocidade da raiz original virou a
+  `passadaRun` = 0,785 m/s** (a medida pelos pés, método do v1, dá 0,502 m/s porque os pés deslizam na captura;
+  fica registrada no `aldeao_corpo_rig.json`). Loop: idle fecha (0,6 cm somados em 5 ossos); run fecha a 9,3 cm
+  somados (~2 cm por osso), aceitável para 13 quadros. Nomes: `idle-loop` e `run-loop`.
+- **Exportação (duas armadilhas do Blender 5.1):** em modo ACTIONS as ações com slot saíam com 2 quadros
+  constantes; em modo NLA_TRACKS (uma faixa por clipe, `action_slot` na strip, sem otimização de tamanho) saem
+  todos os quadros (97 e 13); e o esqueleto precisa estar em `POSE`, não em `REST`, na hora de exportar, senão
+  todos os quadros saem com a pose de repouso. Conferido lendo os acessores do GLB (rotação do LeftUpLeg varia).
+- **Entregas:** `assets/modelos/aldeao_v2/aldeao_corpo.glb` (malha limpa + armature de 24 ossos + 2 clipes,
+  material "pele", 2.424 triângulos, 0,40 m, sem retalhos), `aldeao_corpo_limpo.glb` (só a malha, entrada do
+  rig; a limpeza passa a gravar nele), `aldeao_corpo_rig.json` (medidas), `rosto.json` com `ossoCabeca` "Head",
+  `ossoPeito` "Spine02", `passadaRun` 0,785. Prévia `assets/previews/aldeao_v2/corpo_rig_clipes.png` (repouso,
+  4 quadros do idle, 4 do run, câmera do jogo e de lado). Brutos em `assets/conceitos/aldeao_v2/meshy/rig/`
+  (rig, animações, walking/running básicos grátis do rig).
+- **Atenção na prévia:** na investida o corpo vai muito inclinado, com a cabeça na frente; de cima a cabeça cobre
+  o corpo. É o jeito do clipe; se ler mal no jogo, Run_02 é a troca barata.
+- **Créditos:** 11. **Gerações:** 1 rig (2 tentativas recusadas sem custo) + 1 tarefa de animação com 2 ações.
+  **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.
+
+## 2026-09-29 — Aldeão v2, passo 8: retalhos "Olhos" e "Boca" no corpo com rig
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** janela dos olhos aprovada a ±45° (olhos no tamanho atual); colocar os retalhos no `aldeao_corpo.glb`
+  com rig, peso 100% no osso "Head", e conferir nos quadros do idle e do run que acompanham a cabeça sem
+  atravessar a pele.
+- **Feito (`tools/arte/aldeao_v2/colocar_retalhos.py`; funções de rig fatoradas em `rig_lib.py`):** retalhos
+  criados na pose de repouso (olhos ±45°, altura da b, 109 × 68 mm; boca na janela padrão), UV 0..1, grade
+  32×20 e 16×8, materiais "rosto_olhos" e "rosto_boca" (atlas embutido como cor + alfa, foscos; o jogo troca pelo
+  shader toon e escolhe a célula), grupo de vértices "Head" com peso 1 e modificador Armature; exportação pelas
+  faixas NLA em pose ativa. Conferência por BVH nos quadros 0/24/48/72/96 do idle e 0/3/6/9/12 do run: distância
+  com sinal de cada vértice dos retalhos à pele.
+- **Problema e correção:** com folga de 1,5 mm e a pele livre, os olhos entravam até 0,8 mm na pele em três quadros
+  do idle (a pele das têmporas segue em parte o pescoço; o retalho segue só o Head). Duas medidas: folga de
+  **2 mm** (o máximo do contrato) e a pele da frente da cabeça sob as janelas, com 1,5 cm de margem e transição
+  suave, passa a seguir **100% o osso Head** (como o v1 fazia). Resultado: folga mínima 1,83 mm e máxima 3,6 mm em
+  todos os quadros conferidos; nunca atravessa. Também: um `flat_material` na prévia renomeava o material do
+  corpo para "pele.001" no arquivo; removido (o material "pele" do arquivo fica).
+- **Aviso de coordenadas:** `face_patch` passou a usar coordenadas de mundo (a malha reimportada é filha do
+  armature com escala 0,004, e as coordenadas locais estavam 250× maiores).
+- **Entrega:** `assets/modelos/aldeao_v2/aldeao_corpo.glb` (corpo + armature + idle-loop + run-loop + Olhos + Boca),
+  `aldeao_corpo_retalhos.json` (janelas e folgas), prévias `assets/previews/aldeao_v2/retalhos_idle_jogo.png` e
+  `retalhos_run_tres_quartos.png`.
+- **Créditos:** 0 neste passo. **Correções manuais:** nenhuma. **Tempo:** ~50 min.
+
+## 2026-09-29 — Aldeão v2, passo 9: GIFs de comparação de corridas e idles (9 créditos)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** nem a investida (512) nem o idle (0) convenceram pelos quadros. Montar GIFs em loop: 3 a 4 corridas
+  (512, Run_02, corrida e caminhada básicas grátis do rig; uma corridinha de passos curtos se houvesse) e 2 a 3
+  idles (o atual e alternativas calmas de pés juntos, respiração e balanço, ou cochilo de pé). Cada opção em
+  dois GIFs (câmera do jogo a 44 px ampliado 3× sem suavizar; de lado, maior), com o chão em grade deslizando na
+  velocidade da passada. Até 10 créditos.
+- **Escolha na biblioteca (pelos GIFs de prévia, grátis):** corridas: Run_02 (14). Não há na biblioteca uma
+  corridinha de passos curtos com o corpo pouco inclinado; as demais corridas são atléticas ou investidas.
+  Idles calmos de pés juntos: Idle_3 (243) e Idle_12 (252). Dozing_Elderly (38) parece sentado com as mãos nos
+  joelhos, não cochilo de pé; Idle_02/03 gesticulam. Gerados num só pedido: **9 créditos** (saldo 2.407 → 2.398).
+- **Ferramentas:** `gif_clipes.py` (Blender: importa cada opção, leva à escala do jogo, tira o avanço de raiz se
+  houver, mede a passada pela raiz e pelos pés, renderiza cada quadro do ciclo na câmera do jogo e de lado a
+  22° acima do chão, com um plano de grade de 10 cm que recua na velocidade da passada; idles com mais de 100
+  quadros a cada 2) e `gif_montar.py` (GIFs com paleta única por opção; jogo = 44 px pela altura de repouso,
+  ampliado 3× por vizinho mais próximo; lado = 256 px; folha `_opcoes.png` com um quadro e as medidas).
+  As opções fora do `aldeao_corpo.glb` usam a malha crua da Meshy com rig (a limpa só tem os dois clipes atuais).
+- **Medidas (chão = velocidade usada no GIF; laço = diferença entre último e primeiro quadro, 5 ossos):**
+  512 atual 12 q, 0,50 s, pés 0,502 m/s, laço 9,3 cm; Run_02 17 q, 0,71 s, 0,353 m/s, 4,3 cm; corrida básica
+  16 q, 0,67 s, 0,564 m/s, 0,8 cm; caminhada básica 25 q, 1,04 s, 0,193 m/s, 5,1 cm; idle atual 96 q, laço
+  3,9 cm; Idle_3 239 q (10 s), 2,8 cm; Idle_12 144 q (6 s), 0,3 cm.
+- **Correção de passada:** com o avanço de raiz removido, a velocidade em que os pés do 512 não deslizam é a
+  medida pelos pés (0,502 m/s), não a do avanço original (0,785, que incluía escorregão): `rosto.json` passou a
+  0,502 e o `montar_rig.py` usa a medida pelos pés.
+- **Problemas e correções:** GIF do jogo com cores embaralhadas (quantização quadro a quadro com alfa; agora uma
+  paleta por opção, sem alfa); a vista de lado ao nível do chão não mostrava a grade (câmera 22° acima).
+- **Saída:** `assets/previews/aldeao_v2/clipes/<opção>_jogo.gif`, `<opção>_lado.gif` e `_opcoes.png` (3,9 MB).
+- **Créditos:** 9. **Correções manuais:** nenhuma. **Tempo:** ~1 h 30 (metade em render).
+
+## 2026-09-29 — Aldeão v2, passo 10: clipes trocados (Idle_3 e Run_02), laços fechados, passada refeita
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** idle-loop = Idle_3, run-loop = Run_02 no `aldeao_corpo.glb`, mantendo os retalhos e conferindo a
+  folga; fechar os laços misturando os últimos quadros com os primeiros (meta: salto < 1 cm; antes 2,8 e
+  4,3 cm); refazer a passada pelos pés; GIFs dos dois clipes corrigidos.
+- **Feito:** `montar_rig.py` passou a ler `extras_14_243_252.glb` (mapa Idle_3 → idle-loop, Run_02 → run-loop) e
+  ganhou `close_loop` (`rig_lib.py`): nos últimos 25% dos quadros (mínimo 4), cada curva é misturada com o valor
+  do primeiro quadro com peso suave de 0 a 1, e os quaternions são alinhados em sinal quadro a quadro. Laço
+  (soma em 5 ossos): idle 0,0 cm (60 quadros misturados de 239); run de 4,3 cm para **0,6 cm** (4 quadros de 17).
+  Passada da Run_02 pelos pés: **0,383 m/s** (`rosto.json` atualizado). `colocar_retalhos.py` rodado de novo:
+  folga dos retalhos entre 1,4 e 3,2 mm nos 6 quadros conferidos de cada clipe (na corrida a pele comprime até
+  1,4 mm; nunca atravessa). Materiais: pele, rosto_olhos, rosto_boca.
+- **GIFs:** `assets/previews/aldeao_v2/clipes_finais/idle_Idle_3_{jogo,lado}.gif` e `run_Run_02_{jogo,lado}.gif`
+  (jogo a 44 px ampliado 3×; lado a 256 px; chão em grade na passada). O idle de 10 s vai a 12 fps.
+- **Créditos:** 0 neste passo. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Aldeão v2, passo 11: piloto dos cabelos com o cabelo 4 (longo liso), 20 créditos
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** seguir o `PLANO_CABELOS.md` só com o cabelo 4: gerar na Meshy, extrair a peruca, encaixar na cabeça
+  do corpo aprovado, abrir a janela dos olhos, decimar a ≤ 800; prévia em 44 e 112 px com crepúsculo; conferir
+  com idle e run que o cabelo rígido não atravessa o corpo nem os retalhos; até 2 gerações.
+- **Meshy (`meshy_cabelo.py`):** Multi-Image to 3D com frente, lado, costas e topo, só malha, remesh a 3.000,
+  1 geração (20 créditos; saldo 2.398 → 2.378): `assets/conceitos/aldeao_v2/meshy/cabelos/cabelo_4_1.glb`,
+  3.104 triângulos, cabeça + cabelo + um toco de pescoço que a Meshy inventou.
+- **Extração (`extrair_peruca.py`), o que funcionou e o que não:**
+  - o GLB da Meshy vem com os **vértices duplicados por face** (3.342 → 1.555 depois de fundir): sem fundir,
+    cada triângulo é uma ilha, a decimação racha a malha e qualquer crescimento de região para. Custou três
+    rodadas até perceber;
+  - achar a cabeça da folha por ajuste de elipsoide **não fecha**: o rosto visível é uma faixa estreita entre as
+    mechas, quase plana, e o ajuste (esfera, forma fixa, escala por eixo) diverge ou erra 1 cm. Para o piloto a
+    cabeça da folha é ancorada em medidas da própria folha (`PRIOR[4]`: largura 75% e altura 74% da silhueta,
+    topo 5% abaixo do topo) mais a frente do rosto medida no modelo, e o elipsoide da cabeça do corpo é mapeado
+    com escala por eixo. Para os outros cabelos é preciso medir os mesmos três números em cada folha;
+  - separar rosto de cabelo por **crescimento de região** a partir da frente dos olhos, só por arestas com menos
+    de 32° (a linha do cabelo é viva) e sem sair mais de 2,5 cm do elipsoide: 446 faces de rosto + 161 do toco
+    de pescoço removidas; sobra a peruca em 7 pedaços (24 faces soltas descartadas);
+  - encaixe: 25 vértices empurrados para fora do corpo (+1,5 mm) e 39 para 2 mm do retalho dos olhos; franja:
+    nenhuma face abaixo da linha dos olhos (o repartido no meio deixa o rosto livre);
+  - decimação 2.473 → **759 triângulos**; material "cabelo" #4B5A69; exportação rígida no espaço do corpo em
+    repouso: `assets/modelos/aldeao_v2/cabelos/cabelo_4.glb` (+ `cabelo_4_relatorio.json`).
+- **Conferência:** repouso: 0,46 mm do corpo (pior ponto nos ombros, z 0,195 m: as pontas encostam nos ombros)
+  e 1,87 mm do retalho dos olhos (14 vértices de franja na frente dele). Idle: 1,5 mm do corpo. **Run: as
+  mechas entram até 37 mm nos ombros e braços** (z 0,166 m), porque o cabelo é rígido no Head e os braços
+  balançam por dentro das mechas; peruca e retalhos seguem o mesmo osso, então a folga entre eles é a do
+  repouso em todo quadro. Saídas possíveis: encurtar as pontas até o queixo (muda o desenho), ou aceitar (a
+  44 px na câmera do jogo o braço some sob a mecha). Decisão do Arthur.
+- **Prévia:** `assets/previews/aldeao_v2/cabelo_4_previa.png` (frente, lado, 3/4, jogo; 112 px, 44 px e 44 px ×
+  crepúsculo; rosto distraído).
+- **Créditos:** 20. **Gerações:** 1 de 2. **Correções manuais:** nenhuma. **Tempo:** ~2 h.
