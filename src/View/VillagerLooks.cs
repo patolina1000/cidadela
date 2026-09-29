@@ -41,7 +41,7 @@ public static class VillagerLooks
     }
 
     /// <summary>Tudo que o rosto.json diz (ou o provisório, quando ele não existe).</summary>
-    public sealed record FaceInfo(FaceGrid Eyes, FaceGrid Mouth, FaceTable Table, string HeadBone, string ChestBone, float StrideWalk, bool Provisional);
+    public sealed record FaceInfo(FaceGrid Eyes, FaceGrid Mouth, FaceTable Table, string HeadBone, string ChestBone, float StrideRun, bool Provisional);
 
     private static bool _looksLoaded;
     private static string _bodyPath = "", _facePath = "", _hairDir = "";
@@ -229,7 +229,7 @@ public static class VillagerLooks
         return _pieces;
     }
 
-    /// <summary>rosto.json do contrato: grades dos olhos e da boca, expressões, ossos e passada.</summary>
+    /// <summary>rosto.json do contrato: grades dos olhos e da boca, expressões, ossos e passada do run.</summary>
     private static FaceInfo ParseFace(string json)
     {
         using JsonDocument doc = JsonDocument.Parse(json, JsonOptions);
@@ -240,7 +240,9 @@ public static class VillagerLooks
         FaceTable table = root.TryGetProperty("expressoes", out _) ? FaceTable.Parse(json) : FaceTable.Parse(FileAccess.GetFileAsString(ExpressionsPath));
         string head = root.TryGetProperty("ossoCabeca", out JsonElement h) ? h.GetString() ?? DefaultHeadBone : DefaultHeadBone;
         string chest = root.TryGetProperty("ossoPeito", out JsonElement c) ? c.GetString() ?? DefaultChestBone : DefaultChestBone;
-        float stride = root.TryGetProperty("passadaWalk", out JsonElement s) ? s.GetSingle() : 0f;
+        // Contrato de 29/09/2026: "passadaRun" (a passada do único clipe de movimento); "passadaWalk" era a versão anterior.
+        float stride = root.TryGetProperty("passadaRun", out JsonElement s) ? s.GetSingle()
+            : root.TryGetProperty("passadaWalk", out JsonElement w) ? w.GetSingle() : 0f;
         return new FaceInfo(eyes, mouth, table, head, chest, stride, Provisional: false);
     }
 

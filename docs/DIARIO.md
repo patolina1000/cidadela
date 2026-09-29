@@ -2100,3 +2100,27 @@ onde errou, correções manuais e quanto tempo levou.
   quadros. Não mexi no contrato: fica para o humano acrescentar a linha.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:25–01:35 de relógio.
+
+---
+
+## 2026-09-29 — Aldeão v2: só idle e run por enquanto (mudança de contrato aprovada)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Pedido:** o v2 terá por enquanto só os clipes idle e run (em loop, sufixo -loop); carry, work e sleep entram
+  depois. Atualizar o contrato (clipes "idle, run"; `passadaWalk` → `passadaRun`) com commit próprio; no
+  código, andando e carregando → run, parado/trabalhando/descansando → idle, deixando os outros clipes
+  previstos; a velocidade continua em `data/` e será ajustada à passada real do run.
+- **O que foi feito:**
+  - `docs/aldeao_v2_contrato.md`: seção CLIPES e o formato do `rosto.json` (`passadaRun`), com a data da
+    mudança. Commit separado.
+  - `VillagerLooks`: `FaceInfo.StrideRun` lido de `passadaRun` (aceita `passadaWalk` se vier da versão
+    anterior do contrato).
+  - `VillagerVisual`: `ClipFor(moving, carrying, resting)` concentra o mapa de estados: em movimento (com ou
+    sem carga) → "run"; parado, coletando (com o golpe procedural) ou descansando → "idle". As linhas para
+    "carry", "sleep" e "work" estão marcadas no próprio método para serem ligadas quando os clipes chegarem;
+    o ritmo pela passada vale para "run" (e "carry", quando existir).
+  - `data/villagers.json`: comentário aponta para `passadaRun`; o valor (1,2 células/s) não mudou.
+  - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação (os testes continuam em 105).
+- **O que deu errado:** nada.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 01:38–01:43 de relógio.

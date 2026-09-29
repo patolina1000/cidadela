@@ -8,9 +8,10 @@ namespace Cidadela.View;
 /// porque a frente do glTF é +Z) com o material toon da pele, os retalhos "Olhos" e "Boca" com o shader do
 /// rosto, e os encaixes que o jogo cria nos ossos: "Cabelo" e "Chapéu" na cabeça e "Peito" no peito, todos no
 /// espaço do corpo em pose de repouso (a peça de cabelo, modelada nesse espaço, entra sem ajuste). Estados da
-/// simulação → clipe: parado idle, andando walk, com carga carry, descansando sleep; coletando fica em idle com
-/// o golpe procedural do corpo. walk e carry tocam no ritmo da velocidade real ÷ passada do rosto.json, com
-/// teto (<see cref="MaxAnimationSpeed"/>).
+/// simulação → clipe (contrato de 29/09/2026, só idle e run por enquanto): andando e carregando → run; parado,
+/// trabalhando (coletando, com o golpe procedural do corpo) e descansando → idle. Quando a arte entregar carry,
+/// work e sleep, <see cref="ClipFor"/> passa a usá-los. O run toca no ritmo da velocidade real ÷ passada do
+/// rosto.json, com teto (<see cref="MaxAnimationSpeed"/>).
 /// Enquanto os arquivos da arte não existem (ou com <see cref="ForcePlaceholder"/>), desenha um placeholder:
 /// cápsula com cabeça esférica, os dois retalhos curvos do rosto e um tufo de cabelo, com os mesmos materiais.
 /// </summary>
@@ -49,7 +50,7 @@ public partial class VillagerVisual : Node3D
 
     private Node3D _pivot = null!;
     private AnimationPlayer? _animations;
-    private float _walkStride;
+    private float _runStride;
     private Vector3 _headTop;
     private MeshInstance3D _load = null!;
     private StandardMaterial3D _loadMaterial = null!;
@@ -91,7 +92,7 @@ public partial class VillagerVisual : Node3D
         model.RotationDegrees = new Vector3(0f, 180f, 0f); // frente do glTF em +Z; o aldeão olha para -Z
         _pivot.AddChild(model);
         VillagerLooks.FaceInfo info = VillagerLooks.Face();
-        _walkStride = info.StrideWalk;
+        _runStride = info.StrideRun;
 
         MeshInstance3D? eyes = null, mouth = null;
         foreach (MeshInstance3D mesh in VillagerLooks.Descendants<MeshInstance3D>(model))
@@ -301,15 +302,30 @@ public partial class VillagerVisual : Node3D
             return;
         }
 
-        string clip = PreviewClip ?? (s.Resting ? "sleep" : moving ? (carrying ? "carry" : "walk") : "idle");
+        string clip = PreviewClip ?? ClipFor(moving, carrying, s.Resting);
         if (_animations.CurrentAnimation != clip && _animations.HasAnimation(clip))
             _animations.Play(clip, ClipBlendSeconds);
 
-        // walk/carry no ritmo da velocidade real, até o teto; os outros clipes em 1×.
+        // Clipe de movimento no ritmo da velocidade real, até o teto; os outros em 1×.
         float targetScale = 1f;
-        if (PreviewClip is null && clip is "walk" or "carry" && _walkStride > 0f && dt > 0f)
-            targetScale = Mathf.Clamp(walked / dt / _walkStride, 0f, MaxAnimationSpeed);
+        if (PreviewClip is null && clip is "run" or "carry" && _runStride > 0f && dt > 0f)
+            targetScale = Mathf.Clamp(walked / dt / _runStride, 0f, MaxAnimationSpeed);
         _animations.SpeedScale = Mathf.Lerp(_animations.SpeedScale, targetScale, 1f - Mathf.Exp(-StrideSmoothing * dt));
+    }
+
+    /// <summary>
+    /// Clipe pelo estado. Hoje só existem idle e run (contrato de 29/09/2026). Quando a arte entregar os
+    /// outros, a intenção é: carregando → "carry", descansando → "sleep", trabalhando em máquina → "work";
+    /// basta trocar as linhas marcadas.
+    /// </summary>
+    private static string ClipFor(bool moving, bool carrying, bool resting)
+    {
+        if (resting)
+            return "idle"; // aguardando o clipe "sleep"
+        if (moving)
+            return "run"; // carregando também: aguardando o clipe "carry"
+        _ = carrying;
+        return "idle";
     }
 
     /// <summary>Refaz cabelo e chapéu na próxima atualização (o palco da Biografia troca o cabelo ao vivo).</summary>
