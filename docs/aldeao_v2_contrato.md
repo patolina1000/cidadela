@@ -28,8 +28,9 @@ Mudanças só com aval do Arthur: quem precisar mudar algo, para e pergunta.
 
 ## CLIPES
 
-- idle, walk, carry, work, sleep, todos em loop, marcados no GLB com o sufixo -loop (o Godot tira o sufixo ao importar).
-- A passada natural do walk, em m/s, vai registrada em rosto.json, no campo "passadaWalk".
+- idle, run, os dois em loop, marcados no GLB com o sufixo -loop (o Godot tira o sufixo ao importar).
+  (Mudança de 29/09/2026: carry, work e sleep entram depois.)
+- A passada natural do run, em m/s, vai registrada em rosto.json, no campo "passadaRun".
 
 ## ROSTO
 
@@ -49,7 +50,7 @@ Mudanças só com aval do Arthur: quem precisar mudar algo, para e pergunta.
   { "olhos": {colunas, linhas, celulaPx:[l,a], margemPx, quadros:{nome:índice}},
     "boca": {mesmo formato},
     "expressoes": {nome: {olhos, boca}},
-    "ossoCabeca": "...", "ossoPeito": "...", "passadaWalk": 0.0 }
+    "ossoCabeca": "...", "ossoPeito": "...", "passadaRun": 0.0 }
   ```
 - O índice 0 é o quadro padrão: olhos "distraido" e boca "entreaberta".
 
