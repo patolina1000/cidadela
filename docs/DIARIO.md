@@ -2004,3 +2004,46 @@ onde errou, correções manuais e quanto tempo levou.
   sessão.
 - **Feito neste commit:** tag, cabeçalho do GDD, `assets/conceitos/aldeao_v2/LEIAME.md`, esta entrada.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~50 min.
+
+## 2026-09-29 — Aldeão v2: contrato arte × jogo recebido e plano do pipeline revisado
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** o Arthur trouxe o "Contrato aldeão v2" (interface entre arte e jogo). Guardado inteiro em
+  `assets/modelos/aldeao_v2/CONTRATO.md`; o `LEIAME.md` das folhas foi alinhado a ele (perucas `cabelo_1..5`).
+- **O que muda no plano da entrada anterior:**
+  - caminhos novos: `assets/modelos/aldeao_v2/aldeao_corpo.glb`, `cabelos/cabelo_N.glb`, `rosto/olhos.png`,
+    `boca.png`, `rosto.json`. Os caminhos do v1 não são mais reaproveitados: o agente de código muda o jogo para
+    eles, então a remoção do v1 pode ir junto com essa mudança;
+  - corpo e cabelos em **cor chapada, sem textura**: a Meshy sai em "mesh only" (20 créditos em vez de 30, tabela
+    da API lida em 29/09/2026). Saem do pipeline `acabamento_pele`, `apagar_rosto` e a textura assada do v1;
+  - o jogo cria os encaixes ("Cabelo", "Chapéu", "Peito"): saem `nos_cabeca` e o campo `encaixes` do JSON; os
+    cabelos são exportados no espaço do corpo em pose de repouso, sem armature e sem pesos (o `fit_hair.py` hoje
+    move a origem para o encaixe e exporta com o rig; muda);
+  - limites de triângulos: corpo ≤ 2.500 (pedir `polycount` 2500 à Meshy e conferir; decimar se passar),
+    cabelo ≤ 800 (a Meshy entrega ~3.000: decimar no Blender no `fit_hair.py`);
+  - materiais com nome fixo: "pele" (corpo), "cabelo" (perucas), "rosto_olhos" e "rosto_boca" (retalhos);
+  - retalhos "Olhos" e "Boca" com UV 0..1 na célula (no v1 a UV ficava na célula 1 e o jogo deslocava) e proporção
+    igual à da célula: as folhas do v1 já são 2:1 (512×256 e 256×128), então os retalhos continuam 2:1;
+  - `rosto.json` novo (formato do contrato): a parte do atlas (`colunas`, `linhas`, `celulaPx`, `margemPx`,
+    `quadros`) vem do `face_sprites.py`, e `ossoCabeca` e `passadaWalk` vêm do `normalize.py`. No rig da Meshy o
+    osso da cabeça se chama "Head" (conferido no GLB do v1);
+  - clipes idle, walk, carry, work e sleep, todos em loop.
+- **Mudanças de ferramenta a fazer quando as folhas chegarem (todas 0 créditos):**
+  1. `pipeline.py`: campo `textura: false` por asset (`should_texture` falso), tipo `peca` (só Multi-Image to 3D,
+     sem rig nem animação) e pasta de saída por asset (`aldeao_v2/`, `aldeao_v2/cabelos/bruto/`).
+  2. `face_sprites.py`: saída em `assets/modelos/aldeao_v2/rosto/` (`olhos.png`, `boca.png`), margem transparente
+     ≥ 8 px conferida por célula, e escrita da parte do atlas no `rosto.json`. Quadro 0 (padrão): olhos
+     "distraido", boca "entreaberta" (o par padrão do v1); os outros na ordem do v1.
+  3. `normalize.py`: modo "contrato v2" para o corpo: material único "pele" chapado, retalhos com UV 0..1 e
+     materiais nomeados, sem encaixes, clipes em loop, `rosto.json` completado.
+  4. `fit_hair.py`: encaixe na cabeça do corpo v2 (abertura em volta do retalho "Olhos"), decimação a ≤ 800
+     triângulos, material "cabelo", exportação rígida no espaço do corpo.
+  5. `check_face_mask.py` e `preview_modular.py`: caminhos do v2 por parâmetro; a prévia prende o cabelo ao osso
+     "Head" compensando a pose de repouso, como o jogo.
+- **Custo revisado (tabela de preços da API da Meshy, 29/09/2026):**
+  corpo: Multi-Image to 3D só malha 20 + rig 5 + sleep 3 = 28; 5 perucas só malha: 100; total 128.
+  Com uma nova tentativa do corpo e duas de peruca: 196. Proposta de `limite_creditos`: 200.
+- **Pontos que assumi (avisar se for diferente):** o loop dos clipes vai marcado no GLB pelo sufixo `-loop` no
+  nome (o Godot tira o sufixo e importa o clipe em loop; no v1 o loop ficava por conta do jogo); o quadro 0 dos
+  atlas é o par distraído/entreaberta; a altura 0,40 m é conferida na prévia lado a lado com a protagonista.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
