@@ -2629,3 +2629,20 @@ onde errou, correções manuais e quanto tempo levou.
 - **Escolhas minhas (avisar se for diferente):** pose de repouso (T) nas três colunas, e não um quadro do idle,
   para não precisar prender o cabelo rígido do aldeão ao osso; fundo do chão #4E4A58, o mesmo das prévias do aldeão.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Prova de operação, passo 1: auditoria do esqueleto do aldeão v2
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** prova técnica de que o aldeão v2 (e a protagonista v2, pelo mesmo método) aceita máquinas operadas
+  sem um v3. Passo 1: auditar `aldeao_corpo.glb` (escala, unidades, rolagens, pose de repouso, o que complica
+  IK/retarget, mãos). Nenhum arquivo aprovado alterado; tudo em pastas novas.
+- **Feito:** `tools/arte/prova_operacao/auditoria.py` (Blender headless + JSON cru do GLB) →
+  `assets/previews/prova_operacao/auditoria.json`, `mao_esquerda.png`, `mao_direita.png`; relatório
+  `auditoria.md`.
+- **Achados:** Armature com escala 0,004 e juntas em unidades de 4 mm (Hips a 31 unidades); malhas também nessa
+  unidade; só a posição do Hips varia nos clipes. O importador do Blender cria os ossos 250× compridos (sem a
+  escala do pai); a direção (+Y para o filho, estilo Mixamo) está certa. Rolagens ±90° nos braços; pernas com
+  rolagens assimétricas; esqueleto assimétrico (antebraço 51,7 × 48,6 mm). Pose A, braços a 44°; ombro ao punho
+  103 mm (25% da altura). Mãos em luva, sem dedos nem ossos de dedo, forma de punho meio fechado.
+- **O que deu errado:** o primeiro close das mãos estourou no branco (luz do `setup_scene`); exposição −1,2.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
