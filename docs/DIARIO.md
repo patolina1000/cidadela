@@ -2856,3 +2856,26 @@ onde errou, correções manuais e quanto tempo levou.
   variante **A 2,4 mm, B 2,4 mm** no pior quadro; raiz A 35,4 mm, B 35,4 mm (o problema de alcance conhecido).
   Contra o atalho antigo (B tocando A ao contrário), a diferença é de 0,1 mm, como esperado com a roda simétrica.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — .import de assets/ gerados pelo Godot sem janela (clipes a 24 fps)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** gerar com `godot --headless --import` os `.import` que faltam em `assets/`, com `animation/fps = 24` nos
+  GLBs de clipe; commitar; conferir os clipes e o `.import` do corpo.
+- **Cuidado antes de gerar:** a `arte` estava 33 commits atrás do `master` (e nenhum à frente), e o `master` já
+  versiona `.import` de 80 arquivos que existem aqui (aldeão v2: conceitos, meshy, cabelos, rosto, corpo, prévias,
+  mais as 2 texturas extraídas do corpo, `aldeao_corpo_boca.png` e `_olhos.png`). Gerar de novo daria outros `uid` e
+  conflito no merge, então esses **82 arquivos vieram do `master` por `git checkout master -- <arquivo>`**, idênticos
+  (sem merge). O aldeão v1, que o `master` já apagou, tem `.gdignore` nas pastas brutas e não foi tocado; nenhum
+  arquivo versionado mudou com o import.
+- **Gerados agora (Godot 4.7.2 mono, `godot-mono --headless --import --path .`):** 17 `.import` e 2 texturas
+  extraídas: referências da protagonista v2 (5), `v1_diagnostico.png`, closes das mãos (2), `aldeao_normalizado.glb`
+  e as texturas `aldeao_normalizado_boca.png`/`_olhos.png` com os seus `.import`, `roda.glb` (raiz e variante) e os 4
+  GLBs de clipe. Na worktree do `master` a maioria já existia sem versionar: os `uid` batem; os dos 2 PNGs extraídos
+  foram trocados pela versão de lá (compressão VRAM, que o Godot aplica ao detectar uso em 3D).
+- **Clipes:** `animation/fps=24` nos 4 (`clipes/girar_roda.glb`, `clipes/girar_roda_b.glb`, raiz e variante),
+  reimportados. Conferido carregando no Godot: 2,0 s, primeira chave em 0, chaves a cada 0,0417 s (1/24), laço
+  ligado, esqueleto em escala 1 (48 chaves por trilha: o otimizador do importador tira uma redundante).
+- **Corpo:** `aldeao_corpo.glb.import` idêntico ao do `master`. Observação: ele está com `animation/fps=30`, então o
+  Godot reamostra o `idle` e o `run` do corpo a 30 fps (chaves a cada 0,0333 s); não mudei por não estar no pedido.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
