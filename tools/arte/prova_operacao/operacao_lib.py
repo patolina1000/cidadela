@@ -201,46 +201,14 @@ def calibrate_poles(arm, targets, poles, radius, dist, axis_z, grip_half=GRIP_HA
 
 # ---------- exportação de clipe pelo contrato (docs/animacao_contrato.md) ----------
 
-CLIP_FPS = 24
+CLIP_FPS = 24  # = rig_lib.CLIP_FPS
 
 
 def export_clip(arm, actions, path) -> dict:
-    """Exporta um GLB de clipe pelo contrato de animação: só o esqueleto (sem malha), Armature em metros
-    (rig_lib.apply_armature_scale), primeira chave em t = 0 (as chaves de cada ação são deslocadas para começar no
-    quadro 0), 24 fps (a cena exporta a 24 quadros por segundo), uma faixa NLA por ação, esqueleto em POSE."""
-    from rig_lib import action_fcurves, apply_armature_scale
-    scene = bpy.context.scene
-    scene.render.fps, scene.render.fps_base = CLIP_FPS, 1.0
-    info = {"normalizacao": apply_armature_scale(arm, []), "deslocamento_quadros": {}}
-    for action in actions:
-        start = min(k.co[0] for c in action_fcurves(action) for k in c.keyframe_points)
-        for c in action_fcurves(action):
-            for k in c.keyframe_points:
-                k.co[0] -= start
-                k.handle_left[0] -= start
-                k.handle_right[0] -= start
-            c.update()
-        info["deslocamento_quadros"][action.name] = -start
-    arm.data.pose_position = "POSE"
-    arm.animation_data_create()
-    arm.animation_data.action = None
-    for track in list(arm.animation_data.nla_tracks):
-        arm.animation_data.nla_tracks.remove(track)
-    for action in actions:
-        track = arm.animation_data.nla_tracks.new()
-        track.name = action.name
-        strip = track.strips.new(action.name, 0, action)
-        if getattr(action, "slots", None) and hasattr(strip, "action_slot"):
-            strip.action_slot = action.slots[0]
-    scene.frame_set(0)
-    bpy.ops.object.select_all(action="DESELECT")
-    arm.select_set(True)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    bpy.ops.export_scene.gltf(filepath=str(path), export_format="GLB", use_selection=True, export_yup=True, export_apply=False,
-                              export_animations=True, export_animation_mode="NLA_TRACKS", export_skins=True,
-                              export_force_sampling=True, export_frame_range=False, export_optimize_animation_size=False,
-                              export_anim_slide_to_zero=True)
-    return info
+    """GLB de clipe pelo contrato de animação: só o esqueleto (sem malha), pelo rig_lib.export_contract_glb (o mesmo
+    caminho do corpo): Armature em metros, primeira chave em t = 0, 24 fps, uma faixa NLA por ação, POSE."""
+    from rig_lib import export_contract_glb
+    return export_contract_glb(arm, [arm], path, actions)
 
 
 def gltf_clip_times(path) -> dict:

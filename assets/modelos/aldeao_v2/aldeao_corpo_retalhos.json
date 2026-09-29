@@ -136,9 +136,16 @@
   },
   "offset_mm": 2.0,
   "folga_minima_mm": 1.4,
-  "normalizacao": {
-    "escala": 1.0,
-    "curvas_de_posicao_escaladas": 0
+  "exportacao": {
+    "normalizacao": {
+      "escala": 1.0,
+      "curvas_de_posicao_escaladas": 0
+    },
+    "deslocamento_quadros": {
+      "idle-loop": -0.0,
+      "run-loop": -0.0
+    },
+    "fps": 24
   },
   "conferencia": {
     "objetos": [

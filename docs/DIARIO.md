@@ -3707,3 +3707,91 @@ onde errou, correções manuais e quanto tempo levou.
   futuro; passou a descrever o que está em vigor: os quatro motivos de recusa e a verificação pela duração do
   `clipes.json`, que é como o jogo pega um começo atrasado. Nenhuma regra mudou.
 - **Tempo:** 19:25 de relógio (poucos minutos).
+
+---
+
+## 2026-09-29 — Corpo do aldeão v2 importado a 24 fps
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** com o aval do Arthur (a regra de 24 fps do contrato de animação vale também para o corpo), mudar só
+  `animation/fps` para 24 no `aldeao_corpo.glb.import` e reimportar só esse arquivo; o GLB não muda.
+- **Feito:** uma linha no `.import` (`animation/fps=30` → `24`); cache do corpo apagado em `.godot/imported` e
+  `godot-mono --headless --import`; nenhum outro arquivo mudou; sha256 do GLB continua
+  `11c7d12bc4c522808546f61f3136031e2fce0cc6ccf9e789abd02779d110febf`.
+- **Conferência no Godot:** `idle` 10,0 s e `run` 0,75 s (as mesmas de antes), loop ligado, todas as chaves de todas as
+  trilhas em múltiplos de 1/24 s a partir de 0 (antes: 1/30 s).
+- **Achado:** dentro do GLB do corpo as chaves começam em 1/24 s (quadro 1 do Blender), não em 0; o corpo foi
+  exportado antes da regra "primeira chave em t = 0". O importador cria uma chave em 0 igual à de 1/24 s: no `run`,
+  22 de 22 trilhas de rotação repetem a pose no começo: a mesma pose aparece em 0 e em 1/24 s (0,75 s é o mesmo
+  instante que 0 no laço), ou seja, **1 quadro parado a mais em cada ciclo** (~42 ms a 1×; o ciclo tem 19 amostras
+  em vez de 18). No `idle`,
+  8 de 22 trilhas (10 s, quase invisível). Corrigir pede reexportar o corpo com as chaves a partir de 0 (o
+  `montar_rig.py` pelo `export_clip` do contrato), o que muda o sha256 do aprovado: fica para o aval do Arthur.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Aldeão v2: corpo reexportado com as chaves a partir de t = 0 (processo pelo contrato)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** com o aval do Arthur, o `montar_rig.py` e o `colocar_retalhos.py` exportam os clipes do corpo com a
+  primeira chave em t = 0 pelo mesmo caminho do `operacao_lib.export_clip`; rodar do zero, conferir contra o aprovado
+  (quadro k do novo contra k+1 do atual) e substituir se tudo passar; segunda execução byte a byte; sha256 novo.
+- **Feito:** `rig_lib.export_contract_glb` (Armature em metros, chaves de cada ação deslocadas para o quadro 0, cena
+  a 24 fps, uma faixa NLA por ação a partir do 0, POSE) é agora a única saída de GLB com animação: o
+  `operacao_lib.export_clip` a chama só com o armature; o `montar_rig.py` e o `colocar_retalhos.py` a chamam com as
+  malhas; `export_rig_glb` virou um nome antigo dela. `conferir_corpo.py` passou a comparar **todos** os quadros,
+  alinhados pelo começo de cada clipe, e a registrar duração e laço.
+- **O que deu errado:** a primeira conferência deu 67 mm. Era erro meu no `conferir_corpo.py`: o quadro da cena é um
+  só, e os dois arquivos eram avaliados depois de o segundo receber o seu quadro. Corrigido: cada arquivo é avaliado
+  logo depois de receber o quadro. Um teste à parte confirmou antes que o quadro k do novo = k+1 do antigo (0,0 mm).
+- **Conferência (novo × aprovado anterior `11c7d12b…`):** 240 quadros do idle e 18 do run: vértices de corpo, Olhos e
+  Boca **0,0 mm**; cabelos 1 a 5 **0,0 mm** (1,5 mm do corpo); mesmos quadros de duração (idle 240, run 18), laço igual
+  (run 0,59 cm somados em 5 ossos, idle 0,0); passada **0,383 m/s**; folga dos retalhos **1,40 a 3,16 mm**; mesmos
+  nomes; Armature sem escala. Chaves no GLB: idle de 0 a 9,9583 s, run de 0 a 0,7083 s (antes: de 1/24 s a 10,0 e a
+  0,75 s; o ciclo é o mesmo, só começa um quadro antes).
+- **Troca e reprodução:** aprovado substituído; segunda execução do zero **idêntica byte a byte**.
+  **sha256 novo: `3138cbf652d0d840c2ab911b676bb20d3116f14172e15163c8232a3fa74b49a2`** (988.148 bytes), registrado no
+  `aldeao_corpo_reproducao.json` (com o histórico). Relatórios `aldeao_corpo_rig.json` e `_retalhos.json` trocados
+  pelos da execução nova. O contrato de animação (na `master`) cita o sha antigo: o agente do jogo atualiza.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~50 min.
+
+## 2026-09-29 — Otimizador de animação do importador do Godot desligado (corpo e clipes)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** desligar o otimizador de animação do importador no `.import` do `aldeao_corpo.glb` e dos 4 GLBs de clipe
+  da prova, mantendo `animation/fps = 24`; reimportar sem janela; conferir que as trilhas têm todas as chaves e que o
+  run do corpo não repete pose no começo.
+- **A opção certa no Godot 4.7:** `optimizer/enabled` é opção do nó AnimationPlayer da cena importada (achei o nome
+  nas strings do binário 4.7.2; a categoria é a dos nós), então vai em
+  `_subresources={"nodes": {"PATH:AnimationPlayer": {"optimizer/enabled": false}}}` (o AnimationPlayer é filho direto da
+  raiz nos 5 GLBs, conferido no Godot). Nos 5 `.import` só o `_subresources` mudou; `animation/fps=24` ficou.
+- **Conferência no Godot (depois de reimportar os 5):**
+  - clipes da prova: todas as trilhas com **49 chaves** (antes 48), 2,0 s, loop ligado, chaves em múltiplos de 1/24 s;
+  - corpo: `idle` 240 chaves em todas as 23 trilhas (9,958 s), `run` **18 chaves** em todas as 23 trilhas (0,708 s), loop
+    ligado, chaves em múltiplos de 1/24 s; no `run`, **nenhuma** das 22 rotações repete a pose entre as chaves 0 e 1
+    (antes: 22 de 22, pela chave inventada em t = 0). O número de chaves no Godot é igual ao do arquivo (49, 240, 18):
+    nenhuma chave é criada nem tirada. As poucas rotações quase paradas no começo do `idle` e dos clipes da prova são do
+    próprio clipe (ossos que quase não mexem naquele instante).
+- **Observação:** outra opção, `animation/remove_immutable_tracks=true` (global, não mexi), tira as trilhas constantes:
+  por isso o Godot mostra 10 a 12 trilhas nos clipes e 23 no corpo, contra 72 canais no arquivo (posição e escala
+  constantes dos ossos). Os clipes da prova ainda têm 1 ou 2 trilhas de escala quase 1 (ruído do bake do Blender).
+  Se um dia uma troca de clipe herdar a pose de um osso que o clipe novo não anima, é essa opção que se revê.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+---
+
+## 2026-09-29 — Quinto merge da `arte`: corpo com chaves a partir de t = 0 e otimizador desligado
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** apagar os arquivos soltos em `assets/` que a arte versiona, fazer o merge (`arte` em `950efb1`),
+  manter os dois lados nos conflitos, conferir o sha256 novo do corpo, build e testes, commit e push.
+- **O que foi feito:**
+  - Não havia arquivo solto em `assets/`: nada apagado.
+  - Merge de 3 commits: o `.import` do corpo a 24 fps, o corpo reexportado com as chaves a partir de t = 0 e o
+    otimizador de animação desligado (`optimizer/enabled = false`) no `.import` do corpo e dos 4 clipes da prova.
+  - Conflito só no `docs/DIARIO.md` (as entradas dos dois lados). O `docs/GDD.md` não conflitou.
+  - sha256 do `aldeao_corpo.glb`: `3138cbf652d0d840c2ab911b676bb20d3116f14172e15163c8232a3fa74b49a2`, igual ao
+    informado.
+  - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 116 aprovados.
+- **O que deu errado:** nada.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:36–19:37 de relógio.
