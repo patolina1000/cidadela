@@ -2120,3 +2120,29 @@ onde errou, correções manuais e quanto tempo levou.
   baixo para cima faziam gravata-borboleta (a de cima ficou quase reta); a olheira estava grande demais (menor e
   mais desfocada).
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~35 min.
+
+## 2026-09-29 — Aldeão v2: estudo 2 do rosto, quatro variações da direção A (mais adulto e mais triste)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** o estudo 1 lembrou Roblox (olhos colados como adesivos, boca em ponto ou tracinho). Seguir da
+  direção A (olheiras) com olho afundado: linha forte só na pálpebra de cima (grossa no meio, afinando nas
+  pontas), pálpebra de baixo quase sem linha, esclera branco osso com a sombra da pálpebra no alto, tristeza como
+  padrão (cantos externos caídos, pálpebra mais pesada por fora, pupilas para baixo e para o lado), olheiras mais
+  fortes com borda definida por dentro e desfoque só por fora, cobrindo a bolsa; olhos mais afastados e mais
+  baixos; boca só uma dobra fina no padrão. Quatro variações (A1 Fundos, A2 Caídos, A3 Sem boca, A4 Vidrados) ×
+  quatro expressões (distraído, feliz como alívio cansado, bravo, chorando com risco escuro). O texto do pedido
+  chegou cortado em "PRÉVIA: Não use fundo"; assumi "sem fundo chapado atrás do rosto" e desenhei cada rosto
+  sobre uma cabeça oval com volume suave; 256 px e 48 px; linha de crepúsculo (× #6A5B7C).
+- **Feito:** `tools/arte/aldeao_v2/estudo_rosto_a.py` (reusa o traço de tinta e o ruído do `estudo_rosto.py`),
+  prévia em `assets/previews/aldeao_v2/estudo_rosto_a.png`. O olho é uma forma com canto de dentro e canto de
+  fora caído (dois arcos); a pálpebra de cima é uma curva que cobre uma fração diferente em cada canto (mais por
+  fora no padrão; mais por dentro no bravo); a linha dos cílios tem espessura por função (seno elevado a 0,55,
+  mais pesada por fora); a pálpebra de baixo é um traço de 1 px a 37% de opacidade; a cavidade é uma faixa
+  desfocada da cor da esclera misturada com o roxo, presa à esclera; a olheira é uma elipse com alfa parcial
+  (borda nítida) mais um crescente de bolsa, e o desfoque é somado só por fora (máximo entre nítido e desfocado);
+  a lágrima é um risco quase reto em #2B2140 afinando para baixo. A4 tem a linha de umidade clara na pálpebra
+  de baixo e pupila pequena; A3 não tem boca no distraído nem no feliz.
+- **Problemas e correções:** a primeira olheira era um bloco sólido, quase uma máscara (alfa menor, região
+  nítida menor, bolsa como crescente em vez de elipse cheia); o risco da lágrima serpenteava (ondulação de 2,5 px
+  para 0,7 px, mais comprido e quase vertical).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.
