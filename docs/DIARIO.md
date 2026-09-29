@@ -3062,3 +3062,29 @@ onde errou, correções manuais e quanto tempo levou.
   HEAD, e esses arquivos não fazem parte do que ela preserva.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 17:25–17:30 de relógio.
+
+---
+
+## 2026-09-29 — Inventário do que depende da protagonista v1 (`docs/protagonista_v2_inventario.md`)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** mapear todo lugar do código e dos dados que depende da v1 (caminhos, clipes, velocidade × passada,
+  cristal e luz, grama e outros efeitos pela posição, testes), conferir se os 24 ossos da v1 têm os mesmos nomes
+  e a mesma ordem do `aldeao_corpo.glb` da branch `arte`, e terminar com a lista do que a v2 vai substituir.
+  Sem mudar nada da v1.
+- **O que foi feito:**
+  - `docs/protagonista_v2_inventario.md`, com 8 seções: arquivos, o GLB, clipes e onde são usados, velocidade ×
+    passada, cristal e luz, quem usa a posição ou o tamanho dela, simulação e testes, e a lista de 11 itens
+    que a v2 vai precisar substituir.
+  - Ossos lidos do cabeçalho JSON dos dois GLB (a v1 e `aldeao_corpo.glb` em `arte`, commit `745820e`): **os 24
+    são iguais em nome, ordem e hierarquia**.
+  - Achados que valem para a v2: o clipe `attack` não é usado em lugar nenhum; a v1 não usa o shader toon; o
+    cristal depende do nome exato do material `Cristal` e de ele ser `StandardMaterial3D`; a luz fica no osso
+    `Spine` (o de cima da coluna no Meshy), enquanto o aldeão registra `Spine02` como `ossoPeito`; a chave da
+    passada é `passada_run_m_s` na v1 e `passadaRun` no aldeão; o `SwingAngle` da cápsula de reserva é usado
+    pelo aldeão; nenhuma cena `.tscn` referencia a protagonista, tudo é criado por código; a simulação e os
+    testes não dependem do modelo.
+- **O que deu errado:** a primeira versão do inventário tinha números de linha de `CastellanVisual.cs`
+  desalinhados em poucas linhas; corrigidos conferindo com `grep -n`.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 17:30–17:45 de relógio.
