@@ -2236,3 +2236,34 @@ onde errou, correções manuais e quanto tempo levou.
   distância; transformar o elipsoide da folha no da cabeça do corpo; empurrar para fora; abrir a janela dos
   olhos; decimar a ≤ 800 com orçamento por cabelo, o 1 em ~730; exportar rígido). Recomenda refazer a folha 5.
 - **Créditos:** 0. **Gerações na Meshy:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 40.
+
+## 2026-09-29 — Aldeão v2, passo 2 concluído: corpo na Meshy (só-frente × multi-imagem) e folha de contato
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** com a chave copiada (ficou em `cidadela-arte/.env`, na raiz; `git check-ignore` confirma que `.env` é
+  ignorado em qualquer pasta; o script passou a aceitar a raiz), gerar o corpo em duas entradas (até 6 gerações),
+  renderizar e parar na folha de contato. Também: regra da franja no plano dos cabelos, restaurar os dois estudos
+  do rosto apagados sem querer, e rodar o preparador na folha nova do rabo de cavalo.
+- **Meshy (2 gerações, 40 créditos; saldo 2.458 → 2.418):** `so_frente` (Image to 3D com a frente) e `multi`
+  (Multi-Image com frente, lado e costas), ambas `should_texture` falso, `pose_mode` a-pose, remesh em
+  triângulos com `target_polycount` 2500, `symmetry_mode` auto, `ai_model` latest. As duas deram certo na
+  primeira tentativa (~3 min cada). Brutos: `assets/conceitos/aldeao_v2/meshy/corpo_so_frente_1.glb` e
+  `corpo_multi_1.glb` (~100 KB cada).
+- **Folha de contato (`assets/previews/aldeao_v2/corpo_contato.png`):** por resultado, frente com as janelas dos
+  retalhos marcadas (vermelho olhos, azul boca, cinza a caixa da cabeça), lado, 3/4, câmera do jogo a 55° e a
+  frente com a protagonista ao lado em escala (aldeão a 0,40 m). Medidas (modelo escalado a 0,40 m):
+  - so_frente: 2.611 triângulos; cabeça 154 × 178 mm (44% da altura); área dos olhos a 2,3 mm RMS de uma esfera
+    ajustada, máximo 5,0 mm;
+  - multi: 2.620 triângulos; cabeça 164 × 180 mm; área dos olhos 3,9 mm RMS, máximo 12,9 mm (tem uma ondulação);
+  - a área da boca tem só 6 vértices nos dois (malha muito aberta ali), então a medida não vale; visualmente é
+    lisa nos dois.
+- **Leitura:** os dois passam de 2.500 triângulos (o remesh da Meshy não é exato): decimar na limpeza. O só-frente
+  tem a cabeça mais lisa e mais próxima do ovo da folha; o multi respeita melhor a profundidade do corpo e a
+  inclinação da cabeça da vista de lado, mas a dobra do peito perto do pescoço apareceu nele como uma área
+  amassada (anotado para a limpeza), e a cabeça saiu maior e com a ondulação na testa. Nenhuma limpeza, rig ou
+  animação feita.
+- **Outros:** `PLANO_CABELOS.md` com a regra da franja (cobre no máximo a metade de cima de um olho; retalho
+  "Olhos" não muda; folga mínima de 2 mm; nunca atravessa) e a nota da folha 5 refeita; `estudo_rosto.png` e
+  `estudo_rosto_a.png` restaurados com `git checkout`; preparador rodado na folha nova do rabo de cavalo (cabelo
+  escuro, 4 vistas consistentes; a "lado" é perfil).
+- **Créditos:** 40. **Gerações na Meshy:** 2 de 6. **Correções manuais:** o humano copiou o `.env`. **Tempo:** ~40 min.
