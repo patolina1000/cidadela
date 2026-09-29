@@ -3935,3 +3935,25 @@ onde errou, correções manuais e quanto tempo levou.
   conferi que uma chave falsa continua sendo pega. Por isso este registro saiu num commit separado do merge.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:46–19:48 de relógio.
+
+---
+
+## 2026-09-29 — Contrato: pose inteira e godot_import.py; ExternalClips recusa clipe sem rotação para um osso
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`, com o MCP godot-ai.
+- **Pedido:** duas regras novas em FORMATO DO CLIPE (pose inteira com `remove_immutable_tracks = false`, camadas
+  por filtro de osso; `.import` escrito e conferido por `tools/arte/godot_import.py`) e, em O JOGO É ESTRITO, a
+  recusa de clipe importado sem trilha de rotação para algum osso do corpo, implementada.
+- **O que foi feito:**
+  - `docs/animacao_contrato.md`: as duas regras e o quinto motivo de recusa.
+  - `ExternalClips`: recusa, com aviso que lista os ossos, clipe sem trilha de rotação para algum osso do
+    esqueleto do corpo. `ProvaOperacaoRoot.LoadClipFile` ganhou o parâmetro `removeImmutableTracks` para o teste.
+  - Conferido no jogo: os clipes importados têm 72 trilhas (24 de rotação) e entram sem aviso; o mesmo
+    `girar_roda_b.glb` lido removendo as trilhas constantes é recusado:
+    `Clipes recusados: …/girar_roda_b.glb fora do contrato de animação: o clipe "girar_roda_b-loop" não tem trilha
+    de rotação para 14 osso(s) do corpo: LeftUpLeg, LeftLeg, LeftFoot, LeftToeBase, RightUpLeg, RightLeg,
+    RightFoot, RightToeBase, Spine, LeftShoulder, neck, Head, head_end, headfront (import com
+    animation/remove_immutable_tracks = false).`
+  - `dotnet build`: 0 erros, 0 avisos.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:48–19:50 de relógio.

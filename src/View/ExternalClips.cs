@@ -9,7 +9,9 @@ namespace Cidadela.View;
 /// (docs/animacao_contrato.md, "CLIPES NOVOS"). Os clipes entram como uma AnimationLibrary nova
 /// ("biblioteca/clipe"), sem mexer no GLB do corpo; nome com sufixo "-loop" perde o sufixo e ganha loop.
 /// Modo estrito ("O JOGO É ESTRITO"): o clipe é recusado, com aviso, se o esqueleto dele tiver escala diferente da
-/// do corpo, ossos diferentes, repouso diferente em mais de 0,01 mm, ou se a primeira chave não estiver em t = 0.
+/// do corpo, ossos diferentes, repouso diferente em mais de 0,01 mm, se a primeira chave não estiver em t = 0, ou
+/// se faltar trilha de rotação para algum osso do corpo (todo clipe define a pose inteira; sem isso, o osso fica
+/// preso na pose do clipe anterior).
 /// O importador do Godot (e o GLTFDocument) sempre recria a primeira chave em t = 0, segurando o primeiro quadro;
 /// um clipe exportado com o começo atrasado aparece então como um clipe mais longo. Por isso, quando a duração do
 /// clipes.json é informada, o clipe também é recusado se durar mais de meio quadro a mais ou a menos.
@@ -57,6 +59,7 @@ public static class ExternalClips
             return added;
         }
         Node clipPlayerRoot = clipPlayer.GetNode(clipPlayer.RootNode);
+        string clipSkeletonPath = clipPlayerRoot.GetPathTo(clipSkeleton).ToString();
 
         var problems = new List<string>();
         CheckSkeleton(clipSkeleton, clipPlayerRoot, bodySkeleton, bodyRoot, problems);
@@ -77,6 +80,10 @@ public static class ExternalClips
                     problems.Add($"o clipe \"{name}\" dura {F(animation.Length, "0.0000")} s e o clipes.json diz {F(expected, "0.0000")} s " +
                         "(começo atrasado ou fim a mais; a primeira chave tem que estar em t = 0)");
             }
+            List<string> unposed = BonesWithoutRotation(animation, clipSkeletonPath, bodySkeleton);
+            if (unposed.Count > 0)
+                problems.Add($"o clipe \"{name}\" não tem trilha de rotação para {unposed.Count} osso(s) do corpo: " +
+                    $"{string.Join(", ", unposed)} (import com animation/remove_immutable_tracks = false)");
             animations.Add((name.ToString(), animation));
         }
         if (problems.Count > 0)
@@ -85,7 +92,6 @@ public static class ExternalClips
             return added;
         }
 
-        string clipSkeletonPath = clipPlayerRoot.GetPathTo(clipSkeleton).ToString();
         NodePath bodySkeletonPath = bodyRoot.GetPathTo(bodySkeleton);
         var library = new AnimationLibrary();
         foreach ((string name, Animation original) in animations)
@@ -152,6 +158,23 @@ public static class ExternalClips
             }
             animation.TrackSetPath(t, new NodePath($"{bodySkeletonPath}:{bone}"));
         }
+    }
+
+    /// <summary>Ossos do corpo sem nenhuma trilha de rotação no clipe.</summary>
+    private static List<string> BonesWithoutRotation(Animation animation, string clipSkeletonPath, Skeleton3D body)
+    {
+        var rotated = new HashSet<string>();
+        for (int t = 0; t < animation.GetTrackCount(); t++)
+        {
+            NodePath path = animation.TrackGetPath(t);
+            if (animation.TrackGetType(t) == Animation.TrackType.Rotation3D && path.GetConcatenatedNames().ToString() == clipSkeletonPath)
+                rotated.Add(path.GetConcatenatedSubNames().ToString());
+        }
+        var missing = new List<string>();
+        for (int b = 0; b < body.GetBoneCount(); b++)
+            if (!rotated.Contains(body.GetBoneName(b)))
+                missing.Add(body.GetBoneName(b));
+        return missing;
     }
 
     /// <summary>Meio intervalo entre as duas primeiras chaves da trilha mais densa (meio quadro).</summary>

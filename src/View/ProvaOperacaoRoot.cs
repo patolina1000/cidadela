@@ -220,7 +220,7 @@ public partial class ProvaOperacaoRoot : Node3D
     /// nem o otimizador dele), passando pelo mesmo <see cref="ExternalClips"/> estrito. Para testes: comparar com o
     /// clipe importado e provar a recusa de arquivos fora do contrato. Devolve quantos clipes entraram.
     /// </summary>
-    public int LoadClipFile(int index, string path, int bakeFps)
+    public int LoadClipFile(int index, string path, int bakeFps, bool removeImmutableTracks)
     {
         Operator op = _ops[index];
         if (op.Visual.Animations is not AnimationPlayer player)
@@ -232,7 +232,7 @@ public partial class ProvaOperacaoRoot : Node3D
             GD.PushWarning($"Clipes: não consegui ler {path}.");
             return 0;
         }
-        Node root = document.GenerateScene(state, bakeFps);
+        Node root = document.GenerateScene(state, bakeFps, false, removeImmutableTracks);
         try
         {
             List<string> added = ExternalClips.AddLibrary(player, root, path, $"{Library}_{op.Name}_arquivo", _durations);

@@ -39,6 +39,10 @@ máquinas vierem.
 - O otimizador de animação do importador fica desligado no `.import` de todo clipe e do corpo
   (`_subresources` → `nodes` → `PATH:AnimationPlayer` → `optimizer/enabled = false`), porque ele apaga chaves
   com perda.
+- Todo clipe, e o corpo, define a pose inteira: trilhas dos 24 ossos no arquivo e
+  `animation/remove_immutable_tracks = false` no `.import`. Camadas por parte do corpo, quando vierem, são feitas
+  com filtro por osso, nunca com trilhas faltando.
+- O `.import` de clipe e de corpo é escrito e conferido por `tools/arte/godot_import.py`.
 
 ## clipes.json
 
@@ -102,7 +106,8 @@ máquinas vierem.
   - Armature em escala diferente da do corpo;
   - ossos diferentes dos do corpo;
   - repouso diferente em mais de 0,01 mm;
-  - primeira chave fora de t = 0.
+  - primeira chave fora de t = 0;
+  - falta de trilha de rotação para algum osso do esqueleto do corpo (depois de importado).
 - O importador do Godot sempre recria uma chave em t = 0, segurando o primeiro quadro. Por isso um clipe com o
   começo atrasado é pego pela duração: se ela passar de meio quadro de diferença para a `duracao_s` do
   `clipes.json`, o clipe é recusado.
