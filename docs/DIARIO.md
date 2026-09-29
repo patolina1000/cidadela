@@ -2095,3 +2095,28 @@ onde errou, correções manuais e quanto tempo levou.
   falhava em pergaminho (trocado pela cor mais comum); a vinheta do pergaminho virava uma "figura" do tamanho da
   folha (regra da moldura); rótulos da prévia se sobrepunham (duas linhas).
 - **Créditos:** 0. **Gerações na Meshy:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 10.
+
+## 2026-09-29 — Aldeão v2: estudo de direção do rosto (A Olheiras, B Vazio, C Tinta)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** a prévia das expressões ficou infantil (emoji). Antes de refazer o atlas, escolher uma direção:
+  três direções × três expressões (distraído, feliz, bravo), sobre pele #AEBFD3, em 256 px e 48 px, mais uma
+  linha escurecida pelo crepúsculo (× #6A5B7C). Regras: sem sobrancelhas, emoção pelas pálpebras e pupilas,
+  assimetria sempre, traço de tinta à mão em #1B1620, boca pequena e torta com interior escuro. Sem mudar o
+  atlas, o `rosto.json` nem os nomes dos quadros.
+- **Feito:** `tools/arte/aldeao_v2/estudo_rosto.py` (separado do `desenhar_rosto.py`), prévia em
+  `assets/previews/aldeao_v2/estudo_rosto.png`. Traço de tinta: discos ao longo do caminho com raio e desvio
+  lateral por ruído suave (soma de senos), espessura variável e leve irregularidade. Pálpebras: máscara de alfa
+  recortada por uma curva que vai de borda a borda do olho, com inclinação e curvatura por expressão; a borda em
+  tinta. Olhos assimétricos (o da direita menor e 7 px mais alto), pupilas apontando para lugares diferentes.
+  A: esclera branco osso, pupila pequena, pálpebra superior cobrindo 1/3 no padrão, olheira #2B2140
+  semitransparente desfocada. B: oval escuro sem esclera com um brilho fora de centro (posição diferente em cada
+  olho); as pálpebras recortam o oval. C: contorno rabiscado em dois traços, sem esclera pintada (a pele aparece
+  dentro), pupilas de tamanhos diferentes; a espiral do atordoado não entrou porque não há quadro atordoado no
+  estudo. Bocas comuns: oval torto fora de centro (distraído), abertura fina com um canto subindo (feliz),
+  abertura torta com três dentinhos tortos (bravo).
+- **Problemas e correções:** a curva da pálpebra passava da borda do olho e deixava ganchos nas pontas (corrigido:
+  a curva termina na elipse do olho, na altura do corte); no feliz, a pálpebra de cima curvada para baixo e a de
+  baixo para cima faziam gravata-borboleta (a de cima ficou quase reta); a olheira estava grande demais (menor e
+  mais desfocada).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~35 min.
