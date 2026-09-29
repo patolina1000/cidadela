@@ -103,10 +103,13 @@ def main() -> None:
     parser.add_argument("--repetir", choices=list(INPUTS), help="cria uma nova tentativa dessa entrada")
     args = parser.parse_args()
 
-    load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+    for env in (Path(__file__).resolve().parents[1] / ".env", ROOT / ".env"):  # tools/arte/.env ou a raiz do repositório
+        if env.exists():
+            load_dotenv(env)
+            break
     key = os.environ.get("MESHY_API_KEY")
     if not key:
-        print("MESHY_API_KEY não encontrada: crie tools/arte/.env com MESHY_API_KEY=... (o arquivo é ignorado pelo git)")
+        print("MESHY_API_KEY não encontrada: crie tools/arte/.env (ou .env na raiz) com MESHY_API_KEY=...; o git ignora .env")
         sys.exit(2)
     meshy = Meshy(key)
     state = load_state()

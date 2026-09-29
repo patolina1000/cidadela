@@ -37,11 +37,15 @@ Só geometria, porque o modelo vem sem cor (e a folha 5 nem tem contraste):
    cabelo um pouco na vertical e o estreita embaixo). Depois, todo vértice da peruca que ficar dentro da cabeça do
    corpo é empurrado para a superfície + 1,5 mm pela normal da cabeça (BVH, como o `fit_hair.py` do v1 na tag
    `aldeao-v1-arquivado`, que tem o empurrar, o fechar buracos e a abertura do rosto prontos para reaproveitar).
-5. **Retalho "Olhos"**: a janela dos olhos no corpo é conhecida (fração da caixa da cabeça: x 3% a 97%, y 28% a
-   83% do topo). Face de cabelo cujo centro projeta dentro dessa janela, na frente da cabeça, é apagada e a borda
-   é refeita. **Isso muda o visual dos cabelos 2 e 3**, cuja franja cai até a altura dos olhos de um lado: vão
-   ficar com a franja terminando na linha de cima da janela nesse lado. Alternativa: manter a franja e estreitar
-   o retalho dos olhos naquele lado (decisão do Arthur; o contrato diz que nenhum cabelo cobre o retalho).
+5. **Franja e retalho "Olhos"** (regra do Arthur, 29/09/2026; muda o contrato, que o agente do jogo atualiza na
+   `master`): a franja fica, cortada para cobrir **no máximo a metade de cima de um olho**; o retalho "Olhos"
+   não muda; folga mínima de **2 mm** entre o cabelo e o retalho; o cabelo **nunca atravessa** o retalho.
+   Na prática: a janela dos olhos do corpo vai de 28% a 83% da altura da cabeça (de cima) e o centro do olho
+   fica a ~47%. A franja pode descer até 47% naquele lado, e só na largura de um olho; toda face de cabelo
+   abaixo disso, ou na frente do outro olho, é apagada e a borda refeita. Depois, os vértices do cabelo a menos
+   de 2 mm do retalho (curvo, 1 a 2 mm acima da pele) são empurrados para fora pela normal até a folga de 2 mm;
+   um teste automático confere a folga e que nenhum triângulo do cabelo cruza o retalho. Vale para 2 e 3
+   (franja de um lado) e para os cantos de 4.
 6. **Decimar** para ≤ 800 triângulos (Decimate por colapso, preservando bordas), medindo o erro de silhueta na
    câmera do jogo (render antes/depois a 48 px). Orçamento por cabelo:
    - 1 curto bagunçado: ~24 mechas em folha; cada ponta precisa de ~24 triângulos para não virar bolota → ~580
@@ -60,7 +64,8 @@ Só geometria, porque o modelo vem sem cor (e a folha 5 nem tem contraste):
 
 ## 3. Folha do rabo de cavalo (5)
 
-Recomendo **refazer no ChatGPT**, com o cabelo na mesma cor azul-acinzentada escura das outras folhas e a calota
+O Arthur vai refazer a folha no ChatGPT com o cabelo em outra cor; quando chegar, rodar o preparador nela
+(`--vistas frente,lado,costas,topo`). Motivo da recomendação de **refazer**, com o cabelo na mesma cor azul-acinzentada escura das outras folhas e a calota
 um pouco mais grossa. Motivos: a Meshy não precisa da cor, mas a folha sem contraste tende a virar uma cabeça com
 o rabo colado e sulcos rasos, e no passo 3 a calota quase rente (menos de 2 mm) seria classificada como cabeça e
 sumiria, sobrando só o rabo e as faixas em relevo. Custa uma geração no ChatGPT contra 20 créditos e retrabalho.
@@ -68,4 +73,4 @@ sumiria, sobrando só o rabo e as faixas em relevo. Custa uma geração no ChatG
 ## 4. Ordem
 
 Corpo aprovado → gerar os 5 (1 tentativa cada) → `extrair_peruca.py` no mais simples (2 ou 4) para acertar o
-método → os outros → prévia conjunta → decisão da franja de 2 e 3 → entrega.
+método → os outros → prévia conjunta (a franja de 2 e 3 sobre a metade de cima de um olho, a 48 px) → entrega.
