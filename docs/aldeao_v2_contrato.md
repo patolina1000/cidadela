@@ -11,50 +11,61 @@ Mudanças só com aval do Arthur: quem precisar mudar algo, para e pergunta.
 ## ESCALA E ORIENTAÇÃO
 
 - Metros. Pés em y = 0, pivô entre os pés.
-- Mesma direção de frente da protagonista e do aldeão v1.
+- Frente para +Z do glTF, como a protagonista. O jogo gira 180° ao instanciar.
 - Altura aproximada de 0,40 m (bate na cintura da protagonista, que tem ~0,75 m). Ajustar vendo os dois lado a lado.
 
 ## CORPO
 
 - Uma malha com no máximo 2.500 triângulos.
-- Um único material chamado "pele", cor chapada e sem textura. O jogo troca pelo shader toon e pinta a cor definida em data/.
+- Um único material chamado "pele", cor chapada e sem textura. O jogo troca pelo shader toon.
 - Careca, sem rosto, sem cristal.
+- A arte NÃO exporta nós de encaixe (Cabelo, Chapéu, Peito); quem cria é o jogo.
 
 ## ESQUELETO
 
 - Rig do Meshy.
-- O nome do osso da cabeça vai registrado em rosto.json, no campo "ossoCabeca".
+- rosto.json registra "ossoCabeca" e "ossoPeito".
 
 ## CLIPES
 
-- idle, walk, carry, work, sleep (mesmos nomes do v1), todos em loop.
+- idle, walk, carry, work, sleep, todos em loop, marcados no GLB com o sufixo -loop (o Godot tira o sufixo ao importar).
 - A passada natural do walk, em m/s, vai registrada em rosto.json, no campo "passadaWalk".
 
 ## ROSTO
 
 - Duas malhas dentro de aldeao_corpo.glb, chamadas "Olhos" e "Boca".
 - São retalhos levemente curvos que acompanham a frente da cabeça, afastados 1 a 2 mm da pele, com peso 100% no osso da cabeça.
-- UV de 0 a 1 cobrindo uma célula do atlas. Materiais "rosto_olhos" e "rosto_boca".
+- UV de 0 a 1 cobrindo uma célula inteira do atlas. Materiais "rosto_olhos" e "rosto_boca".
 - A proporção de cada retalho é igual à proporção da célula do seu atlas.
 
 ## ATLAS
 
-- Grade fixa, com margem transparente de pelo menos 8 px em volta de cada célula.
+- Grade fixa.
+- celulaPx é o passo da grade e já INCLUI a margem.
+- margemPx (mínimo 8) é a borda transparente dentro de cada célula; o desenho fica só na área útil.
+- O retalho mostra a célula inteira.
 - rosto.json segue este formato:
   ```
   { "olhos": {colunas, linhas, celulaPx:[l,a], margemPx, quadros:{nome:índice}},
-    "boca": {...}, "ossoCabeca": "...", "passadaWalk": 0.0 }
+    "boca": {mesmo formato},
+    "expressoes": {nome: {olhos, boca}},
+    "ossoCabeca": "...", "ossoPeito": "...", "passadaWalk": 0.0 }
   ```
-- O índice 0 é o quadro padrão.
+- O índice 0 é o quadro padrão: olhos "distraido" e boca "entreaberta".
 
 ## CABELOS
 
 - Uma malha cada, com no máximo 800 triângulos.
 - Um único material chamado "cabelo", cor chapada. Rígidos, sem pesos de osso.
-- Modelados no MESMO espaço do corpo em pose de repouso. O jogo prende no encaixe "Cabelo" compensando a pose de repouso global do osso da cabeça.
+- Modelados no MESMO espaço do corpo em pose de repouso. O jogo prende no encaixe "Cabelo" compensando GetBoneGlobalRest do osso da cabeça.
 - Nenhum cabelo cobre o retalho "Olhos".
+
+## CORES (provisórias, ficam em data/villager_looks.json)
+
+- pele #AEBFD3 (azul-pálido fosco)
+- cabelo #6F7F96 (azul-acinzentado)
 
 ## ENCAIXES QUE O JOGO CRIA
 
-- No osso da cabeça: "Cabelo" e "Chapéu".
-- No peito: "Peito" (cristal da classe, uso futuro).
+- No ossoCabeca: "Cabelo" e "Chapéu".
+- No ossoPeito: "Peito" (cristal da classe, uso futuro).
