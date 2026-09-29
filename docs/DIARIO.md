@@ -2946,3 +2946,20 @@ onde errou, correções manuais e quanto tempo levou.
   constantes dos ossos). Os clipes da prova ainda têm 1 ou 2 trilhas de escala quase 1 (ruído do bake do Blender).
   Se um dia uma troca de clipe herdar a pose de um osso que o clipe novo não anima, é essa opção que se revê.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — tools/arte/godot_import.py: .import de GLB com animação pelo contrato
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Contexto:** o jogo provou que osso sem trilha congela na pose do clipe anterior: com
+  `animation/remove_immutable_tracks = true` o importador apaga as trilhas que não mudam, e o `girar_roda` chegava sem
+  pernas, pescoço, cabeça, Spine, ombro esquerdo e posição do quadril. Regra aprovada: todo clipe, e o corpo, define a
+  pose inteira.
+- **Feito:** `tools/arte/godot_import.py` (Python 3 puro): `conferir` lista o que está fora do contrato (sai com 1) e
+  `corrigir` escreve só o que falta: `animation/fps=24`, `animation/remove_immutable_tracks=false` e
+  `_subresources → nodes → "PATH:AnimationPlayer" → "optimizer/enabled": false` (mescla com o que já houver no
+  `_subresources`, no formato em que o Godot grava). O resto do `.import` fica igual. Recusa `_subresources` com tipos do
+  Godot que não são JSON (ex.: `Transform3D(...)`), pedindo correção à mão; exige o `.import` já gerado pelo Godot.
+- **Testes (em cópias temporárias):** num `.import` padrão, corrige as três coisas e nada mais (diff de 3 trechos);
+  rodar de novo não muda nada; com um `Transform3D` no `_subresources`, recusa. `conferir` nos 5 GLBs com animação:
+  só `remove_immutable_tracks = true` fora do contrato.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
