@@ -1,39 +1,44 @@
 # PROVA DE OPERAÇÃO — aldeões girando uma roda
 
-Registro de 29/09/2026. A prova vive em `scenes/tests/ProvaOperacao.tscn` (código em
-`src/View/ProvaOperacaoRoot.cs` e `src/View/ExternalClips.cs`). Os arquivos da arte estão em
-`assets/modelos/prova_operacao/variante_r06/` (roda, clipe `girar_roda` e `clipes.json`), e as medidas do Blender
-em `assets/previews/prova_operacao/variante_r06/girar_roda.json`. Nada disto está na simulação ainda.
+Registro de 29/09/2026, atualizado com os clipes da arte feitos pelo contrato (`docs/animacao_contrato.md`). A prova
+vive em `scenes/tests/ProvaOperacao.tscn` (código em `src/View/ProvaOperacaoRoot.cs` e `src/View/ExternalClips.cs`).
+Os arquivos da arte estão em `assets/modelos/prova_operacao/variante_r06/`: a roda, um clipe por posto
+(`clipes/girar_roda.glb` para o posto A, `clipes/girar_roda_b.glb` para o B) e o `clipes.json` com um bloco por
+posto. As medidas do Blender estão em `assets/previews/prova_operacao/variante_r06/`. Nada disto está na simulação
+ainda.
 
 **Controles da cena:** 1 e 2 tiram ou devolvem cada aldeão · − e = mudam o mínimo de operadores · Espaço pausa a
 roda · roda do mouse aproxima · Q e E giram a câmera · Esc volta ao menu.
 
 ## 1. O QUE A PROVA MOSTROU
 
-1. **Um clipe feito por IK no Blender funciona no jogo sem mexer no corpo.** O clipe vem num GLB separado, só com
-   esqueleto e animação, e entra no AnimationPlayer do aldeão como uma biblioteca nova ("operacao/girar_roda").
-   Os 24 ossos do clipe têm os mesmos nomes, a mesma hierarquia e o mesmo repouso do corpo (0,04°).
+1. **Um clipe feito por IK no Blender funciona no jogo sem mexer no corpo.** Cada clipe vem num GLB separado, só
+   com esqueleto e animação, e entra no AnimationPlayer do aldeão como uma biblioteca nova
+   ("operacao_A/girar_roda"). O `ExternalClips` é estrito: nada é convertido nem cortado, e um clipe fora do
+   contrato é recusado com aviso. O clipe antigo da prova, feito antes da normalização, foi recusado por dois
+   motivos: a Armature em escala 0,004 e a duração de 2,0417 s contra os 2,0 s do `clipes.json`.
 2. **Posicionar pelo estado da máquina dá mãos presas à manopla.** O aldeão não toca o clipe solto: a cada quadro
-   o jogo busca o quadro que corresponde à fase da roda. Com a roda pausada nos 48 quadros do clipe, a palma
-   fica no máximo a **3,6 mm** do alvo (o Blender mede 2,5 mm no mesmo pior quadro). Entre os quadros chega a
-   5,8 mm; girando, o pior de cada volta fica em 3,7 mm. Num aldeão de 0,40 m, isso não se vê.
+   o jogo busca o quadro que corresponde à fase da roda (quadro = fase × 48, sem inverter nem defasar). Distância
+   palma-manopla, pior mão:
+
+   | Clipe | 48 quadros, roda pausada | entre quadros | girando |
+   |---|---|---|---|
+   | lido com as 49 chaves, postos A / B | 2,44 / 2,44 mm | 2,43 / 2,43 mm | 2,45 / 2,45 mm |
+   | importado pelo editor hoje, postos A / B | 3,89 / 3,43 mm | 3,88 / 3,38 mm | 3,91 / 3,44 mm |
+
+   Com as 49 chaves, o jogo reproduz o Blender (2,4 a 2,5 mm, no mesmo pior quadro: 28 no A e 44 no B). A
+   diferença do importado vem do otimizador de animação do importador do Godot, ligado por padrão, que apaga
+   chaves com perda (as trilhas ficam com 36 a 48 chaves). Desligá-lo no `.import` dos clipes resolve (seção 5).
+   Num aldeão de 0,40 m, nenhum dos dois se vê.
 3. **A roda manda, o aldeão segue.** Se a roda desacelera, para ou volta a girar, as mãos acompanham, porque o
    quadro vem da fase e não do tempo. Com 1 ou 2 operadores a velocidade visual é a mesma.
 4. **Tirar e devolver um operador é só trocar de modo.** Fora do posto ele volta ao idle; ao voltar, entra direto
    no quadro da fase com 0,2 s de mistura (152 mm de distância no primeiro quadro, 4 mm aos 0,2 s).
-5. **O golpe é um instante do clipe.** A arte marcou a fração 0,5 do `girar_roda` (a alça passa embaixo, fim da
-   empurrada). Contando quando o quadro passa por ali, os golpes batem exatamente com as voltas.
-6. **Um clipe serve os dois lados, provisoriamente.** O aldeão B, do outro lado, segura a alça B (180° depois, na
-   face de trás) e toca o mesmo clipe ao contrário, com fase 0,5 − t. Funciona porque a roda é simétrica e os
-   dois postos têm a mesma geometria. **A regra final é um clipe por posto, gerado por IK para aquele posto**;
-   tocar ao contrário é só um atalho desta prova.
-7. **Três problemas de arquivo apareceram e foram contornados no código:**
-   - o clipe foi exportado antes da normalização do aldeão (Armature em 0,004): as translações vêm 250 vezes
-     maiores e a classe converte pela razão entre as escalas dos esqueletos;
-   - o Blender põe o quadro 1 em 1/24 s e o importador do Godot reamostra a partir de 0, então o clipe importado
-     fica um quadro mais longo, com o começo parado (7,5 mm de erro). A classe corta o começo com a duração do
-     `clipes.json`;
-   - o importador reamostra a 30 fps um clipe feito a 24 fps. Isso explica o 1,1 mm que sobra contra o Blender.
+5. **O golpe é um instante do clipe.** A arte marcou a fração 0,5 (a alça A passa embaixo, fim da empurrada do
+   posto A). Contando quando a fase da roda passa por ali, os golpes batem exatamente com as voltas.
+6. **Um clipe por posto: provado.** Cada posto tem o seu clipe, gerado por IK para a geometria dele. O posto B
+   usa `girar_roda_b.glb` com a mesma fórmula de fase do A e fica a 2,4 mm, como o A. Tocar o clipe de outro
+   posto ao contrário ou espelhado não vale em produção (contrato de animação, "OPERAÇÃO").
 
 ## 2. O QUE O CÓDIGO DE ANIMAÇÃO VAI PRECISAR (aldeão e protagonista)
 
@@ -49,11 +54,8 @@ na prova; as duas últimas não.
    peça; a simulação usa a mesma fração para contar trabalho (seção 3). Os dois precisam ler a fração do mesmo
    lugar.
 3. **Clipes de arquivos separados.** Cada máquina traz o seu GLB de clipes (um por posto), carregado por
-   `ExternalClips` no corpo que ocupa o posto, sem regravar o corpo. Regras para a arte:
-   - o esqueleto do clipe no mesmo espaço do corpo (Armature em metros); a conversão de escala fica como
-     segurança, não como regra;
-   - o ciclo começando em 0 s, ou a duração real registrada no JSON do clipe;
-   - `animation/fps` igual ao do clipe no `.import` (24), para o Godot não reamostrar.
+   `ExternalClips` no corpo que ocupa o posto, sem regravar o corpo. O formato está no contrato de animação:
+   esqueleto igual ao do corpo, em metros; primeira chave em t = 0; 24 fps também no `.import`.
 4. **Reações curtas.** Tomar dano, levar susto, comemorar: clipes de 0,3 a 1 s que tocam por cima do que o
    personagem estiver fazendo e voltam sozinhos. No operador, a reação não pode tirar as mãos da manopla por
    mais que um instante. Pede um mixer por camadas (`AnimationTree`) ou um clipe aditivo, e não troca de clipe.
@@ -102,8 +104,14 @@ Tudo em ticks de 20/s, sem Godot, com os números em `data/`.
 
 ## 5. PENDÊNCIAS PARA A ARTE
 
-- Reexportar os clipes de `prova_operacao/` com a Armature normalizada (escala 1), como o corpo.
-- Pôr `animation/fps = 24` no `.import` dos GLBs de clipe.
-- Fazer o clipe do posto B por IK, para trocar a regra provisória 0,5 − t.
-- Commitar os `.import` e as texturas extraídas que o Godot gerou em `assets/`. Esses arquivos ficaram sem versionar
-  na `master`.
+Feito: clipes reexportados em metros e com a primeira chave em t = 0, `animation/fps = 24` no `.import`, clipe
+do posto B por IK e os `.import` gerados commitados na `arte`.
+
+Falta:
+- Desligar o otimizador de animação no `.import` dos clipes (`_subresources`), para o jogo ter as 49 chaves e os
+  2,4 mm do Blender. Vale como regra nova do contrato de animação, se o Arthur aprovar.
+- Commitar o `.import` do corpo com `animation/fps = 24`. Ele está modificado na worktree da arte, mas não
+  commitado; na `master` continua em 30.
+- Clipes do corpo (`run-loop` e `idle-loop`): a primeira chave está em t = 1/24 s. O Godot recria a chave em 0
+  igual à de 1/24, então cada volta do run ganha um quadro parado (0,75 s em vez de 0,708 s). No ciclo real, a
+  24 fps, a passada medida no Godot é 0,383 m/s, a mesma do `rosto.json`.

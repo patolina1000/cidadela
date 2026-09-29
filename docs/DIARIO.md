@@ -3680,3 +3680,20 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 116 aprovados (simulação intocada).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:15–19:24 de relógio.
+
+---
+
+## 2026-09-29 — `docs/prova_operacao.md` com os clipes pelo contrato
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`. Só documentação.
+- **Pedido:** atualizar o documento com os números novos, tirar os três contornos do texto e passar a regra de
+  um clipe por posto de "provisória" para "provada".
+- **O que foi feito:** a seção 1 agora descreve o `ExternalClips` estrito e a recusa do clipe antigo, traz a
+  tabela palma-manopla (2,44 mm com as 49 chaves, igual ao Blender; 3,9 / 3,4 mm com o importado, pelo
+  otimizador do importador) e dá o clipe por posto como provado. Saíram os três contornos (conversão de escala,
+  corte do começo, reamostragem a 30 fps) e a regra 0,5 − t. A seção 5 separa o que a arte já fez do que falta:
+  desligar o otimizador no `.import` dos clipes, commitar o `.import` do corpo a 24 fps e a primeira chave em
+  t = 0 nos clipes do corpo.
+- **O que deu errado:** nada.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:23–19:25 de relógio.
