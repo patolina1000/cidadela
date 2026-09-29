@@ -135,7 +135,32 @@ class Eye:
         self.upper = arc(self.inner, self.outer, self.cy - ry_top)
         self.lower = arc(self.inner, self.outer, self.cy + ry_bot)
         self.h = ry_top + ry_bot
+        self.ry_top = ry_top
         self.half_w = rx
+
+    def inside(self, point) -> bool:
+        """Ponto dentro da forma do olho (ray casting no polígono)."""
+        poly = self.upper + self.lower[::-1]
+        x, y = point
+        hit = False
+        for (x0, y0), (x1, y1) in zip(poly, poly[1:] + poly[:1]):
+            if (y0 > y) != (y1 > y) and x < x0 + (y - y0) * (x1 - x0) / (y1 - y0):
+                hit = not hit
+        return hit
+
+    def straight_lid(self, cover_mid, angle_deg):
+        """Pálpebra reta e dura: linha que passa a cover_mid da altura do olho no centro, inclinada angle_deg
+        (positivo: o lado do nariz desce, como no bravo; negativo: o canto interno sobe, como no preocupado).
+        Devolve (pontos da linha dentro do olho, polígono do que fica visível abaixo dela)."""
+        y_mid = self.cy - self.ry_top + self.h * cover_mid
+        slope = math.tan(math.radians(angle_deg)) * self.side
+        wide = self.half_w + 40
+        line = [(self.cx + dx, y_mid + slope * dx) for dx in (i * 0.5 - wide for i in range(int(wide * 4) + 1))]
+        visible = [pt for pt in line if self.inside(pt)]
+        if len(visible) < 2:
+            raise RuntimeError("pálpebra reta fora do olho")
+        keep = [line[0], line[-1], (line[-1][0], self.cy + self.h), (line[0][0], self.cy + self.h)]
+        return visible, keep
 
     def lid(self, cover_in, cover_out, curve=0.0, straight=False):
         """Pálpebra de cima: cobre cover_in do olho no canto de dentro e cover_out no de fora.
@@ -151,12 +176,12 @@ class Eye:
             pts = [(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n + curve * self.h * math.sin(math.pi * i / n)) for i in range(n + 1)]
         return pts
 
-    def floor(self, raise_amount, flat=False):
+    def floor(self, raise_amount, flat=False, profile=None):
         n = len(self.lower) - 1
         pts = []
         for i, ((ux, uy), (lx, ly)) in enumerate(zip(self.upper, self.lower)):
             t = i / n
-            k = math.sin(math.pi * t) ** (0.35 if flat else 0.7)
+            k = math.sin(math.pi * t) ** (profile if profile is not None else (0.35 if flat else 0.7))
             pts.append((lx, ly - (ly - uy) * raise_amount * k))
         return pts
 
@@ -181,7 +206,8 @@ def olheira(face, eye: Eye, alpha=110, bag=55):
 
 
 def draw_eye(face, eye: Eye, *, cover_in, cover_out, pupil, look, raise_lower=0.0, lash=4.2, cavity=0.42,
-             moist=False, seed=0, curve=0.0, straight=False, flat_floor=False, closed=False, floor_alpha=95):
+             moist=False, seed=0, curve=0.0, straight=False, flat_floor=False, closed=False, floor_alpha=95,
+             angle=None, floor_width=1.1, floor_profile=None):
     layer = Image.new("RGBA", face.size, (0, 0, 0, 0))
     if closed:  # só a linha dos cílios, grossa e curvada para baixo
         line = eye.lid(0.80, 0.86, curve=0.16)
@@ -202,12 +228,20 @@ def draw_eye(face, eye: Eye, *, cover_in, cover_out, pupil, look, raise_lower=0.
     d = ImageDraw.Draw(layer)
     disc(d, (px, py), pupil * 1.35, (*CAVITY, 70))
     disc(d, (px, py), pupil, (*INK, 255))
-    lid, floor = eye.lid(cover_in, cover_out, curve, straight), eye.floor(raise_lower, flat_floor)
+    floor = eye.floor(raise_lower, flat_floor, floor_profile)
     mask = Image.new("L", face.size, 0)
-    ImageDraw.Draw(mask).polygon(sp(lid + floor[::-1]), fill=255)
+    if angle is None:
+        lid = eye.lid(cover_in, cover_out, curve, straight)
+        ImageDraw.Draw(mask).polygon(sp(lid + floor[::-1]), fill=255)
+    else:
+        lid, keep = eye.straight_lid(cover_in, angle)
+        ImageDraw.Draw(mask).polygon(sp(eye.upper + floor[::-1]), fill=255)
+        below = Image.new("L", face.size, 0)
+        ImageDraw.Draw(below).polygon(sp(keep), fill=255)
+        mask = ImageChops.multiply(mask, below)
     layer.putalpha(ImageChops.multiply(layer.getchannel("A"), mask))
-    stroke(layer, lid, taper(lash), seed)
-    stroke(layer, floor[3:-3], lambda t: 1.1 * math.sin(math.pi * t) ** 0.4, seed + 3, alpha=floor_alpha)
+    stroke(layer, lid, taper(lash, 0.0 if angle is not None else 0.3), seed)
+    stroke(layer, floor[3:-3], lambda t: floor_width * math.sin(math.pi * t) ** 0.4, seed + 3, alpha=floor_alpha)
     if moist:
         stroke(layer, [(x, y - 1.6) for x, y in floor[5:-5]], lambda t: 1.4 * math.sin(math.pi * t) ** 0.5, seed + 5, color=MOIST, alpha=210)
     face.alpha_composite(layer)
@@ -246,16 +280,16 @@ def draw_eyes(kind: str, face: Image.Image) -> None:
         elif kind == "fechado":  # dormindo e piscar
             draw_eye(face, eye, cover_in=1, cover_out=1, pupil=p, look=(0, 0), closed=True, seed=s)
         elif kind == "feliz":  # alívio cansado: a pálpebra de baixo sobe 1/3, meia-lua deitada
-            draw_eye(face, eye, cover_in=0.16, cover_out=0.26, pupil=p, look=(3, -1) if i == 0 else (-2, 0),
-                     raise_lower=0.44, flat_floor=True, floor_alpha=200, lash=3.8, seed=s)
+            draw_eye(face, eye, cover_in=0.06, cover_out=0.10, pupil=p, look=(2, -4) if i == 0 else (-1, -3),
+                     raise_lower=0.52, floor_profile=0.9, floor_alpha=230, floor_width=2.0, lash=3.6, seed=s)
         elif kind == "bravo":  # pálpebra reta e dura cobrindo metade, inclinada para o nariz
-            draw_eye(face, eye, cover_in=0.64, cover_out=0.36, pupil=p * 0.7, look=(3, 2) if i == 0 else (-3, 2),
-                     straight=True, lash=5.0, seed=s)
+            draw_eye(face, eye, cover_in=0.44, cover_out=0.44, pupil=p * 0.75, look=(9, 1) if i == 0 else (-8, 1),
+                     angle=20, lash=5.4, seed=s)
         elif kind == "arregalado":  # espantado: tudo aberto, pupilas em pontinhos
             draw_eye(face, eye, cover_in=0.02, cover_out=0.05, pupil=3.2, look=(1, 0) if i == 0 else (-2, 1), cavity=0.30, lash=3.6, seed=s)
         elif kind == "preocupado":  # canto interno mais alto (contrário do bravo)
-            draw_eye(face, eye, cover_in=0.26, cover_out=0.58, pupil=p, look=(3, -2) if i == 0 else (-2, -1),
-                     straight=True, raise_lower=0.12, seed=s)
+            draw_eye(face, eye, cover_in=0.25, cover_out=0.25, pupil=p, look=(5, -6) if i == 0 else (2, -7),
+                     angle=-18, raise_lower=0.10, lash=4.4, seed=s)
         elif kind == "apertado":  # esforço: as duas pálpebras apertam até virar uma fenda
             draw_eye(face, eye, cover_in=0.44, cover_out=0.50, pupil=p * 0.8, look=(2, 0) if i == 0 else (-2, 0),
                      raise_lower=0.36, flat_floor=True, floor_alpha=160, lash=4.8, seed=s)
@@ -294,12 +328,12 @@ def draw_mouth(kind: str, face: Image.Image) -> None:
         stroke(layer, bezier((128, 186), (142, 189), (157, 181)), taper(1.6, 0), seed, alpha=150)
         stroke(layer, [(157, 181), (159, 178)], lambda t: 1.0, seed + 1, alpha=110)
     elif kind == "o":  # espantado: a dobra abre num oval pequeno e torto, escuro por dentro
-        oval = [(142 + 8 * math.cos(a) * math.cos(0.2) - 5.5 * math.sin(a) * math.sin(0.2),
-                 186 + 8 * math.cos(a) * math.sin(0.2) + 5.5 * math.sin(a) * math.cos(0.2)) for a in (math.tau * i / 40 for i in range(41))]
+        oval = [(142 + 5.5 * math.cos(a) * math.cos(0.2) - 4 * math.sin(a) * math.sin(0.2),
+                 186 + 5.5 * math.cos(a) * math.sin(0.2) + 4 * math.sin(a) * math.cos(0.2)) for a in (math.tau * i / 40 for i in range(41))]
         d.polygon(sp(oval), fill=(*MOUTH_IN, 255))
         stroke(layer, oval, lambda t: 1.3, seed, jitter=0.2, alpha=200)
-        stroke(layer, [(150, 186), (156, 185)], lambda t: 1.0, seed + 1, alpha=110)
-        stroke(layer, [(134, 187), (128, 186)], lambda t: 1.0, seed + 2, alpha=110)
+        stroke(layer, [(148, 186), (154, 185)], lambda t: 1.0, seed + 1, alpha=110)
+        stroke(layer, [(136, 187), (130, 186)], lambda t: 1.0, seed + 2, alpha=110)
     elif kind == "tensa":  # esforço: dobra apertada e mais funda, dentinhos cerrados
         top = bezier((129, 185), (142, 183), (156, 186))
         stroke(layer, top, taper(2.2, 0), seed, alpha=230)

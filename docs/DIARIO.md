@@ -2178,3 +2178,23 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que ainda pode confundir a 48 px:** esforço, sonolento e bravo são três fendas; a diferença é a posição da
   fenda (meio, baixo, inclinada). Preocupado e chorando só se distinguem pelo risco da lágrima, de propósito.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Aldeão v2: ajuste de bravo, preocupado e feliz pelo ângulo e abertura do olho
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** estilo aprovado, com 6 das 9 expressões e o piscar. No teste a 48 px no crepúsculo, bravo,
+  preocupado e feliz viravam a fenda do sonolento. Ajustar só esses três pelo ângulo e pela abertura (bravo:
+  linha reta e grossa a ~20° descendo para o nariz, cortando o topo da pupila, pupilas no canto interno, os dois
+  olhos formando um V achatado; preocupado: só 1/4 coberto, inclinação contrária, V invertido, pupilas para cima
+  e para o lado; feliz: pálpebra de cima quase aberta e a de baixo subindo em curva bem convexa, meia-lua); boca
+  do espantado menor. Refazer a tira de 48 px e o atlas final com o `rosto.json`.
+- **Causa:** a pálpebra "reta" do atlas anterior era uma reta entre os dois cantos do olho, então a inclinação
+  vinha só da queda do canto externo (7 px) e não dava para controlar o ângulo.
+- **Feito (`desenhar_rosto.py`):** pálpebra reta nova definida por altura no centro e ângulo, estendida além do
+  olho e recortada pela forma dele (teste de ponto no polígono); a máscara é a forma com o piso multiplicada pelo
+  "abaixo da linha"; a linha dos cílios sem afinar por fora (peso igual). Bravo: 44% no centro, +20°, pupilas a
+  9 px para dentro, linha 5,4 px. Preocupado: 25%, -18°, pupilas (5, -6) e (2, -7), pálpebra de baixo erguida
+  10%. Feliz: pálpebra de cima 6 a 10%, a de baixo sobe 52% com perfil convexo (seno^0,9) e linha de 2 px a 90%
+  de opacidade. Boca do espantado: oval de 11×8 px em vez de 16×11. Chorando manteve a silhueta anterior, como
+  aprovado. Todas as prévias foram regeradas pelo mesmo script (a tira de 48 px é a que importa).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~25 min.
