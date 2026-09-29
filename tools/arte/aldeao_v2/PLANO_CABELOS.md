@@ -74,3 +74,14 @@ sumiria, sobrando só o rabo e as faixas em relevo. Custa uma geração no ChatG
 
 Corpo aprovado → gerar os 5 (1 tentativa cada) → `extrair_peruca.py` no mais simples (2 ou 4) para acertar o
 método → os outros → prévia conjunta (a franja de 2 e 3 sobre a metade de cima de um olho, a 48 px) → entrega.
+
+## 5. Problemas conhecidos (piloto do cabelo 4, 29/09/2026)
+
+- **Pontas dentro dos ombros e braços na corrida.** A peruca é rígida no osso Head; na `run-loop` os braços
+  balançam por dentro das mechas que descem até os ombros (até 37 mm de invasão no cabelo 4). Aceito por
+  enquanto: a 44 px na câmera do jogo o braço some sob a mecha. **Rever se aparecer no jogo no zoom máximo**
+  (112 px). Não encurtar as pontas. Vale também para os cabelos 3 (ondulado até o queixo) e 5 (rabo).
+- **Cabeça da folha por âncoras, não por ajuste.** O ajuste automático de elipsoide ao rosto visível não fecha;
+  cada folha precisa de três números medidos (largura e altura da cabeça em fração da silhueta da vista de
+  frente, e o topo da cabeça abaixo do topo da silhueta): `PRIOR` no `extrair_peruca.py`.
+- **Vértices duplicados por face no GLB da Meshy:** fundir (`remove_doubles`) antes de qualquer coisa.

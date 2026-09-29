@@ -2802,3 +2802,63 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 105 aprovados.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 03:05–03:35 de relógio.
+
+---
+
+> **Entradas do agente de arte (branch `arte`), 29/09/2026, trazidas pelo segundo merge (cabelos 1, 2, 3 e 5).**
+
+## 2026-09-29 — Aldeão v2, passo 12a: cabelo 1 (curto bagunçado), 20 créditos
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** os outros 4 cabelos pelo método do piloto, medindo as três âncoras da cabeça em cada folha; cabelo 1
+  com pontas finas: mostrar antes de simplificar demais se não couber em 800 triângulos.
+- **Âncoras medidas nas vistas de frente (largura da cabeça / silhueta, altura / silhueta, topo abaixo do topo):**
+  1: 0,78 / 0,80 / 0,10; 2: 0,75 / 0,83 / 0,06; 3: 0,70 / 0,82 / 0,07; 5: 0,88 / 0,86 / 0,05 (o 4 ficou 0,75 /
+  0,74 / 0,05). Vêm da face visível e do queixo medidos pelo preparador, mais a espessura estimada da calota.
+  A semente do crescimento de região passou para a altura da boca (38%), onde nunca há franja.
+- **Cabelo 1:** Meshy 1 geração (saldo 2.378 → 2.358); 3.357 vértices fundidos em 1.554; rosto = 20% das faces
+  (631 de rosto + 13 do toco de pescoço removidas); 5 pedaços (7 faces soltas fora); 22 faces de franja apagadas
+  abaixo da linha dos olhos; decimação 2.430 → **759 triângulos**. Folga: repouso 1,5 mm do corpo e 1,5 mm do
+  retalho dos olhos (32 vértices de franja na frente dele); idle 1,6 mm; run 1,2 mm (nada atravessa: cabelo
+  curto não chega aos ombros). Comparação 2.400 × 800 triângulos a 44 e 112 px em
+  `assets/previews/aldeao_v2/cabelo_1_decimacao.png`: a 44 px igual; a 112 px as pontas em folha só ficam um pouco
+  mais macias, sem virar bolota. Fiquei com 800. Prévia: `cabelo_1_previa.png`.
+- **Plano:** `PLANO_CABELOS.md` ganhou a seção de problemas conhecidos (pontas nos ombros/braços na corrida,
+  aceito; rever no zoom máximo; âncoras por folha; vértices duplicados).
+- **Créditos:** 20. **Tempo:** ~30 min.
+
+## 2026-09-29 — Aldeão v2, passo 12b: cabelo 2 (chanel com franja de lado), 20 créditos
+
+- **Cabelo 2:** 1 geração (saldo 2.358 → 2.338); 3.240 vértices fundidos em 1.547; rosto 18% (564 + 28 do
+  pescoço); 9 pedaços (45 faces soltas fora); **65 faces de franja apagadas** abaixo da linha do centro dos olhos
+  (sobra a franja sobre a metade de cima de um olho; o outro fica livre); 36 vértices empurrados a 2,5 mm do
+  retalho; 2.387 → **759 triângulos**. Folga: repouso 0,95 mm do corpo e **2,45 mm do retalho dos olhos**; idle
+  1,2 mm; run -21,7 mm nos ombros (z 0,185; problema conhecido, aceito). Prévia `cabelo_2_previa.png`.
+- **Ajuste comum:** a folga-alvo ao retalho subiu de 2,0 para 2,5 mm porque a decimação move os vértices depois
+  do empurrão (o cabelo 1 ficava em 1,5 mm; refeito: 2,27 mm; o 4 será refeito no fim com os demais).
+- **Créditos:** 20. **Tempo:** ~20 min.
+
+## 2026-09-29 — Aldeão v2, passo 12c: cabelo 3 (ondulado volumoso), 20 créditos
+
+- **Cabelo 3:** 1 geração (saldo 2.338 → 2.318); 3.084 vértices fundidos em 1.562; rosto 13% (404 + 36 do
+  pescoço); 3 pedaços (36 faces soltas fora); 29 faces de franja apagadas abaixo da linha dos olhos; 30 vértices
+  empurrados a 2,5 mm do retalho; 2.615 → **760 triângulos**. Folga: repouso 1,1 mm do corpo e **2,48 mm do
+  retalho dos olhos**; idle -3,0 mm nos ombros (z 0,203: as ondas até o queixo tocam os ombros quando a cabeça
+  balança); run -30 mm nos ombros (z 0,174; problema conhecido, aceito). Prévia `cabelo_3_previa.png`.
+- **Créditos:** 20. **Tempo:** ~10 min.
+
+## 2026-09-29 — Aldeão v2, passo 12d/12e: cabelo 5 (rabo de cavalo), cabelo 4 refeito, prévia conjunta e GDD
+
+- **Cabelo 5:** 1 geração (saldo 2.318 → 2.298); 3.203 vértices fundidos em 1.555; rosto 16% (483 faces; sem
+  toco de pescoço); 1 pedaço só; 7 faces apagadas na frente dos olhos; 2.616 → **758 triângulos**. O rabo é
+  rígido no Head: na corrida fica a **35 mm das costas** no pior quadro (11 mm no idle); corpo 0,3 mm no run.
+- **Passe final de folga:** a decimação move vértices, então o empurrão para fora do corpo (1,5 mm) e do
+  retalho (2,5 mm) roda de novo depois dela. Os 5 cabelos refeitos: em repouso todos a 1,5 mm do corpo e
+  **2,5 mm do retalho dos olhos**; 758 a 760 triângulos. No run, os que descem até os ombros entram neles
+  (2: -22 mm, 3: -30 mm, 4: -37 mm; problema conhecido, aceito); 1 e 5 não entram.
+- **Prévia conjunta:** `assets/previews/aldeao_v2/cabelos_conjunta.png` (frente, lado, 3/4, jogo × 5 cabelos ×
+  112 px, 44 px, 44 px no crepúsculo). Prévias individuais `cabelo_N_previa.png`.
+- **GDD:** subseção "Aldeão: implementação v2 (29/09/2026, aprovado)" inserida no GDD vivo do Claude Docs
+  (rev 90) logo após a v1: corpo, rosto A1 e janela ±45°, retalhos, clipes Idle_3 e Run_02, cabelos, tamanhos
+  em tela medidos e custo (160 créditos). Reexportado para `docs/GDD.md` (só essa subseção e a data mudaram).
+- **Créditos:** 20 (cabelo 5); etapa dos cabelos: 100. **Correções manuais:** nenhuma. **Tempo:** ~40 min.

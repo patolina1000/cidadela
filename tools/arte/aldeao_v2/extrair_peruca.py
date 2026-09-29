@@ -39,12 +39,15 @@ HAIR_COLOR = (0.294, 0.353, 0.412, 1.0)  # #4B5A69
 MAX_TRIS = 800
 DIHEDRAL_DEG = 32  # aresta mais viva que isso separa rosto de cabelo (linha do cabelo, franja)
 LOOSE_GUARD = 0.025  # m: o rosto crescido nunca sai mais que isso do elipsoide da cabeça
-CLEARANCE, PATCH_CLEARANCE = 0.0015, 0.002  # m
+CLEARANCE, PATCH_CLEARANCE = 0.0015, 0.0025  # m (retalho: 2,5 mm de alvo para sobrar >= 2 mm depois da decimação)
 HEAD_BONE = "Head"
 CHECK_POINTS = 5
 # (largura da cabeça / largura da silhueta, altura da cabeça / altura da silhueta, topo da cabeça abaixo do topo da
 # silhueta / altura), medidos nas folhas em 29/09/2026.
-PRIOR = {4: (0.75, 0.74, 0.05)}
+# Medidas em 29/09/2026 (vistas de frente): face visível e queixo pelo preparador; a cabeça é um pouco mais larga
+# que a face visível onde o cabelo cobre as laterais (2, 3) e quase igual onde não cobre (1, 5).
+PRIOR = {1: (0.78, 0.80, 0.10), 2: (0.75, 0.83, 0.06), 3: (0.70, 0.82, 0.07), 4: (0.75, 0.74, 0.05), 5: (0.88, 0.86, 0.05)}
+SEED_HEIGHT = 0.38  # fração da altura do modelo onde a semente do rosto é tomada (boca/queixo: nunca tem franja)
 
 
 def world_points(obj):
@@ -132,6 +135,8 @@ def fit_scaled(pts, radii, center0, s0, iters=30, s_bounds=(0.8, 1.25), c_box=No
 def main() -> None:
     args = sys.argv[sys.argv.index("--") + 1:]
     n, src, preview = int(args[0]), ROOT / args[1], Path(args[2])
+    max_tris = int(args[3]) if len(args) > 3 else MAX_TRIS
+    suffix = args[4] if len(args) > 4 else ""
     preview.mkdir(parents=True, exist_ok=True)
     scene = setup_scene(512, transparent=True)
     twilight_lights(scene)
@@ -216,7 +221,9 @@ def main() -> None:
     # (a linha do cabelo é uma aresta viva) e sem se afastar demais do elipsoide da cabeça (guarda solta).
     bm.faces.ensure_lookup_table()
     bm.normal_update()
-    eye_point = Vector(((low[0] - c_gen[0]) * 0 + xc, y_front, low[2] + size[2] * 0.48))
+    seed_band = face[np.abs(face[:, 2] - (low[2] + size[2] * SEED_HEIGHT)) < size[2] * 0.06]
+    seed_y = float((seed_band if len(seed_band) else face)[:, 1].min())
+    eye_point = Vector((xc, seed_y, low[2] + size[2] * SEED_HEIGHT))
     eye_point = Vector(((np.array(eye_point[:]) - c_gen) / scale_axes + c_body).tolist())
     dists = []
     for f in bm.faces:
@@ -319,14 +326,28 @@ def main() -> None:
     for _ in range(4):
         hair.data.calc_loop_triangles()
         tris = len(hair.data.loop_triangles)
-        if tris <= MAX_TRIS:
+        if tris <= max_tris:
             break
         mod = hair.modifiers.new("decimar", "DECIMATE")
-        mod.ratio = MAX_TRIS / tris * 0.95
+        mod.ratio = max_tris / tris * 0.95
         mod.use_collapse_triangulate = True
         bpy.ops.object.modifier_apply(modifier=mod.name)
     hair.data.calc_loop_triangles()
     report["triangulos"] = {"cabelo_antes": before, "final": len(hair.data.loop_triangles)}
+    # Passe final de folga depois da decimação (ela move vértices): garante >= 2 mm do retalho e fora do corpo.
+    bm = bmesh.new()
+    bm.from_mesh(hair.data)
+    for _ in range(2):
+        for v in bm.verts:
+            loc, normal, index, dist = tree_b.find_nearest(v.co)
+            if loc is not None and ((v.co - loc).dot(nrm_b[index]) < 0 or dist < CLEARANCE):
+                v.co = loc + nrm_b[index] * CLEARANCE
+            loc, normal, index, dist = tree_e.find_nearest(v.co, PATCH_CLEARANCE * 3)
+            if loc is not None and ((v.co - loc).dot(nrm_e[index]) < 0 or dist < PATCH_CLEARANCE):
+                v.co = loc + nrm_e[index] * PATCH_CLEARANCE
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(hair.data)
+    bm.free()
     hair.data.materials.clear()
     mat = bpy.data.materials.new("cabelo")
     mat.use_nodes = True
@@ -335,7 +356,7 @@ def main() -> None:
     hair.data.materials.append(mat)
     set_smooth([hair], True)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    out = OUT_DIR / f"cabelo_{n}.glb"
+    out = OUT_DIR / f"cabelo_{n}{suffix}.glb"
     bpy.ops.object.select_all(action="DESELECT")
     hair.select_set(True)
     bpy.ops.export_scene.gltf(filepath=str(out), export_format="GLB", use_selection=True, export_yup=True, export_animations=False, export_skins=False)
@@ -362,7 +383,7 @@ def main() -> None:
         action = bpy.data.actions[clip]
         play(armature, action)
         a, b = (int(x) for x in action.frame_range)
-        worst_b, worst_z = 1e9, None
+        worst_b, worst_z, worst_back = 1e9, None, 1e9
         for f in [a + (b - a) * i // (CHECK_POINTS - 1) for i in range(CHECK_POINTS)]:
             scene.frame_set(f)
             head_pose = armature.matrix_world @ armature.pose.bones[HEAD_BONE].matrix
@@ -373,9 +394,13 @@ def main() -> None:
             db = signed_distances(tb, nb, moved)
             if db.min() < worst_b:
                 worst_b, worst_z = float(db.min()), round(float(moved[int(np.argmin(db))][2]), 3)
+            back = moved[:, 1] > c_body[1] + 0.6 * r_body[1]  # cabelo atrás da cabeça (nuca, rabo)
+            if back.any():
+                worst_back = min(worst_back, float(db[back].min()))
         # Olhos: peruca e retalhos seguem o mesmo osso (Head) como bloco rígido, então a folga entre eles é a
         # do repouso em todos os quadros; só o corpo (ombros, braços, tronco) muda em relação à peruca.
-        report["folga_mm"][clip] = {"corpo": round(worst_b * 1000, 2), "corpo_z_do_pior": worst_z, "olhos": "igual ao repouso (rígidos no mesmo osso)"}
+        report["folga_mm"][clip] = {"corpo": round(worst_b * 1000, 2), "corpo_z_do_pior": worst_z, "atras_da_cabeca": round(worst_back * 1000, 2) if worst_back < 1e8 else None,
+                                    "olhos": "igual ao repouso (rígidos no mesmo osso)"}
     armature.animation_data.action = None
     armature.data.pose_position = "REST"
     scene.frame_set(0)
