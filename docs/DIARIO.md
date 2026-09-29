@@ -3373,3 +3373,51 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** nada.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 18:36–18:40 de relógio.
+
+---
+
+## 2026-09-29 — Conferência do aldeão v2 normalizado no jogo
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`, com o MCP godot-ai.
+- **Pedido:** provar que o aldeão normalizado (Armature em escala 1) funciona sem mudar o código: cabelos 1 a 5,
+  retalhos, expressões, piscar, idle e run, pés na velocidade base; a `VelocidadeAldeao.tscn` igual a antes; FPS
+  com 500 aldeões contra o do diário; prints no crepúsculo nos zooms padrão e máximo, respondendo se o aldeão
+  some no zoom padrão.
+- **Resultado: nada quebrou; o código não mudou.**
+  - **Corpo de antes × de agora**, carregados lado a lado no jogo em execução (`GLTFDocument`, o de antes tirado
+    de `a2e3b80^1`, sha256 `9a7e762c…`): a escala do esqueleto no modelo passou de 0,004 para 1; as posições dos
+    24 ossos no espaço do modelo coincidem em repouso (0,004 mm) e em 12 quadros de `idle` (0,005 mm) e de `run`
+    (0,005 mm). Os encaixes de Cabelo, Chapéu e Peito compõem as transformações do esqueleto com a pose de
+    repouso (`VillagerVisual.Socket`), então a escala se cancela.
+  - **Jogo (`Main.tscn`, 10 aldeões):** os 5 cabelos aparecem, visíveis, cobrindo o topo da cabeça (`head_end`
+    dentro da caixa do cabelo em todos); `Olhos` e `Boca` visíveis com o material do rosto; o piscar passa pelos
+    quadros 0, 1 e 2; todos em `idle` (o mapa não tem cabanas, então ninguém corre ali).
+  - **Biografia, "Os Segundos":** as 9 expressões trocam os quadros do atlas (distraído o0 b0, esforço o5 b3,
+    feliz o4 b1, sonolento o2 b0, dormindo o1 b6, espantado o3 b2, preocupado o6 b4, chorando o8 b4, bravo
+    o7 b5), com o piscar por cima; os botões `run` e `idle` trocam o clipe. Folha:
+    `docs/prints/aldeao_v2_normalizado_expressoes.png`.
+  - **`VelocidadeAldeao.tscn`:** abre igual (4 aldeões, rótulos, passadaRun 0,383, reprodução 1,49× / 2,09× /
+    2,61× / 3,13×). Print `docs/prints/aldeao_v2_normalizado_velocidades.png`.
+  - **Pés na velocidade base:** pelo método da arte (mediana da velocidade com que os dedos recuam no `run`,
+    medida no Godot), a passada é 0,400 m/s nos dois corpos, contra 0,383 no `rosto.json` (4%, amostragem
+    diferente). A normalização não muda nada. Observação para a arte: nos instantes em que a ponta do pé está
+    mais baixa, ela recua a 0,7–0,9 m/s no clipe a 1×, bem acima da passada; é uma propriedade do Run_02 (igual
+    antes e depois), não da normalização.
+  - **500 aldeões (FaceTestCrowd, 3840×2160, tela cheia, V-Sync desligado):** 92–103 FPS, contra 89 FPS no
+    diário. Ressalva: o Godot dizia que a janela estava sem foco (o `osascript` trouxe o processo para a frente,
+    mas o foco não foi confirmado). Print `docs/prints/aldeao_v2_normalizado_500.png`.
+  - **Crepúsculo:** `docs/prints/aldeao_v2_normalizado_zoom_padrao.png` (58 FPS com V-Sync) e
+    `aldeao_v2_normalizado_zoom_maximo.png` (145 FPS). **No zoom padrão o aldeão não some:** é a figura mais
+    clara da tela, azul-pálido sobre a clareira roxa escura, e cada um se distingue. O que não se lê nesse zoom
+    é o rosto e o formato do cabelo; no zoom máximo, os dois se leem. A pendência fica fechada.
+- **O que deu errado:**
+  - `editor_screenshot` do jogo falhou duas vezes no transporte; os quadros foram salvos por `game_eval`.
+  - A roda do mouse enviada por `Input.parse_input_event` não chegou ao `CameraRig`; o zoom máximo foi feito
+    chamando o `_unhandled_input` dele com o mesmo evento (distância 6,4 = 16 ÷ 2,5).
+  - Um `game_eval` longo passou de 8 s e deixou o jogo parado no depurador; outro quebrou porque o `game_eval`
+    indenta o código embutido. Solução: um script temporário na área de rascunho, carregado num nó.
+  - O Godot gerou `.import` e texturas extraídas em `assets/` para os arquivos novos da arte (prova de
+    operação, referências da protagonista v2). São do território da arte e ficaram **fora** deste commit, sem
+    versionar; a arte deve commitá-los na branch dela.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 18:40–18:47 de relógio.
