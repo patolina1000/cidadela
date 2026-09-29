@@ -2742,3 +2742,27 @@ onde errou, correções manuais e quanto tempo levou.
 - **rosto.json:** nada muda. `ossoCabeca` e `ossoPeito` são nomes; `passadaRun` (0,383 m/s) foi medida no mundo;
   o atlas é em pixels.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Aldeão v2: processo exporta normalizado (montar_rig + colocar_retalhos) e prova de reprodução
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** `montar_rig.py` e `colocar_retalhos.py` exportando já normalizados; rodar os dois do zero e provar
+  que reproduzem o arquivo normalizado (mesma diferença máxima).
+- **Feito:** os dois chamam `rig_lib.apply_armature_scale` antes de exportar (no `colocar_retalhos` não faz nada
+  se a entrada já vier em metros) e aceitam caminhos de saída opcionais (`montar_rig.py -- <saida>`, que então não
+  mexe no `rosto.json`; `colocar_retalhos.py -- <prévia> <entrada> <saida>`). Sem argumentos gravam no aprovado,
+  como antes. O `colocar_retalhos` usa as funções de folga do `rig_lib` (mesmo código).
+- **Resultado do zero (saídas temporárias; relatório `assets/modelos/aldeao_v2/aldeao_corpo_reproducao.json`):**
+  nó Armature sem escala; mesmos nomes; passada 0,383 m/s; folga dos retalhos 1,40 a 3,16 mm (igual); cabelos
+  0,0012 mm; corpo 0,0003 mm; Boca 0,0001 mm. **Olhos: 0,27 mm** em 21 dos 693 vértices, a coluna central inteira
+  do retalho (ângulo 0, sobre a costura da simetria em x = 0). Então a meta "mesma diferença máxima" (< 0,01 mm)
+  **não foi atingida** nesse retalho.
+- **Investigação:** duas execuções do zero saem idênticas byte a byte (o processo é determinístico); refazer o
+  retalho sobre o aprovado antigo, ainda em escala 0,004, dá a mesma diferença (0,2731 mm), então **não é da
+  normalização**. O aprovado foi gerado em 29/09 às ~02:57 com os mesmos scripts e entradas (nenhum mudou desde
+  então), mas a coluna central dele não sai igual hoje. A causa provável é o raio da coluna do meio, que cai
+  exatamente na aresta da costura e fica sensível a detalhes da malha de entrada; não achei qual. Efeito: 0,27 mm
+  num retalho a 1,4–3,2 mm da pele, invisível; a folga medida é a mesma.
+- **Não troquei o aprovado pelo refeito:** isso muda o arquivo aprovado em 0,27 mm e pede o aval do Arthur. Se
+  trocar, a partir daí o processo reproduz o aprovado byte a byte.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.

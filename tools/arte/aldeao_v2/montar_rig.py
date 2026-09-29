@@ -11,9 +11,12 @@ A Meshy não aceitou o GLB limpo ("Pose estimation failed"), então o rig foi fe
 5. Mede a passada do run (m/s: velocidade com que o pé de apoio recua, mediana; método do v1).
 6. rosto.json: ossoCabeca, ossoPeito, passadaRun. Exporta assets/modelos/aldeao_v2/aldeao_corpo.glb com o rig
    e os dois clipes (sem os retalhos do rosto ainda) e reimporta para conferir.
+7. Exporta NORMALIZADO (decisão de 29/09/2026): antes de exportar, a escala do objeto armature vai para os ossos,
+   a malha e as curvas de posição (rig_lib.apply_armature_scale); o nó Armature sai com escala 1, em metros.
 
 Uso:
-  /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/arte/aldeao_v2/montar_rig.py
+  /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/arte/aldeao_v2/montar_rig.py [-- <saida.glb>]
+  Com <saida.glb> (prova ou teste): grava lá, com o relatório ao lado, e não mexe no rosto.json.
 """
 
 import json
@@ -26,11 +29,13 @@ from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from corpo_lib import ROOT, ROSTO, import_glb, mesh_points, triangle_count  # noqa: E402
-from rig_lib import close_loop, loop_gap, measure_stride, normalize_rig, remove_root_motion, rest_points, transfer_weights  # noqa: E402
+from rig_lib import (apply_armature_scale, close_loop, loop_gap, measure_stride, normalize_rig, remove_root_motion,  # noqa: E402
+                     rest_points, transfer_weights)
 
 RIG_DIR = ROOT / "assets/conceitos/aldeao_v2/meshy/rig"
 CLEAN = ROOT / "assets/modelos/aldeao_v2/aldeao_corpo_limpo.glb"
-OUT = ROOT / "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+OUT = Path(ARGS[0]) if ARGS else ROOT / "assets/modelos/aldeao_v2/aldeao_corpo.glb"
 ANIM_SOURCE = RIG_DIR / "extras_14_243_252.glb"  # escolha de 29/09/2026: Idle_3 e Run_02
 CLIPS = {"Idle_3": "idle-loop", "Run_02": "run-loop"}
 HEAD_BONE, CHEST_BONE = "Head", "Spine02"
@@ -98,7 +103,9 @@ def main() -> None:
     rosto["ossoCabeca"] = HEAD_BONE
     rosto["ossoPeito"] = CHEST_BONE
     rosto["passadaRun"] = round(stride, 3)
-    (ROSTO / "rosto.json").write_text(json.dumps(rosto, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if not ARGS:
+        (ROSTO / "rosto.json").write_text(json.dumps(rosto, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    report["normalizacao"] = apply_armature_scale(armature, [clean])  # exporta sempre em metros
 
     # Cada clipe numa faixa da NLA (o exportador em modo ACTIONS não amostrava as ações com slot no Blender 5.1:
     # saíam só 2 quadros por canal). Sem otimização de tamanho, para manter todos os quadros.

@@ -5,8 +5,12 @@ padrão. Retalhos curvos a 1,5 mm da pele, UV 0..1, materiais "rosto_olhos" e "r
 misturado), peso 100% no osso "Head". Depois confere nos quadros do idle-loop e do run-loop a distância de cada
 vértice dos retalhos à pele (nunca negativa = nunca atravessa) e renderiza dois quadros.
 
+Exporta NORMALIZADO (decisão de 29/09/2026): Armature com escala 1, em metros (rig_lib.apply_armature_scale;
+sem efeito se a entrada já vier normalizada do montar_rig.py).
+
 Uso:
-  /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/arte/aldeao_v2/colocar_retalhos.py -- <pasta_previa>
+  /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/arte/aldeao_v2/colocar_retalhos.py -- <pasta_previa> [<entrada.glb> <saida.glb>]
+  Sem entrada e saída: lê e grava assets/modelos/aldeao_v2/aldeao_corpo.glb.
 """
 
 import json
@@ -16,14 +20,15 @@ from pathlib import Path
 import bpy
 import numpy as np
 from mathutils import Vector
-from mathutils.bvhtree import BVHTree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from corpo_lib import (EYES_FRAC, MOUTH_FRAC, ROOT, ROSTO, SKIN, face_patch, flat_material, game_camera_offset,  # noqa: E402
                        head_box, import_glb, load_rosto, set_cell, set_smooth, setup_scene, shoot, twilight_lights, window_rect)
-from rig_lib import play  # noqa: E402
+from rig_lib import apply_armature_scale, clearance, evaluated_points, play  # noqa: E402
 
-BODY = ROOT / "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+ARGS = sys.argv[sys.argv.index("--") + 1:]
+BODY_IN = Path(ARGS[1]) if len(ARGS) > 2 else ROOT / "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+BODY = Path(ARGS[2]) if len(ARGS) > 2 else BODY_IN
 PHI_MAX, RAISE_B, OFFSET = 45, 0.10, 0.002  # 2 mm: o máximo do contrato, para nunca atravessar
 RIGID_MARGIN = 0.015  # m: a pele até isso em volta das janelas passa a seguir só o osso Head
 HEAD_BONE = "Head"
@@ -84,44 +89,12 @@ def rigid_face(body, armature, windows):
     return changed
 
 
-def evaluated_points(obj):
-    dg = bpy.context.evaluated_depsgraph_get()
-    ev = obj.evaluated_get(dg)
-    m = ev.to_mesh()
-    pts = np.array([[p.x, p.y, p.z] for p in (obj.matrix_world @ v.co for v in m.vertices)])
-    ev.to_mesh_clear()
-    return pts
-
-
-def body_bvh(body):
-    dg = bpy.context.evaluated_depsgraph_get()
-    ev = body.evaluated_get(dg)
-    m = ev.to_mesh()
-    verts = [body.matrix_world @ v.co for v in m.vertices]
-    polys = [p.vertices[:] for p in m.polygons]
-    tree = BVHTree.FromPolygons(verts, polys)
-    normals = [(body.matrix_world.to_3x3() @ p.normal).normalized() for p in m.polygons]
-    ev.to_mesh_clear()
-    return tree, normals
-
-
-def clearance(body, patch):
-    """Distância com sinal (mm) de cada vértice do retalho à pele: negativo = dentro da pele."""
-    tree, normals = body_bvh(body)
-    out = []
-    for p in evaluated_points(patch):
-        loc, normal, index, dist = tree.find_nearest(Vector(p))
-        sign = 1 if (Vector(p) - loc).dot(normals[index]) >= 0 else -1
-        out.append(sign * dist * 1000)
-    return min(out), max(out)
-
-
 def main() -> None:
-    out = Path(sys.argv[sys.argv.index("--") + 1])
+    out = Path(ARGS[0])
     out.mkdir(parents=True, exist_ok=True)
     scene = setup_scene(512, transparent=False)
     twilight_lights(scene)
-    objs = import_glb(BODY)
+    objs = import_glb(BODY_IN)
     armature = next(o for o in objs if o.type == "ARMATURE")
     body = next(o for o in objs if o.type == "MESH")
     for o in objs:
@@ -183,6 +156,7 @@ def main() -> None:
     for t in ad.nla_tracks:
         t.mute = False
     scene.frame_set(0)
+    report["normalizacao"] = apply_armature_scale(armature, [body, eyes, mouth])  # exporta sempre em metros
     bpy.ops.object.select_all(action="DESELECT")
     for o in (armature, body, eyes, mouth):
         o.select_set(True)
