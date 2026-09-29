@@ -2766,3 +2766,25 @@ onde errou, correções manuais e quanto tempo levou.
 - **Não troquei o aprovado pelo refeito:** isso muda o arquivo aprovado em 0,27 mm e pede o aval do Arthur. Se
   trocar, a partir daí o processo reproduz o aprovado byte a byte.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Aldeão v2: regra de ergonomia (ergonomia.json) e script de medida reutilizável
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** `assets/modelos/aldeao_v2/ergonomia.json` com o que uma máquina precisa respeitar (alturas de peito,
+  ombros e quadril; alcance ombro-palma; avanço da barriga; distância mínima da alça aos ombros; maior raio de
+  manivela no peito em que as mãos fecham; nota do método) e o script de medida para qualquer corpo.
+- **Feito:** as funções de IK do `girar_roda.py` foram para `tools/arte/prova_operacao/operacao_lib.py`
+  (generalizadas: escala do mundo do armature, que inclui um nó pai; corpo achado sozinho). O `girar_roda.py`
+  usa a lib e, rodado numa pasta temporária sobre o corpo já normalizado, dá exatamente os números da prova (mesma
+  varredura, polos −180°/−45°, falta de 35,4 mm, 0,06 m). Script novo: `medir_ergonomia.py -- <corpo.glb> <saida.json>`
+  (a folga e a pegada da mão saem da espessura medida da mão; o polo escala com o alcance; varredura de raio a
+  cada 5 mm até o alcance). Testado na protagonista v1 (escala 0,0057 no mundo) só para ver que roda; saída
+  fora do repositório.
+- **Aldeão v2 (`ergonomia.json`):** altura 0,40; quadril 0,124; peito 0,194; ombros 0,213; alcance ombro-palma
+  0,1228 / 0,1225 (esq./dir.); barriga avança 64 mm à frente dos ombros (66 mm à frente do pivô, a 0,137 m);
+  distância mínima da manopla aos ombros 0,099 m no raio recomendado (0,102 m no raio 0,10); raio máximo no
+  peito: **0,06 m recomendado** (falta 0,1 mm). O limite de 5 mm da prova vai até 0,065 m com passo de 5 mm, mas ali a
+  mão já fica 3,7 mm fora, por isso o JSON traz os dois números e recomenda 0,06.
+- **Observação para a protagonista:** na v1, o cabelo longo preso aos ossos do tronco entra na medida da "barriga";
+  na v2 vale conferir isso quando o corpo existir.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.

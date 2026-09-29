@@ -30,11 +30,15 @@ from pathlib import Path
 import bmesh
 import bpy
 import numpy as np
-from mathutils import Matrix, Quaternion, Vector
+from mathutils import Matrix, Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "aldeao_v2"))
 from corpo_lib import ROOT, import_glb  # noqa: E402
 from rig_lib import action_fcurves, close_loop, loop_gap  # noqa: E402
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from operacao_lib import (CHAIN, calibrate_poles, evaluate, fix_lengths, front_profile, grip_distance, handle_center,  # noqa: E402
+                          palm, setup_ik, spine_pose, set_targets)
 
 ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 SRC = ROOT / "assets/modelos/aldeao_v2/aldeao_corpo.glb"
@@ -49,14 +53,12 @@ CLIP_NAME = "girar_roda-loop"
 FPS, FRAMES = 24, 48  # 1 volta = 2 s
 RADIUS = float(ARGS[0]) if ARGS else 0.10  # pedido: 0,10
 AXIS_Z = 0.19  # peito: entre Spine01 (0,180) e Spine (0,209)
-GRIP_HALF = 0.018  # cada mão de um lado da manopla
+GRIP_HALF = 0.018  # cada mão de um lado da manopla (= operacao_lib.GRIP_HALF)
 KNOB_R, KNOB_LEN, STEM_R, STEM_LEN = 0.012, 0.03, 0.006, 0.05
 WHEEL_R, WHEEL_T, AXLE_R, AXLE_LEN = 0.125, 0.02, 0.012, 0.05
 HAND_CLEAR = 0.032  # manopla (12 mm) + espessura da mão (~20 mm) na frente do corpo
 COUNT_AT = 0.5  # a volta conta quando a alça A passa embaixo (fim da empurrada)
-LEAN0, LEAN1, TWIST, BEND = 4.0, 8.0, 8.0, 4.0  # graus
 SWEEP = (0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.10)
-CHAIN = ("Arm", "ForeArm", "Hand")
 WOOD, IRON = "#4A3B3A", "#66636B"
 
 
@@ -64,166 +66,6 @@ def hex_linear(h):
     h = h.lstrip("#")
     c = [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)]
     return tuple(v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4 for v in c) + (1.0,)
-
-
-# ---------- esqueleto ----------
-
-def fix_lengths(arm, body) -> dict:
-    """Comprimento real nos ossos do braço (direção e rolagem intactas). Devolve a diferença das matrizes."""
-    s = arm.scale[0]
-    names = [g.name for g in body.vertex_groups]
-    palms = {}
-    for side in ("Left", "Right"):
-        pts = [body.matrix_world @ v.co for v in body.data.vertices
-               if v.groups and names[max(v.groups, key=lambda g: g.weight).group] == f"{side}Hand"]
-        palms[side] = sum(pts, Vector()) / len(pts)
-    before = {b.name: b.matrix_local.copy() for b in arm.data.bones}
-    bpy.context.view_layer.objects.active = arm
-    bpy.ops.object.mode_set(mode="EDIT")
-    eb = arm.data.edit_bones
-    lengths = {}
-    for side in ("Left", "Right"):
-        for bone, child in ((f"{side}Arm", f"{side}ForeArm"), (f"{side}ForeArm", f"{side}Hand")):
-            eb[bone].length = (eb[child].head - eb[bone].head).length
-            lengths[bone] = eb[bone].length * s
-        hand = eb[f"{side}Hand"]
-        y = (hand.tail - hand.head).normalized()
-        palm_local = arm.matrix_world.inverted() @ palms[side]
-        hand.length = (palm_local - hand.head).dot(y)
-        lengths[f"{side}Hand"] = hand.length * s
-    for name in ("Spine02", "Spine01"):  # coluna curta, para o giro por matriz não depender da ponta
-        eb[name].length = (eb["Spine01" if name == "Spine02" else "Spine"].head - eb[name].head).length
-    bpy.ops.object.mode_set(mode="OBJECT")
-    diff_rot = max(math.degrees(before[b.name].to_quaternion().rotation_difference(b.matrix_local.to_quaternion()).angle % 360)
-                   for b in arm.data.bones)
-    diff_rot = min(diff_rot, 360 - diff_rot)
-    diff_pos = max((before[b.name].to_translation() - b.matrix_local.to_translation()).length * s for b in arm.data.bones)
-    return {"comprimentos_m": {k: round(v, 4) for k, v in lengths.items()},
-            "repouso_dif_rotacao_graus": round(diff_rot, 6), "repouso_dif_posicao_mm": round(diff_pos * 1000, 6)}
-
-
-def empty(name, loc=(0, 0, 0)):
-    e = bpy.data.objects.new(name, None)
-    e.location = loc
-    bpy.context.scene.collection.objects.link(e)
-    return e
-
-
-def setup_ik(arm):
-    targets, poles = {}, {}
-    mw = arm.matrix_world
-    for side, out in (("Left", 1), ("Right", -1)):
-        elbow = mw @ arm.data.bones[f"{side}ForeArm"].head_local
-        targets[side] = empty(f"alvo_{side}")
-        poles[side] = empty(f"polo_{side}", elbow + Vector((0.06 * out, 0.03, -0.04)))
-        pb = arm.pose.bones[f"{side}Hand"]
-        c = pb.constraints.new("IK")
-        c.target = targets[side]
-        c.pole_target = poles[side]
-        c.chain_count = 3
-        c.use_tail = True
-        c.use_stretch = False
-        c.iterations = 500
-        pb.ik_stiffness_x = pb.ik_stiffness_y = pb.ik_stiffness_z = 0.5
-        for b in CHAIN:
-            arm.pose.bones[f"{side}{b}"].ik_stretch = 0.0
-    return targets, poles
-
-
-def palm(arm, side) -> Vector:
-    return arm.matrix_world @ arm.pose.bones[f"{side}Hand"].tail
-
-
-# ---------- roda e alvos ----------
-
-def front_profile(body, arm) -> list:
-    """(z, y mínimo) da frente do corpo sem os braços, |x| < 5 cm, fatias de 1 cm."""
-    names = [g.name for g in body.vertex_groups]
-    arms = {f"{s}{b}" for s in ("Left", "Right") for b in CHAIN}
-    pts = np.array([(body.matrix_world @ v.co)[:] for v in body.data.vertices
-                    if v.groups and names[max(v.groups, key=lambda g: g.weight).group] not in arms])
-    prof = []
-    for z in np.arange(0.0, 0.42, 0.01):
-        sel = pts[(np.abs(pts[:, 2] - z) < 0.006) & (np.abs(pts[:, 0]) < 0.05)]
-        if len(sel):
-            prof.append((float(z), float(sel[:, 1].min())))
-    return prof
-
-
-def grip_distance(prof, radius) -> float:
-    """Distância (m, para -Y) do plano das manoplas: livre da barriga e da cabeça em toda a altura do círculo."""
-    lo, hi = AXIS_Z - radius - KNOB_R - 0.01, AXIS_Z + radius + KNOB_R + 0.01
-    return max(-y for z, y in prof if lo <= z <= hi) + HAND_CLEAR
-
-
-def handle_center(phase, radius, dist) -> Vector:
-    """Manopla da alça A no espaço do aldeão (Blender: frente -Y, direita -X). Fase 0 no topo, depois à direita."""
-    a = 2 * math.pi * phase
-    return Vector((-radius * math.sin(a), -dist, AXIS_Z + radius * math.cos(a)))
-
-
-def spine_pose(arm, phase, radius):
-    """Tronco: inclina para a frente (mais com a alça embaixo), gira e flexiona para o lado da alça. Metade em
-    Spine02 e metade em Spine01, aplicada no espaço do armature (sem rotação: eixos = mundo)."""
-    a = 2 * math.pi * phase
-    side = -math.sin(a)  # +1 com a alça à esquerda dele (+X), -1 à direita (-X)
-    lean = math.radians(LEAN0 + LEAN1 * (1 - math.cos(a)) / 2)  # +X: o alto vai para a frente (-Y)
-    twist = math.radians(TWIST) * side  # +Z: a frente vira para +X
-    bend = math.radians(BEND) * side  # +Y: o alto vai para +X
-    rot = Matrix.Rotation(twist, 3, "Z") @ Matrix.Rotation(bend, 3, "Y") @ Matrix.Rotation(lean, 3, "X")
-    half = Quaternion((1, 0, 0, 0)).slerp(rot.to_quaternion(), 0.5).to_matrix().to_4x4()
-    for name in ("Spine02", "Spine01"):
-        arm.pose.bones[name].rotation_quaternion = (1, 0, 0, 0)
-    bpy.context.view_layer.update()
-    for name in ("Spine02", "Spine01"):
-        pb = arm.pose.bones[name]
-        m = pb.matrix.copy()
-        head = m.to_translation()
-        pb.matrix = Matrix.Translation(head) @ half @ Matrix.Translation(-head) @ m
-        bpy.context.view_layer.update()
-
-
-def set_targets(targets, phase, radius, dist):
-    c = handle_center(phase, radius, dist)
-    targets["Left"].location = c + Vector((GRIP_HALF, 0, 0))
-    targets["Right"].location = c - Vector((GRIP_HALF, 0, 0))
-
-
-def misses(arm, targets) -> dict:
-    return {s: (palm(arm, s) - targets[s].matrix_world.to_translation()).length for s in ("Left", "Right")}
-
-
-def evaluate(arm, targets, radius, dist, phases) -> list:
-    rows = []
-    for p in phases:
-        spine_pose(arm, p, radius)
-        set_targets(targets, p, radius, dist)
-        bpy.context.view_layer.update()
-        m = misses(arm, targets)
-        rows.append({"fase": round(p, 4), "falta_esq_mm": round(m["Left"] * 1000, 1), "falta_dir_mm": round(m["Right"] * 1000, 1)})
-    return rows
-
-
-def calibrate_poles(arm, targets, poles, dist) -> dict:
-    """Ângulo do polo por lado: o que deixa o cotovelo mais perto do objeto-polo em quatro fases."""
-    chosen = {}
-    for side in ("Left", "Right"):
-        c = arm.pose.bones[f"{side}Hand"].constraints[0]
-        best = None
-        for ang in (-180, -135, -90, -45, 0, 45, 90, 135):
-            c.pole_angle = math.radians(ang)
-            score = 0.0
-            for p in (0, 0.25, 0.5, 0.75):
-                spine_pose(arm, p, RADIUS)
-                set_targets(targets, p, RADIUS, dist)
-                bpy.context.view_layer.update()
-                elbow = arm.matrix_world @ arm.pose.bones[f"{side}ForeArm"].head
-                score += (elbow - poles[side].location).length + 3 * misses(arm, targets)[side]
-            if best is None or score < best[0]:
-                best = (score, ang)
-        c.pole_angle = math.radians(best[1])
-        chosen[side] = best[1]
-    return chosen
 
 
 # ---------- roda ----------
@@ -268,7 +110,7 @@ def main() -> None:
     arm.data.pose_position = "REST"
     bpy.context.view_layer.update()
     report = {"esqueleto": fix_lengths(arm, body)}
-    prof = front_profile(body, arm)
+    prof = front_profile(body)
     arm.data.pose_position = "POSE"
     for pb in arm.pose.bones:
         pb.rotation_mode = "QUATERNION"
@@ -281,15 +123,15 @@ def main() -> None:
                                        for s in ("Left", "Right")}
 
     targets, poles = setup_ik(arm)
-    dist = grip_distance(prof, RADIUS)
-    report["poles_graus"] = calibrate_poles(arm, targets, poles, dist)
+    dist = grip_distance(prof, RADIUS, AXIS_Z, HAND_CLEAR)
+    report["poles_graus"] = calibrate_poles(arm, targets, poles, RADIUS, dist, AXIS_Z)
 
     # Varredura do raio.
     phases16 = [i / 16 for i in range(16)]
     sweep = {}
     for r in SWEEP:
-        d = grip_distance(prof, r)
-        rows = evaluate(arm, targets, r, d, phases16)
+        d = grip_distance(prof, r, AXIS_Z, HAND_CLEAR)
+        rows = evaluate(arm, targets, r, d, AXIS_Z, phases16)
         sweep[f"{r:.2f}"] = {"distancia_manopla_m": round(d, 4),
                              "falta_max_mm": max(max(x["falta_esq_mm"], x["falta_dir_mm"]) for x in rows)}
     report["varredura_raio"] = sweep
@@ -303,10 +145,10 @@ def main() -> None:
         frame = 1 + i
         p = (i % FRAMES) / FRAMES
         scene.frame_set(frame)
-        spine_pose(arm, p, RADIUS)
+        spine_pose(arm, p)
         for name in ("Spine02", "Spine01"):
             arm.pose.bones[name].keyframe_insert("rotation_quaternion", frame=frame)
-        set_targets(targets, p, RADIUS, dist)
+        set_targets(targets, p, RADIUS, dist, AXIS_Z)
         for t in targets.values():
             t.keyframe_insert("location", frame=frame)
     scene.frame_start, scene.frame_end = 1, FRAMES + 1
@@ -324,7 +166,7 @@ def main() -> None:
     for i in range(FRAMES):
         scene.frame_set(1 + i)
         p = i / FRAMES
-        c = handle_center(p, RADIUS, dist)
+        c = handle_center(p, RADIUS, dist, AXIS_Z)
         tl, tr = c + Vector((GRIP_HALF, 0, 0)), c - Vector((GRIP_HALF, 0, 0))
         per_frame.append({"quadro": 1 + i, "fase": round(p, 4),
                           "falta_esq_mm": round((palm(arm, "Left") - tl).length * 1000, 1),
@@ -381,7 +223,7 @@ def main() -> None:
     check = 0.0
     for p in (0, 0.125, 0.25, 0.6):
         m = Matrix.Translation(center) @ Matrix.Rotation(math.pi, 4, "Z") @ Matrix.Rotation(2 * math.pi * p, 4, "Y")
-        check = max(check, (m @ Vector((0, -knob_y, RADIUS)) - handle_center(p, RADIUS, dist)).length)
+        check = max(check, (m @ Vector((0, -knob_y, RADIUS)) - handle_center(p, RADIUS, dist, AXIS_Z)).length)
     assert check < 1e-6, check
 
     clips = {CLIP_NAME: {
