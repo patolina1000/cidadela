@@ -2976,3 +2976,29 @@ onde errou, correções manuais e quanto tempo levou.
     ligados pela API (`gh api -X PATCH`); conferido depois: os dois "enabled".
 - **Correções manuais:** nenhuma.
 - **Tempo:** 16:50–16:58 de relógio.
+
+---
+
+## 2026-09-29 — Cena de comparação de velocidades do aldeão v2 (VelocidadeAldeao.tscn)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`.
+- **Pedido:** em vez de decidir a velocidade pelo número, ver: `scenes/tests/VelocidadeAldeao.tscn` no
+  crepúsculo com 4 aldeões v2 correndo em círculo lado a lado, um por velocidade (0,57 / 0,8 / 1,0 / 1,2
+  células/s), com a reprodução do run acompanhando a velocidade (os pés nunca deslizam) e um rótulo com os
+  números sobre cada um; câmera no zoom padrão com a roda para aproximar. Não mudar a velocidade do jogo.
+- **O que foi feito:**
+  - `VillagerVisual.ClampAnimationSpeed` (padrão ligado: a regra 1,0×–1,5× continua no jogo); a cena desliga
+    para a reprodução ser exatamente velocidade ÷ passadaRun.
+  - `src/View/VelocidadeAldeaoRoot.cs` + a cena com o mesmo céu, névoa e sol do jogo: chão roxo, grama, quatro
+    círculos de raio 1,5 células espaçados 5 células, cada aldeão com um cabelo e tom; `Label3D` sobre cada um
+    com "0,57 células/s / 1,49× o run" etc. (calculado com a passadaRun 0,383 do rosto.json: 1,49×, 2,09×,
+    2,61×, 3,13×); câmera a 55° e 16 unidades (zoom padrão do jogo), roda com passo 1,1 entre 0,4 e 2,5;
+    Esc volta ao menu. `data/villagers.json` intocado.
+  - Conferido pelo binário do Godot (o editor estava fechado) gravando quadros com `--write-movie`: os quatro
+    correm, rótulos legíveis, sem erro (só o aviso normal da regra de velocidade). `dotnet build`: 0 erros,
+    0 avisos. Sem mudança na simulação.
+- **Para o humano:** abrir `scenes/tests/VelocidadeAldeao.tscn` e rodar (F6 no editor com a cena aberta, ou
+  pelo MCP). A escolha vira o `speed` de `data/villagers.json` e, se ficar acima de 1,5×, a regra de
+  velocidade precisa ser revista (ou a passada refeita pela arte).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 16:58–17:08 de relógio.

@@ -40,6 +40,12 @@ public partial class VillagerVisual : Node3D
     /// <summary>Clipe forçado em 1× (palco da Biografia); null = pelo estado da simulação.</summary>
     public string? PreviewClip { get; set; }
 
+    /// <summary>
+    /// Prende a reprodução do run entre 1,0× e 1,5× (regra de velocidade). A cena de comparação de velocidades
+    /// desliga isto para a reprodução acompanhar a velocidade sem teto, e os pés nunca deslizarem.
+    /// </summary>
+    public bool ClampAnimationSpeed { get; set; } = true;
+
     /// <summary>Encaixe "Cabelo" (espaço do corpo em pose de repouso, preso ao osso da cabeça).</summary>
     public Node3D? HairSocket { get; private set; }
     /// <summary>Encaixe "Chapéu", mesmo espaço do cabelo.</summary>
@@ -316,7 +322,10 @@ public partial class VillagerVisual : Node3D
         // Clipe de movimento no ritmo da velocidade real ÷ passada, preso entre 1,0× e 1,5×; os outros em 1×.
         float targetScale = 1f;
         if (PreviewClip is null && clip is "run" or "carry" && _runStride > 0f && dt > 0f)
-            targetScale = Mathf.Clamp(walked / dt / _runStride, MinAnimationSpeed, MaxAnimationSpeed);
+        {
+            float ratio = walked / dt / _runStride;
+            targetScale = ClampAnimationSpeed ? Mathf.Clamp(ratio, MinAnimationSpeed, MaxAnimationSpeed) : Mathf.Max(ratio, 0.01f);
+        }
         if (data is not null)
             VillagerLooks.CheckSpeedRule(data.Villagers.CellsPerSecond);
         _animations.SpeedScale = Mathf.Lerp(_animations.SpeedScale, targetScale, 1f - Mathf.Exp(-StrideSmoothing * dt));
