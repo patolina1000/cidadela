@@ -3469,4 +3469,25 @@ onde errou, correções manuais e quanto tempo levou.
   - A primeira versão contou um golpe a mais no começo (contagem sem valor inicial); corrigida.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 116 aprovados (simulação intocada).
 - **Correções manuais:** nenhuma.
-- **Tempo:** 18:47–19:00 de relógio.
+- **Tempo:** 18:47–18:58 de relógio.
+
+---
+
+## 2026-09-29 — Documento da prova de operação (`docs/prova_operacao.md`)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** escrever o que a prova mostrou, o que a animação dos dois personagens vai precisar (posicionar por
+  fase, eventos de golpe, reações curtas, camadas por parte do corpo, clipes de arquivos separados), o que a
+  simulação vai precisar (operar, ferido, esperando; postos independentes e acoplados; trabalho por golpe) e a
+  regra de ergonomia. Só escrever.
+- **O que foi feito:** `docs/prova_operacao.md` com cinco seções: resultados com números, as cinco necessidades
+  da animação (três já existem na prova), a proposta para a simulação (fase da máquina em ticks, postos, estados,
+  trabalho por golpe), a regra de ergonomia (`ergonomia.json`: eixo no peito a 0,194 m, raio até 0,06 m; a
+  protagonista terá o dela, medido no corpo v2, sem escalar o do aldeão) e as pendências para a arte. A regra
+  provisória do aldeão B (0,5 − t) e a regra final (um clipe por posto, por IK) ficaram registradas.
+  Também corrigi o horário da entrada anterior (terminou às 18:58, não 19:00).
+- **Escolhas minhas, marcadas no documento:** "esperando" com a expressão "preocupado"; velocidade da máquina
+  acoplada igual acima do mínimo (veio desta prova, a confirmar no balanceamento).
+- **O que deu errado:** nada.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 18:58–19:03 de relógio.
