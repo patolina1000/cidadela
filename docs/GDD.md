@@ -1,6 +1,6 @@
 # GDD — Jogo de Automação Medieval com Defesa de Hordas
 
-Exportado do Claude Docs em 26/09/2026. A versão oficial (viva) está no claude.ai; reexporte quando ela mudar.
+Exportado do Claude Docs em 29/09/2026. A versão oficial (viva) está no claude.ai; reexporte quando ela mudar.
 
 ## 1. Visão geral
 
