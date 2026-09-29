@@ -1,0 +1,95 @@
+{
+  "cabelo": 2,
+  "fonte": "assets/conceitos/aldeao_v2/meshy/cabelos/cabelo_2_1.glb",
+  "cabeca_corpo": {
+    "centro": [
+      -0.0,
+      0.0048,
+      0.3086
+    ],
+    "raios_mm": [
+      79.1,
+      80.0,
+      92.8
+    ]
+  },
+  "vertices_fundidos": [
+    3240,
+    1547
+  ],
+  "modelo_meshy": {
+    "triangulos": 3089,
+    "caixa": [
+      1.9015,
+      1.7947,
+      1.7724
+    ]
+  },
+  "cabeca_folha": {
+    "centro": [
+      -0.0003,
+      -0.12,
+      0.0428
+    ],
+    "escala_xy": 9.0142,
+    "escala_z": 7.927,
+    "rms": 0.1334,
+    "pontos_rosto": 132,
+    "altura_cabeca_estimada": 1.4711,
+    "altura_modelo": 1.7724
+  },
+  "peruca_no_corpo_caixa": [
+    [
+      -0.105,
+      -0.082,
+      0.191
+    ],
+    [
+      0.105,
+      0.117,
+      0.415
+    ]
+  ],
+  "distancia_faces_mm": {
+    "min": -4.2,
+    "mediana": 21.5,
+    "max": 40.7,
+    "fracao_rosto": 0.183
+  },
+  "faces_cabeca_removidas": 564,
+  "faces_pescoco_removidas": 28,
+  "pedacos": {
+    "total": 9,
+    "removidos_faces": 45
+  },
+  "faces_franja_removidas": 65,
+  "empurrados": {
+    "corpo": 33,
+    "retalho_olhos": 36
+  },
+  "triangulos": {
+    "cabelo_antes": 2387,
+    "final": 759
+  },
+  "saida": "assets/modelos/aldeao_v2/cabelos/cabelo_2.glb",
+  "folga_mm": {
+    "repouso": {
+      "corpo": 0.95,
+      "corpo_z_do_pior": 0.368,
+      "olhos": 2.45,
+      "vertices_na_frente_dos_olhos": 18
+    },
+    "idle-loop": {
+      "corpo": 1.23,
+      "corpo_z_do_pior": 0.362,
+      "atras_da_cabeca": 1.86,
+      "olhos": "igual ao repouso (r\u00edgidos no mesmo osso)"
+    },
+    "run-loop": {
+      "corpo": -21.74,
+      "corpo_z_do_pior": 0.185,
+      "atras_da_cabeca": 35.38,
+      "olhos": "igual ao repouso (r\u00edgidos no mesmo osso)"
+    }
+  }
+}

@@ -2509,3 +2509,14 @@ onde errou, correções manuais e quanto tempo levou.
 - **Plano:** `PLANO_CABELOS.md` ganhou a seção de problemas conhecidos (pontas nos ombros/braços na corrida,
   aceito; rever no zoom máximo; âncoras por folha; vértices duplicados).
 - **Créditos:** 20. **Tempo:** ~30 min.
+
+## 2026-09-29 — Aldeão v2, passo 12b: cabelo 2 (chanel com franja de lado), 20 créditos
+
+- **Cabelo 2:** 1 geração (saldo 2.358 → 2.338); 3.240 vértices fundidos em 1.547; rosto 18% (564 + 28 do
+  pescoço); 9 pedaços (45 faces soltas fora); **65 faces de franja apagadas** abaixo da linha do centro dos olhos
+  (sobra a franja sobre a metade de cima de um olho; o outro fica livre); 36 vértices empurrados a 2,5 mm do
+  retalho; 2.387 → **759 triângulos**. Folga: repouso 0,95 mm do corpo e **2,45 mm do retalho dos olhos**; idle
+  1,2 mm; run -21,7 mm nos ombros (z 0,185; problema conhecido, aceito). Prévia `cabelo_2_previa.png`.
+- **Ajuste comum:** a folga-alvo ao retalho subiu de 2,0 para 2,5 mm porque a decimação move os vértices depois
+  do empurrão (o cabelo 1 ficava em 1,5 mm; refeito: 2,27 mm; o 4 será refeito no fim com os demais).
+- **Créditos:** 20. **Tempo:** ~20 min.

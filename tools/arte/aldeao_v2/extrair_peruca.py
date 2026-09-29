@@ -39,7 +39,7 @@ HAIR_COLOR = (0.294, 0.353, 0.412, 1.0)  # #4B5A69
 MAX_TRIS = 800
 DIHEDRAL_DEG = 32  # aresta mais viva que isso separa rosto de cabelo (linha do cabelo, franja)
 LOOSE_GUARD = 0.025  # m: o rosto crescido nunca sai mais que isso do elipsoide da cabeça
-CLEARANCE, PATCH_CLEARANCE = 0.0015, 0.002  # m
+CLEARANCE, PATCH_CLEARANCE = 0.0015, 0.0025  # m (retalho: 2,5 mm de alvo para sobrar >= 2 mm depois da decimação)
 HEAD_BONE = "Head"
 CHECK_POINTS = 5
 # (largura da cabeça / largura da silhueta, altura da cabeça / altura da silhueta, topo da cabeça abaixo do topo da

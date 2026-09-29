@@ -65,7 +65,7 @@
   "faces_franja_removidas": 22,
   "empurrados": {
     "corpo": 30,
-    "retalho_olhos": 74
+    "retalho_olhos": 82
   },
   "triangulos": {
     "cabelo_antes": 2430,
@@ -76,12 +76,12 @@
     "repouso": {
       "corpo": 1.5,
       "corpo_z_do_pior": 0.343,
-      "olhos": 1.52,
+      "olhos": 2.27,
       "vertices_na_frente_dos_olhos": 32
     },
     "idle-loop": {
-      "corpo": 1.59,
-      "corpo_z_do_pior": 0.354,
+      "corpo": 1.78,
+      "corpo_z_do_pior": 0.337,
       "atras_da_cabeca": 8.29,
       "olhos": "igual ao repouso (r\u00edgidos no mesmo osso)"
     },
