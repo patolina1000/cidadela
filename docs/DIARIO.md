@@ -2146,3 +2146,35 @@ onde errou, correções manuais e quanto tempo levou.
   nítida menor, bolsa como crescente em vez de elipse cheia); o risco da lágrima serpenteava (ondulação de 2,5 px
   para 0,7 px, mais comprido e quase vertical).
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.
+
+## 2026-09-29 — Aldeão v2: atlas de expressões na direção A1 "Fundos" (aprovada), com três prévias
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** direção A1 aprovada; refazer o atlas inteiro nesse estilo com metas de silhueta por expressão
+  (reconhecível a 48 px só pelas pálpebras e olheira), boca como variações da dobra fina (dentinhos com traço
+  fino, nada de bloco preto), sombreado sem direção de luz, célula dos olhos contendo a olheira inteira com
+  desfoque, bordas em alfa suave. Entregar `olhos.png`, `boca.png`, `rosto.json` (formato do contrato, mapa das 9)
+  e três prévias; nomes de quadros mantidos.
+- **Feito (`tools/arte/aldeao_v2/desenhar_rosto.py`, reescrito):** desenho em 6x num rosto de referência de 256 px
+  e recorte de duas janelas: olhos (24, 78)–(232, 208) → célula **512×320** (8:5; a de 2:1 não cabia a olheira
+  com desfoque nem a lágrima), boca (110, 170)–(174, 202) → célula 256×128 (2:1). Margem de 16 px conferida por
+  célula (a lágrima estourou na primeira rodada; encurtada para 40 px). Olhos 3×3, boca 4×2. Silhuetas: aberto
+  cobre 1/3 (mais por fora); meio_fechado 2/3 com a pupila meio escondida; fechado só a linha dos cílios grossa
+  curvada para baixo; feliz com a pálpebra de baixo subindo 44% e a de cima leve (meia-lua deitada, linha de
+  baixo mais forte para a silhueta); bravo reta e dura cobrindo metade, inclinada para o nariz; arregalado com
+  o olho redondo (forma própria) e pupilas de 3 px; preocupado reto, canto interno mais alto, pálpebra de baixo
+  um pouco erguida; apertado com as duas pálpebras fechando numa fenda; lagrima = preocupado + risco grosso
+  (6,5 px afinando, #2B2140 com miolo em tinta) da olheira até a bochecha, mais curto no outro olho. Bocas: dobra
+  fina fraca (entreaberta), dobra alongada com um canto subindo (sorriso), oval pequeno torto com o interior
+  escuro (o), dobra apertada com três dentinhos de traço fino (tensa), dobra funda com cantos para baixo
+  (triste), dobra entreaberta escura com dentinhos (brava), dobra frouxa com um respiro escuro (dormindo).
+  As prévias montam o rosto a partir das CÉLULAS do atlas (não do desenho direto), então conferem o recorte.
+- **rosto.json:** `olhos` 3×3 de [512, 320], `boca` 4×2 de [256, 128], `margemPx` 16, quadros com os índices
+  já definidos, `ossoCabeca` e `passadaWalk` vazios até o corpo, `expressoes` com as 9 (chave extra proposta).
+  As janelas do rosto (onde cada retalho fica na cabeça) estão no script, para o passo dos planos do corpo.
+- **Prévias:** `assets/previews/aldeao_v2/expressoes.png` (9 sobre a esfera, 256 e 48 px),
+  `expressoes_48px_crepusculo.png` (9 a 48 px × #6A5B7C, sem legenda), `piscar.png` (aberto → meio_fechado →
+  fechado → meio_fechado → aberto).
+- **O que ainda pode confundir a 48 px:** esforço, sonolento e bravo são três fendas; a diferença é a posição da
+  fenda (meio, baixo, inclinada). Preocupado e chorando só se distinguem pelo risco da lágrima, de propósito.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
