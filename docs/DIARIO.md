@@ -1935,3 +1935,72 @@ onde errou, correções manuais e quanto tempo levou.
   frente da bochecha. O olho de trás, a 3/4, fica cortado pela silhueta da cabeça (é plano curvo na pele).
 - **Créditos:** 0.
 - **Correções manuais:** nenhuma.
+
+---
+
+## 2026-09-29 — Aldeão v2: preparação (merge, GDD, lista de remoção do v1 e plano do pipeline)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`, sessão nova.
+- **Pedido:** 1) `git merge master`, reexportar o GDD vivo e ler `docs/ESTADO_DO_PROJETO.md`; 2) listar (sem apagar)
+  tudo do aldeão antigo na branch `arte`, separando as ferramentas genéricas do pipeline; 3) preparar o pipeline
+  para o aldeão v2 (folhas técnicas: corpo careca sem rosto + 5 perucas em `assets/conceitos/aldeao_v2/`) com
+  passo a passo e custo, sem gerar nada.
+- **O que o repositório mostrava (diferente do pedido):**
+  - `master` e `arte` estão no mesmo commit (`89736ff`): o merge não trouxe nada. Não existe a tag
+    `aldeao-v1-arquivado` nem o arquivo `docs/ESTADO_DO_PROJETO.md`; o checkout principal só tem `.import`
+    modificados. Ou o outro agente ainda não commitou, ou trabalhou em outra cópia.
+  - Criei a tag `aldeao-v1-arquivado` em `89736ff` (o último estado com o aldeão v1 inteiro) para servir de
+    arquivo antes da remoção. Se o outro agente criar a dele, uma das duas some.
+  - O código do jogo ainda usa o aldeão v1: `src/View/VillagerVisual.cs` (`assets/modelos/aldeao_base/`),
+    `src/View/VillagerLooks.cs` (`assets/modelos/aldeao_cabelos/`, `assets/texturas/aldeao/expressoes.png`),
+    `data/villager_looks.json`, `data/head_pieces.json` e `data/biography.json`. Apagar os assets sem a mudança de
+    código deixa o aldeão sem modelo no jogo; a remoção só deve ir para a `master` junto com essa mudança, ou o v2
+    deve manter os mesmos caminhos (recomendado, ver plano).
+- **GDD:** exportado do Claude Docs (rev 89, 68 KB): idêntico ao `docs/GDD.md` local, só a data do cabeçalho mudou.
+  Nada no GDD fala do v2 ainda; a direção de arte do aldeão continua a de "Aldeão: implementação v1".
+- **Lista de remoção do aldeão v1 (aguardando aprovação; nada foi apagado):**
+  - Conceitos: `assets/conceitos/aldeao/` inteira (folha, careca, cabelos, expressões e `vistas/` com 12 recortes).
+  - Modelos: `assets/modelos/aldeao_base/`, `aldeao_cabelos/`, `aldeao_curto_baguncado/`, `aldeao_medio_franja/`,
+    `aldeao_ondulado/`, `aldeao_longo_liso/`, `aldeao_rabo_cavalo/` (GLB, JSON, texturas e `.import`). As pastas
+    `bruto/` dentro delas (~125 MB) estão fora do git: a tag não as guarda; os brutos da Meshy expiram em 3 dias lá.
+  - Texturas: `assets/texturas/aldeao/expressoes.png` (atlas recortado do conceito, substituído pelos planos).
+  - Prévias: `assets/previews/aldeao_expressoes.png`, `aldeoes.png`, `aldeoes_modular.png`, `aldeoes_correcao.png`,
+    `aldeoes_correcao2.png`, `aldeoes_acabamento.png`, `expressoes_tracos.png`, `rosto_v3.png`.
+  - Ferramentas só do v1: `tools/meshy_pipeline/villager_views.py` (recortes das 5 variações do conceito),
+    `villager_faces.py` (atlas de expressões do conceito), `hair_pieces.py` (perucas por Image to Image: as folhas
+    novas já trazem as perucas prontas), `tools/blender/extract_hair.py` (cabelo recortado das variações,
+    substituído pelas perucas); estado `hair_state.json` e as entradas `aldeao_*` do `state.json` (fora do git).
+  - `tools/assets.json`: as 6 entradas `aldeao_base`, `aldeao_curto_baguncado`, `aldeao_medio_franja`,
+    `aldeao_ondulado`, `aldeao_longo_liso`, `aldeao_rabo_cavalo` e a parte do `_comentario` sobre o v1.
+- **O que fica (genérico ou reaproveitável no v2):**
+  - Meshy: `pipeline.py` (gera, faz rig, anima, baixa), `textures.py`, `crop_concept.py` (recorte de vistas),
+    `compare_sheet.py`, `label_sheet.py`, `face_sprites.py` (folhas de olhos e bocas por código, 0 créditos) e as
+    folhas `assets/texturas/aldeao/olhos.*` e `bocas.*` que ele gera.
+  - Blender: `normalize.py` (as funções do aldeão, como `finish_skin`, `add_face_planes`, `measure_head_top`,
+    `carry_from_walk` e `crank_work`, só rodam quando o asset tem a chave no JSON: o v2 vai usá-las), `fit_hair.py`
+    (encaixe de peruca no corpo-base), `check_face_mask.py`, `preview_modular.py`, `preview_sheet.py`,
+    `render_views.py`, `inspect_clip.py`, `floor_plates.py`.
+  - Separação proposta (sem mover nada ainda): os três de cabeça (`fit_hair.py`, `check_face_mask.py`,
+    `preview_modular.py`) e o `face_sprites.py` são "personagem modular", não "aldeão v1"; ganham caminhos por
+    parâmetro (hoje `aldeao_base` e `aldeao_cabelos` estão fixos neles) na primeira tarefa do v2.
+- **Plano do pipeline do v2 (0 créditos até o passo 3):**
+  1. Folhas em `assets/conceitos/aldeao_v2/` (o que colocar está no `LEIAME.md` da pasta). Se vierem com várias
+     vistas por página, recorte por script em `vistas/`.
+  2. `tools/assets.json`: entrada `aldeao_base` nova (mesmas chaves do v1 que continuam valendo: altura 0,4 m,
+     rig a 1,0 m, sleep da biblioteca, walk do rig, idle/carry/work no Blender, `planos_rosto`, `nos_cabeca`;
+     `apagar_rosto` sai, porque o corpo já vem sem rosto; `acabamento_pele` só se a textura da Meshy não vier
+     chapada) e um tipo novo `peca` no `pipeline.py` para as 5 perucas (Multi-Image to 3D sem rig nem animação,
+     brutos em `assets/modelos/aldeao_cabelos/bruto/`), no lugar do `hair_pieces.py`.
+  3. Corpo: `pipeline.py --run --only aldeao_base` → `normalize.py aldeao_base` → `inspect_clip.py` e
+     `render_views.py` + `compare_sheet.py` contra as folhas. Aprovação do corpo antes das perucas.
+  4. Perucas: `pipeline.py --run --only cabelo_*` → `fit_hair.py` por variação → `preview_modular.py` (5 cabelos a
+     55°) e `check_face_mask.py`.
+  5. Conferência no jogo pela Biografia (screenshot) e diário. Mantendo os nomes `aldeao_base` e
+     `aldeao_cabelos/<var>.glb`, o agente de código não precisa mudar nada.
+- **Custo estimado (médias medidas no `state.json`: Multi-Image to 3D 30, rig 5, animação 3 por clipe):**
+  corpo 38 créditos; 5 perucas 150; total 188. Com uma nova tentativa do corpo e duas de peruca, 286.
+  Proposta de `limite_creditos`: 300. As folhas prontas dispensam o Image to Image do v1 (60 créditos a menos).
+  O saldo atual não foi lido: a chave da Meshy fica no `.env` do checkout principal e a leitura foi barrada nesta
+  sessão.
+- **Feito neste commit:** tag, cabeçalho do GDD, `assets/conceitos/aldeao_v2/LEIAME.md`, esta entrada.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~50 min.
