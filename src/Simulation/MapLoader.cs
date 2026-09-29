@@ -30,13 +30,6 @@ public static class MapLoader
         foreach (PlacedData b in data.Buildings)
             world.AddBuilding(gameData.Building(b.Kind), Checked(world, b.X, b.Z), DirectionExtensions.Parse(b.Direction));
 
-        foreach (PlacedData v in data.Villagers)
-        {
-            GridPos cell = Checked(world, v.X, v.Z);
-            world.AddVillager(new System.Numerics.Vector2(cell.X, cell.Z));
-        }
-        world.AssignIdleWorkers();
-
         return world;
     }
 
@@ -84,7 +77,6 @@ public static class MapLoader
         public CastellanData? Castellan { get; set; }
         public List<PlacedData> Resources { get; set; } = new();
         public List<PlacedData> Buildings { get; set; } = new();
-        public List<PlacedData> Villagers { get; set; } = new();
         public TerrainData? Terrain { get; set; }
     }
 

@@ -9,7 +9,7 @@ namespace Cidadela.View;
 /// Biografia (scenes/Biography.tscn): a enciclopédia do jogo. Colunas: categorias, entradas da categoria,
 /// palco 3D no centro com a iluminação do jogo, texto à direita. No palco, arrastar com o botão esquerdo
 /// gira e a roda aproxima. Embaixo, botões de animação da entrada (clipes dos personagens; funcionando e
-/// parada nas máquinas) e, no aldeão, expressões e cabelos. Tudo vem de data/biography.json.
+/// parada nas máquinas). Tudo vem de data/biography.json.
 /// </summary>
 public partial class BiographyRoot : Node3D
 {
@@ -24,8 +24,6 @@ public partial class BiographyRoot : Node3D
     private Node3D _stage = null!;
     private Node3D? _model;
     private CastellanVisual? _castellan;
-    private VillagerVisual? _villager;
-    private VillagerVisual.DrawState _villagerState;
     private Camera3D _camera = null!;
     private float _yaw = Mathf.Pi, _pitch = 0.32f, _distance = 3f, _targetHeight = 0.4f;
     private bool _dragging;
@@ -37,15 +35,13 @@ public partial class BiographyRoot : Node3D
     // Máquinas trabalham de verdade: um mundo pequeno da simulação (esteira → máquina → esteira → baú),
     // desenhado pelo WorldView do jogo, com um alimentador que faz nascer os insumos da receita.
     private const int FeedEveryTicks = 10;
-    private static readonly GridPos MachineCell = new(4, 3), FeedCell = new(1, 3), OperatorCell = new(4, 4);
+    private static readonly GridPos MachineCell = new(4, 3), FeedCell = new(1, 3);
     private Node3D? _machineRoot;
     private SimWorld? _machineWorld;
     private WorldView? _machineView;
     private readonly SimClock _machineClock = new();
     private readonly List<string> _feedCycle = new();
     private int _feedIndex, _feedTimer;
-    private VillagerVisual? _operator;
-    private VillagerVisual.DrawState _operatorState;
 
     private VBoxContainer _entryList = null!;
     private Label _title = null!, _description = null!, _story = null!;
@@ -133,8 +129,6 @@ public partial class BiographyRoot : Node3D
     public override void _Process(double delta)
     {
         float dt = (float)delta;
-        if (_villager is not null)
-            _villager.UpdateFrom(_villagerState, _data, dt);
         if (_machineWorld is not null && _machineView is not null)
         {
             int ticks = _machineClock.Advance(delta);
@@ -148,12 +142,8 @@ public partial class BiographyRoot : Node3D
                 _machineWorld.Tick();
             }
             _machineView.Render(_machineClock.Alpha, delta);
-            if (_operator is not null)
-            {
-                // Aldeão operando: só visual (a simulação ainda não tem operador de máquina).
-                _operator.PreviewClip = _machineRunning ? "work" : "idle";
-                _operator.UpdateFrom(_operatorState, _data, dt);
-            }
+            // Aguardando o novo aldeão: aqui ficava um aldeão ao sul da máquina, girando a manivela
+            // enquanto ela funciona (só visual; a simulação ainda não tem operador de máquina).
             return;
         }
         // Itens e recursos giram devagar no palco; máquinas paradas ficam paradas.
@@ -170,12 +160,10 @@ public partial class BiographyRoot : Node3D
         _model?.QueueFree();
         _model = null;
         _castellan = null;
-        _villager = null;
         _machineRoot?.QueueFree();
         _machineRoot = null;
         _machineWorld = null;
         _machineView = null;
-        _operator = null;
         _spin = 0f;
         _machineRunning = true;
         _defaultYaw = Mathf.Pi;
@@ -190,13 +178,6 @@ public partial class BiographyRoot : Node3D
                 _castellan = new CastellanVisual { Name = "Castellan" };
                 _model = _castellan;
                 _targetHeight = 0.42f; _distance = 2.4f;
-                break;
-            case "villager":
-                _villager = new VillagerVisual { Name = "Villager" };
-                _villagerState = new VillagerVisual.DrawState(new System.Numerics.Vector2(-0.5f, -0.5f), new System.Numerics.Vector2(0f, -1f), // olha para -Z, onde a câmera começa
-                    1, VillagerExpression.Distracted, false, null, null, -1f, 0f);
-                _model = _villager;
-                _targetHeight = 0.22f; _distance = 1.4f;
                 break;
             case "building":
                 BuildingType type = _data.Building(entry.ModelArg);
@@ -249,8 +230,7 @@ public partial class BiographyRoot : Node3D
                 { "kind": "belt", "x": 7, "z": 3, "direction": "east" },
                 { "kind": "chest", "x": 8, "z": 3 }
               ],
-              "terrain": { "default": "dirt", "patches": [] },
-              "villagers": []
+              "terrain": { "default": "dirt", "patches": [] }
             }
             """;
         _machineWorld = MapLoader.Parse(map, _data);
@@ -269,11 +249,6 @@ public partial class BiographyRoot : Node3D
         _machineView.Build(_machineWorld);
         _machineView.CastellanNode.Visible = false;
         GetNode<Node3D>("Pedestal").Visible = false;
-
-        _operator = new VillagerVisual { Name = "Operator" };
-        _machineRoot.AddChild(_operator);
-        _operatorState = new VillagerVisual.DrawState(new System.Numerics.Vector2(OperatorCell.X, OperatorCell.Z), new System.Numerics.Vector2(0f, -1f),
-            2, VillagerExpression.Effort, false, null, null, -1f, 0f);
 
         _targetHeight = 0.45f; _distance = 4.6f;
         _defaultYaw = 0f; // câmera ao sul, olhando para o norte: a esteira corre da esquerda para a direita
@@ -367,12 +342,10 @@ public partial class BiographyRoot : Node3D
         _model?.QueueFree();
         _model = null;
         _castellan = null;
-        _villager = null;
         _machineRoot?.QueueFree();
         _machineRoot = null;
         _machineWorld = null;
         _machineView = null;
-        _operator = null;
         _title.Text = "";
         _description.Text = "";
         _story.Text = "";
@@ -407,44 +380,13 @@ public partial class BiographyRoot : Node3D
             string a = animation;
             row.AddChild(SmallButton(a, () => PlayAnimation(a)));
         }
-
-        if (entry.ModelKind != "villager")
-            return;
-        var faces = new HFlowContainer();
-        faces.AddThemeConstantOverride("h_separation", 4);
-        faces.AddThemeConstantOverride("v_separation", 4);
-        _controls.AddChild(Caption("Expressão"));
-        _controls.AddChild(faces);
-        string[] faceNames = { "distraído", "esforço", "feliz", "sonolento", "dormindo", "espantado", "preocupado", "chorando", "bravo" };
-        for (int i = 0; i < faceNames.Length; i++)
-        {
-            var face = (VillagerExpression)i;
-            faces.AddChild(SmallButton(faceNames[i], () => _villagerState = _villagerState with { Expression = face }));
-        }
-        var hairs = new HFlowContainer();
-        hairs.AddThemeConstantOverride("h_separation", 4);
-        hairs.AddThemeConstantOverride("v_separation", 4);
-        _controls.AddChild(Caption("Cabelo"));
-        _controls.AddChild(hairs);
-        for (int v = 1; v <= Villager.HairVariants; v++)
-        {
-            int variant = v;
-            string name = VillagerLooks.HairFor(v)?.Name ?? $"{v}";
-            hairs.AddChild(SmallButton(name, () =>
-            {
-                _villagerState = _villagerState with { HairVariant = variant };
-                _villager?.ResetLook();
-            }));
-        }
-        hairs.AddChild(SmallButton("chapéu", () => _villagerState = _villagerState with { JobResource = _villagerState.JobResource is null ? "wood" : null }));
+        // Aguardando o novo aldeão: a entrada dele tinha aqui os botões de expressão e de cabelo.
     }
 
     private void PlayAnimation(string animation)
     {
         if (_castellan is not null)
             _castellan.PlayClip(animation);
-        else if (_villager is not null)
-            _villager.PreviewClip = animation;
         else if (_current is { ModelKind: "building" })
             _machineRunning = animation == "funcionando";
     }

@@ -37,11 +37,6 @@
       { "kind": "stone", "x": 26, "z": 4,  "radius": 3.5 },
       { "kind": "stone", "x": 25, "z": 26, "radius": 3 }
     ]
-  },
-  // Aldeões livres no início; cada cabana de trabalho construída chama o mais próximo.
-  "villagers": [
-    { "x": 13, "z": 18 },
-    { "x": 15, "z": 19 },
-    { "x": 17, "z": 17 }
-  ]
+  }
+  // Aguardando o novo aldeão: aqui ficavam os aldeões livres do início.
 }

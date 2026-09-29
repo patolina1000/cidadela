@@ -19,10 +19,8 @@ public sealed class SimWorld
 
     /// <summary>Muda a cada construção colocada ou tirada; a cena usa para saber quando redesenhar.</summary>
     public int BuildingsVersion { get; private set; }
-    public IReadOnlyList<Villager> Villagers => _villagers;
 
     private readonly List<ResourceNode> _resources = new();
-    private readonly List<Villager> _villagers = new();
     private readonly Dictionary<GridPos, ResourceNode> _resourceByCell = new();
     private readonly Dictionary<GridPos, Building> _buildingByCell = new();
     private readonly List<Building> _belts = new();
@@ -49,8 +47,6 @@ public sealed class SimWorld
         Castellan.Tick(this);
         TickBelts();
         TickMachines();
-        foreach (Villager villager in _villagers)
-            villager.Tick(this);
         TickWorkplaces();
         TickCount++;
     }
@@ -115,7 +111,10 @@ public sealed class SimWorld
         }
     }
 
-    /// <summary>Cabana com algo guardado solta 1 item por tick na esteira ou baú à sua frente, como uma máquina.</summary>
+    /// <summary>
+    /// Cabana com algo guardado solta 1 item por tick na esteira ou baú à sua frente, como uma máquina.
+    /// Aguardando o novo aldeão: hoje ninguém enche a cabana (o Castelão ainda pode recolher o que houver).
+    /// </summary>
     private void TickWorkplaces()
     {
         foreach (Building building in _workplaces)
@@ -145,29 +144,6 @@ public sealed class SimWorld
             return true;
         }
         return false;
-    }
-
-    /// <summary>Cada cabana sem trabalhador chama o aldeão livre mais perto dela.</summary>
-    internal void AssignIdleWorkers()
-    {
-        foreach (Building building in _workplaces)
-        {
-            Workplace work = building.Workplace!;
-            if (work.Worker is not null)
-                continue;
-            var home = new System.Numerics.Vector2(building.Cell.X, building.Cell.Z);
-            Villager? nearest = null;
-            foreach (Villager v in _villagers)
-            {
-                if (v.Home is null && (nearest is null ||
-                    System.Numerics.Vector2.Distance(v.Position, home) < System.Numerics.Vector2.Distance(nearest.Position, home)))
-                    nearest = v;
-            }
-            if (nearest is null)
-                return;
-            work.Worker = nearest;
-            nearest.AssignHome(building);
-        }
     }
 
     private static System.Numerics.Vector2 PositionOnBelt(Building belt, float progress) =>
@@ -268,14 +244,7 @@ public sealed class SimWorld
         }
         building.Storage?.MoveAllTo(Castellan.Inventory);
         building.Machine?.EmptyInto(Castellan.Inventory);
-        if (building.Workplace is Workplace work)
-        {
-            work.Stored.MoveAllTo(Castellan.Inventory);
-            work.Worker?.DropCarryInto(Castellan.Inventory);
-            work.Worker?.AssignHome(null);
-            work.Worker = null;
-            AssignIdleWorkers(); // o aldeão liberado pode ir para outra cabana vazia
-        }
+        building.Workplace?.Stored.MoveAllTo(Castellan.Inventory);
     }
 
     internal void SetCastellan(Vector2 position)
@@ -300,18 +269,8 @@ public sealed class SimWorld
         if (building.Machine is not null)
             _machines.Add(building);
         if (building.Workplace is not null)
-        {
             _workplaces.Add(building);
-            AssignIdleWorkers();
-        }
         BuildingsVersion++;
         return building;
-    }
-
-    internal Villager AddVillager(System.Numerics.Vector2 position)
-    {
-        var villager = new Villager(_nextId++, position, Data.Villagers);
-        _villagers.Add(villager);
-        return villager;
     }
 }

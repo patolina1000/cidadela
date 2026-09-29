@@ -5,7 +5,7 @@
   //
   // categorias: na ordem em que aparecem. "vazio" é a frase mostrada quando não há entradas.
   // entradas: id, nome, categoria (id de cima), descricao (1–2 frases), historia (um parágrafo),
-  //   modelo: o que o palco mostra — "castellan", "villager", "building:<kind de buildings.json>",
+  //   modelo: o que o palco mostra — "castellan", "building:<kind de buildings.json>",
   //           "item:<kind de items.json>", "resource:<kind de resources.json>", ou "" (só texto);
   //   animacoes: botões do palco (personagens: clipes; máquinas: "funcionando" e "parada");
   //   descoberto: por enquanto tudo true; no futuro vira false até o jogador encontrar no jogo.
@@ -24,12 +24,7 @@
       "historia": "Abriu os olhos numa clareira que não está nos mapas. O cristal estava lá: pequeno, azul, calado. Ele esperou uma palavra; não veio. Então começou a empilhar pedras. Toca os cristais podres com as mãos nuas e não se quebra. Ninguém sabe se isso é um dom. Depois das batalhas, às vezes constrói um banco onde ninguém vai sentar.",
       "modelo": "castellan", "animacoes": ["idle", "run", "work"], "descoberto": true
     },
-    {
-      "id": "aldeao", "nome": "Os Segundos", "categoria": "personagens",
-      "descricao": "Pequeno, redondo, sem marcas. Gira a manivela, carrega, encaixa. Cochila de pé.",
-      "historia": "Vieram depois dele, em ciclos que ninguém conta, nunca mais de sete. Parecem inacabados, como se alguém tivesse parado de esculpir nos ombros. Não perguntam para quê. Seguem o que não dorme como sombras curtas. Um dia, talvez, um cristal nasça no peito de um deles. Até lá, a manivela.",
-      "modelo": "villager", "animacoes": ["idle", "walk", "carry", "work", "sleep"], "descoberto": true
-    },
+    // Aguardando o novo aldeão: a entrada "Os Segundos" volta com ele.
 
     {
       "id": "serraria", "nome": "Serraria", "categoria": "maquinas",

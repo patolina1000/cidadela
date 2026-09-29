@@ -27,9 +27,6 @@ internal static class TestWorlds
         { "shafts": { "machine": "sawmill", "inputs": { "wood": 1 }, "outputs": { "shaft": 2 }, "seconds": 1 } }
         """;
 
-    /// <summary>Aldeão de teste: 5 células/s, coleta no mesmo tempo que o Castelão, carrega 2.</summary>
-    public const string VillagerStats = """{ "speed": 5.0, "gatherMultiplier": 1.0, "carry": 2 }""";
-
     public const string CastellanStats = """{ "speed": 6.0, "reach": 10.0, "gatherReach": 1.0, "radius": 0.3 }""";
 
     public const string Buildings = """
@@ -42,17 +39,15 @@ internal static class TestWorlds
         }
         """;
 
-    public static GameData Data() => GameData.Parse(Items, Resources, CastellanStats, VillagerStats, Buildings, Recipes);
+    public static GameData Data() => GameData.Parse(Items, Resources, CastellanStats, Buildings, Recipes);
 
-    /// <summary>Mapa 20×20 com o Castelão em (x, z) e os recursos, construções e aldeões dados como JSON.</summary>
-    public static SimWorld Open(int x = 3, int z = 3, string resources = "[]", string buildings = "[]",
-        string villagers = "[]") =>
+    /// <summary>Mapa 20×20 com o Castelão em (x, z) e os recursos e construções dados como JSON.</summary>
+    public static SimWorld Open(int x = 3, int z = 3, string resources = "[]", string buildings = "[]") =>
         MapLoader.Parse($$"""
             { "width": 20, "height": 20,
               "castellan": { "x": {{x}}, "z": {{z}} },
               "resources": {{resources}},
-              "buildings": {{buildings}},
-              "villagers": {{villagers}} }
+              "buildings": {{buildings}} }
             """, Data());
 
     public static void Move(SimWorld world, float x, float z, int ticks)

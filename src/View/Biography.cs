@@ -8,13 +8,15 @@ namespace Cidadela.View;
 public static class Biography
 {
     public const string Path = "res://data/biography.json";
+    // Os JSON de data/ têm comentários, que o Json do Godot não aceita.
+    private static readonly JsonDocumentOptions JsonOptions = new() { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
 
     public sealed record Category(string Id, string Name, string EmptyText);
 
     public sealed record Entry(string Id, string Name, string CategoryId, string Description, string Story,
         string Model, IReadOnlyList<string> Animations, bool Discovered)
     {
-        /// <summary>"castellan", "villager", "building", "item", "resource" ou "" (só texto).</summary>
+        /// <summary>"castellan", "building", "item", "resource" ou "" (só texto).</summary>
         public string ModelKind => Model.Split(':')[0];
         /// <summary>O que vem depois dos dois-pontos (kind de buildings/items/resources), ou "".</summary>
         public string ModelArg => Model.Contains(':') ? Model[(Model.IndexOf(':') + 1)..] : "";
@@ -29,7 +31,7 @@ public static class Biography
             GD.PushWarning($"Biografia: {Path} não encontrado.");
             return (categories, entries);
         }
-        using JsonDocument doc = JsonDocument.Parse(FileAccess.GetFileAsString(Path), VillagerLooks.JsonOptions);
+        using JsonDocument doc = JsonDocument.Parse(FileAccess.GetFileAsString(Path), JsonOptions);
         foreach (JsonElement c in doc.RootElement.GetProperty("categorias").EnumerateArray())
             categories.Add(new Category(c.GetProperty("id").GetString() ?? "", c.GetProperty("nome").GetString() ?? "",
                 c.TryGetProperty("vazio", out JsonElement empty) ? empty.GetString() ?? "" : "Nenhum registro."));

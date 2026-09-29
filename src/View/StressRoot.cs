@@ -13,8 +13,9 @@ namespace Cidadela.View;
 /// - <b>Nós</b> (como o jogo faz hoje): um MeshInstance3D por entidade, posicionado a cada quadro.
 /// - <b>MultiMesh</b>: um MultiMesh por tipo de malha e por pedaço do mapa; a cada quadro só o buffer de
 ///   transformações de cada pedaço é reescrito, e pedaços fora da tela não são desenhados.
-/// Teclas: M troca o modo, G liga/desliga a grama, F2 V-Sync, F3 painel, F11 captura, roda do mouse aproxima,
-/// WASD anda com a câmera.
+/// Teclas: M troca o modo, G liga/desliga a grama, H esconde a horda, F2 V-Sync, F3 painel, F11 captura,
+/// roda do mouse aproxima, WASD anda com a câmera.
+/// Aguardando o novo aldeão: as teclas 0/1/2/3 criavam 0/50/200/500 aldeões animados para medir o custo deles.
 /// </summary>
 public partial class StressRoot : Node3D
 {
@@ -25,8 +26,6 @@ public partial class StressRoot : Node3D
     [Export] public int Items = 10000;
     [Export] public bool WithGrass = true;
     [Export] public bool StartWithMultiMesh = true;
-    /// <summary>Aldeões com o modelo modular completo (esqueleto animado, cabelo, decal, chapéu). Teclas 1/2/3: 50/200/500.</summary>
-    [Export] public int Villagers = 0;
 
     private const int ChunkCells = 8;
     private const float Pitch = 55f;
@@ -42,13 +41,6 @@ public partial class StressRoot : Node3D
     private Label _label = null!;
     private GrassField? _grass;
     private double _simMs, _viewMs, _accum;
-
-    // Aldeões animados: andam em círculos, metade com chapéu (ofício), expressão trocando de vez em quando.
-    private Node3D _villagersRoot = null!;
-    private readonly List<VillagerVisual> _villagerVisuals = new();
-    private readonly List<(System.Numerics.Vector2 center, float radius, float phase, int hair, string? job)> _villagerOrbits = new();
-    private GameData? _gameData;
-    private double _villagerClock;
 
     // Malhas compartilhadas (as mesmas nos dois modos).
     private Mesh[] _enemyMeshes = null!;
@@ -96,59 +88,7 @@ public partial class StressRoot : Node3D
         BuildMultiMeshes();
         if (WithGrass)
             BuildGrass();
-        _villagersRoot = new Node3D { Name = "Villagers" };
-        AddChild(_villagersRoot);
-        SetVillagerCount(Villagers);
         ApplyMode();
-    }
-
-    private GameData LoadGameData() => _gameData ??= GameFiles.LoadData();
-
-    /// <summary>Recria os aldeões animados: N em volta do centro da câmera, em círculos de raio 1,5 a 6.</summary>
-    private void SetVillagerCount(int count)
-    {
-        foreach (VillagerVisual v in _villagerVisuals)
-            v.QueueFree();
-        _villagerVisuals.Clear();
-        _villagerOrbits.Clear();
-        Villagers = count;
-        if (count == 0)
-            return;
-        GameData data = LoadGameData();
-        string[] jobs = { "wood", "stone", "iron" };
-        var rng = new RandomNumberGenerator { Seed = 99 };
-        for (int i = 0; i < count; i++)
-        {
-            // Espalha em anéis em volta do ponto olhado, com densidade parecida com uma vila cheia.
-            float ring = 1.5f + Mathf.Sqrt(rng.Randf()) * (2.5f + Mathf.Sqrt(count) * 0.55f);
-            var center = new System.Numerics.Vector2(_lookAt.X - 0.5f + rng.RandfRange(-ring, ring), _lookAt.Z - 0.5f + rng.RandfRange(-ring, ring));
-            _villagerOrbits.Add((center, rng.RandfRange(0.6f, 1.6f), rng.Randf() * Mathf.Tau, 1 + i % Villager.HairVariants, i % 2 == 0 ? jobs[i % 3] : null));
-            var visual = new VillagerVisual { Name = $"StressVillager_{i}" };
-            _villagersRoot.AddChild(visual);
-            _villagerVisuals.Add(visual);
-        }
-    }
-
-    private void RenderVillagers(float dt)
-    {
-        if (_villagerVisuals.Count == 0)
-            return;
-        _villagerClock += dt;
-        GameData data = LoadGameData();
-        const float speed = 1.2f; // células/s, a do jogo
-        for (int i = 0; i < _villagerVisuals.Count; i++)
-        {
-            (System.Numerics.Vector2 center, float radius, float phase, int hair, string? job) = _villagerOrbits[i];
-            float w = speed / radius;
-            float a = phase + (float)_villagerClock * w;
-            var pos = center + new System.Numerics.Vector2(Mathf.Cos(a), Mathf.Sin(a)) * radius;
-            var facing = new System.Numerics.Vector2(-Mathf.Sin(a), Mathf.Cos(a));
-            // Expressão muda a cada ~4 s, escalonada por aldeão; um quarto anda carregando.
-            var expression = (VillagerExpression)(((int)(_villagerClock / 4.0) + i) % 9);
-            string? carrying = i % 4 == 0 ? "wood" : null;
-            var state = new VillagerVisual.DrawState(pos, facing, hair, expression, false, carrying, job, -1f, 0f);
-            _villagerVisuals[i].UpdateFrom(state, data, dt);
-        }
     }
 
     private void BuildGround()
@@ -164,14 +104,7 @@ public partial class StressRoot : Node3D
 
     private void BuildGrass()
     {
-        GameData data = GameData.Parse(
-            FileAccess.GetFileAsString("res://data/items.json"),
-            FileAccess.GetFileAsString("res://data/resources.json"),
-            FileAccess.GetFileAsString("res://data/castellan.json"),
-            FileAccess.GetFileAsString("res://data/villagers.json"),
-            FileAccess.GetFileAsString("res://data/buildings.json"),
-            FileAccess.GetFileAsString("res://data/recipes.json"),
-            FileAccess.GetFileAsString("res://data/terrain.json"));
+        GameData data = GameFiles.LoadData();
         var grid = new WorldGrid(FieldWidth, FieldHeight); // tudo grama (terreno 0)
         _grass = new GrassField { Name = "Grass" };
         AddChild(_grass);
@@ -376,7 +309,6 @@ public partial class StressRoot : Node3D
         float alpha = (float)_clock.Alpha;
         if (_mode == Mode.Nodes) RenderNodes(alpha);
         else RenderMultiMeshes(alpha);
-        RenderVillagers((float)delta);
         long t2 = System.Diagnostics.Stopwatch.GetTimestamp();
 
         // Média móvel curta, para o painel não tremer.
@@ -406,12 +338,8 @@ public partial class StressRoot : Node3D
             {
                 case Key.M: _mode = _mode == Mode.Nodes ? Mode.MultiMesh : Mode.Nodes; ApplyMode(); break;
                 case Key.G: if (_grass is not null) _grass.Visible = !_grass.Visible; break;
-                case Key.Key0: SetVillagerCount(0); break;
-                case Key.Key1: SetVillagerCount(50); break;
-                case Key.Key2: SetVillagerCount(200); break;
-                case Key.Key3: SetVillagerCount(500); break;
                 case Key.H:
-                    // Esconde inimigos, itens e máquinas: mede só os aldeões sobre o campo.
+                    // Esconde inimigos, itens e máquinas: mede só o campo e a grama.
                     _nodesRoot.Visible = !_nodesRoot.Visible && _mode == Mode.Nodes;
                     _multiRoot.Visible = !_multiRoot.Visible && _mode == Mode.MultiMesh;
                     break;
@@ -466,11 +394,11 @@ public partial class StressRoot : Node3D
         sb.AppendLine($"TESTE DE ESTRESSE  |  modo: {(_mode == Mode.Nodes ? "um nó por entidade" : "MultiMesh por tipo e pedaço")}  (M troca)");
         sb.AppendLine($"{fps:0} FPS  quadro {frameMs:0.0} ms  |  simulação {_simMs:0.00} ms  |  view {_viewMs:0.00} ms  |  tick {_world.TickCount}");
         sb.AppendLine($"inimigos {_world.EnemyCount}  máquinas {_world.MachineCount}  itens {_world.ItemCount}  (horda {(_nodesRoot.Visible || _multiRoot.Visible ? "visível" : "oculta")})  " +
-            $"aldeões animados {_villagerVisuals.Count}  campo {FieldWidth}×{FieldHeight}  grama {(_grass is null ? "não" : _grass.Visible ? $"{_grass.TuftCount} tufos" : "oculta")}");
+            $"campo {FieldWidth}×{FieldHeight}  grama {(_grass is null ? "não" : _grass.Visible ? $"{_grass.TuftCount} tufos" : "oculta")}");
         sb.AppendLine($"draw calls {Performance.GetMonitor(Performance.Monitor.RenderTotalDrawCallsInFrame):0}  |  objetos {Performance.GetMonitor(Performance.Monitor.RenderTotalObjectsInFrame):0}  |  " +
             $"nós {Performance.GetMonitor(Performance.Monitor.ObjectNodeCount):0}  |  VRAM {Performance.GetMonitor(Performance.Monitor.RenderVideoMemUsed) / 1048576.0:0} MB  |  " +
             $"tela {DisplayServer.WindowGetSize().X}x{DisplayServer.WindowGetSize().Y}  distância {_distance:0}  V-Sync {(DisplayServer.WindowGetVsyncMode() == DisplayServer.VSyncMode.Disabled ? "off" : "on")}");
-        sb.Append("M modo  G grama  H horda  0/1/2/3 aldeões 0/50/200/500  F2 V-Sync  F3 painel  F11 captura  roda aproxima  WASD anda");
+        sb.Append("M modo  G grama  H horda  F2 V-Sync  F3 painel  F11 captura  roda aproxima  WASD anda");
         _label.Text = sb.ToString();
     }
 }

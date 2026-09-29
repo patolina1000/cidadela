@@ -17,4 +17,3 @@ __pycache__/
 assets/texturas/*/bruto/
 tools/meshy_pipeline/textures_state*.json
 .DS_Store
-tools/meshy_pipeline/hair_state.json

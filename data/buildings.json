@@ -4,6 +4,7 @@
   // beltSpeed: se é esteira, quantas células por segundo os itens andam. storage: se guarda itens (baú).
   // job: cabana de trabalho; um aldeão livre vira o trabalhador e coleta "resource" num raio de "radius"
   //   células em volta da cabana, guardando até "capacity" itens (que ela solta na esteira ou baú à frente).
+  //   Aguardando o novo aldeão: hoje nenhuma cabana ganha trabalhador.
   "belt":    { "name": "Esteira",  "cost": { "wood": 1 },                         "solid": false, "beltSpeed": 1.5 },
   "chest":   { "name": "Baú",      "cost": { "wood": 4 },                         "solid": true,  "storage": true },
   "sawmill": { "name": "Serraria", "cost": { "wood": 8, "stone": 4 },             "solid": true },

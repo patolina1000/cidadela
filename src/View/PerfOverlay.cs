@@ -75,10 +75,6 @@ public partial class PerfOverlay : Label
             case Key.F12:
                 _view.Grass.LodEnabled = !_view.Grass.LodEnabled;
                 return true;
-            case Key.N:
-                // Só visual: todos os aldeões tocam o clipe sleep (a noite ainda não existe na simulação).
-                VillagerVisual.DebugForceSleep = !VillagerVisual.DebugForceSleep;
-                return true;
             default:
                 return false;
         }
@@ -114,7 +110,7 @@ public partial class PerfOverlay : Label
         sb.AppendLine($"tela {size.X}x{size.Y}  3D {(int)(size.X * scale)}x{(int)(size.Y * scale)} (escala {scale:0.00})  |  grama {_view.GrassTufts} tufos");
         sb.Append($"F1 penumbra {OnOff(_sun.LightAngularDistance > 0f)}  F2 V-Sync {OnOff(VsyncOn)}  F4 grama {OnOff(_view.Grass.Visible)}  F5 brilho {OnOff(_environment.GlowEnabled)}  F6 névoa {OnOff(_environment.FogEnabled)}  " +
             $"F7 sombra {OnOff(_sun.ShadowEnabled)}  F8 chão {OnOff(_view.Ground.Visible)}  F9 escala 3D  F10 pós {OnOff(_environment.AdjustmentEnabled)}  " +
-            $"F11 captura  F12 LOD grama {OnOff(_view.Grass.LodEnabled)}  N aldeões dormem {OnOff(VillagerVisual.DebugForceSleep)}");
+            $"F11 captura  F12 LOD grama {OnOff(_view.Grass.LodEnabled)}");
         Text = sb.ToString();
     }
 

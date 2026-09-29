@@ -1,28 +1,19 @@
-using System.Collections.Generic;
 using Cidadela.Simulation;
 using Godot;
 
 namespace Cidadela.View;
 
 /// <summary>
-/// Menu inicial (scenes/Menu.tscn): o crepúsculo do jogo ao fundo, com a protagonista parada em idle, o
-/// cristal aceso e alguns aldeões por perto, sobre um pedaço de grama. Botões: Novo jogo, Continuar
+/// Menu inicial (scenes/Menu.tscn): o crepúsculo do jogo ao fundo, com a protagonista parada em idle e o
+/// cristal aceso, sobre um pedaço de grama (aguardando o novo aldeão: os aldeões em volta dela voltam com ele).
+/// Botões: Novo jogo, Continuar
 /// (desativado sem save), Biografia, Configurações (esboço) e Sair.
 /// </summary>
 public partial class MenuRoot : Node3D
 {
     private const int FieldSize = 24;
 
-    private static readonly (float x, float z, int hair, VillagerExpression face, string? job)[] Villagers =
-    {
-        (-0.7f, 0.9f, 1, VillagerExpression.Distracted, null),
-        (1.4f, 0.3f, 2, VillagerExpression.Sleepy, "wood"),
-        (0.4f, 1.5f, 3, VillagerExpression.Happy, null),
-        (1.7f, 1.3f, 5, VillagerExpression.Distracted, "stone"),
-    };
-
     private GameData _data = null!;
-    private readonly List<VillagerVisual> _villagers = new();
     private Camera3D _camera = null!;
     private Control _settings = null!;
     private float _time;
@@ -53,17 +44,6 @@ public partial class MenuRoot : Node3D
         var castellan = new CastellanVisual { Name = "Castellan", Position = center, Rotation = new Vector3(0f, Mathf.Pi, 0f) };
         AddChild(castellan);
 
-        foreach ((float x, float z, int hair, VillagerExpression face, string? job) in Villagers)
-        {
-            var visual = new VillagerVisual { Name = $"Villager_{_villagers.Count}" };
-            AddChild(visual);
-            _villagers.Add(visual);
-            // Posição em coordenadas de célula (o VillagerVisual soma 0,5); virados mais ou menos para a câmera.
-            var pos = new System.Numerics.Vector2(center.X - 0.5f + x, center.Z - 0.5f + z);
-            var facing = System.Numerics.Vector2.Normalize(new System.Numerics.Vector2(-x * 0.3f, -1f));
-            visual.SetMeta("state", new Godot.Collections.Array { pos.X, pos.Y, facing.X, facing.Y, hair, (int)face, job ?? "" });
-        }
-
         _camera = new Camera3D { Name = "Camera", Fov = 38f, Current = true };
         AddChild(_camera);
         // O painel do menu cobre o terço esquerdo: o grupo fica à direita do centro da tela.
@@ -74,16 +54,6 @@ public partial class MenuRoot : Node3D
     public override void _Process(double delta)
     {
         _time += (float)delta;
-        for (int i = 0; i < _villagers.Count; i++)
-        {
-            var s = _villagers[i].GetMeta("state").AsGodotArray();
-            var state = new VillagerVisual.DrawState(
-                new System.Numerics.Vector2(s[0].AsSingle(), s[1].AsSingle()),
-                new System.Numerics.Vector2(s[2].AsSingle(), s[3].AsSingle()),
-                s[4].AsInt32(), (VillagerExpression)s[5].AsInt32(), false, null,
-                string.IsNullOrEmpty(s[6].AsString()) ? null : s[6].AsString(), -1f, 0f);
-            _villagers[i].UpdateFrom(state, _data, (float)delta);
-        }
         // Balanço lento da câmera, como uma respiração.
         _camera.Position += new Vector3(0f, Mathf.Sin(_time * 0.4f) * 0.0004f, 0f);
     }
