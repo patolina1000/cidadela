@@ -2198,3 +2198,41 @@ onde errou, correções manuais e quanto tempo levou.
   de opacidade. Boca do espantado: oval de 11×8 px em vez de 16×11. Chorando manteve a silhueta anterior, como
   aprovado. Todas as prévias foram regeradas pelo mesmo script (a tira de 48 px é a que importa).
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~25 min.
+
+## 2026-09-29 — Aldeão v2: folhas do ChatGPT (passos 0 a 3); Meshy travada por falta da chave
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** passo 0, comparação antes/depois de feliz, preocupado e bravo a 96 px no crepúsculo; passo 1,
+  identificar e renomear as 6 folhas (nomes `exec-*`) e relatar vistas, problemas para a Meshy, franja sobre o
+  retalho "Olhos" e diferença de cabeça; passo 2, preparador no corpo, Meshy (só-frente × multi-imagem, sem
+  textura, pose A, 2.500 triângulos, até 6 gerações) e folha de contato com a área dos retalhos marcada; passo 3,
+  preparador nos cabelos e `PLANO_CABELOS.md`.
+- **Onde estavam as folhas:** não em `assets/conceitos/aldeao_v2/folhas/` do worktree, mas em `assets/previews/`
+  do checkout principal (`Projetos/cidadela`). Copiadas para a pasta certa e renomeadas pelo conteúdo (conferido
+  olhando cada imagem): `aldeao_corpo_folha` (3 vistas), `cabelo_1_curto_baguncado` (mechas em folha),
+  `cabelo_2_medio_franja_lado` (chanel, franja para um lado), `cabelo_3_ondulado` (volumoso até o queixo),
+  `cabelo_4_longo_liso` (liso até os ombros, repartido no meio), `cabelo_5_rabo_de_cavalo` (cor da pele).
+- **Passo 0 (`b6bbb1f`):** `comparar_ajuste.py` monta antes (atlas do commit `46195ba`) × depois a 96 px ×
+  #6A5B7C: `assets/previews/aldeao_v2/comparacao_ajuste.png`.
+- **Passo 1 (`3b74705`):** relatório no chat e resumido aqui. Corpo: frente, lado e costas consistentes, pose A,
+  cabeça em ovo com 43% da altura (l/a 0,93; profundidade/altura 0,91), dobra pequena no peito perto do pescoço na
+  frente (não retocada), na vista de lado a cabeça inclina um pouco para a frente. Cabelos: 4 vistas cada (a
+  "lado" de 1, 2 e 3 é 3/4; de 4 e 5 é perfil), consistentes entre si; todas com cabeça, mais redonda que a do
+  corpo (face visível l/a: 1 = 1,14; 2 = 1,11; 3 = 0,96; 4 = 0,95; 5 = 1,05). Franja sobre a janela dos olhos
+  (28% a 83% da altura da cabeça): 2 e 3 invadem de um lado até ~50%; 4 invade só os cantos externos; 1 encosta
+  no alto da janela; 5 livre. Folha 5 sem contraste cabelo/pele.
+- **Passo 2 (este commit):** vistas do corpo em `assets/conceitos/aldeao_v2/vistas/` (prévia `_previa_aldeao_corpo_folha.png`).
+  Ferramentas prontas: `meshy_corpo.py` (so_frente = Image to 3D; multi = Multi-Image com frente, lado, costas;
+  `should_texture` falso, `pose_mode` a-pose, `should_remesh` + `target_polycount` 2500, trava de 6 gerações,
+  estado fora do git), `render_corpo.py` (Blender headless: material chapado, frente, lado, 3/4, câmera do jogo
+  e escala com a protagonista; mede a caixa da cabeça pelo pescoço e a lisura da área dos retalhos como desvio
+  RMS/máximo de uma esfera ajustada) e `folha_contato.py` (monta a folha e marca as janelas dos olhos e da boca
+  na frente). Testados no `aldeao_base.glb` do v1 como substituto (saída no scratchpad).
+  **Não gerado:** a chave da Meshy não existe neste worktree (`tools/arte/.env` ou `tools/meshy_pipeline/.env`)
+  nem no ambiente, e ler o `.env` do checkout principal foi barrado nesta sessão. Falta o humano copiar o
+  arquivo; aí é `uv run meshy_corpo.py --run` e a folha de contato.
+- **Passo 3 (commit seguinte):** vistas dos 5 cabelos em `vistas/` e `tools/arte/aldeao_v2/PLANO_CABELOS.md`
+  (gerar cabeça + cabelo a 3.000; achar a cabeça por elipsoide ajustado ao rosto liso; classificar faces por
+  distância; transformar o elipsoide da folha no da cabeça do corpo; empurrar para fora; abrir a janela dos
+  olhos; decimar a ≤ 800 com orçamento por cabelo, o 1 em ~730; exportar rígido). Recomenda refazer a folha 5.
+- **Créditos:** 0. **Gerações na Meshy:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 40.
