@@ -1,0 +1,80 @@
+{
+  "olhos": {
+    "colunas": 3,
+    "linhas": 3,
+    "celulaPx": [
+      512,
+      256
+    ],
+    "margemPx": 16,
+    "quadros": {
+      "aberto": 0,
+      "fechado": 1,
+      "meio_fechado": 2,
+      "arregalado": 3,
+      "feliz": 4,
+      "apertado": 5,
+      "preocupado": 6,
+      "bravo": 7,
+      "lagrima": 8
+    }
+  },
+  "boca": {
+    "colunas": 4,
+    "linhas": 2,
+    "celulaPx": [
+      256,
+      128
+    ],
+    "margemPx": 16,
+    "quadros": {
+      "entreaberta": 0,
+      "sorriso": 1,
+      "o": 2,
+      "tensa": 3,
+      "triste": 4,
+      "brava": 5,
+      "dormindo": 6
+    }
+  },
+  "ossoCabeca": "",
+  "passadaWalk": 0.0,
+  "expressoes": {
+    "distraido": {
+      "olhos": "aberto",
+      "boca": "entreaberta"
+    },
+    "esforco": {
+      "olhos": "apertado",
+      "boca": "tensa"
+    },
+    "feliz": {
+      "olhos": "feliz",
+      "boca": "sorriso"
+    },
+    "sonolento": {
+      "olhos": "meio_fechado",
+      "boca": "entreaberta"
+    },
+    "dormindo": {
+      "olhos": "fechado",
+      "boca": "dormindo"
+    },
+    "espantado": {
+      "olhos": "arregalado",
+      "boca": "o"
+    },
+    "preocupado": {
+      "olhos": "preocupado",
+      "boca": "triste"
+    },
+    "chorando": {
+      "olhos": "lagrima",
+      "boca": "triste"
+    },
+    "bravo": {
+      "olhos": "bravo",
+      "boca": "brava"
+    }
+  }
+}

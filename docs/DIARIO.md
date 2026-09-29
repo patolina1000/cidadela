@@ -2047,3 +2047,51 @@ onde errou, correções manuais e quanto tempo levou.
   nome (o Godot tira o sufixo e importa o clipe em loop; no v1 o loop ficava por conta do jogo); o quadro 0 dos
   atlas é o par distraído/entreaberta; a altura 0,40 m é conferida na prévia lado a lado com a protagonista.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
+
+## 2026-09-29 — Aldeão v2, partes A e B: estrutura, preparador de vistas e atlas de expressões
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`. Território: `assets/` e
+  `tools/arte/`; nada em `src/`, `scenes/` ou `data/`.
+- **Pedido:** ler o contrato oficial (`git show master:docs/aldeao_v2_contrato.md`, sem merge) e comparar com os
+  três pontos assumidos ontem; criar a estrutura do v2 com um preparador de vistas (Parte A); gerar o atlas de
+  expressões no formato do contrato, com prévia e mapa expressão → quadros (Parte B); parar antes da Meshy
+  (Parte C). Reaproveitar o que servir dos scripts do v1 na tag `aldeao-v1-arquivado`.
+- **Contrato oficial × o que eu tinha:** o texto é o mesmo que guardei ontem; a cópia em
+  `assets/modelos/aldeao_v2/CONTRATO.md` saiu (a oficial é a da `master`). Dos três pontos assumidos: o contrato
+  não diz como o loop é marcado (sigo com o sufixo `-loop` no GLB até ordem contrária); o quadro 0 é o padrão e
+  passa a ser `aberto` / `entreaberta` (nomes do pedido, não os do v1); a altura 0,40 m é conferida lado a lado
+  com a protagonista. Nada muda.
+- **Estado da `master` (só lido):** o aldeão v1 foi removido inteiro no commit `edc1291` (116 arquivos em
+  `assets/`, 8 scripts em `tools/`, código, dados e testes); `docs/ESTADO_DO_PROJETO.md` existe e pede que o
+  modelo seja julgado na câmera do jogo desde a primeira versão. Na `arte` os arquivos do v1 ainda estão; no
+  próximo merge da `master` o git os apaga sozinho (ninguém os mudou aqui).
+- **Meshy (docs.meshy.ai, lidos em 29/09/2026), para a Parte C:** `POST /openapi/v1/image-to-3d` e
+  `/openapi/v1/multi-image-to-3d` (1 a 4 imagens, a primeira é a frente). Parâmetros: `should_texture: false`
+  (20 créditos em vez de 30), `pose_mode: "a-pose"` (ou `t-pose`), `should_remesh: true` + `topology: "triangle"`
+  + `target_polycount` (100 a 300.000; 2.500 para o corpo, 800 para as perucas), `symmetry_mode: "auto"`,
+  `ai_model: "latest"`. O GLB vem em `model_urls.glb` da tarefa concluída.
+- **Parte A (`a35365a`):** pastas `assets/conceitos/aldeao_v2/{folhas,vistas}/`, `assets/modelos/aldeao_v2/`,
+  `tools/arte/aldeao_v2/` com projeto uv próprio (`tools/arte/pyproject.toml`). `preparar_vistas.py` (reaproveita
+  a ideia do `crop_concept.py` do v1, sem as correções manuais dele): fundo = cor mais comum da folha; figura =
+  região que difere do fundo, com abertura para sumir linhas finas; descarta o que encosta na borda, molduras
+  (região do tamanho da folha) e regiões pequenas (textos, setas); ordem de leitura; cada figura centrada num
+  quadrado de 1024 px com 8% de margem e fundo #EBEBEB, mesma escala por folha; prévia por folha.
+  Testado nas folhas antigas: na do aldeão v1 acha 5 figuras (cabeças, T-pose frente e costas, manivela) e o
+  `--vistas frente:3,costas:4` escolhe as certas; na da protagonista, com fundo desenhado, só funciona com
+  `--recorte` da região dos bonecos. As folhas do ChatGPT devem vir com fundo liso, então o caso normal é o
+  simples.
+- **Parte B:** `desenhar_rosto.py` desenha com o Pillow em 4x e reduz (LANCZOS), fundo transparente, e confere
+  que nenhum quadro invade a margem de 16 px. Olhos 3×3 de 512×256 (2:1): aberto (0), fechado, meio_fechado,
+  arregalado, feliz, apertado, preocupado, bravo, lagrima. Boca 4×2 de 256×128 (2:1, última célula vazia):
+  entreaberta (0), sorriso, o, tensa, triste, brava, dormindo. Olhos desalinhados de propósito (o direito menor e
+  8 px mais alto) e pupilas divergentes no `aberto`; brilho da pupila em #EDE6D6; traço #1B1E26 de 6 px;
+  sobrancelhas finas em todos os quadros (sem elas preocupado e bravo não leem). `rosto.json` no formato do
+  contrato, com `ossoCabeca` e `passadaWalk` vazios até o corpo existir, e a chave extra `expressoes`
+  (proposta, fora do contrato): distraido = aberto + entreaberta, esforco = apertado + tensa, feliz = feliz +
+  sorriso, sonolento = meio_fechado + entreaberta, dormindo = fechado + dormindo, espantado = arregalado + o,
+  preocupado = preocupado + triste, chorando = lagrima + triste, bravo = bravo + brava.
+  Prévia: `assets/previews/aldeao_v2/expressoes.png` (as 9 sobre um círculo cor de pele #9FB7CB).
+- **O que deu errado:** `bincount` estourou com `uint8` (corrigido com `int64`); o fundo pela mediana da moldura
+  falhava em pergaminho (trocado pela cor mais comum); a vinheta do pergaminho virava uma "figura" do tamanho da
+  folha (regra da moldura); rótulos da prévia se sobrepunham (duas linhas).
+- **Créditos:** 0. **Gerações na Meshy:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 10.
