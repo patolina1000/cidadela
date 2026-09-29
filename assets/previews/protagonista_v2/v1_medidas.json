@@ -1,0 +1,78 @@
+{
+  "glb": "assets/modelos/protagonista/protagonista.glb",
+  "pose": "repouso (T)",
+  "altura_m": 0.8,
+  "triangulos_total": 2974,
+  "triangulos_por_material": {
+    "Material_1": 2970,
+    "Cristal": 4
+  },
+  "triangulos_por_regiao": {
+    "cabeca_cabelo": 383,
+    "tronco": 709,
+    "bracos_maos": 786,
+    "pernas_pes": 1096
+  },
+  "triangulos_por_regiao_e_material": {
+    "cabeca_cabelo": {
+      "Material_1": 383
+    },
+    "tronco": {
+      "Material_1": 705,
+      "Cristal": 4
+    },
+    "bracos_maos": {
+      "Material_1": 786
+    },
+    "pernas_pes": {
+      "Material_1": 1096
+    }
+  },
+  "regioes": {
+    "cabeca_cabelo": [
+      "Head",
+      "neck",
+      "head_end",
+      "headfront"
+    ],
+    "tronco": [
+      "Hips",
+      "Spine",
+      "Spine01",
+      "Spine02"
+    ],
+    "bracos_maos": [
+      "LeftShoulder",
+      "LeftArm",
+      "LeftForeArm",
+      "LeftHand",
+      "RightShoulder",
+      "RightArm",
+      "RightForeArm",
+      "RightHand"
+    ],
+    "pernas_pes": [
+      "LeftUpLeg",
+      "LeftLeg",
+      "LeftFoot",
+      "LeftToeBase",
+      "RightUpLeg",
+      "RightLeg",
+      "RightFoot",
+      "RightToeBase"
+    ]
+  },
+  "cores_textura": {
+    "pele": {
+      "hex": "#91ADB7",
+      "triangulos_amostrados": 273,
+      "texels": 9559
+    },
+    "cabelo": {
+      "hex": "#75929F",
+      "triangulos_amostrados": 117,
+      "texels": 5739
+    }
+  },
+  "metodo_cores": "pele: triângulos com osso dominante mão ou pé; cabelo: região da cabeça acima do osso neck, normal para trás (y > 0,35) ou para cima (z > 0,7); texels rasterizados pela UV, média linear"
+}

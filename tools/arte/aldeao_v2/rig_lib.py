@@ -179,3 +179,99 @@ def close_loop(action, fraction=0.25, min_frames=4) -> int:
             pts[j].co[1] = pts[j].co[1] * (1 - w) + first * w
         c.update()
     return tail
+
+
+def apply_armature_scale(armature, meshes) -> dict:
+    """Normaliza a escala (decisão de 29/09/2026: exportar sempre em metros, Armature com escala 1): multiplica
+    os ossos e as malhas filhas pela escala do objeto armature, zera a escala do objeto e multiplica as curvas de
+    posição dos ossos (espaço do osso) pela mesma escala. As malhas ficam com o mesmo lugar no mundo e passam a ter
+    pai com inversa identidade. Sem efeito se a escala já for 1. Método validado em prova_operacao/normalizar.py."""
+    from mathutils import Matrix
+    s = armature.scale[0]
+    assert all(abs(v - s) < 1e-9 for v in armature.scale), f"escala não uniforme: {armature.scale[:]}"
+    if abs(s - 1.0) < 1e-9:
+        return {"escala": 1.0, "curvas_de_posicao_escaladas": 0}
+    bpy.context.view_layer.update()
+    worlds = {m.name: m.matrix_world.copy() for m in meshes}
+    armature.data.transform(Matrix.Scale(s, 4))
+    armature.scale = (1, 1, 1)
+    bpy.context.view_layer.update()
+    for m in meshes:
+        m.data.transform(armature.matrix_world.inverted() @ worlds[m.name])
+        m.parent = armature
+        m.matrix_parent_inverse = Matrix.Identity(4)
+        m.matrix_basis = Matrix.Identity(4)
+    scaled = 0
+    for action in bpy.data.actions:
+        for c in action_fcurves(action):
+            if c.data_path.startswith("pose.bones") and c.data_path.endswith(".location"):
+                for k in c.keyframe_points:
+                    k.co[1] *= s
+                    k.handle_left[1] *= s
+                    k.handle_right[1] *= s
+                c.update()
+                scaled += 1
+    bpy.context.view_layer.update()
+    return {"escala": s, "curvas_de_posicao_escaladas": scaled}
+
+
+def evaluated_points(obj):
+    dg = bpy.context.evaluated_depsgraph_get()
+    ev = obj.evaluated_get(dg)
+    m = ev.to_mesh()
+    pts = np.array([[p.x, p.y, p.z] for p in (obj.matrix_world @ v.co for v in m.vertices)])
+    ev.to_mesh_clear()
+    return pts
+
+
+def body_bvh(body):
+    from mathutils.bvhtree import BVHTree
+    dg = bpy.context.evaluated_depsgraph_get()
+    ev = body.evaluated_get(dg)
+    m = ev.to_mesh()
+    verts = [body.matrix_world @ v.co for v in m.vertices]
+    polys = [p.vertices[:] for p in m.polygons]
+    tree = BVHTree.FromPolygons(verts, polys)
+    normals = [(body.matrix_world.to_3x3() @ p.normal).normalized() for p in m.polygons]
+    ev.to_mesh_clear()
+    return tree, normals
+
+
+def signed_distances(body, points) -> list:
+    """Distância com sinal (mm) de cada ponto à pele: negativo = dentro."""
+    tree, normals = body_bvh(body)
+    out = []
+    for p in points:
+        loc, normal, index, dist = tree.find_nearest(Vector(p))
+        sign = 1 if (Vector(p) - loc).dot(normals[index]) >= 0 else -1
+        out.append(sign * dist * 1000)
+    return out
+
+
+def clearance(body, patch):
+    """Menor e maior distância com sinal (mm) dos vértices do retalho à pele."""
+    d = signed_distances(body, evaluated_points(patch))
+    return min(d), max(d)
+
+
+def export_rig_glb(armature, objects, path) -> None:
+    """Exporta o armature e as malhas com cada ação numa faixa NLA (o modo ACTIONS do Blender 5.1 perdia
+    quadros), o esqueleto em POSE (em REST sairia tudo parado) e sem otimizar o tamanho da animação."""
+    armature.data.pose_position = "POSE"
+    armature.animation_data_create()
+    armature.animation_data.action = None
+    for track in list(armature.animation_data.nla_tracks):
+        armature.animation_data.nla_tracks.remove(track)
+    for action in bpy.data.actions:
+        track = armature.animation_data.nla_tracks.new()
+        track.name = action.name
+        strip = track.strips.new(action.name, int(action.frame_range[0]), action)
+        if getattr(action, "slots", None) and hasattr(strip, "action_slot"):
+            strip.action_slot = action.slots[0]
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in objects:
+        o.select_set(True)
+    bpy.ops.export_scene.gltf(filepath=str(path), export_format="GLB", use_selection=True, export_yup=True, export_apply=False,
+                              export_animations=True, export_animation_mode="NLA_TRACKS", export_skins=True, export_materials="EXPORT",
+                              export_force_sampling=True, export_frame_range=False, export_optimize_animation_size=False,
+                              export_image_format="AUTO")

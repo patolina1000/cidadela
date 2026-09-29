@@ -1,0 +1,129 @@
+{
+  "corpo": "assets/modelos/aldeao_v2/aldeao_corpo.glb",
+  "unidade": "metros; pés em y = 0 (glTF), frente +Z do glTF",
+  "altura_m": 0.4,
+  "altura_quadril_m": 0.124,
+  "altura_peito_m": 0.1944,
+  "altura_ombros_m": 0.2129,
+  "alcance_ombro_palma_m": {
+    "esquerdo": 0.1228,
+    "direito": 0.1225,
+    "menor": 0.1225
+  },
+  "barriga_avanca_m": {
+    "a_frente_dos_ombros": 0.0639,
+    "a_frente_do_pivo": 0.0655,
+    "na_altura_m": 0.1373
+  },
+  "distancia_minima_alca_aos_ombros_m": {
+    "no_raio_recomendado": 0.0991,
+    "raio_0_10": 0.1019,
+    "regra": "manopla na frente dos ombros, livre do corpo em toda a altura do círculo; cresce com o raio (ver manivela_por_raio)"
+  },
+  "raio_max_manivela_no_peito_m": {
+    "recomendado": 0.06,
+    "encosta_ate_1mm": 0.06,
+    "fecha_ate_5mm": 0.065,
+    "regra": "usar o recomendado: no limite de 5 mm a mão já fica alguns mm fora da manopla"
+  },
+  "manivela_por_raio": {
+    "0.020": {
+      "distancia_manopla_aos_ombros_m": 0.0907,
+      "falta_max_mm": 0.0
+    },
+    "0.025": {
+      "distancia_manopla_aos_ombros_m": 0.0948,
+      "falta_max_mm": 0.0
+    },
+    "0.030": {
+      "distancia_manopla_aos_ombros_m": 0.0948,
+      "falta_max_mm": 0.0
+    },
+    "0.035": {
+      "distancia_manopla_aos_ombros_m": 0.0965,
+      "falta_max_mm": 0.0
+    },
+    "0.040": {
+      "distancia_manopla_aos_ombros_m": 0.0965,
+      "falta_max_mm": 0.0
+    },
+    "0.045": {
+      "distancia_manopla_aos_ombros_m": 0.0965,
+      "falta_max_mm": 0.0
+    },
+    "0.050": {
+      "distancia_manopla_aos_ombros_m": 0.0965,
+      "falta_max_mm": 0.0
+    },
+    "0.055": {
+      "distancia_manopla_aos_ombros_m": 0.0991,
+      "falta_max_mm": 0.0
+    },
+    "0.060": {
+      "distancia_manopla_aos_ombros_m": 0.0991,
+      "falta_max_mm": 0.1
+    },
+    "0.065": {
+      "distancia_manopla_aos_ombros_m": 0.0991,
+      "falta_max_mm": 3.7
+    },
+    "0.070": {
+      "distancia_manopla_aos_ombros_m": 0.0991,
+      "falta_max_mm": 7.4
+    },
+    "0.075": {
+      "distancia_manopla_aos_ombros_m": 0.1019,
+      "falta_max_mm": 13.0
+    },
+    "0.080": {
+      "distancia_manopla_aos_ombros_m": 0.1019,
+      "falta_max_mm": 16.8
+    },
+    "0.085": {
+      "distancia_manopla_aos_ombros_m": 0.1019,
+      "falta_max_mm": 20.7
+    },
+    "0.090": {
+      "distancia_manopla_aos_ombros_m": 0.1019,
+      "falta_max_mm": 24.6
+    },
+    "0.095": {
+      "distancia_manopla_aos_ombros_m": 0.1019,
+      "falta_max_mm": 28.6
+    },
+    "0.100": {
+      "distancia_manopla_aos_ombros_m": 0.1019,
+      "falta_max_mm": 32.7
+    },
+    "0.105": {
+      "distancia_manopla_aos_ombros_m": 0.1019,
+      "falta_max_mm": 36.8
+    },
+    "0.110": {
+      "distancia_manopla_aos_ombros_m": 0.1019,
+      "falta_max_mm": 40.9
+    },
+    "0.115": {
+      "distancia_manopla_aos_ombros_m": 0.1019,
+      "falta_max_mm": 45.2
+    },
+    "0.120": {
+      "distancia_manopla_aos_ombros_m": 0.1019,
+      "falta_max_mm": 49.4
+    }
+  },
+  "nota": "Medido em pose de repouso no Blender (tools/arte/prova_operacao/medir_ergonomia.py). Peito = meio entre os ossos Spine01 e Spine; ombros = articulação dos ossos LeftArm/RightArm; palma = centro dos vértices da mão. Manivela: eixo horizontal na altura do peito, círculo vertical na frente do corpo, as duas mãos na manopla (uma de cada lado, ±18 mm), pés fixos, tronco acompanhando pouco (inclinação 4° a 12°, giro ±8°, flexão ±4°); IK de 3 ossos sem esticar; manopla a 33 mm do corpo (raio da manopla + mão); 'fecha' = palma a ≤ 5 mm do alvo nas 16 fases; 'encosta' = ≤ 1 mm. A prova de operação (eixo a 0,19 m, passo de 1 cm) deu 0,06 m.",
+  "medicao": {
+    "escala_mundo_armature": 1.0,
+    "polo_graus": {
+      "Left": -180,
+      "Right": -45
+    },
+    "folga_mao_m": 0.0325,
+    "meia_pegada_m": 0.0179,
+    "repouso_intacto": {
+      "repouso_dif_rotacao_graus": 0.0,
+      "repouso_dif_posicao_mm": 1.7e-05
+    }
+  }
+}

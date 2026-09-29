@@ -42,6 +42,10 @@
       "passada_m_s": 0.383
     }
   },
+  "normalizacao": {
+    "escala": 0.003999997861683369,
+    "curvas_de_posicao_escaladas": 144
+  },
   "conferencia": {
     "objetos": [
       [
@@ -61,7 +65,7 @@
     "materiais": [
       "pele"
     ],
-    "altura_m": 0.40254184929654,
-    "pes_z": -0.006493720691651106
+    "altura_m": 0.4025419927202165,
+    "pes_z": -0.006494042929261923
   }
 }

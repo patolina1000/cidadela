@@ -3088,3 +3088,288 @@ onde errou, correções manuais e quanto tempo levou.
   desalinhados em poucas linhas; corrigidos conferindo com `grep -n`.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 17:29–17:32 de relógio.
+
+---
+
+## 2026-09-29 — Encerramento do dia (agente de arte, branch `arte`)
+
+- **Pronto do aldeão v2:** contrato arte × jogo lido e seguido; atlas de expressões na direção A1 (`rosto/olhos.png`,
+  `boca.png`, `rosto.json` com as 9 expressões, `ossoCabeca`, `ossoPeito`, `passadaRun`); corpo gerado na Meshy,
+  limpo (2.424 triângulos, material "pele", 0,40 m), com rig da Meshy, clipes `idle-loop` (Idle_3) e `run-loop`
+  (Run_02) em laço fechado e os retalhos "Olhos" (±45°, altura b) e "Boca" presos ao Head, tudo em
+  `assets/modelos/aldeao_v2/aldeao_corpo.glb`; 5 perucas em `cabelos/cabelo_1..5.glb` (758 a 760 triângulos,
+  material "cabelo", rígidas no Head, franja sobre no máximo a metade de cima de um olho, 2,5 mm do retalho);
+  prévias e GIFs em `assets/previews/aldeao_v2/`; ferramentas em `tools/arte/aldeao_v2/` (preparador de vistas,
+  atlas, limpeza, rig, retalhos, extração de perucas, GIFs, prévias); GDD vivo com a subseção
+  "Aldeão: implementação v2" e reexportado.
+- **Pendente:** integração no jogo pelo agente de código (`aldeao_corpo.glb`, os 5 cabelos, `rosto.json` e a regra
+  da franja no contrato); julgamento final no jogo com cabelo e shader toon; problema conhecido das mechas
+  longas nos ombros e braços na corrida, a rever no zoom máximo; `cabelo_N_sob_chapeu.glb` (previsto no contrato,
+  não começado); `passadaWalk` do contrato não existe porque o aldeão só tem idle e run (o contrato cita walk;
+  o agente do jogo decide se muda). A remoção do aldeão v1 na `arte` acontece sozinha no próximo merge da
+  `master` (ela já o removeu no commit `edc1291`).
+- **Créditos da Meshy gastos hoje no v2:** **160** (corpo 40: só-frente e multi-imagem; rig 5 + clipes 6 + clipes
+  extras 9 = 20; cabelos 5 × 20 = 100). Saldo final 2.298. Sem correções manuais além de copiar o `.env`.
+- Os quatro `.import` soltos em `docs/prints/` (prints do agente de jogo) entram neste commit para a árvore ficar
+  limpa.
+
+## 2026-09-29 — Protagonista v2, passo 1: referências da v1 para as folhas do ChatGPT
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** refazer a protagonista (v2) pelo processo do aldeão v2. Primeiro passo, sem gerar nada na Meshy:
+  renders da v1 (`assets/modelos/protagonista/protagonista.glb`) em repouso, com a textura original e o cristal
+  com a emissão normal, para servir de referência às folhas do ChatGPT.
+- **Feito:** `tools/arte/protagonista_v2/prot_lib.py` (importa em repouso, regiões por osso, câmera do jogo e
+  material toon por nós; reaproveita o `corpo_lib.py` do aldeão) e `referencia_v1.py` (Blender headless).
+  Câmera ortográfica, mesma escala nas três vistas (0,80 m = 1.536 px num quadro de 2.048), frente, perfil
+  esquerdo (câmera em +X do Blender, o lado do osso LeftHand) e costas; close da cabeça em 1.024, do osso `neck`
+  ao topo. Luz: mundo branco 0,85 + sol fraco e largo sem sombra; fundo #D9D9D9 visto só pela câmera (nó Light
+  Path), sem texto. Cristal com a força de emissão do GLB (3,0), sem o reforço de 3× que o jogo aplica.
+  Saída: `assets/conceitos/protagonista_v2/referencia/v1_{frente,lado,costas,cabeca_frente,cabeca_lado}.png`;
+  pasta `assets/conceitos/protagonista_v2/folhas/` criada (com `.gitkeep`) para as folhas.
+- **O que deu errado:** o primeiro close de lado saiu fora do centro, porque a caixa da cabeça incluía o cabelo
+  longo das costas (preso ao Head); o recorte passou a ir do pescoço ao topo. Um "Icosphere" de 2 m que aparece ao
+  importar não é do GLB: é a forma de osso que o importador do Blender cria (desligada com `disable_bone_shape`).
+- **Observação:** a pose de repouso da v1 é T (braços na horizontal), não A como a do aldeão v2.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Protagonista v2, passo 3: medidas da v1
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** triângulos por material e por região (osso de maior peso), altura e cores médias de pele e cabelo
+  na textura, em `assets/previews/protagonista_v2/v1_medidas.json`. Feito antes do passo 2 porque a coluna (b) da
+  folha de diagnóstico usa a cor da pele medida.
+- **Feito:** `tools/arte/protagonista_v2/medir_v1.py` (Blender headless, pose de repouso).
+- **Medidas:** altura **0,80 m**; **2.974 triângulos** (Material_1 2.970, Cristal 4). Por região, pelo osso
+  dominante de cada triângulo (soma dos pesos dos 3 vértices): cabeça/cabelo **383** (13%), tronco **709** (24%,
+  inclui os 4 do cristal), braços e mãos **786** (26%), pernas e pés **1.096** (37%). A cabeça tem pouco: parte
+  do cabelo longo segue os ossos do tronco. Para comparar: o aldeão v2 tem 2.424 no corpo + ~760 no cabelo.
+- **Cores (textura):** pele **#91ADB7**, cabelo **#75929F**. A textura da Meshy é um atlas em cacos, então as
+  amostras vêm da geometria: pele = triângulos com osso dominante mão ou pé (descalça; os antebraços têm faixas),
+  273 triângulos, 9.559 texels; cabelo = cabeça acima do osso `neck` com normal para trás ou para cima (nuca e
+  topo, onde só há cabelo), 117 triângulos, 5.739 texels. Cada triângulo é rasterizado na UV; média em espaço linear.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
+
+## 2026-09-29 — Protagonista v2, passo 2: folha de diagnóstico da v1 na câmera do jogo
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** folha na câmera do jogo (CameraRig.cs reproduzido no Blender), nos zooms 0,4 / 1 / 2,5, com três
+  colunas: (a) v1 com textura como no jogo, (b) v1 sem textura, chapada na cor média da pele e sombreada como o
+  `Toon.gdshaderinc`, (c) aldeão v2 (corpo + cabelo 4) com o mesmo sombreado; luz fosca, fraca e fria de cima;
+  linha extra multiplicada por #6A5B7C.
+- **Feito:** `tools/arte/protagonista_v2/diagnostico_v1.py` (Blender headless) e `montar_diagnostico.py` (PIL).
+  Câmera: perspectiva, pitch 55°, FOV vertical 45°, 16 m ÷ zoom, 3024×1890, olhando o chão sob o personagem.
+  Toon por nós (`prot_lib.toon_material`): meio-Lambert, 3 faixas, piso 0,35, vezes a luz, mais o ambiente,
+  como emissão (o mundo não soma luz). Luz: direção do crepúsculo das prévias do aldeão (quase de cima, um pouco
+  da frente), cor fria (0,72; 0,78; 0,95) × 0,75; ambiente roxo-acinzentado × 0,6. Coluna (a): material do GLB
+  sob um sol e um mundo iguais, cristal com o reforço de 3× do `CastellanVisual.cs`. Coluna (b): #91ADB7 (passo 3)
+  em tudo, cristal incluído. Coluna (c): pele #AEBFD3, cabelo #6F7F96, retalhos "Olhos" e "Boca" no quadro 0 do atlas.
+  Mesmo recorte nas três colunas de cada zoom, em pixels reais da tela (sem ampliar); a linha de crepúsculo é o zoom 1.
+- **Saída:** `assets/previews/protagonista_v2/v1_diagnostico.png`. Altura em tela: v1 **28 / 68 / 179 px**,
+  aldeão v2 com cabelo **21 / 48 / 122 px** (zooms 0,4 / 1 / 2,5).
+- **Leitura:** com a textura, a v1 lê pelo contraste interno (roupa escura, rosto e mãos claros, cristal); chapada,
+  sobra uma silhueta clara sem rosto e com poucas faixas, porque com a luz de cima quase toda a frente cai na faixa
+  mais clara. O aldeão v2 lê melhor a 48 px pelo rosto em retalho e pelo cabelo mais escuro que a pele.
+  No crepúsculo, a v1 some no chão; o cristal é o que sobra dela no zoom 1.
+- **Escolhas minhas (avisar se for diferente):** pose de repouso (T) nas três colunas, e não um quadro do idle,
+  para não precisar prender o cabelo rígido do aldeão ao osso; fundo do chão #4E4A58, o mesmo das prévias do aldeão.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Prova de operação, passo 1: auditoria do esqueleto do aldeão v2
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** prova técnica de que o aldeão v2 (e a protagonista v2, pelo mesmo método) aceita máquinas operadas
+  sem um v3. Passo 1: auditar `aldeao_corpo.glb` (escala, unidades, rolagens, pose de repouso, o que complica
+  IK/retarget, mãos). Nenhum arquivo aprovado alterado; tudo em pastas novas.
+- **Feito:** `tools/arte/prova_operacao/auditoria.py` (Blender headless + JSON cru do GLB) →
+  `assets/previews/prova_operacao/auditoria.json`, `mao_esquerda.png`, `mao_direita.png`; relatório
+  `auditoria.md`.
+- **Achados:** Armature com escala 0,004 e juntas em unidades de 4 mm (Hips a 31 unidades); malhas também nessa
+  unidade; só a posição do Hips varia nos clipes. O importador do Blender cria os ossos 250× compridos (sem a
+  escala do pai); a direção (+Y para o filho, estilo Mixamo) está certa. Rolagens ±90° nos braços; pernas com
+  rolagens assimétricas; esqueleto assimétrico (antebraço 51,7 × 48,6 mm). Pose A, braços a 44°; ombro ao punho
+  103 mm (25% da altura). Mãos em luva, sem dedos nem ossos de dedo, forma de punho meio fechado.
+- **O que deu errado:** o primeiro close das mãos estourou no branco (luz do `setup_scene`); exposição −1,2.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Prova de operação, passo 2: normalização da escala numa cópia
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** aplicar a escala do Armature (1, em metros) numa cópia, tocar idle-loop e run-loop nas duas versões e
+  medir a maior diferença de vértice em 0/25/50/75% do clipe; dizer se é segura e o que mudaria no jogo.
+- **Feito:** `tools/arte/prova_operacao/normalizar.py`: ossos (`armature.data.transform`) e malhas filhas
+  (`mesh.transform`) multiplicados por 0,004, escala do objeto 1, e as 144 curvas de posição dos ossos (24 ossos ×
+  3 eixos × 2 clipes) multiplicadas por 0,004 (estão no espaço do osso, em unidades de 4 mm); rotações intactas.
+  Exportado como o `montar_rig.py` (NLA, POSE, sem otimização): `assets/modelos/prova_operacao/aldeao_normalizado.glb`.
+  O `aldeao_corpo.glb` aprovado não foi tocado.
+- **Resultado (`assets/previews/prova_operacao/normalizacao.json`):** nó Armature do glTF sem escala; vértices
+  correspondentes (por posição em repouso; o exportador separou 2 vértices do corpo, 2.557 → 2.559) diferem no
+  máximo **0,0085 mm** (idle 0,005; run 0,0085) nos 8 quadros; cabeças dos ossos ≤ 0,0074 mm; repouso no mundo
+  dos ossos de encaixe (Head, Spine02) ≤ 0,004 mm. A rotação de repouso aparece com 0,04°, ruído de ponto flutuante
+  ao tirar a rotação de uma matriz com escala 0,004 (os vértices provam que é < 0,002°).
+- **Leitura:** a normalização é segura, é só troca de unidade. No jogo nada muda no código: o encaixe usa
+  `GetBoneGlobalRest(osso)⁻¹ × skeletonInModel⁻¹`, e `skeletonInModel` perde o 0,004 ao mesmo tempo que o repouso
+  passa a metros; cabelos (no espaço do corpo) e retalhos (skinned) seguem iguais; nenhum número do `src/View`
+  depende da escala. O que muda: valores em espaço de osso passam a metros (posição do Hips nos clipes, IK por
+  código), e o importador do Blender passa a criar ossos com comprimento de verdade.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Prova de operação, passo 3: clipe "girar_roda-loop" por IK no Blender (sem Meshy)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** roda provisória vertical (eixo horizontal na altura do peito, uma alça em cada face a 0,10 m do
+  eixo, defasadas 180°); aldeão com o esqueleto aprovado (sem normalizar), pés fixos, as duas mãos na alça por IK
+  durante uma volta, tronco acompanhando pouco, sem avanço de raiz; laço fechado < 1 cm; exportar só esqueleto +
+  clipe, a roda e `clipes.json`. Se as mãos não fecharem, registrar exatamente por quê.
+- **Feito (`tools/arte/prova_operacao/girar_roda.py`):**
+  1. comprimento real nos ossos do braço (braço e antebraço até o filho; mão até o centro da palma), mudando só
+     `length`: repouso muda 0,00002° e 0,005 mm, ou seja, nada;
+  2. IK nas duas mãos (cadeia mão-antebraço-braço, ponta no centro da palma, sem esticar, rigidez 0,5 na mão),
+     polo no cotovelo com ângulo escolhido por lado (sai diferente em cada lado por causa das rolagens de ±90°);
+  3. tronco: metade em Spine02, metade em Spine01, inclinação de 4° a 12° (mais com a alça embaixo), giro de ±8° e
+     flexão lateral de ±4° para o lado da alça; Hips parado (faixa de posição 0);
+  4. 48 quadros a 24 fps (1 volta = 2 s, escolha minha), bake visual; laço 0,0 cm sem misturar nada;
+  5. alça: manopla de 12 mm de raio na ponta de uma haste de 5 cm; cada mão de um lado da manopla (±18 mm);
+     plano das manoplas a 10,3 cm dos ombros, pelo perfil da barriga + 32 mm de folga; eixo a 0,19 m.
+- **Entregas:** `assets/modelos/prova_operacao/clipes/girar_roda.glb` (só esqueleto + `girar_roda-loop`; conferido na
+  reimportação: 1 objeto ARMATURE), `roda.glb` (pivô no eixo, frente +Z = face da alça A; alça A no topo e B embaixo
+  na fase 0; material "madeira" #4A3B3A), `clipes.json` (2,0 s; fase 0 = alça A no topo; conta em 0,5 = alça A
+  passa embaixo, escolha minha; ângulo da roda −360° × fase em volta do +Z; lado oposto toca o clipe ao contrário
+  com fase 0,5 − t). Medidas em `assets/previews/prova_operacao/girar_roda.json`.
+- **O problema (a informação que importa): as mãos NÃO fecham na alça de 0,10 m.** Não é escala nem rolagem: é a
+  proporção. Ombro à palma = 123 mm; a manopla fica a ≥ 103 mm dos ombros para não entrar na barriga (que avança
+  65 mm); um círculo de 0,10 m no peito desce à altura do joelho. Falta até **35,4 mm** (pior no quadro 29, fase
+  0,58: alça embaixo, do lado oposto à mão direita); só 1 dos 48 quadros fica a ≤ 5 mm. Varredura com o mesmo
+  método: raio 0,05 → 0 mm; **0,06 → 2,3 mm**; 0,07 → 9,7 mm; 0,08 → 19 mm; 0,10 → 35 mm.
+- **Variante (extra, para provar o método):** raio 0,06 m em `assets/modelos/prova_operacao/variante_r06/` (mesmos
+  arquivos): fecha nos 48 quadros, falta máxima 2,5 mm. Nenhum arquivo aprovado mudou.
+- **O que deu errado:** a primeira versão do giro do tronco tinha os sinais embolados; reescrita antes de rodar.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.
+
+## 2026-09-29 — Prova de operação, passo 4: GIFs com dois aldeões na mesma roda
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** GIFs na câmera do jogo (aldeão a 112 px) e de lado (256 px), dois aldeões em lados opostos da
+  mesma roda, o segundo com fase +0,5, mais a versão × #6A5B7C.
+- **Feito:** `tools/arte/prova_operacao/gif_roda.py` (Blender: dois `aldeao_corpo.glb` aprovados, cabelos 1 e 3
+  rígidos no Head, clipe tirado do `girar_roda.glb`, toon do `prot_lib`) e `gif_roda_montar.py` (PIL). Câmera do
+  jogo no zoom 2,5, em pixels reais; lado ortográfico a 640 px/m, 22° acima do chão; 48 quadros a 24 fps.
+- **Fase do segundo aldeão:** do outro lado, a alça B gira no sentido oposto visto por ele. Com "+0,5" tocado para
+  a frente, as mãos só coincidem com a alça em 2 instantes; o certo é tocar o mesmo clipe **ao contrário, com fase
+  0,5 − t**. Os GIFs usam isso (anotado no `clipes.json`).
+- **Conferência na cena dos GIFs:** faltas palma-manopla iguais às do bake nos dois aldeões (raio 0,10: 35,4 mm;
+  raio 0,06: 2,5 mm): o clipe exportado sem malha serve no arquivo aprovado, nos dois lados.
+- **Saída:** `assets/previews/prova_operacao/roda_{jogo,lado}.gif` e `_crepusculo.gif` (raio pedido, 0,10 m) e os
+  mesmos em `variante_r06/` (0,06 m); medidas em `roda_gif_medidas.json`.
+- **O que deu errado:** na primeira rodada a cena ficou 19 cm abaixo do chão (centralizei a roda também em z);
+  corrigido para centralizar só em x/y.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Aldeão v2: prévias restauradas e normalização oficial da escala (Armature em metros)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** restaurar as 19 prévias apagadas no disco; normalizar agora o `aldeao_corpo.glb` aprovado (escala 1, em
+  metros), mantendo nomes; conferir vértices (< 0,01 mm), folga dos retalhos (1,4 a 3,2 mm) e cabelos; substituir só
+  se tudo passar.
+- **Prévias:** `git checkout` das 19; `git status` limpo; nada a commitar (eram iguais às do repositório).
+- **Feito:** `rig_lib.apply_armature_scale` (o método da prova, agora geral: malhas com qualquer inversa de pai),
+  `rig_lib.export_rig_glb` (NLA, POSE, sem otimizar), as funções de folga movidas do `colocar_retalhos.py` para o
+  `rig_lib`, `tools/arte/aldeao_v2/conferir_corpo.py` (compara dois GLBs do corpo: nomes, vértices, folga dos
+  retalhos, cabelos presos como o jogo prende) e `normalizar_corpo.py` (normaliza num temporário, confere e só então
+  substitui). Relatório: `assets/modelos/aldeao_v2/aldeao_corpo_normalizacao.json`.
+- **Conferência (todas as metas passaram; o aprovado foi substituído):**
+  - vértices (corpo, Olhos, Boca), 0/25/50/75% de idle-loop e run-loop: **0,0085 mm** no máximo;
+  - folga dos retalhos nos 12 quadros do `colocar_retalhos.py`: **1,40 a 3,16 mm**, igual à do arquivo antigo;
+  - cabelos 1 a 5 presos pela fórmula do `VillagerVisual.Socket` nos mesmos 8 quadros: **0,0012 mm**; todos a 1,5 mm
+    do corpo em repouso;
+  - nomes iguais (clipes `idle-loop`, `run-loop`; materiais `pele`, `rosto_olhos`, `rosto_boca`; malhas `aldeao_corpo`,
+    `Olhos`, `Boca`; 24 ossos); nó Armature do glTF sem escala (translação de 6,6 mm mantida).
+- **rosto.json:** nada muda. `ossoCabeca` e `ossoPeito` são nomes; `passadaRun` (0,383 m/s) foi medida no mundo;
+  o atlas é em pixels.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Aldeão v2: processo exporta normalizado (montar_rig + colocar_retalhos) e prova de reprodução
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** `montar_rig.py` e `colocar_retalhos.py` exportando já normalizados; rodar os dois do zero e provar
+  que reproduzem o arquivo normalizado (mesma diferença máxima).
+- **Feito:** os dois chamam `rig_lib.apply_armature_scale` antes de exportar (no `colocar_retalhos` não faz nada
+  se a entrada já vier em metros) e aceitam caminhos de saída opcionais (`montar_rig.py -- <saida>`, que então não
+  mexe no `rosto.json`; `colocar_retalhos.py -- <prévia> <entrada> <saida>`). Sem argumentos gravam no aprovado,
+  como antes. O `colocar_retalhos` usa as funções de folga do `rig_lib` (mesmo código).
+- **Resultado do zero (saídas temporárias; relatório `assets/modelos/aldeao_v2/aldeao_corpo_reproducao.json`):**
+  nó Armature sem escala; mesmos nomes; passada 0,383 m/s; folga dos retalhos 1,40 a 3,16 mm (igual); cabelos
+  0,0012 mm; corpo 0,0003 mm; Boca 0,0001 mm. **Olhos: 0,27 mm** em 21 dos 693 vértices, a coluna central inteira
+  do retalho (ângulo 0, sobre a costura da simetria em x = 0). Então a meta "mesma diferença máxima" (< 0,01 mm)
+  **não foi atingida** nesse retalho.
+- **Investigação:** duas execuções do zero saem idênticas byte a byte (o processo é determinístico); refazer o
+  retalho sobre o aprovado antigo, ainda em escala 0,004, dá a mesma diferença (0,2731 mm), então **não é da
+  normalização**. O aprovado foi gerado em 29/09 às ~02:57 com os mesmos scripts e entradas (nenhum mudou desde
+  então), mas a coluna central dele não sai igual hoje. A causa provável é o raio da coluna do meio, que cai
+  exatamente na aresta da costura e fica sensível a detalhes da malha de entrada; não achei qual. Efeito: 0,27 mm
+  num retalho a 1,4–3,2 mm da pele, invisível; a folga medida é a mesma.
+- **Não troquei o aprovado pelo refeito:** isso muda o arquivo aprovado em 0,27 mm e pede o aval do Arthur. Se
+  trocar, a partir daí o processo reproduz o aprovado byte a byte.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Aldeão v2: regra de ergonomia (ergonomia.json) e script de medida reutilizável
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** `assets/modelos/aldeao_v2/ergonomia.json` com o que uma máquina precisa respeitar (alturas de peito,
+  ombros e quadril; alcance ombro-palma; avanço da barriga; distância mínima da alça aos ombros; maior raio de
+  manivela no peito em que as mãos fecham; nota do método) e o script de medida para qualquer corpo.
+- **Feito:** as funções de IK do `girar_roda.py` foram para `tools/arte/prova_operacao/operacao_lib.py`
+  (generalizadas: escala do mundo do armature, que inclui um nó pai; corpo achado sozinho). O `girar_roda.py`
+  usa a lib e, rodado numa pasta temporária sobre o corpo já normalizado, dá exatamente os números da prova (mesma
+  varredura, polos −180°/−45°, falta de 35,4 mm, 0,06 m). Script novo: `medir_ergonomia.py -- <corpo.glb> <saida.json>`
+  (a folga e a pegada da mão saem da espessura medida da mão; o polo escala com o alcance; varredura de raio a
+  cada 5 mm até o alcance). Testado na protagonista v1 (escala 0,0057 no mundo) só para ver que roda; saída
+  fora do repositório.
+- **Aldeão v2 (`ergonomia.json`):** altura 0,40; quadril 0,124; peito 0,194; ombros 0,213; alcance ombro-palma
+  0,1228 / 0,1225 (esq./dir.); barriga avança 64 mm à frente dos ombros (66 mm à frente do pivô, a 0,137 m);
+  distância mínima da manopla aos ombros 0,099 m no raio recomendado (0,102 m no raio 0,10); raio máximo no
+  peito: **0,06 m recomendado** (falta 0,1 mm). O limite de 5 mm da prova vai até 0,065 m com passo de 5 mm, mas ali a
+  mão já fica 3,7 mm fora, por isso o JSON traz os dois números e recomenda 0,06.
+- **Observação para a protagonista:** na v1, o cabelo longo preso aos ossos do tronco entra na medida da "barriga";
+  na v2 vale conferir isso quando o corpo existir.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.
+
+## 2026-09-29 — Aldeão v2: aprovado trocado pela saída do processo (reprodução byte a byte)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** com o aval do Arthur, trocar o `aldeao_corpo.glb` aprovado pela versão refeita do zero, depois de
+  conferir; rodar o processo mais uma vez e confirmar que sai idêntico byte a byte; registrar o hash.
+- **Conferência (refeito × aprovado anterior, `conferir_corpo.py`, que agora dá a diferença por malha):** corpo
+  **0,0087 mm**, Boca **0,0012 mm**; Olhos **0,273 mm** em 21 vértices, todos com x entre −0,05 e +0,14 mm (a coluna
+  central, como esperado); folga dos retalhos **1,40 a 3,16 mm** nos dois; cabelos 1 a 5 **0,0012 mm** (todos a 1,5 mm
+  do corpo); mesmos nomes de ossos, clipes, materiais e malhas; nó Armature sem escala. Tudo como esperado, então o
+  aprovado foi trocado.
+- **Segunda execução do zero** (`montar_rig.py -- <tmp>` e `colocar_retalhos.py -- <prévia> <tmp> <tmp>`): **idêntica
+  byte a byte** ao novo aprovado (`cmp`).
+- **Hash (SHA-256) do `assets/modelos/aldeao_v2/aldeao_corpo.glb`:**
+  `11c7d12bc4c522808546f61f3136031e2fce0cc6ccf9e789abd02779d110febf` (988.156 bytes).
+- Os relatórios ao lado (`aldeao_corpo_rig.json`, `aldeao_corpo_retalhos.json`) foram trocados pelos da execução nova
+  (só ruído de ponto flutuante e o campo `normalizacao`); `aldeao_corpo_reproducao.json` registra a troca e o hash.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+---
+
+## 2026-09-29 — Terceiro merge da `arte`: aldeão v2 normalizado e prova de operação
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** merge da branch `arte` (aldeão v2 com a Armature em escala 1, em metros, e a prova de operação em
+  `assets/modelos/prova_operacao/`), mantendo os dois lados nos conflitos do diário e do GDD; conferir o sha256
+  do `aldeao_corpo.glb`; `dotnet build` e `dotnet test` sem erros; commit e push.
+- **O que foi feito:**
+  - Merge da `arte` local em `195a10b` (a `origin/arte` estava atrás; a worktree da arte estava limpa).
+    Entram 13 commits: normalização do aldeão v2, `ergonomia.json`, a prova de operação (roda, clipe
+    `girar_roda-loop` por IK e a variante com raio 0,06 m), os passos 1 a 3 da protagonista v2 da arte e as
+    ferramentas em `tools/arte/`.
+  - Um conflito, no `docs/DIARIO.md`: os dois lados acrescentaram entradas no fim. Ficaram as da `master` e
+    depois as da `arte`. O `docs/GDD.md` não conflitou.
+  - `sha256` do `assets/modelos/aldeao_v2/aldeao_corpo.glb` depois do merge:
+    `11c7d12bc4c522808546f61f3136031e2fce0cc6ccf9e789abd02779d110febf`, igual ao informado.
+  - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 116 aprovados.
+- **O que deu errado:** nada.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 18:36–18:40 de relógio.

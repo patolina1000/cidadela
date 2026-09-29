@@ -1,0 +1,366 @@
+{
+  "normalizacao": {
+    "escala": 0.003999997861683369,
+    "curvas_de_posicao_escaladas": 144
+  },
+  "conferencia": {
+    "a": "/Users/arthurlopesdefranca/Projetos/cidadela-arte/assets/modelos/aldeao_v2/aldeao_corpo.glb",
+    "b": "/private/tmp/claude-501/-Users-arthurlopesdefranca-Projetos-cidadela-arte/83f28a5e-a699-4704-beb9-b82f44358126/scratchpad/corpo_norm.glb",
+    "gltf_armature": {
+      "a": {
+        "scale": [
+          0.003999997861683369,
+          0.003999997861683369,
+          0.003999997861683369
+        ],
+        "translation": [
+          3.322361226310022e-05,
+          0,
+          -0.006598751991987228
+        ],
+        "rotation": null
+      },
+      "b": {
+        "scale": null,
+        "translation": [
+          3.322361226310022e-05,
+          0,
+          -0.006598751991987228
+        ],
+        "rotation": null
+      }
+    },
+    "escala_objeto_armature": [
+      0.003999997861683369,
+      1.0
+    ],
+    "nomes_iguais": {
+      "ossos": true,
+      "clipes": true,
+      "materiais": true,
+      "malhas": true
+    },
+    "nomes": {
+      "clipes": [
+        "idle-loop",
+        "run-loop"
+      ],
+      "materiais": [
+        "pele",
+        "rosto_boca",
+        "rosto_olhos"
+      ],
+      "malhas": [
+        "Boca",
+        "Olhos",
+        "aldeao_corpo"
+      ]
+    },
+    "vertices": {
+      "Boca": [
+        153,
+        153
+      ],
+      "Olhos": [
+        693,
+        693
+      ],
+      "aldeao_corpo": [
+        2557,
+        2559
+      ]
+    },
+    "repouso_max_mm": 0.00016,
+    "cabelos_repouso_min_ate_corpo_mm": {
+      "cabelo_1": 1.5,
+      "cabelo_2": 1.5,
+      "cabelo_3": 1.5,
+      "cabelo_4": 1.5,
+      "cabelo_5": 1.5
+    },
+    "vertices_max_mm_por_quadro": {
+      "idle-loop@0%": 0.0049,
+      "idle-loop@25%": 0.00504,
+      "idle-loop@50%": 0.0048,
+      "idle-loop@75%": 0.00495,
+      "run-loop@0%": 0.00846,
+      "run-loop@25%": 0.00545,
+      "run-loop@50%": 0.00516,
+      "run-loop@75%": 0.00694
+    },
+    "vertices_max_mm": 0.00846,
+    "cabelos_max_mm_por_quadro": {
+      "idle-loop@0%": 0.00048,
+      "idle-loop@25%": 0.00057,
+      "idle-loop@50%": 0.00042,
+      "idle-loop@75%": 0.00048,
+      "run-loop@0%": 0.00045,
+      "run-loop@25%": 0.00073,
+      "run-loop@50%": 0.00122,
+      "run-loop@75%": 0.00102
+    },
+    "cabelos_max_mm": 0.00122,
+    "folga_retalhos": {
+      "a": {
+        "por_quadro": {
+          "idle-loop@1": {
+            "Olhos": [
+              2.0,
+              3.03
+            ],
+            "Boca": [
+              1.99,
+              2.33
+            ]
+          },
+          "idle-loop@48": {
+            "Olhos": [
+              2.0,
+              3.07
+            ],
+            "Boca": [
+              1.99,
+              2.39
+            ]
+          },
+          "idle-loop@96": {
+            "Olhos": [
+              2.0,
+              3.1
+            ],
+            "Boca": [
+              1.99,
+              2.4
+            ]
+          },
+          "idle-loop@144": {
+            "Olhos": [
+              2.0,
+              3.16
+            ],
+            "Boca": [
+              1.99,
+              2.45
+            ]
+          },
+          "idle-loop@192": {
+            "Olhos": [
+              2.0,
+              3.09
+            ],
+            "Boca": [
+              1.99,
+              2.43
+            ]
+          },
+          "idle-loop@240": {
+            "Olhos": [
+              2.0,
+              3.03
+            ],
+            "Boca": [
+              1.99,
+              2.33
+            ]
+          },
+          "run-loop@1": {
+            "Olhos": [
+              1.58,
+              2.0
+            ],
+            "Boca": [
+              1.52,
+              2.0
+            ]
+          },
+          "run-loop@4": {
+            "Olhos": [
+              1.4,
+              2.0
+            ],
+            "Boca": [
+              1.42,
+              2.0
+            ]
+          },
+          "run-loop@7": {
+            "Olhos": [
+              1.44,
+              2.0
+            ],
+            "Boca": [
+              1.53,
+              2.0
+            ]
+          },
+          "run-loop@11": {
+            "Olhos": [
+              1.41,
+              2.0
+            ],
+            "Boca": [
+              1.48,
+              2.0
+            ]
+          },
+          "run-loop@14": {
+            "Olhos": [
+              1.48,
+              2.0
+            ],
+            "Boca": [
+              1.43,
+              2.0
+            ]
+          },
+          "run-loop@18": {
+            "Olhos": [
+              1.58,
+              2.0
+            ],
+            "Boca": [
+              1.52,
+              2.0
+            ]
+          }
+        },
+        "min_mm": 1.4,
+        "max_mm": 3.16
+      },
+      "b": {
+        "por_quadro": {
+          "idle-loop@1": {
+            "Olhos": [
+              2.0,
+              3.03
+            ],
+            "Boca": [
+              1.99,
+              2.33
+            ]
+          },
+          "idle-loop@48": {
+            "Olhos": [
+              2.0,
+              3.07
+            ],
+            "Boca": [
+              1.99,
+              2.39
+            ]
+          },
+          "idle-loop@96": {
+            "Olhos": [
+              2.0,
+              3.1
+            ],
+            "Boca": [
+              1.99,
+              2.4
+            ]
+          },
+          "idle-loop@144": {
+            "Olhos": [
+              2.0,
+              3.16
+            ],
+            "Boca": [
+              1.99,
+              2.45
+            ]
+          },
+          "idle-loop@192": {
+            "Olhos": [
+              2.0,
+              3.09
+            ],
+            "Boca": [
+              1.99,
+              2.43
+            ]
+          },
+          "idle-loop@240": {
+            "Olhos": [
+              2.0,
+              3.03
+            ],
+            "Boca": [
+              1.99,
+              2.33
+            ]
+          },
+          "run-loop@1": {
+            "Olhos": [
+              1.58,
+              2.0
+            ],
+            "Boca": [
+              1.52,
+              2.0
+            ]
+          },
+          "run-loop@4": {
+            "Olhos": [
+              1.4,
+              2.0
+            ],
+            "Boca": [
+              1.42,
+              2.0
+            ]
+          },
+          "run-loop@7": {
+            "Olhos": [
+              1.44,
+              2.0
+            ],
+            "Boca": [
+              1.53,
+              2.0
+            ]
+          },
+          "run-loop@11": {
+            "Olhos": [
+              1.41,
+              2.0
+            ],
+            "Boca": [
+              1.48,
+              2.0
+            ]
+          },
+          "run-loop@14": {
+            "Olhos": [
+              1.48,
+              2.0
+            ],
+            "Boca": [
+              1.43,
+              2.0
+            ]
+          },
+          "run-loop@18": {
+            "Olhos": [
+              1.58,
+              2.0
+            ],
+            "Boca": [
+              1.52,
+              2.0
+            ]
+          }
+        },
+        "min_mm": 1.4,
+        "max_mm": 3.16
+      }
+    }
+  },
+  "metas": {
+    "vertices_menor_que_0_01_mm": true,
+    "folga_retalhos_entre_1_4_e_3_2_mm": true,
+    "cabelos_menor_que_0_01_mm": true,
+    "nomes_iguais": true,
+    "armature_sem_escala": true
+  },
+  "substituiu_o_aprovado": true
+}
