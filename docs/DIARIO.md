@@ -3913,3 +3913,25 @@ onde errou, correções manuais e quanto tempo levou.
   de 1/24 s a partir de 0, loop ligado.
 - **GLB do corpo sem mudança:** sha256 `3138cbf652d0d840c2ab911b676bb20d3116f14172e15163c8232a3fa74b49a2`.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+---
+
+## 2026-09-29 — Sexto merge da `arte`: pose inteira no import (remove_immutable_tracks = false)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`, com o MCP godot-ai.
+- **Pedido:** apagar os arquivos soltos em `assets/` que a arte versiona, merge, build e testes, commit e push;
+  depois forçar a reimportação e conferir pela data em `.godot/imported` que o corpo e os 4 clipes foram
+  reimportados.
+- **O que foi feito:**
+  - Nenhum arquivo solto em `assets/`. Merge de 2 commits: `tools/arte/godot_import.py` e o `.import` do corpo e
+    dos 4 clipes com `animation/remove_immutable_tracks=false` (mais 24 fps e otimizador desligado). Conflito só
+    no `docs/DIARIO.md` (os dois lados). sha256 do corpo continua `3138cbf6…`.
+  - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 116 aprovados. Commit do merge: `07c620c`.
+  - Reimportação forçada (escaneamento e reimportação dos 5 GLBs pelo MCP): os `.scn` em `.godot/imported` do
+    corpo e dos 4 clipes ficaram com data 19:47:55–56, conferida às 19:47:58.
+- **O que deu errado:** o hook de pre-commit barrou o merge: o gitleaks (regra `generic-api-key`) tomou por chave a
+  linha `OPTIMIZER_KEY = "optimizer/enabled"` de `tools/arte/godot_import.py`, que é o nome de uma opção do
+  Godot. Criei `.gitleaks.toml` com as regras padrão e uma exceção só para essa linha, como o próprio hook indica;
+  conferi que uma chave falsa continua sendo pega. Por isso este registro saiu num commit separado do merge.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:46–19:48 de relógio.
