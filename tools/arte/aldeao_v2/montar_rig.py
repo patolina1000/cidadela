@@ -79,7 +79,9 @@ def main() -> None:
     stride_feet = measure_stride(armature, bpy.data.actions["run-loop"])
     clips["run-loop"]["velocidade_raiz_m_s"] = round(root_speed, 3)
     clips["run-loop"]["passada_pelos_pes_m_s"] = round(stride_feet, 3) if not np.isnan(stride_feet) else None
-    stride = root_speed  # a velocidade em que os pés não deslizam é a do avanço original da raiz
+    # Depois de tirar o avanço da raiz, a velocidade em que os pés não deslizam é a medida pelos pés no clipe
+    # no lugar (o avanço original da investida incluía escorregão: 0,785 contra 0,502 m/s).
+    stride = stride_feet if not np.isnan(stride_feet) else root_speed
     clips["run-loop"]["passada_m_s"] = round(stride, 3)
     report["clipes"] = clips
     armature.animation_data.action = None

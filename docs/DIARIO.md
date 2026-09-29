@@ -2407,3 +2407,33 @@ onde errou, correções manuais e quanto tempo levou.
   `aldeao_corpo_retalhos.json` (janelas e folgas), prévias `assets/previews/aldeao_v2/retalhos_idle_jogo.png` e
   `retalhos_run_tres_quartos.png`.
 - **Créditos:** 0 neste passo. **Correções manuais:** nenhuma. **Tempo:** ~50 min.
+
+## 2026-09-29 — Aldeão v2, passo 9: GIFs de comparação de corridas e idles (9 créditos)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** nem a investida (512) nem o idle (0) convenceram pelos quadros. Montar GIFs em loop: 3 a 4 corridas
+  (512, Run_02, corrida e caminhada básicas grátis do rig; uma corridinha de passos curtos se houvesse) e 2 a 3
+  idles (o atual e alternativas calmas de pés juntos, respiração e balanço, ou cochilo de pé). Cada opção em
+  dois GIFs (câmera do jogo a 44 px ampliado 3× sem suavizar; de lado, maior), com o chão em grade deslizando na
+  velocidade da passada. Até 10 créditos.
+- **Escolha na biblioteca (pelos GIFs de prévia, grátis):** corridas: Run_02 (14). Não há na biblioteca uma
+  corridinha de passos curtos com o corpo pouco inclinado; as demais corridas são atléticas ou investidas.
+  Idles calmos de pés juntos: Idle_3 (243) e Idle_12 (252). Dozing_Elderly (38) parece sentado com as mãos nos
+  joelhos, não cochilo de pé; Idle_02/03 gesticulam. Gerados num só pedido: **9 créditos** (saldo 2.407 → 2.398).
+- **Ferramentas:** `gif_clipes.py` (Blender: importa cada opção, leva à escala do jogo, tira o avanço de raiz se
+  houver, mede a passada pela raiz e pelos pés, renderiza cada quadro do ciclo na câmera do jogo e de lado a
+  22° acima do chão, com um plano de grade de 10 cm que recua na velocidade da passada; idles com mais de 100
+  quadros a cada 2) e `gif_montar.py` (GIFs com paleta única por opção; jogo = 44 px pela altura de repouso,
+  ampliado 3× por vizinho mais próximo; lado = 256 px; folha `_opcoes.png` com um quadro e as medidas).
+  As opções fora do `aldeao_corpo.glb` usam a malha crua da Meshy com rig (a limpa só tem os dois clipes atuais).
+- **Medidas (chão = velocidade usada no GIF; laço = diferença entre último e primeiro quadro, 5 ossos):**
+  512 atual 12 q, 0,50 s, pés 0,502 m/s, laço 9,3 cm; Run_02 17 q, 0,71 s, 0,353 m/s, 4,3 cm; corrida básica
+  16 q, 0,67 s, 0,564 m/s, 0,8 cm; caminhada básica 25 q, 1,04 s, 0,193 m/s, 5,1 cm; idle atual 96 q, laço
+  3,9 cm; Idle_3 239 q (10 s), 2,8 cm; Idle_12 144 q (6 s), 0,3 cm.
+- **Correção de passada:** com o avanço de raiz removido, a velocidade em que os pés do 512 não deslizam é a
+  medida pelos pés (0,502 m/s), não a do avanço original (0,785, que incluía escorregão): `rosto.json` passou a
+  0,502 e o `montar_rig.py` usa a medida pelos pés.
+- **Problemas e correções:** GIF do jogo com cores embaralhadas (quantização quadro a quadro com alfa; agora uma
+  paleta por opção, sem alfa); a vista de lado ao nível do chão não mostrava a grade (câmera 22° acima).
+- **Saída:** `assets/previews/aldeao_v2/clipes/<opção>_jogo.gif`, `<opção>_lado.gif` e `_opcoes.png` (3,9 MB).
+- **Créditos:** 9. **Correções manuais:** nenhuma. **Tempo:** ~1 h 30 (metade em render).
