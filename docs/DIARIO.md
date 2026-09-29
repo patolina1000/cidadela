@@ -3830,7 +3830,7 @@ onde errou, correções manuais e quanto tempo levou.
   efeito; depois de um escaneamento e uma segunda chamada, os arquivos foram reimportados e as medidas acima
   saíram. A árvore continuou limpa.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 19:37–19:40 de relógio.
+- **Tempo:** 19:37–19:39 de relógio.
 
 ---
 
@@ -3857,8 +3857,23 @@ onde errou, correções manuais e quanto tempo levou.
   - Prints: `docs/prints/prova_operacao_entrada_run_antes.png`, `prova_operacao_entrada_run_depois.png` e
     `prova_operacao_entrada_idle_depois.png`. A câmera do jogo vê de cima; as pernas aparecem pouco, e os números
     acima são a evidência principal.
-- **Correção (da arte, não aplicada):** exportar o clipe com trilhas de todos os ossos, inclusive os parados, e
-  importar com `animation/remove_immutable_tracks` desligado. A alternativa do lado do jogo seria
-  `deterministic = true` com uma animação RESET; fica para decisão.
+- **Correção (da arte, não aplicada):** o GLB do clipe já traz as trilhas dos ossos parados (as pernas, com
+  variação 0°); quem as apaga é o importador, com `animation/remove_immutable_tracks = true` no `.import`.
+  Desligar essa opção no `.import` dos clipes resolve. A alternativa do lado do jogo seria `deterministic = true`
+  com uma animação RESET; fica para decisão.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 19:40–19:47 de relógio.
+- **Tempo:** 19:39–19:41 de relógio.
+
+---
+
+## 2026-09-29 — `docs/prova_operacao.md`: importado igual ao direto e ossos que congelam
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`. Só documentação.
+- **O que foi feito:** a linha do "importado" passou a 2,44 / 2,43 / 2,45 mm (otimizador desligado), igual à
+  leitura direta; o otimizador saiu das pendências (feito pela arte, com o corpo a 24 fps e as chaves a partir
+  de t = 0); entrou o item 7 com o resultado do teste das trilhas removidas (pernas, pescoço, `Spine`,
+  `LeftShoulder` e a posição do quadril congelam na pose do clipe anterior; a palma sai para 9,5 a 12,1 mm), e a
+  pendência nova: desligar `animation/remove_immutable_tracks` no `.import` dos clipes. Conferido: o GLB do
+  clipe tem trilhas dos 24 ossos (72 canais).
+- Corrigi os horários das duas entradas anteriores (19:37–19:39 e 19:39–19:41).
+- **Tempo:** 19:41–19:42 de relógio.

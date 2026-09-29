@@ -23,22 +23,36 @@ roda · roda do mouse aproxima · Q e E giram a câmera · Esc volta ao menu.
 
    | Clipe | 48 quadros, roda pausada | entre quadros | girando |
    |---|---|---|---|
-   | lido com as 49 chaves, postos A / B | 2,44 / 2,44 mm | 2,43 / 2,43 mm | 2,45 / 2,45 mm |
-   | importado pelo editor hoje, postos A / B | 3,89 / 3,43 mm | 3,88 / 3,38 mm | 3,91 / 3,44 mm |
+   | lido direto do GLB, postos A / B | 2,44 / 2,44 mm | 2,43 / 2,43 mm | 2,45 / 2,45 mm |
+   | importado pelo editor, otimizador desligado, postos A / B | 2,44 / 2,44 mm | 2,43 / 2,43 mm | 2,45 / 2,45 mm |
 
-   Com as 49 chaves, o jogo reproduz o Blender (2,4 a 2,5 mm, no mesmo pior quadro: 28 no A e 44 no B). A
-   diferença do importado vem do otimizador de animação do importador do Godot, ligado por padrão, que apaga
-   chaves com perda (as trilhas ficam com 36 a 48 chaves). Desligá-lo no `.import` dos clipes resolve (seção 5).
-   Num aldeão de 0,40 m, nenhum dos dois se vê.
+   O jogo reproduz o Blender (2,4 a 2,5 mm, no mesmo pior quadro: 28 no A e 44 no B). Isso depende do
+   otimizador de animação do importador desligado (regra do contrato): ligado, ele apagava chaves com perda e o
+   importado ficava em 3,9 / 3,4 mm. Esses números valem para o aldeão que entra no posto direto do repouso;
+   veja o item 7.
 3. **A roda manda, o aldeão segue.** Se a roda desacelera, para ou volta a girar, as mãos acompanham, porque o
    quadro vem da fase e não do tempo. Com 1 ou 2 operadores a velocidade visual é a mesma.
 4. **Tirar e devolver um operador é só trocar de modo.** Fora do posto ele volta ao idle; ao voltar, entra direto
-   no quadro da fase com 0,2 s de mistura (152 mm de distância no primeiro quadro, 4 mm aos 0,2 s).
+   no quadro da fase com 0,2 s de mistura (152 mm de distância no primeiro quadro, 4 mm aos 0,2 s). Mas veja o
+   item 7: os ossos que o clipe não anima ficam na pose do clipe anterior.
 5. **O golpe é um instante do clipe.** A arte marcou a fração 0,5 (a alça A passa embaixo, fim da empurrada do
    posto A). Contando quando a fase da roda passa por ali, os golpes batem exatamente com as voltas.
 6. **Um clipe por posto: provado.** Cada posto tem o seu clipe, gerado por IK para a geometria dele. O posto B
    usa `girar_roda_b.glb` com a mesma fórmula de fase do A e fica a 2,4 mm, como o A. Tocar o clipe de outro
    posto ao contrário ou espelhado não vale em produção (contrato de animação, "OPERAÇÃO").
+7. **Ossos sem trilha congelam na pose do clipe anterior.** O importador apaga as trilhas que não mudam
+   (`animation/remove_immutable_tracks`, ligada), e o AnimationPlayer do corpo tem `deterministic = false`, sem
+   animação RESET. O clipe importado fica só com a rotação de `Hips`, `Spine02`, `Spine01`, braços e
+   `RightShoulder`. Pernas, `neck`, `Head`, `Spine`, `LeftShoulder` e a posição do quadril mantêm o último valor
+   do clipe de antes:
+   - vindo do run, no meio da passada: as pernas congelam numa pose de corrida (joelho esquerdo a 133° da pose do
+     clipe; o mesmo valor aos 0,8 s e aos 3,3 s);
+   - vindo do idle: as pernas congelam na pose do idle (15 a 30° da pose do clipe);
+   - nos dois casos, a palma sai da manopla: 9,5 a 12,1 mm, contra 2,4 mm de quem começou no posto.
+
+   No GLB, o clipe traz essas trilhas (pernas paradas no repouso). A correção é da arte: desligar
+   `animation/remove_immutable_tracks` no `.import` dos clipes. A alternativa no jogo seria
+   `deterministic = true` com uma animação RESET; fica para decisão.
 
 ## 2. O QUE O CÓDIGO DE ANIMAÇÃO VAI PRECISAR (aldeão e protagonista)
 
@@ -104,14 +118,11 @@ Tudo em ticks de 20/s, sem Godot, com os números em `data/`.
 
 ## 5. PENDÊNCIAS PARA A ARTE
 
-Feito: clipes reexportados em metros e com a primeira chave em t = 0, `animation/fps = 24` no `.import`, clipe
-do posto B por IK e os `.import` gerados commitados na `arte`.
+Feito: clipes reexportados em metros e com a primeira chave em t = 0, `animation/fps = 24` no `.import` dos
+clipes e do corpo, clipe do posto B por IK, os `.import` gerados commitados na `arte`, o otimizador de animação
+desligado no `.import` do corpo e dos clipes, e o corpo reexportado com as chaves a partir de t = 0 (o run dura
+0,708 s, sem pose repetida no começo; passada medida no Godot: 0,383 m/s).
 
 Falta:
-- Desligar o otimizador de animação no `.import` dos clipes (`_subresources`), para o jogo ter as 49 chaves e os
-  2,4 mm do Blender. Vale como regra nova do contrato de animação, se o Arthur aprovar.
-- Commitar o `.import` do corpo com `animation/fps = 24`. Ele está modificado na worktree da arte, mas não
-  commitado; na `master` continua em 30.
-- Clipes do corpo (`run-loop` e `idle-loop`): a primeira chave está em t = 1/24 s. O Godot recria a chave em 0
-  igual à de 1/24, então cada volta do run ganha um quadro parado (0,75 s em vez de 0,708 s). No ciclo real, a
-  24 fps, a passada medida no Godot é 0,383 m/s, a mesma do `rosto.json`.
+- Desligar `animation/remove_immutable_tracks` no `.import` dos clipes, para os ossos parados terem trilha e não
+  congelarem na pose do clipe anterior (item 7).
