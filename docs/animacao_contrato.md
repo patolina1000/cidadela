@@ -13,7 +13,8 @@ máquinas vierem.
 - Armature com escala 1, em metros.
 - O sha256 do corpo aprovado fica registrado ao lado dele, na pasta do corpo.
 - Hoje: `assets/modelos/aldeao_v2/aldeao_corpo.glb`, sha256
-  `11c7d12bc4c522808546f61f3136031e2fce0cc6ccf9e789abd02779d110febf`.
+  `3138cbf652d0d840c2ab911b676bb20d3116f14172e15163c8232a3fa74b49a2` (reexportado com as chaves a partir de t = 0;
+  antes, `11c7d12b…`).
 
 ## CORPO
 
@@ -35,6 +36,9 @@ máquinas vierem.
 - O `.import` do clipe fixa `animation/fps = 24`. A ARTE gera e commita esse `.import`, rodando o Godot sem janela
   na worktree da arte.
 - A regra de 24 fps vale também para o `.import` do corpo (os clipes base que ele carrega).
+- O otimizador de animação do importador fica desligado no `.import` de todo clipe e do corpo
+  (`_subresources` → `nodes` → `PATH:AnimationPlayer` → `optimizer/enabled = false`), porque ele apaga chaves
+  com perda.
 
 ## clipes.json
 

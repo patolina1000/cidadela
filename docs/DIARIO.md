@@ -3795,3 +3795,14 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** nada.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:36–19:37 de relógio.
+
+---
+
+## 2026-09-29 — Contrato de animação: sha256 do corpo novo e otimizador desligado
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`. Só documentação.
+- **O que foi feito:** no `docs/animacao_contrato.md`, o sha256 do corpo passou a `3138cbf6…` (com o anterior
+  anotado), e FORMATO DO CLIPE ganhou a regra aprovada: o otimizador de animação do importador fica desligado no
+  `.import` de todo clipe e do corpo (`_subresources` → `nodes` → `PATH:AnimationPlayer` →
+  `optimizer/enabled = false`), porque ele apaga chaves com perda.
+- **Tempo:** 19:37 de relógio (poucos minutos).
