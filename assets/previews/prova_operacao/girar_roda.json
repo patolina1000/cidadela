@@ -8,8 +8,8 @@
       "RightForeArm": 0.0486,
       "RightHand": 0.0185
     },
-    "repouso_dif_rotacao_graus": 1.7e-05,
-    "repouso_dif_posicao_mm": 0.004696
+    "repouso_dif_rotacao_graus": 0.0,
+    "repouso_dif_posicao_mm": 1.5e-05
   },
   "ombros_m": {
     "Left": [
@@ -46,7 +46,7 @@
     },
     "0.06": {
       "distancia_manopla_m": 0.1001,
-      "falta_max_mm": 2.3
+      "falta_max_mm": 2.4
     },
     "0.07": {
       "distancia_manopla_m": 0.1001,
@@ -64,6 +64,7 @@
   "maior_raio_que_fecha_m": 0.06,
   "clipe": {
     "nome": "girar_roda-loop",
+    "arquivo": "clipes/girar_roda.glb",
     "fps": 24,
     "quadros": 48,
     "duracao_s": 2.0,
@@ -72,559 +73,997 @@
     "distancia_manopla_m": 0.103,
     "falta_max_mm": 35.4,
     "pior_quadro": {
-      "quadro": 29,
-      "fase": 0.5833,
+      "quadro": 28,
+      "fase_da_roda": 0.5833,
       "falta_esq_mm": 23.1,
-      "falta_dir_mm": 35.4,
-      "palma_esq_m": [
-        0.0635,
-        -0.0879,
-        0.1204
-      ]
+      "falta_dir_mm": 35.4
     },
     "quadros_fechados_5mm": 1,
     "laco_antes_cm": 0.0,
     "laco_depois_cm": 0.0,
     "quadros_misturados": 0,
-    "hips_posicao_faixa_unidades": 0.0
+    "hips_posicao_faixa_m": 0.0
   },
   "por_quadro": [
     {
-      "quadro": 1,
-      "fase": 0.0,
+      "quadro": 0,
+      "fase_da_roda": 0.0,
       "falta_esq_mm": 3.9,
-      "falta_dir_mm": 3.8,
-      "palma_esq_m": [
-        0.0186,
-        -0.0999,
-        0.2876
-      ]
+      "falta_dir_mm": 3.8
+    },
+    {
+      "quadro": 1,
+      "fase_da_roda": 0.0208,
+      "falta_esq_mm": 5.2,
+      "falta_dir_mm": 2.6
     },
     {
       "quadro": 2,
-      "fase": 0.0208,
-      "falta_esq_mm": 5.3,
-      "falta_dir_mm": 2.6,
-      "palma_esq_m": [
-        0.0063,
-        -0.099,
-        0.286
-      ]
+      "fase_da_roda": 0.0417,
+      "falta_esq_mm": 6.7,
+      "falta_dir_mm": 1.6
     },
     {
       "quadro": 3,
-      "fase": 0.0417,
-      "falta_esq_mm": 6.8,
-      "falta_dir_mm": 1.6,
-      "palma_esq_m": [
-        -0.0056,
-        -0.0979,
-        0.2828
-      ]
+      "fase_da_roda": 0.0625,
+      "falta_esq_mm": 8.4,
+      "falta_dir_mm": 0.8
     },
     {
       "quadro": 4,
-      "fase": 0.0625,
-      "falta_esq_mm": 8.4,
-      "falta_dir_mm": 0.8,
-      "palma_esq_m": [
-        -0.0166,
-        -0.0968,
-        0.278
-      ]
+      "fase_da_roda": 0.0833,
+      "falta_esq_mm": 10.1,
+      "falta_dir_mm": 0.3
     },
     {
       "quadro": 5,
-      "fase": 0.0833,
-      "falta_esq_mm": 10.1,
-      "falta_dir_mm": 0.3,
-      "palma_esq_m": [
-        -0.0268,
-        -0.0957,
-        0.2718
-      ]
+      "fase_da_roda": 0.1042,
+      "falta_esq_mm": 12.0,
+      "falta_dir_mm": 0.0
     },
     {
       "quadro": 6,
-      "fase": 0.1042,
-      "falta_esq_mm": 12.0,
-      "falta_dir_mm": 0.0,
-      "palma_esq_m": [
-        -0.0359,
-        -0.0946,
-        0.2644
-      ]
+      "fase_da_roda": 0.125,
+      "falta_esq_mm": 13.9,
+      "falta_dir_mm": 0.0
     },
     {
       "quadro": 7,
-      "fase": 0.125,
-      "falta_esq_mm": 13.9,
-      "falta_dir_mm": 0.0,
-      "palma_esq_m": [
-        -0.0438,
-        -0.0934,
-        0.256
-      ]
+      "fase_da_roda": 0.1458,
+      "falta_esq_mm": 15.9,
+      "falta_dir_mm": 0.1
     },
     {
       "quadro": 8,
-      "fase": 0.1458,
-      "falta_esq_mm": 15.9,
-      "falta_dir_mm": 0.1,
-      "palma_esq_m": [
-        -0.0503,
-        -0.0923,
-        0.2467
-      ]
+      "fase_da_roda": 0.1667,
+      "falta_esq_mm": 17.9,
+      "falta_dir_mm": 0.6
     },
     {
       "quadro": 9,
-      "fase": 0.1667,
-      "falta_esq_mm": 17.9,
-      "falta_dir_mm": 0.6,
-      "palma_esq_m": [
-        -0.0555,
-        -0.0912,
-        0.2368
-      ]
+      "fase_da_roda": 0.1875,
+      "falta_esq_mm": 20.0,
+      "falta_dir_mm": 1.4
     },
     {
       "quadro": 10,
-      "fase": 0.1875,
-      "falta_esq_mm": 20.0,
-      "falta_dir_mm": 1.3,
-      "palma_esq_m": [
-        -0.0592,
-        -0.0901,
-        0.2264
-      ]
+      "fase_da_roda": 0.2083,
+      "falta_esq_mm": 22.0,
+      "falta_dir_mm": 2.4
     },
     {
       "quadro": 11,
-      "fase": 0.2083,
-      "falta_esq_mm": 22.0,
-      "falta_dir_mm": 2.4,
-      "palma_esq_m": [
-        -0.0615,
-        -0.0891,
-        0.2157
-      ]
+      "fase_da_roda": 0.2292,
+      "falta_esq_mm": 24.0,
+      "falta_dir_mm": 3.7
     },
     {
       "quadro": 12,
-      "fase": 0.2292,
-      "falta_esq_mm": 24.0,
-      "falta_dir_mm": 3.7,
-      "palma_esq_m": [
-        -0.0624,
-        -0.0881,
-        0.205
-      ]
+      "fase_da_roda": 0.25,
+      "falta_esq_mm": 25.9,
+      "falta_dir_mm": 5.2
     },
     {
       "quadro": 13,
-      "fase": 0.25,
-      "falta_esq_mm": 25.9,
-      "falta_dir_mm": 5.2,
-      "palma_esq_m": [
-        -0.0618,
-        -0.0872,
-        0.1943
-      ]
+      "fase_da_roda": 0.2708,
+      "falta_esq_mm": 27.7,
+      "falta_dir_mm": 7.1
     },
     {
       "quadro": 14,
-      "fase": 0.2708,
-      "falta_esq_mm": 27.8,
-      "falta_dir_mm": 7.0,
-      "palma_esq_m": [
-        -0.06,
-        -0.0864,
-        0.1839
-      ]
+      "fase_da_roda": 0.2917,
+      "falta_esq_mm": 29.4,
+      "falta_dir_mm": 9.1
     },
     {
       "quadro": 15,
-      "fase": 0.2917,
-      "falta_esq_mm": 29.4,
-      "falta_dir_mm": 9.1,
-      "palma_esq_m": [
-        -0.0569,
-        -0.0857,
-        0.1739
-      ]
+      "fase_da_roda": 0.3125,
+      "falta_esq_mm": 30.9,
+      "falta_dir_mm": 11.3
     },
     {
       "quadro": 16,
-      "fase": 0.3125,
-      "falta_esq_mm": 30.9,
-      "falta_dir_mm": 11.3,
-      "palma_esq_m": [
-        -0.0526,
-        -0.085,
-        0.1643
-      ]
+      "fase_da_roda": 0.3333,
+      "falta_esq_mm": 32.1,
+      "falta_dir_mm": 13.7
     },
     {
       "quadro": 17,
-      "fase": 0.3333,
-      "falta_esq_mm": 32.2,
-      "falta_dir_mm": 13.7,
-      "palma_esq_m": [
-        -0.0473,
-        -0.0845,
-        0.1554
-      ]
+      "fase_da_roda": 0.3542,
+      "falta_esq_mm": 33.1,
+      "falta_dir_mm": 16.2
     },
     {
       "quadro": 18,
-      "fase": 0.3542,
-      "falta_esq_mm": 33.2,
-      "falta_dir_mm": 16.2,
-      "palma_esq_m": [
-        -0.041,
-        -0.084,
-        0.1472
-      ]
+      "fase_da_roda": 0.375,
+      "falta_esq_mm": 33.8,
+      "falta_dir_mm": 18.7
     },
     {
       "quadro": 19,
-      "fase": 0.375,
-      "falta_esq_mm": 33.9,
-      "falta_dir_mm": 18.7,
-      "palma_esq_m": [
-        -0.0338,
-        -0.0837,
-        0.1397
-      ]
+      "fase_da_roda": 0.3958,
+      "falta_esq_mm": 34.2,
+      "falta_dir_mm": 21.3
     },
     {
       "quadro": 20,
-      "fase": 0.3958,
+      "fase_da_roda": 0.4167,
       "falta_esq_mm": 34.3,
-      "falta_dir_mm": 21.3,
-      "palma_esq_m": [
-        -0.0259,
-        -0.0835,
-        0.1331
-      ]
+      "falta_dir_mm": 23.8
     },
     {
       "quadro": 21,
-      "fase": 0.4167,
-      "falta_esq_mm": 34.3,
-      "falta_dir_mm": 23.7,
-      "palma_esq_m": [
-        -0.0172,
-        -0.0834,
-        0.1274
-      ]
+      "fase_da_roda": 0.4375,
+      "falta_esq_mm": 34.0,
+      "falta_dir_mm": 26.1
     },
     {
       "quadro": 22,
-      "fase": 0.4375,
-      "falta_esq_mm": 34.0,
-      "falta_dir_mm": 26.1,
-      "palma_esq_m": [
-        -0.008,
-        -0.0834,
-        0.1226
-      ]
+      "fase_da_roda": 0.4583,
+      "falta_esq_mm": 33.4,
+      "falta_dir_mm": 28.3
     },
     {
       "quadro": 23,
-      "fase": 0.4583,
-      "falta_esq_mm": 33.4,
-      "falta_dir_mm": 28.3,
-      "palma_esq_m": [
-        0.0016,
-        -0.0836,
-        0.1189
-      ]
+      "fase_da_roda": 0.4792,
+      "falta_esq_mm": 32.4,
+      "falta_dir_mm": 30.3
     },
     {
       "quadro": 24,
-      "fase": 0.4792,
-      "falta_esq_mm": 32.4,
-      "falta_dir_mm": 30.3,
-      "palma_esq_m": [
-        0.0117,
-        -0.084,
-        0.1162
-      ]
+      "fase_da_roda": 0.5,
+      "falta_esq_mm": 31.0,
+      "falta_dir_mm": 32.0
     },
     {
       "quadro": 25,
-      "fase": 0.5,
-      "falta_esq_mm": 31.1,
-      "falta_dir_mm": 32.0,
-      "palma_esq_m": [
-        0.022,
-        -0.0845,
-        0.1146
-      ]
+      "fase_da_roda": 0.5208,
+      "falta_esq_mm": 29.4,
+      "falta_dir_mm": 33.4
     },
     {
       "quadro": 26,
-      "fase": 0.5208,
-      "falta_esq_mm": 29.4,
-      "falta_dir_mm": 33.4,
-      "palma_esq_m": [
-        0.0325,
-        -0.0851,
-        0.1142
-      ]
+      "fase_da_roda": 0.5417,
+      "falta_esq_mm": 27.5,
+      "falta_dir_mm": 34.4
     },
     {
       "quadro": 27,
-      "fase": 0.5417,
-      "falta_esq_mm": 27.5,
-      "falta_dir_mm": 34.4,
-      "palma_esq_m": [
-        0.043,
-        -0.0859,
-        0.115
-      ]
+      "fase_da_roda": 0.5625,
+      "falta_esq_mm": 25.4,
+      "falta_dir_mm": 35.1
     },
     {
       "quadro": 28,
-      "fase": 0.5625,
-      "falta_esq_mm": 25.4,
-      "falta_dir_mm": 35.1,
-      "palma_esq_m": [
-        0.0534,
-        -0.0869,
-        0.1171
-      ]
+      "fase_da_roda": 0.5833,
+      "falta_esq_mm": 23.1,
+      "falta_dir_mm": 35.4
     },
     {
       "quadro": 29,
-      "fase": 0.5833,
-      "falta_esq_mm": 23.1,
-      "falta_dir_mm": 35.4,
-      "palma_esq_m": [
-        0.0635,
-        -0.0879,
-        0.1204
-      ]
+      "fase_da_roda": 0.6042,
+      "falta_esq_mm": 20.7,
+      "falta_dir_mm": 35.4
     },
     {
       "quadro": 30,
-      "fase": 0.6042,
-      "falta_esq_mm": 20.7,
-      "falta_dir_mm": 35.4,
-      "palma_esq_m": [
-        0.0733,
-        -0.0892,
-        0.1251
-      ]
+      "fase_da_roda": 0.625,
+      "falta_esq_mm": 18.3,
+      "falta_dir_mm": 35.0
     },
     {
       "quadro": 31,
-      "fase": 0.625,
-      "falta_esq_mm": 18.3,
-      "falta_dir_mm": 35.0,
-      "palma_esq_m": [
-        0.0825,
-        -0.0905,
-        0.1311
-      ]
+      "fase_da_roda": 0.6458,
+      "falta_esq_mm": 15.8,
+      "falta_dir_mm": 34.2
     },
     {
       "quadro": 32,
-      "fase": 0.6458,
-      "falta_esq_mm": 15.8,
-      "falta_dir_mm": 34.2,
-      "palma_esq_m": [
-        0.0909,
-        -0.0919,
-        0.1384
-      ]
+      "fase_da_roda": 0.6667,
+      "falta_esq_mm": 13.4,
+      "falta_dir_mm": 33.2
     },
     {
       "quadro": 33,
-      "fase": 0.6667,
-      "falta_esq_mm": 13.4,
-      "falta_dir_mm": 33.2,
-      "palma_esq_m": [
-        0.0983,
-        -0.0933,
-        0.1469
-      ]
+      "fase_da_roda": 0.6875,
+      "falta_esq_mm": 11.1,
+      "falta_dir_mm": 31.9
     },
     {
       "quadro": 34,
-      "fase": 0.6875,
-      "falta_esq_mm": 11.1,
-      "falta_dir_mm": 31.9,
-      "palma_esq_m": [
-        0.1046,
-        -0.0948,
-        0.1565
-      ]
+      "fase_da_roda": 0.7083,
+      "falta_esq_mm": 8.9,
+      "falta_dir_mm": 30.4
     },
     {
       "quadro": 35,
-      "fase": 0.7083,
-      "falta_esq_mm": 8.9,
-      "falta_dir_mm": 30.3,
-      "palma_esq_m": [
-        0.1096,
-        -0.0962,
-        0.1672
-      ]
+      "fase_da_roda": 0.7292,
+      "falta_esq_mm": 6.9,
+      "falta_dir_mm": 28.6
     },
     {
       "quadro": 36,
-      "fase": 0.7292,
-      "falta_esq_mm": 7.0,
-      "falta_dir_mm": 28.6,
-      "palma_esq_m": [
-        0.1131,
-        -0.0976,
-        0.1787
-      ]
+      "fase_da_roda": 0.75,
+      "falta_esq_mm": 5.2,
+      "falta_dir_mm": 26.7
     },
     {
       "quadro": 37,
-      "fase": 0.75,
-      "falta_esq_mm": 5.2,
-      "falta_dir_mm": 26.7,
-      "palma_esq_m": [
-        0.1149,
-        -0.0989,
-        0.1908
-      ]
+      "fase_da_roda": 0.7708,
+      "falta_esq_mm": 3.7,
+      "falta_dir_mm": 24.7
     },
     {
       "quadro": 38,
-      "fase": 0.7708,
-      "falta_esq_mm": 3.7,
-      "falta_dir_mm": 24.7,
-      "palma_esq_m": [
-        0.1149,
-        -0.1,
-        0.2033
-      ]
+      "fase_da_roda": 0.7917,
+      "falta_esq_mm": 2.4,
+      "falta_dir_mm": 22.6
     },
     {
       "quadro": 39,
-      "fase": 0.7917,
-      "falta_esq_mm": 2.4,
-      "falta_dir_mm": 22.6,
-      "palma_esq_m": [
-        0.1132,
-        -0.101,
-        0.2158
-      ]
+      "fase_da_roda": 0.8125,
+      "falta_esq_mm": 1.4,
+      "falta_dir_mm": 20.5
     },
     {
       "quadro": 40,
-      "fase": 0.8125,
-      "falta_esq_mm": 1.4,
-      "falta_dir_mm": 20.5,
-      "palma_esq_m": [
-        0.1096,
-        -0.1018,
-        0.2281
-      ]
+      "fase_da_roda": 0.8333,
+      "falta_esq_mm": 0.7,
+      "falta_dir_mm": 18.4
     },
     {
       "quadro": 41,
-      "fase": 0.8333,
-      "falta_esq_mm": 0.7,
-      "falta_dir_mm": 18.4,
-      "palma_esq_m": [
-        0.1042,
-        -0.1024,
-        0.2398
-      ]
+      "fase_da_roda": 0.8542,
+      "falta_esq_mm": 0.2,
+      "falta_dir_mm": 16.3
     },
     {
       "quadro": 42,
-      "fase": 0.8542,
-      "falta_esq_mm": 0.3,
-      "falta_dir_mm": 16.2,
-      "palma_esq_m": [
-        0.0972,
-        -0.1028,
-        0.2508
-      ]
+      "fase_da_roda": 0.875,
+      "falta_esq_mm": 0.1,
+      "falta_dir_mm": 14.2
     },
     {
       "quadro": 43,
-      "fase": 0.875,
+      "fase_da_roda": 0.8958,
       "falta_esq_mm": 0.1,
-      "falta_dir_mm": 14.2,
-      "palma_esq_m": [
-        0.0887,
-        -0.1029,
-        0.2607
-      ]
+      "falta_dir_mm": 12.2
     },
     {
       "quadro": 44,
-      "fase": 0.8958,
-      "falta_esq_mm": 0.2,
-      "falta_dir_mm": 12.2,
-      "palma_esq_m": [
-        0.0788,
-        -0.1029,
-        0.2693
-      ]
+      "fase_da_roda": 0.9167,
+      "falta_esq_mm": 0.4,
+      "falta_dir_mm": 10.2
     },
     {
       "quadro": 45,
-      "fase": 0.9167,
-      "falta_esq_mm": 0.5,
-      "falta_dir_mm": 10.2,
-      "palma_esq_m": [
-        0.0679,
-        -0.1026,
-        0.2764
-      ]
+      "fase_da_roda": 0.9375,
+      "falta_esq_mm": 1.0,
+      "falta_dir_mm": 8.4
     },
     {
       "quadro": 46,
-      "fase": 0.9375,
-      "falta_esq_mm": 1.0,
-      "falta_dir_mm": 8.4,
-      "palma_esq_m": [
-        0.0561,
-        -0.1022,
-        0.2818
-      ]
+      "fase_da_roda": 0.9583,
+      "falta_esq_mm": 1.8,
+      "falta_dir_mm": 6.7
     },
     {
       "quadro": 47,
-      "fase": 0.9583,
-      "falta_esq_mm": 1.8,
-      "falta_dir_mm": 6.7,
-      "palma_esq_m": [
-        0.0438,
-        -0.1016,
-        0.2855
-      ]
-    },
-    {
-      "quadro": 48,
-      "fase": 0.9792,
-      "falta_esq_mm": 2.8,
-      "falta_dir_mm": 5.2,
-      "palma_esq_m": [
-        0.0312,
-        -0.1008,
-        0.2874
-      ]
+      "fase_da_roda": 0.9792,
+      "falta_esq_mm": 2.7,
+      "falta_dir_mm": 5.2
     }
   ],
+  "exportacao": {
+    "normalizacao": {
+      "escala": 1.0,
+      "curvas_de_posicao_escaladas": 0
+    },
+    "deslocamento_quadros": {
+      "girar_roda-loop": -0.0
+    }
+  },
+  "gltf": {
+    "armature": null,
+    "malhas": 0,
+    "animacoes": {
+      "girar_roda-loop": {
+        "t0_s": 0,
+        "t1_s": 2,
+        "chaves": 49,
+        "fps": 24.0
+      }
+    }
+  },
+  "postos": {
+    "A": {
+      "poles_graus": {
+        "Left": -180,
+        "Right": -45
+      },
+      "clipe": {
+        "nome": "girar_roda-loop",
+        "arquivo": "clipes/girar_roda.glb",
+        "fps": 24,
+        "quadros": 48,
+        "duracao_s": 2.0,
+        "raio_m": 0.1,
+        "eixo_altura_m": 0.19,
+        "distancia_manopla_m": 0.103,
+        "falta_max_mm": 35.4,
+        "pior_quadro": {
+          "quadro": 28,
+          "fase_da_roda": 0.5833,
+          "falta_esq_mm": 23.1,
+          "falta_dir_mm": 35.4
+        },
+        "quadros_fechados_5mm": 1,
+        "laco_antes_cm": 0.0,
+        "laco_depois_cm": 0.0,
+        "quadros_misturados": 0,
+        "hips_posicao_faixa_m": 0.0
+      },
+      "por_quadro": [
+        {
+          "quadro": 0,
+          "fase_da_roda": 0.0,
+          "falta_esq_mm": 3.9,
+          "falta_dir_mm": 3.8
+        },
+        {
+          "quadro": 1,
+          "fase_da_roda": 0.0208,
+          "falta_esq_mm": 5.2,
+          "falta_dir_mm": 2.6
+        },
+        {
+          "quadro": 2,
+          "fase_da_roda": 0.0417,
+          "falta_esq_mm": 6.7,
+          "falta_dir_mm": 1.6
+        },
+        {
+          "quadro": 3,
+          "fase_da_roda": 0.0625,
+          "falta_esq_mm": 8.4,
+          "falta_dir_mm": 0.8
+        },
+        {
+          "quadro": 4,
+          "fase_da_roda": 0.0833,
+          "falta_esq_mm": 10.1,
+          "falta_dir_mm": 0.3
+        },
+        {
+          "quadro": 5,
+          "fase_da_roda": 0.1042,
+          "falta_esq_mm": 12.0,
+          "falta_dir_mm": 0.0
+        },
+        {
+          "quadro": 6,
+          "fase_da_roda": 0.125,
+          "falta_esq_mm": 13.9,
+          "falta_dir_mm": 0.0
+        },
+        {
+          "quadro": 7,
+          "fase_da_roda": 0.1458,
+          "falta_esq_mm": 15.9,
+          "falta_dir_mm": 0.1
+        },
+        {
+          "quadro": 8,
+          "fase_da_roda": 0.1667,
+          "falta_esq_mm": 17.9,
+          "falta_dir_mm": 0.6
+        },
+        {
+          "quadro": 9,
+          "fase_da_roda": 0.1875,
+          "falta_esq_mm": 20.0,
+          "falta_dir_mm": 1.4
+        },
+        {
+          "quadro": 10,
+          "fase_da_roda": 0.2083,
+          "falta_esq_mm": 22.0,
+          "falta_dir_mm": 2.4
+        },
+        {
+          "quadro": 11,
+          "fase_da_roda": 0.2292,
+          "falta_esq_mm": 24.0,
+          "falta_dir_mm": 3.7
+        },
+        {
+          "quadro": 12,
+          "fase_da_roda": 0.25,
+          "falta_esq_mm": 25.9,
+          "falta_dir_mm": 5.2
+        },
+        {
+          "quadro": 13,
+          "fase_da_roda": 0.2708,
+          "falta_esq_mm": 27.7,
+          "falta_dir_mm": 7.1
+        },
+        {
+          "quadro": 14,
+          "fase_da_roda": 0.2917,
+          "falta_esq_mm": 29.4,
+          "falta_dir_mm": 9.1
+        },
+        {
+          "quadro": 15,
+          "fase_da_roda": 0.3125,
+          "falta_esq_mm": 30.9,
+          "falta_dir_mm": 11.3
+        },
+        {
+          "quadro": 16,
+          "fase_da_roda": 0.3333,
+          "falta_esq_mm": 32.1,
+          "falta_dir_mm": 13.7
+        },
+        {
+          "quadro": 17,
+          "fase_da_roda": 0.3542,
+          "falta_esq_mm": 33.1,
+          "falta_dir_mm": 16.2
+        },
+        {
+          "quadro": 18,
+          "fase_da_roda": 0.375,
+          "falta_esq_mm": 33.8,
+          "falta_dir_mm": 18.7
+        },
+        {
+          "quadro": 19,
+          "fase_da_roda": 0.3958,
+          "falta_esq_mm": 34.2,
+          "falta_dir_mm": 21.3
+        },
+        {
+          "quadro": 20,
+          "fase_da_roda": 0.4167,
+          "falta_esq_mm": 34.3,
+          "falta_dir_mm": 23.8
+        },
+        {
+          "quadro": 21,
+          "fase_da_roda": 0.4375,
+          "falta_esq_mm": 34.0,
+          "falta_dir_mm": 26.1
+        },
+        {
+          "quadro": 22,
+          "fase_da_roda": 0.4583,
+          "falta_esq_mm": 33.4,
+          "falta_dir_mm": 28.3
+        },
+        {
+          "quadro": 23,
+          "fase_da_roda": 0.4792,
+          "falta_esq_mm": 32.4,
+          "falta_dir_mm": 30.3
+        },
+        {
+          "quadro": 24,
+          "fase_da_roda": 0.5,
+          "falta_esq_mm": 31.0,
+          "falta_dir_mm": 32.0
+        },
+        {
+          "quadro": 25,
+          "fase_da_roda": 0.5208,
+          "falta_esq_mm": 29.4,
+          "falta_dir_mm": 33.4
+        },
+        {
+          "quadro": 26,
+          "fase_da_roda": 0.5417,
+          "falta_esq_mm": 27.5,
+          "falta_dir_mm": 34.4
+        },
+        {
+          "quadro": 27,
+          "fase_da_roda": 0.5625,
+          "falta_esq_mm": 25.4,
+          "falta_dir_mm": 35.1
+        },
+        {
+          "quadro": 28,
+          "fase_da_roda": 0.5833,
+          "falta_esq_mm": 23.1,
+          "falta_dir_mm": 35.4
+        },
+        {
+          "quadro": 29,
+          "fase_da_roda": 0.6042,
+          "falta_esq_mm": 20.7,
+          "falta_dir_mm": 35.4
+        },
+        {
+          "quadro": 30,
+          "fase_da_roda": 0.625,
+          "falta_esq_mm": 18.3,
+          "falta_dir_mm": 35.0
+        },
+        {
+          "quadro": 31,
+          "fase_da_roda": 0.6458,
+          "falta_esq_mm": 15.8,
+          "falta_dir_mm": 34.2
+        },
+        {
+          "quadro": 32,
+          "fase_da_roda": 0.6667,
+          "falta_esq_mm": 13.4,
+          "falta_dir_mm": 33.2
+        },
+        {
+          "quadro": 33,
+          "fase_da_roda": 0.6875,
+          "falta_esq_mm": 11.1,
+          "falta_dir_mm": 31.9
+        },
+        {
+          "quadro": 34,
+          "fase_da_roda": 0.7083,
+          "falta_esq_mm": 8.9,
+          "falta_dir_mm": 30.4
+        },
+        {
+          "quadro": 35,
+          "fase_da_roda": 0.7292,
+          "falta_esq_mm": 6.9,
+          "falta_dir_mm": 28.6
+        },
+        {
+          "quadro": 36,
+          "fase_da_roda": 0.75,
+          "falta_esq_mm": 5.2,
+          "falta_dir_mm": 26.7
+        },
+        {
+          "quadro": 37,
+          "fase_da_roda": 0.7708,
+          "falta_esq_mm": 3.7,
+          "falta_dir_mm": 24.7
+        },
+        {
+          "quadro": 38,
+          "fase_da_roda": 0.7917,
+          "falta_esq_mm": 2.4,
+          "falta_dir_mm": 22.6
+        },
+        {
+          "quadro": 39,
+          "fase_da_roda": 0.8125,
+          "falta_esq_mm": 1.4,
+          "falta_dir_mm": 20.5
+        },
+        {
+          "quadro": 40,
+          "fase_da_roda": 0.8333,
+          "falta_esq_mm": 0.7,
+          "falta_dir_mm": 18.4
+        },
+        {
+          "quadro": 41,
+          "fase_da_roda": 0.8542,
+          "falta_esq_mm": 0.2,
+          "falta_dir_mm": 16.3
+        },
+        {
+          "quadro": 42,
+          "fase_da_roda": 0.875,
+          "falta_esq_mm": 0.1,
+          "falta_dir_mm": 14.2
+        },
+        {
+          "quadro": 43,
+          "fase_da_roda": 0.8958,
+          "falta_esq_mm": 0.1,
+          "falta_dir_mm": 12.2
+        },
+        {
+          "quadro": 44,
+          "fase_da_roda": 0.9167,
+          "falta_esq_mm": 0.4,
+          "falta_dir_mm": 10.2
+        },
+        {
+          "quadro": 45,
+          "fase_da_roda": 0.9375,
+          "falta_esq_mm": 1.0,
+          "falta_dir_mm": 8.4
+        },
+        {
+          "quadro": 46,
+          "fase_da_roda": 0.9583,
+          "falta_esq_mm": 1.8,
+          "falta_dir_mm": 6.7
+        },
+        {
+          "quadro": 47,
+          "fase_da_roda": 0.9792,
+          "falta_esq_mm": 2.7,
+          "falta_dir_mm": 5.2
+        }
+      ],
+      "gltf": {
+        "armature": null,
+        "malhas": 0,
+        "animacoes": {
+          "girar_roda-loop": {
+            "t0_s": 0,
+            "t1_s": 2,
+            "chaves": 49,
+            "fps": 24.0
+          }
+        }
+      }
+    },
+    "B": {
+      "poles_graus": {
+        "Left": -180,
+        "Right": -45
+      },
+      "clipe": {
+        "nome": "girar_roda_b-loop",
+        "arquivo": "clipes/girar_roda_b.glb",
+        "fps": 24,
+        "quadros": 48,
+        "duracao_s": 2.0,
+        "raio_m": 0.1,
+        "eixo_altura_m": 0.19,
+        "distancia_manopla_m": 0.103,
+        "falta_max_mm": 35.4,
+        "pior_quadro": {
+          "quadro": 43,
+          "fase_da_roda": 0.8958,
+          "falta_esq_mm": 20.7,
+          "falta_dir_mm": 35.4
+        },
+        "quadros_fechados_5mm": 1,
+        "laco_antes_cm": 0.0,
+        "laco_depois_cm": 0.0,
+        "quadros_misturados": 0,
+        "hips_posicao_faixa_m": 0.0
+      },
+      "por_quadro": [
+        {
+          "quadro": 0,
+          "fase_da_roda": 0.0,
+          "falta_esq_mm": 31.0,
+          "falta_dir_mm": 32.0
+        },
+        {
+          "quadro": 1,
+          "fase_da_roda": 0.0208,
+          "falta_esq_mm": 32.4,
+          "falta_dir_mm": 30.3
+        },
+        {
+          "quadro": 2,
+          "fase_da_roda": 0.0417,
+          "falta_esq_mm": 33.4,
+          "falta_dir_mm": 28.3
+        },
+        {
+          "quadro": 3,
+          "fase_da_roda": 0.0625,
+          "falta_esq_mm": 34.0,
+          "falta_dir_mm": 26.1
+        },
+        {
+          "quadro": 4,
+          "fase_da_roda": 0.0833,
+          "falta_esq_mm": 34.3,
+          "falta_dir_mm": 23.8
+        },
+        {
+          "quadro": 5,
+          "fase_da_roda": 0.1042,
+          "falta_esq_mm": 34.2,
+          "falta_dir_mm": 21.3
+        },
+        {
+          "quadro": 6,
+          "fase_da_roda": 0.125,
+          "falta_esq_mm": 33.8,
+          "falta_dir_mm": 18.7
+        },
+        {
+          "quadro": 7,
+          "fase_da_roda": 0.1458,
+          "falta_esq_mm": 33.1,
+          "falta_dir_mm": 16.2
+        },
+        {
+          "quadro": 8,
+          "fase_da_roda": 0.1667,
+          "falta_esq_mm": 32.1,
+          "falta_dir_mm": 13.7
+        },
+        {
+          "quadro": 9,
+          "fase_da_roda": 0.1875,
+          "falta_esq_mm": 30.9,
+          "falta_dir_mm": 11.3
+        },
+        {
+          "quadro": 10,
+          "fase_da_roda": 0.2083,
+          "falta_esq_mm": 29.4,
+          "falta_dir_mm": 9.1
+        },
+        {
+          "quadro": 11,
+          "fase_da_roda": 0.2292,
+          "falta_esq_mm": 27.7,
+          "falta_dir_mm": 7.1
+        },
+        {
+          "quadro": 12,
+          "fase_da_roda": 0.25,
+          "falta_esq_mm": 25.9,
+          "falta_dir_mm": 5.2
+        },
+        {
+          "quadro": 13,
+          "fase_da_roda": 0.2708,
+          "falta_esq_mm": 24.0,
+          "falta_dir_mm": 3.7
+        },
+        {
+          "quadro": 14,
+          "fase_da_roda": 0.2917,
+          "falta_esq_mm": 22.0,
+          "falta_dir_mm": 2.4
+        },
+        {
+          "quadro": 15,
+          "fase_da_roda": 0.3125,
+          "falta_esq_mm": 20.0,
+          "falta_dir_mm": 1.4
+        },
+        {
+          "quadro": 16,
+          "fase_da_roda": 0.3333,
+          "falta_esq_mm": 17.9,
+          "falta_dir_mm": 0.6
+        },
+        {
+          "quadro": 17,
+          "fase_da_roda": 0.3542,
+          "falta_esq_mm": 15.9,
+          "falta_dir_mm": 0.1
+        },
+        {
+          "quadro": 18,
+          "fase_da_roda": 0.375,
+          "falta_esq_mm": 13.9,
+          "falta_dir_mm": 0.0
+        },
+        {
+          "quadro": 19,
+          "fase_da_roda": 0.3958,
+          "falta_esq_mm": 12.0,
+          "falta_dir_mm": 0.0
+        },
+        {
+          "quadro": 20,
+          "fase_da_roda": 0.4167,
+          "falta_esq_mm": 10.1,
+          "falta_dir_mm": 0.3
+        },
+        {
+          "quadro": 21,
+          "fase_da_roda": 0.4375,
+          "falta_esq_mm": 8.4,
+          "falta_dir_mm": 0.8
+        },
+        {
+          "quadro": 22,
+          "fase_da_roda": 0.4583,
+          "falta_esq_mm": 6.7,
+          "falta_dir_mm": 1.6
+        },
+        {
+          "quadro": 23,
+          "fase_da_roda": 0.4792,
+          "falta_esq_mm": 5.2,
+          "falta_dir_mm": 2.6
+        },
+        {
+          "quadro": 24,
+          "fase_da_roda": 0.5,
+          "falta_esq_mm": 3.9,
+          "falta_dir_mm": 3.8
+        },
+        {
+          "quadro": 25,
+          "fase_da_roda": 0.5208,
+          "falta_esq_mm": 2.7,
+          "falta_dir_mm": 5.2
+        },
+        {
+          "quadro": 26,
+          "fase_da_roda": 0.5417,
+          "falta_esq_mm": 1.8,
+          "falta_dir_mm": 6.7
+        },
+        {
+          "quadro": 27,
+          "fase_da_roda": 0.5625,
+          "falta_esq_mm": 1.0,
+          "falta_dir_mm": 8.4
+        },
+        {
+          "quadro": 28,
+          "fase_da_roda": 0.5833,
+          "falta_esq_mm": 0.4,
+          "falta_dir_mm": 10.2
+        },
+        {
+          "quadro": 29,
+          "fase_da_roda": 0.6042,
+          "falta_esq_mm": 0.1,
+          "falta_dir_mm": 12.2
+        },
+        {
+          "quadro": 30,
+          "fase_da_roda": 0.625,
+          "falta_esq_mm": 0.1,
+          "falta_dir_mm": 14.2
+        },
+        {
+          "quadro": 31,
+          "fase_da_roda": 0.6458,
+          "falta_esq_mm": 0.2,
+          "falta_dir_mm": 16.3
+        },
+        {
+          "quadro": 32,
+          "fase_da_roda": 0.6667,
+          "falta_esq_mm": 0.7,
+          "falta_dir_mm": 18.4
+        },
+        {
+          "quadro": 33,
+          "fase_da_roda": 0.6875,
+          "falta_esq_mm": 1.4,
+          "falta_dir_mm": 20.5
+        },
+        {
+          "quadro": 34,
+          "fase_da_roda": 0.7083,
+          "falta_esq_mm": 2.4,
+          "falta_dir_mm": 22.6
+        },
+        {
+          "quadro": 35,
+          "fase_da_roda": 0.7292,
+          "falta_esq_mm": 3.7,
+          "falta_dir_mm": 24.7
+        },
+        {
+          "quadro": 36,
+          "fase_da_roda": 0.75,
+          "falta_esq_mm": 5.2,
+          "falta_dir_mm": 26.7
+        },
+        {
+          "quadro": 37,
+          "fase_da_roda": 0.7708,
+          "falta_esq_mm": 6.9,
+          "falta_dir_mm": 28.6
+        },
+        {
+          "quadro": 38,
+          "fase_da_roda": 0.7917,
+          "falta_esq_mm": 8.9,
+          "falta_dir_mm": 30.3
+        },
+        {
+          "quadro": 39,
+          "fase_da_roda": 0.8125,
+          "falta_esq_mm": 11.1,
+          "falta_dir_mm": 31.9
+        },
+        {
+          "quadro": 40,
+          "fase_da_roda": 0.8333,
+          "falta_esq_mm": 13.4,
+          "falta_dir_mm": 33.2
+        },
+        {
+          "quadro": 41,
+          "fase_da_roda": 0.8542,
+          "falta_esq_mm": 15.8,
+          "falta_dir_mm": 34.2
+        },
+        {
+          "quadro": 42,
+          "fase_da_roda": 0.875,
+          "falta_esq_mm": 18.3,
+          "falta_dir_mm": 35.0
+        },
+        {
+          "quadro": 43,
+          "fase_da_roda": 0.8958,
+          "falta_esq_mm": 20.7,
+          "falta_dir_mm": 35.4
+        },
+        {
+          "quadro": 44,
+          "fase_da_roda": 0.9167,
+          "falta_esq_mm": 23.1,
+          "falta_dir_mm": 35.4
+        },
+        {
+          "quadro": 45,
+          "fase_da_roda": 0.9375,
+          "falta_esq_mm": 25.4,
+          "falta_dir_mm": 35.1
+        },
+        {
+          "quadro": 46,
+          "fase_da_roda": 0.9583,
+          "falta_esq_mm": 27.5,
+          "falta_dir_mm": 34.4
+        },
+        {
+          "quadro": 47,
+          "fase_da_roda": 0.9792,
+          "falta_esq_mm": 29.4,
+          "falta_dir_mm": 33.4
+        }
+      ],
+      "gltf": {
+        "armature": null,
+        "malhas": 0,
+        "animacoes": {
+          "girar_roda_b-loop": {
+            "t0_s": 0,
+            "t1_s": 2,
+            "chaves": 49,
+            "fps": 24.0
+          }
+        }
+      }
+    }
+  },
   "roda": {
-    "conferencia_sentido_m": 3.414284955677271e-08,
+    "conferencia_postos_m": 3.0719530773294423e-08,
     "knob_y_m": 0.07500000000000001,
     "centro_no_espaco_do_aldeao_blender_m": [
       0.0,
-      -0.17798884212970734,
-      0.1899999976158142
+      -0.17798890841007234,
+      0.19
     ]
   }
 }

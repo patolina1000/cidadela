@@ -1,24 +1,54 @@
 {
   "girar_roda-loop": {
+    "arquivo": "clipes/girar_roda.glb",
     "duracao_s": 2.0,
     "quadros": 48,
     "fps": 24,
-    "fase0": "alça A (face +Z da roda) no topo",
     "conta_na_fracao": 0.5,
-    "conta_significa": "a alça A passa embaixo (fim da empurrada para baixo)",
-    "roda": {
-      "arquivo": "roda.glb",
-      "raio_alca_m": 0.1,
-      "angulo": "em volta do +Z local da roda: -360° × fase (fase 0 = alça A no topo)",
-      "posicao_no_espaco_do_aldeao_m": [
+    "conta_significa": "a roda passa pela fase 0,5 (alça A embaixo, alça B no topo): fim da empurrada do posto A",
+    "posto": {
+      "nome": "A",
+      "alca": "A",
+      "posicao_m": [
         0.0,
-        0.19,
+        -0.19,
         0.178
       ],
-      "giro_em_y_no_espaco_do_aldeao_graus": 180.0,
-      "nota": "espaço do aldeão = glTF, aldeão olhando +Z; a roda fica na frente dele com a face +Z virada para ele"
+      "giro_em_y_graus": 180.0,
+      "fase": "quadro = fase_da_roda × 48 (t = fase_da_roda × 2 s; primeira chave em t = 0); fase 0 = alça A no topo; sem inverter nem defasar",
+      "referencia": "espaço da roda (glTF): pivô no eixo, eixo em +Z; posição = pés do aldeão; giro 0 = aldeão olhando +Z"
     },
-    "lado_oposto": "o segundo aldeão, do outro lado, segura a alça B: toca o mesmo clipe AO CONTRÁRIO com fase 0,5 − t (visto do outro lado a roda gira no sentido oposto); com +0,5 para a frente as mãos só coincidem em 2 instantes",
+    "peca": {
+      "arquivo": "roda.glb",
+      "raio_alca_m": 0.1,
+      "giro": "−360° × fase_da_roda em volta do +Z local (fase 0 = alça A no topo)"
+    },
+    "falta_max_mm": 35.4
+  },
+  "girar_roda_b-loop": {
+    "arquivo": "clipes/girar_roda_b.glb",
+    "duracao_s": 2.0,
+    "quadros": 48,
+    "fps": 24,
+    "conta_na_fracao": 0.5,
+    "conta_significa": "a roda passa pela fase 0,5 (alça A embaixo, alça B no topo): fim da empurrada do posto A",
+    "posto": {
+      "nome": "B",
+      "alca": "B",
+      "posicao_m": [
+        0.0,
+        -0.19,
+        -0.178
+      ],
+      "giro_em_y_graus": 0.0,
+      "fase": "quadro = fase_da_roda × 48 (t = fase_da_roda × 2 s; primeira chave em t = 0); fase 0 = alça A no topo; sem inverter nem defasar",
+      "referencia": "espaço da roda (glTF): pivô no eixo, eixo em +Z; posição = pés do aldeão; giro 0 = aldeão olhando +Z"
+    },
+    "peca": {
+      "arquivo": "roda.glb",
+      "raio_alca_m": 0.1,
+      "giro": "−360° × fase_da_roda em volta do +Z local (fase 0 = alça A no topo)"
+    },
     "falta_max_mm": 35.4
   }
 }

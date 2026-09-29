@@ -2838,3 +2838,21 @@ onde errou, correções manuais e quanto tempo levou.
 - **Pendência:** o `gif_roda.py` (GIFs da prova) ainda usa o atalho de tocar o clipe A ao contrário e a primeira
   chave no quadro 1; precisa ser atualizado antes de refazer os GIFs.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Prova de operação: clipe próprio do posto B (girar_roda_b-loop) e clipes.json por posto
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** clipe por IK para o aldeão B, do outro lado, segurando a alça B; a fase continua a da roda; clipes.json
+  da variante_r06 com um bloco por posto; palma-manopla dos dois postos nos 48 quadros.
+- **Feito:** `girar_roda.py` rodado na variante (0,06 m) e na raiz (0,10 m). Cada posto num GLB próprio:
+  `clipes/girar_roda.glb` (`girar_roda-loop`, posto A) e `clipes/girar_roda_b.glb` (`girar_roda_b-loop`, posto B),
+  mais limpo para o jogo carregar só o clipe do posto ocupado. Os dois: nó Armature sem escala, sem malha, chaves de
+  0 a 2,0 s, 49 chaves, 24 fps, laço 0,0 cm, Hips parado. A raiz ganhou o mesmo formato.
+- **Postos (espaço da roda, glTF: pivô no eixo, eixo +Z; posição = pés):** A em (0; −0,19; +0,1751), giro 180°
+  (olha para −Z, a face da alça A); B em (0; −0,19; −0,1751), giro 0°. Fase: quadro = fase da roda × 48, igual nos dois.
+  Na raiz, ±0,178.
+- **Conferência independente (`conferir_clipes.py`: corpo aprovado posto em cada posto, roda física girando
+  −360° × fase, manopla da alça do posto):** repouso igual ao do corpo a 0,0001 mm; palma-manopla nos 48 quadros:
+  variante **A 2,4 mm, B 2,4 mm** no pior quadro; raiz A 35,4 mm, B 35,4 mm (o problema de alcance conhecido).
+  Contra o atalho antigo (B tocando A ao contrário), a diferença é de 0,1 mm, como esperado com a roda simétrica.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
