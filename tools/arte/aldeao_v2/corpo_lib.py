@@ -179,29 +179,38 @@ def game_camera_offset(distance: float) -> Vector:
 # ---------- retalhos do rosto ----------
 
 def face_patch(body_obj, name: str, rect, cols: int, rows: int, offset_m=0.0015, grid=(24, 12)) -> bpy.types.Object:
-    """Retalho curvo na frente da cabeça: grade projetada na pele (raio de frente para trás, -Y -> +Y no Blender),
-    afastada offset_m pela normal; UV de 0 a 1 (o material escolhe a célula). Proporção = a da janela = a da
-    célula do atlas."""
+    """Retalho curvo na frente da cabeça, afastado offset_m da pele, UV de 0 a 1 (o material escolhe a célula).
+    Projeção cilíndrica em volta do eixo vertical da cabeça: cada linha da grade fica na altura z da janela e
+    cada coluna num ângulo, de -phi_max a +phi_max, escolhido para que a corda corresponda à largura da janela.
+    Assim toda coluna acha pele mesmo onde o ovo é mais estreito, e o retalho acompanha os lados da cabeça."""
     import bmesh
     x0, zt, x1, zb = rect
     depsgraph = bpy.context.evaluated_depsgraph_get()
-    bm = bmesh.new()
+    inv = body_obj.matrix_world.inverted()
+    coords = np.array([v.co[:] for v in body_obj.data.vertices])
+    head = coords[coords[:, 2] >= zb - 0.02]
+    yc = float((head[:, 1].min() + head[:, 1].max()) / 2)
+    band = head[np.abs(head[:, 2] - (zt + zb) / 2) < 0.01]
+    r_mid = float(band[:, 0].max() - band[:, 0].min()) / 2 if len(band) else float(head[:, 0].max() - head[:, 0].min()) / 2
+    phi_max = math.asin(min(0.995, (x1 - x0) / 2 / r_mid))
     nx, nz = grid
+    bm = bmesh.new()
     verts = []
-    ymin = min(v.co.y for v in body_obj.data.vertices) - 1.0
     for j in range(nz + 1):
+        z = zt - (zt - zb) * j / nz
         row = []
         for i in range(nx + 1):
-            x = x0 + (x1 - x0) * i / nx
-            z = zt - (zt - zb) * j / nz
-            origin = body_obj.matrix_world.inverted() @ Vector((x, ymin, z))
-            hit, loc, normal, _ = body_obj.ray_cast(origin, Vector((0, 1, 0)), depsgraph=depsgraph)
+            phi = phi_max * (2 * i / nx - 1)
+            origin = Vector(((x0 + x1) / 2, yc, z))
+            direction = Vector((math.sin(phi), -math.cos(phi), 0))
+            hit, loc, normal, _ = body_obj.ray_cast(inv @ origin, (inv.to_3x3() @ direction).normalized(), depsgraph=depsgraph)
             if not hit:
-                raise RuntimeError(f"{name}: o raio em ({x:.3f}, {z:.3f}) não achou a pele")
+                raise RuntimeError(f"{name}: o raio na linha z={z:.3f}, ângulo {math.degrees(phi):.0f}°, não achou a pele")
             world = body_obj.matrix_world @ loc
             n = (body_obj.matrix_world.to_3x3() @ normal).normalized()
-            v = bm.verts.new(world + n * offset_m)
-            row.append(v)
+            if n.dot(direction) < 0:
+                n = -n
+            row.append(bm.verts.new(world + n * offset_m))
         verts.append(row)
     uv_layer = bm.loops.layers.uv.new("UVMap")
     for j in range(nz):
@@ -219,6 +228,7 @@ def face_patch(body_obj, name: str, rect, cols: int, rows: int, offset_m=0.0015,
     bpy.context.scene.collection.objects.link(obj)
     for p in mesh.polygons:
         p.use_smooth = True
+    obj["phi_max_graus"] = math.degrees(phi_max)
     return obj
 
 

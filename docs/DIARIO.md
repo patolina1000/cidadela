@@ -2292,3 +2292,30 @@ onde errou, correções manuais e quanto tempo levou.
 - **Prévia:** `assets/previews/aldeao_v2/corpo_limpo_contato.png` (frente com as janelas, lado, 3/4, câmera do jogo,
   escala com a protagonista), sombreado suave.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~50 min.
+
+## 2026-09-29 — Aldeão v2, passo 5: prova do rosto no corpo limpo (retalhos + atlas, câmera do jogo)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** criar os retalhos "Olhos" e "Boca" na cabeça limpa, como no contrato, com o atlas final; renderizar
+  as 9 expressões na câmera do jogo (55°) a 48 e 96 px de altura do aldeão, mais a linha de crepúsculo, em três
+  variações: (a) janela atual, (b) janela dos olhos 10% mais alta, (c) cabeça inclinada 10° para cima na pose de
+  repouso. Dizer qual lê melhor de cima. Sem rig nem animação.
+- **Feito:** `face_patch` na `corpo_lib.py` (grade projetada na pele, 1,5 mm pela normal, UV 0..1, proporção da
+  célula), `patch_material` (emissão + transparência pelo alfa do atlas, célula pelo nó Mapping), `prova_rosto.py`
+  (Blender: 3 variações × 9 expressões, fundo transparente, 512 px) e `prova_rosto_folha.py` (montagem a 96 px,
+  48 px e 48 px × #6A5B7C). Prévia: `assets/previews/aldeao_v2/prova_rosto.png`.
+- **Problemas e correções:**
+  - a janela dos olhos (97% da largura máxima da cabeça) cai fora da silhueta na altura dos olhos, onde o ovo é
+    mais estreito: raios paralelos não achavam pele nos cantos. Raios convergentes de um ponto atrás da cabeça
+    acharam, mas espremeram o retalho para metade da largura. Solução final: **projeção cilíndrica** em volta do
+    eixo vertical da cabeça, cada coluna num ângulo até ±72° (corda igual à largura da janela): o retalho
+    acompanha os lados da cabeça e toda coluna acha pele;
+  - a primeira versão da variação c inclinou a cabeça para baixo (sinal da rotação); conferido pelo ponto mais à
+    frente da cabeça, que agora sobe 10 mm.
+- **Leitura (na folha):** de cima, a **c** lê melhor: a face vira para a câmera, os olhos ficam maiores e menos
+  achatados. A **b** vem logo atrás: os olhos saem da base da silhueta e ficam no meio da área visível, sem mudar
+  a postura. A **a** é a pior: os olhos ficam colados na borda de baixo da cabeça e a testa domina. A 48 px só o
+  espantado (branco dos olhos) se distingue de longe em qualquer variação; a 96 px as nove leem nas três, com a
+  c mais clara. A c fixa o queixo erguido na pose de repouso, o que muda o personagem; a b não muda nada.
+  Sugestão: b, ou b com uns 5° de inclinação, se o queixo erguido agradar.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
