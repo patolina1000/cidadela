@@ -2138,3 +2138,39 @@ onde errou, correções manuais e quanto tempo levou.
   onde passar na frente, conferido na FaceTest de hoje).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:45 de relógio.
+
+---
+
+## 2026-09-29 — Aldeão v2: conferência da entrega da arte (branch `arte`) contra o carregador
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`, lendo a `arte` com `git show` (sem merge).
+- **Pedido:** a arte entregou `aldeao_corpo.glb` com rig (ossos Head e Spine02, clipes idle e run com
+  sufixo -loop, passadaRun 0,785) e o atlas final do rosto; os retalhos entram depois e as animações podem
+  mudar. Conferir nomes dos ossos, clipes, `rosto.json` e formato do atlas contra o código.
+- **Como:** GLB, atlas e `aldeao_corpo_rig.json` extraídos da `arte` para a pasta de rascunho e lidos com um
+  script Python (JSON do glTF, esqueleto, canais das animações, limites da malha) e `sips` (tamanho dos PNG).
+- **Bate com o código:**
+  - Esqueleto com "Head" e "Spine02"; `rosto.json` com `ossoCabeca: "Head"` e `ossoPeito: "Spine02"`.
+  - Clipes `idle-loop` (4 s, 97 quadros) e `run-loop` (0,5 s, 13 quadros); o Godot tira o sufixo e o
+    carregador toca "idle" e "run". O Hips fica no lugar no run (deslocamento início→fim de 0,000 m): os
+    9,3 cm de "diferença" do `rig.json` são da medição da passada, não do GLB. `passadaRun: 0.785` é lido.
+  - Atlas: `olhos.png` 1536×960 = 3 × 512 por 3 × 320; `boca.png` 1024×256 = 4 × 256 por 2 × 128; margem 16.
+    As 9 expressões apontam para quadros que existem; "meio_fechado" e "fechado" existem, então o piscar em
+    três quadros funciona mesmo sem o campo `piscar`.
+  - Frente do rosto em +Z (direção Head → headfront), pés em y = 0, altura 0,40 m, 2.424 triângulos, um
+    material "pele" sem textura na cor #AEBFD3, nenhum nó de encaixe exportado.
+- **Não bate ou pede atenção:**
+  1. **Ainda sem "Olhos" e "Boca" no GLB** (esperado). Com o corpo presente o placeholder não é usado, então
+     até os retalhos chegarem o aldeão aparece sem rosto, com o aviso único no log.
+  2. **Nome do quadro 0 dos olhos:** o contrato diz "distraido", o `rosto.json` diz "aberto". O código não
+     depende do nome (usa a tabela `expressoes`); é só documento a alinhar. O `rosto.json` também traz um
+     `passadaWalk: 0.0` sobrando.
+  3. **Topo da cabeça (código meu, corrigir no merge):** o osso Head nasce em y = 0,246 m (base do pescoço) e
+     o topo da malha está em 0,40; o carregador usa Head + 0,06 para o tufo provisório e o chapéu, que
+     ficariam dentro da cabeça. Usar o osso `head_end` (existe no rig) ou o topo da malha.
+  4. **Arquivos extras em `assets/modelos/aldeao_v2/`:** `aldeao_corpo_limpo.glb` também será importado pelo
+     Godot como cena (inofensivo, mas dobra a importação); o contrato só lista `aldeao_corpo.glb`.
+  5. **A conferir rodando, no merge:** o nó Armature tem escala 0,004 (centímetros da Meshy); a conta dos
+     encaixes percorre as transformações do esqueleto até o modelo e deve compensar, mas só o jogo confirma.
+- **Correções manuais:** nenhuma. Nada no código mudou.
+- **Tempo:** 02:30–02:40 de relógio.
