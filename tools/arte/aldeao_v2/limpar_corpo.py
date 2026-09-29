@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from corpo_lib import ROOT, HEIGHT_M, SKIN, face_flatness, flat_material, head_box, import_glb, mesh_points, set_smooth, triangle_count  # noqa: E402
 
 DEFAULT_IN = ROOT / "assets/conceitos/aldeao_v2/meshy/corpo_so_frente_1.glb"
-DEFAULT_OUT = ROOT / "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+DEFAULT_OUT = ROOT / "assets/modelos/aldeao_v2/aldeao_corpo_limpo.glb"  # só a malha; o rig entra no montar_rig.py
 MAX_TRIANGLES = 2500
 TARGET_RMS_MM, TARGET_MAX_MM = 1.5, 3.0
 HEAD_PASSES, HEAD_PASSES_MAX, BODY_PASSES, CHEST_PASSES = 20, 80, 6, 25

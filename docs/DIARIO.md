@@ -2345,3 +2345,40 @@ onde errou, correções manuais e quanto tempo levou.
 - **Leitura:** as duas tiram a cara de alienígena. A ±45° lê melhor a 44 px (olhos maiores e mais separados) e
   ainda fica inteira na frente do rosto; a ±35° junta os olhos demais. A 19 px nada lê em nenhuma. Sugestão: ±45°.
 - **Créditos:** 0 nesta parte (o rig está no passo 6). **Correções manuais:** nenhuma. **Tempo:** ~1 h 20.
+
+## 2026-09-29 — Aldeão v2, passo 6: rig da Meshy e dois clipes (idle-loop, run-loop) no corpo limpo
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** rig do Meshy no `aldeao_corpo.glb` aprovado (parar se rig + 2 animações passassem de 50 créditos);
+  só idle e run, em loop com o sufixo `-loop`; run = corridinha desajeitada de passos curtos, a mais curta e
+  pesada da biblioteca; registrar `ossoCabeca`, `ossoPeito` e `passadaRun` no `rosto.json`; sem os retalhos.
+- **Preço (docs.meshy.ai):** rig 5, animação 3 por ação → 11 créditos previstos e gastos (saldo 2.418 → 2.407).
+- **Biblioteca (`GET /openapi/v1/animations/library`, 678 ações, grátis):** candidatos de corrida vistos pelos
+  GIFs de prévia (`preview_url`): Run_02 (23 quadros), Run_03 (25), RunFast (15), Lean_Forward_Sprint (16),
+  Male_Head_Down_Charge (14), Quick_Walk, Skip_Forward, Unsteady_Walk, Penguin_walk (andares). Escolhido
+  **512 Male_Head_Down_Charge**: o ciclo mais curto (14 quadros, 0,53 s) e o mais pesado (cabeça baixa, braços
+  bombeando). Idle: **0 Idle** (4 s). Alternativa se a investida parecer exagerada: Run_02 por mais 3 créditos.
+- **O que deu errado no rig:** `POST /v1/rigging` com `model_url` = data URI do GLB limpo respondeu 422 "Pose
+  estimation failed" duas vezes (a 0,40 m e numa cópia a 1,0 m), sem cobrar. Saída: rig sobre a tarefa original
+  da Meshy (`input_task_id` de corpo_so_frente_1, `height_meters` 1,0), como o v1 fazia, e **transferência de
+  pesos** para a malha limpa no Blender (`montar_rig.py`: Data Transfer por face mais próxima, grupos por nome,
+  0 vértices sem peso; a malha crua com rig e a limpa coincidem em < 0,5 mm na caixa).
+- **Clipes:** a investida tem deslocamento de raiz (o quadril avança 0,785 m/s); tirei o avanço horizontal do
+  quadril quadro a quadro (reta ajustada, balanço vertical mantido), e a **velocidade da raiz original virou a
+  `passadaRun` = 0,785 m/s** (a medida pelos pés, método do v1, dá 0,502 m/s porque os pés deslizam na captura;
+  fica registrada no `aldeao_corpo_rig.json`). Loop: idle fecha (0,6 cm somados em 5 ossos); run fecha a 9,3 cm
+  somados (~2 cm por osso), aceitável para 13 quadros. Nomes: `idle-loop` e `run-loop`.
+- **Exportação (duas armadilhas do Blender 5.1):** em modo ACTIONS as ações com slot saíam com 2 quadros
+  constantes; em modo NLA_TRACKS (uma faixa por clipe, `action_slot` na strip, sem otimização de tamanho) saem
+  todos os quadros (97 e 13); e o esqueleto precisa estar em `POSE`, não em `REST`, na hora de exportar, senão
+  todos os quadros saem com a pose de repouso. Conferido lendo os acessores do GLB (rotação do LeftUpLeg varia).
+- **Entregas:** `assets/modelos/aldeao_v2/aldeao_corpo.glb` (malha limpa + armature de 24 ossos + 2 clipes,
+  material "pele", 2.424 triângulos, 0,40 m, sem retalhos), `aldeao_corpo_limpo.glb` (só a malha, entrada do
+  rig; a limpeza passa a gravar nele), `aldeao_corpo_rig.json` (medidas), `rosto.json` com `ossoCabeca` "Head",
+  `ossoPeito` "Spine02", `passadaRun` 0,785. Prévia `assets/previews/aldeao_v2/corpo_rig_clipes.png` (repouso,
+  4 quadros do idle, 4 do run, câmera do jogo e de lado). Brutos em `assets/conceitos/aldeao_v2/meshy/rig/`
+  (rig, animações, walking/running básicos grátis do rig).
+- **Atenção na prévia:** na investida o corpo vai muito inclinado, com a cabeça na frente; de cima a cabeça cobre
+  o corpo. É o jeito do clipe; se ler mal no jogo, Run_02 é a troca barata.
+- **Créditos:** 11. **Gerações:** 1 rig (2 tentativas recusadas sem custo) + 1 tarefa de animação com 2 ações.
+  **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.

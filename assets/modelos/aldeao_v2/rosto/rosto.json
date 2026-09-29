@@ -37,7 +37,7 @@
       "dormindo": 6
     }
   },
-  "ossoCabeca": "",
+  "ossoCabeca": "Head",
   "passadaWalk": 0.0,
   "expressoes": {
     "distraido": {
@@ -76,5 +76,7 @@
       "olhos": "bravo",
       "boca": "brava"
     }
-  }
+  },
+  "ossoPeito": "Spine02",
+  "passadaRun": 0.785
 }

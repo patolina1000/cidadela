@@ -1,0 +1,63 @@
+{
+  "malha_crua": {
+    "triangulos": 2611,
+    "altura_m": 0.40000000596046625,
+    "pes_z": -1.7763568394002505e-15
+  },
+  "malha_limpa": {
+    "triangulos": 2424,
+    "altura_m": 0.4000000059604645,
+    "desvio_caixa_mm": [
+      0.2,
+      0.4,
+      0.0,
+      -0.3,
+      0.2,
+      0.0
+    ]
+  },
+  "vertices_sem_peso_corrigidos": 0,
+  "clipes": {
+    "idle-loop": {
+      "quadros": [
+        0,
+        96
+      ],
+      "duracao_s": 4.0,
+      "diferenca_fim_inicio_m": 0.0057
+    },
+    "run-loop": {
+      "quadros": [
+        0,
+        12
+      ],
+      "duracao_s": 0.533,
+      "diferenca_fim_inicio_m": 0.0932,
+      "velocidade_raiz_m_s": 0.785,
+      "passada_pelos_pes_m_s": 0.502,
+      "passada_m_s": 0.785
+    }
+  },
+  "conferencia": {
+    "objetos": [
+      [
+        "MESH",
+        "aldeao_corpo"
+      ],
+      [
+        "ARMATURE",
+        "Armature"
+      ]
+    ],
+    "animacoes": [
+      "idle-loop",
+      "run-loop"
+    ],
+    "triangulos": 2424,
+    "materiais": [
+      "pele"
+    ],
+    "altura_m": 0.45557739213109016,
+    "pes_z": -0.008414734154939651
+  }
+}
