@@ -1,6 +1,7 @@
 # GDD — Jogo de Automação Medieval com Defesa de Hordas
 
-Exportado do Claude Docs em 29/09/2026 (rev 89; idêntico à exportação de 27/09). A versão oficial (viva) está no claude.ai; reexporte quando ela mudar.
+Exportado do Claude Docs em 29/09/2026 (rev 90). A versão oficial (viva) está no claude.ai; reexporte quando ela mudar.
+
 
 ## 1. Visão geral
 
@@ -797,6 +798,20 @@ A automação do castelo e das fábricas depende dos aldeões; eles não são s�
 | Bravo | Interrompido várias vezes |
 
 **Gameplay v1:** nascem do Coração em ciclos (no máximo 7 por vez), vagam perto dele, seguem o protagonista quando chamados e podem ser designados a dois trabalhos: carregar itens entre prédios e operar máquinas (máquina sem aldeão para). Cada um nasce com atributos sorteados (Força, Destreza, Intelecto, Fé, Moral), visíveis ao passar o mouse; classes, escola e professores ficam para depois.
+
+### Aldeão: implementação v2 (29/09/2026, aprovado)
+
+Refeito do zero a partir de folhas técnicas de modelagem (corpo careca e sem rosto; 5 cabelos como perucas). Contrato arte × jogo em `docs/aldeao_v2_contrato.md`. Entregas em `assets/modelos/aldeao_v2/`.
+
+**Corpo:** gerado na Meshy só pela vista de frente da folha (a multi-imagem deformou o peito e a testa), sem textura; limpo no Blender (simetria em X, alisamento de Taubin, 2.424 triângulos, material único "pele"); 0,40 m, pés em y = 0, pivô entre os pés, frente +Z. Rig automático da Meshy (24 ossos; cabeça "Head", peito "Spine02"), com os pesos transferidos para a malha limpa. Clipes em loop: `idle-loop` (Idle\_3 da biblioteca, 10 s, calmo de pés juntos) e `run-loop` (Run\_02, 0,71 s, passada de 0,383 m/s), laços fechados misturando os últimos quadros com os primeiros.
+
+**Rosto (direção A1 "Fundos"):** olho afundado, pálpebra de cima pesada, esclera branco osso, olheira roxa, sem sobrancelhas, assimetria e tristeza como padrão; a emoção vem das pálpebras e das pupilas. Dois retalhos curvos dentro do corpo, "Olhos" (janela até ±45° em volta do eixo da cabeça, 10% acima da referência) e "Boca", a 2 mm da pele, presos 100% ao osso Head (a pele sob eles também). Atlas desenhado por código: 9 quadros de olhos em células de 512×320 e 7 de boca em 256×128; as 9 expressões são pares olhos + boca em `rosto.json`, que também guarda `ossoCabeca`, `ossoPeito` e `passadaRun`.
+
+**Cabelos:** 5 perucas rígidas no osso Head, até 800 triângulos cada, material "cabelo" (curto bagunçado, chanel com franja de lado, ondulado, longo liso, rabo de cavalo). Geradas na Meshy como cabeça + cabelo a partir das folhas e extraídas no Blender: rosto separado por crescimento de região, cabeça da folha ancorada em três medidas da própria folha, peruca levada à cabeça do corpo e empurrada para fora. Franja cobre no máximo a metade de cima de um olho, com folga de 2 mm do retalho. Problema conhecido e aceito: mechas longas entram nos ombros e braços na corrida (rever se aparecer no zoom máximo).
+
+**Tamanhos em tela (3024×1890, câmera a 55°, FOV 45°, 16 m no zoom 1):** protagonista 28 / 68 / 179 px e aldeão 19 / 44 / 112 px nos zooms 0,4 / 1 / 2,5. A 44 px só a silhueta das pálpebras e da olheira lê; as expressões finas ficam para o zoom máximo e a Biografia. O julgamento final é no jogo, com cabelo e shader toon.
+
+**Custo:** 160 créditos da Meshy no v2 (corpo 40, rig e clipes 20, cabelos 100).
 
 ### Nomes em estudo
 

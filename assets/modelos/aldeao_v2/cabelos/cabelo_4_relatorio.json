@@ -65,28 +65,30 @@
   "faces_franja_removidas": 0,
   "empurrados": {
     "corpo": 25,
-    "retalho_olhos": 39
+    "retalho_olhos": 42
   },
   "triangulos": {
     "cabelo_antes": 2473,
-    "final": 759
+    "final": 760
   },
   "saida": "assets/modelos/aldeao_v2/cabelos/cabelo_4.glb",
   "folga_mm": {
     "repouso": {
-      "corpo": 0.46,
+      "corpo": 1.5,
       "corpo_z_do_pior": 0.195,
-      "olhos": 1.87,
-      "vertices_na_frente_dos_olhos": 14
+      "olhos": 2.5,
+      "vertices_na_frente_dos_olhos": 13
     },
     "idle-loop": {
       "corpo": 1.51,
       "corpo_z_do_pior": 0.371,
+      "atras_da_cabeca": 19.23,
       "olhos": "igual ao repouso (r\u00edgidos no mesmo osso)"
     },
     "run-loop": {
       "corpo": -37.31,
       "corpo_z_do_pior": 0.166,
+      "atras_da_cabeca": 12.65,
       "olhos": "igual ao repouso (r\u00edgidos no mesmo osso)"
     }
   }

@@ -2529,3 +2529,19 @@ onde errou, correções manuais e quanto tempo levou.
   retalho dos olhos**; idle -3,0 mm nos ombros (z 0,203: as ondas até o queixo tocam os ombros quando a cabeça
   balança); run -30 mm nos ombros (z 0,174; problema conhecido, aceito). Prévia `cabelo_3_previa.png`.
 - **Créditos:** 20. **Tempo:** ~10 min.
+
+## 2026-09-29 — Aldeão v2, passo 12d/12e: cabelo 5 (rabo de cavalo), cabelo 4 refeito, prévia conjunta e GDD
+
+- **Cabelo 5:** 1 geração (saldo 2.318 → 2.298); 3.203 vértices fundidos em 1.555; rosto 16% (483 faces; sem
+  toco de pescoço); 1 pedaço só; 7 faces apagadas na frente dos olhos; 2.616 → **758 triângulos**. O rabo é
+  rígido no Head: na corrida fica a **35 mm das costas** no pior quadro (11 mm no idle); corpo 0,3 mm no run.
+- **Passe final de folga:** a decimação move vértices, então o empurrão para fora do corpo (1,5 mm) e do
+  retalho (2,5 mm) roda de novo depois dela. Os 5 cabelos refeitos: em repouso todos a 1,5 mm do corpo e
+  **2,5 mm do retalho dos olhos**; 758 a 760 triângulos. No run, os que descem até os ombros entram neles
+  (2: -22 mm, 3: -30 mm, 4: -37 mm; problema conhecido, aceito); 1 e 5 não entram.
+- **Prévia conjunta:** `assets/previews/aldeao_v2/cabelos_conjunta.png` (frente, lado, 3/4, jogo × 5 cabelos ×
+  112 px, 44 px, 44 px no crepúsculo). Prévias individuais `cabelo_N_previa.png`.
+- **GDD:** subseção "Aldeão: implementação v2 (29/09/2026, aprovado)" inserida no GDD vivo do Claude Docs
+  (rev 90) logo após a v1: corpo, rosto A1 e janela ±45°, retalhos, clipes Idle_3 e Run_02, cabelos, tamanhos
+  em tela medidos e custo (160 créditos). Reexportado para `docs/GDD.md` (só essa subseção e a data mudaram).
+- **Créditos:** 20 (cabelo 5); etapa dos cabelos: 100. **Correções manuais:** nenhuma. **Tempo:** ~40 min.

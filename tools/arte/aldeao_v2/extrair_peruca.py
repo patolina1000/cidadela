@@ -334,6 +334,20 @@ def main() -> None:
         bpy.ops.object.modifier_apply(modifier=mod.name)
     hair.data.calc_loop_triangles()
     report["triangulos"] = {"cabelo_antes": before, "final": len(hair.data.loop_triangles)}
+    # Passe final de folga depois da decimação (ela move vértices): garante >= 2 mm do retalho e fora do corpo.
+    bm = bmesh.new()
+    bm.from_mesh(hair.data)
+    for _ in range(2):
+        for v in bm.verts:
+            loc, normal, index, dist = tree_b.find_nearest(v.co)
+            if loc is not None and ((v.co - loc).dot(nrm_b[index]) < 0 or dist < CLEARANCE):
+                v.co = loc + nrm_b[index] * CLEARANCE
+            loc, normal, index, dist = tree_e.find_nearest(v.co, PATCH_CLEARANCE * 3)
+            if loc is not None and ((v.co - loc).dot(nrm_e[index]) < 0 or dist < PATCH_CLEARANCE):
+                v.co = loc + nrm_e[index] * PATCH_CLEARANCE
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(hair.data)
+    bm.free()
     hair.data.materials.clear()
     mat = bpy.data.materials.new("cabelo")
     mat.use_nodes = True

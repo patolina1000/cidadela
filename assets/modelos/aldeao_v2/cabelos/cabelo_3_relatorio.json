@@ -74,9 +74,9 @@
   "saida": "assets/modelos/aldeao_v2/cabelos/cabelo_3.glb",
   "folga_mm": {
     "repouso": {
-      "corpo": 1.14,
+      "corpo": 1.5,
       "corpo_z_do_pior": 0.206,
-      "olhos": 2.48,
+      "olhos": 2.5,
       "vertices_na_frente_dos_olhos": 21
     },
     "idle-loop": {

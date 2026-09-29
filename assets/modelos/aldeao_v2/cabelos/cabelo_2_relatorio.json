@@ -74,14 +74,14 @@
   "saida": "assets/modelos/aldeao_v2/cabelos/cabelo_2.glb",
   "folga_mm": {
     "repouso": {
-      "corpo": 0.95,
-      "corpo_z_do_pior": 0.368,
-      "olhos": 2.45,
+      "corpo": 1.5,
+      "corpo_z_do_pior": 0.371,
+      "olhos": 2.5,
       "vertices_na_frente_dos_olhos": 18
     },
     "idle-loop": {
-      "corpo": 1.23,
-      "corpo_z_do_pior": 0.362,
+      "corpo": 1.64,
+      "corpo_z_do_pior": 0.357,
       "atras_da_cabeca": 1.86,
       "olhos": "igual ao repouso (r\u00edgidos no mesmo osso)"
     },

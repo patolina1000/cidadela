@@ -76,7 +76,7 @@
     "repouso": {
       "corpo": 1.5,
       "corpo_z_do_pior": 0.343,
-      "olhos": 2.27,
+      "olhos": 2.5,
       "vertices_na_frente_dos_olhos": 32
     },
     "idle-loop": {
