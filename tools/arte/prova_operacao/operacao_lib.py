@@ -197,3 +197,65 @@ def calibrate_poles(arm, targets, poles, radius, dist, axis_z, grip_half=GRIP_HA
         c.pole_angle = math.radians(best[1])
         chosen[side] = best[1]
     return chosen
+
+
+# ---------- exportação de clipe pelo contrato (docs/animacao_contrato.md) ----------
+
+CLIP_FPS = 24
+
+
+def export_clip(arm, actions, path) -> dict:
+    """Exporta um GLB de clipe pelo contrato de animação: só o esqueleto (sem malha), Armature em metros
+    (rig_lib.apply_armature_scale), primeira chave em t = 0 (as chaves de cada ação são deslocadas para começar no
+    quadro 0), 24 fps (a cena exporta a 24 quadros por segundo), uma faixa NLA por ação, esqueleto em POSE."""
+    from rig_lib import action_fcurves, apply_armature_scale
+    scene = bpy.context.scene
+    scene.render.fps, scene.render.fps_base = CLIP_FPS, 1.0
+    info = {"normalizacao": apply_armature_scale(arm, []), "deslocamento_quadros": {}}
+    for action in actions:
+        start = min(k.co[0] for c in action_fcurves(action) for k in c.keyframe_points)
+        for c in action_fcurves(action):
+            for k in c.keyframe_points:
+                k.co[0] -= start
+                k.handle_left[0] -= start
+                k.handle_right[0] -= start
+            c.update()
+        info["deslocamento_quadros"][action.name] = -start
+    arm.data.pose_position = "POSE"
+    arm.animation_data_create()
+    arm.animation_data.action = None
+    for track in list(arm.animation_data.nla_tracks):
+        arm.animation_data.nla_tracks.remove(track)
+    for action in actions:
+        track = arm.animation_data.nla_tracks.new()
+        track.name = action.name
+        strip = track.strips.new(action.name, 0, action)
+        if getattr(action, "slots", None) and hasattr(strip, "action_slot"):
+            strip.action_slot = action.slots[0]
+    scene.frame_set(0)
+    bpy.ops.object.select_all(action="DESELECT")
+    arm.select_set(True)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    bpy.ops.export_scene.gltf(filepath=str(path), export_format="GLB", use_selection=True, export_yup=True, export_apply=False,
+                              export_animations=True, export_animation_mode="NLA_TRACKS", export_skins=True,
+                              export_force_sampling=True, export_frame_range=False, export_optimize_animation_size=False,
+                              export_anim_slide_to_zero=True)
+    return info
+
+
+def gltf_clip_times(path) -> dict:
+    """Tempos das chaves no GLB (lidos do JSON: min/max e contagem do acessor de entrada de cada sampler) e escala
+    do nó Armature."""
+    import json
+    import struct
+    b = path.read_bytes()
+    n = struct.unpack("<I", b[12:16])[0]
+    j = json.loads(b[20:20 + n])
+    out = {"armature": next((x.get("scale") for x in j["nodes"] if x.get("name") == "Armature"), "sem nó Armature"),
+           "malhas": len(j.get("meshes", [])), "animacoes": {}}
+    for a in j.get("animations", []):
+        acc = [j["accessors"][s["input"]] for s in a["samplers"]]
+        t0, t1, cnt = min(x["min"][0] for x in acc), max(x["max"][0] for x in acc), max(x["count"] for x in acc)
+        out["animacoes"][a["name"]] = {"t0_s": round(t0, 6), "t1_s": round(t1, 6), "chaves": cnt,
+                                       "fps": round((cnt - 1) / (t1 - t0), 4) if t1 > t0 else None}
+    return out

@@ -2806,3 +2806,20 @@ onde errou, correções manuais e quanto tempo levou.
 - Os relatórios ao lado (`aldeao_corpo_rig.json`, `aldeao_corpo_retalhos.json`) foram trocados pelos da execução nova
   (só ruído de ponto flutuante e o campo `normalizacao`); `aldeao_corpo_reproducao.json` registra a troca e o hash.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Prova de operação: clipes reexportados pelo contrato de animação (metros, t = 0, 24 fps)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** o jogo contornou três problemas dos clipes da prova (escala 0,004, primeira chave em 1/24 s,
+  reamostragem a 30 fps); corrigir na origem pelo contrato novo (`docs/animacao_contrato.md`, lido do disco da
+  worktree do `master`, onde ainda não está commitado) e conferir.
+- **Feito:** `operacao_lib.export_clip` (esqueleto só, Armature em metros por `rig_lib.apply_armature_scale`, chaves
+  deslocadas para começar no quadro 0, cena a 24 fps, uma faixa NLA por ação, POSE) e `gltf_clip_times` (lê do GLB
+  os tempos das chaves e a escala do nó); `reexportar_clipes.py` (reexporta sem refazer o IK, no mesmo lugar);
+  `conferir_clipes.py` (confere contra o corpo aprovado, com o corpo no posto e a roda física girando como no jogo).
+- **Arquivos (raiz e `variante_r06`, `clipes/girar_roda.glb`):** antes, Armature 0,004 e chaves de 0,0417 a
+  2,0417 s; agora nó Armature sem escala, **chaves de 0 a 2,0 s, 49 chaves, 24 fps**, sem malha.
+- **Conferência (`assets/previews/prova_operacao/[variante_r06/]conferencia_clipes.json`):** mesmos 24 ossos;
+  repouso igual ao do `aldeao_corpo.glb` a **0,0054 mm** e 0,00002°; palma-manopla nos 48 quadros igual à de antes
+  a **0,1 mm** (arredondamento): raiz 35,4 mm (antes 35,4), variante **2,4 mm** (antes 2,5).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
