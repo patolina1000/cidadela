@@ -1,0 +1,12 @@
+[project]
+name = "arte"
+version = "0.1.0"
+description = "Ferramentas de arte do Cidadela (aldeão v2 em diante). Uso: uv run <script>."
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.0",
+    "pillow>=11.0",
+    "python-dotenv>=1.0",
+    "requests>=2.32",
+    "scipy>=1.14",
+]

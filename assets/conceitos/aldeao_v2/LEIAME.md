@@ -1,32 +1,32 @@
-# Aldeão v2 — folhas técnicas de modelagem
+# Aldeão v2 — folhas de modelagem
 
-Pasta de entrada do aldeão novo. O pipeline (`tools/`) lê daqui; nada é gerado até as folhas
-estarem aqui e o custo ser aprovado (ver `docs/DIARIO.md`, 29/09/2026). O que sai do pipeline segue o
-contrato em `assets/modelos/aldeao_v2/CONTRATO.md`.
+Entrada do aldeão novo. O contrato arte × jogo é `docs/aldeao_v2_contrato.md` (na `master`); o que sai daqui
+vai para `assets/modelos/aldeao_v2/`. Nada é gerado na Meshy sem as folhas aqui e o custo aprovado.
 
-## O que colocar aqui
+## Pastas
 
-| Arquivo | Conteúdo | Uso na Meshy |
-| --- | --- | --- |
-| `corpo_frente.png` | Corpo careca e sem rosto, T-pose, de frente, fundo liso | Multi-Image to 3D (1ª imagem) |
-| `corpo_costas.png` | O mesmo, de costas | Multi-Image to 3D (2ª imagem) |
-| `corpo_lado.png` | Opcional: de perfil | Multi-Image to 3D (3ª imagem) |
-| `cabelo_1_frente.png` … `cabelo_5_frente.png` | Só a peruca, de frente, fechada, sem cabeça | Multi-Image to 3D (1ª imagem) |
-| `cabelo_1_costas.png` … `cabelo_5_costas.png` | A mesma peruca, de costas | Multi-Image to 3D (2ª imagem) |
-| `folha_*.png` | As folhas originais inteiras (várias vistas na mesma página), para referência | Não vão para a Meshy |
+- `folhas/`: as folhas do ChatGPT como vieram (corpo careca e sem rosto em T-pose ou A-pose: frente, lado e
+  costas; cada peruca: frente e costas). Nomes sugeridos: `corpo.png`, `cabelo_1.png` … `cabelo_5.png`.
+- `vistas/`: saída de `tools/arte/aldeao_v2/preparar_vistas.py`: cada vista recortada, centrada num quadrado de
+  1024 px com margem e fundo liso, na mesma escala dentro da folha. Uma prévia `_previa_<folha>.png` por folha.
+- `meshy/`: os GLB de teste baixados da Meshy (Parte C), antes de qualquer limpeza.
 
-Regras que evitam retrabalho (aprendidas no v1):
-- frente e costas de cada peça na **mesma escala** e centradas, fundo branco ou liso, sem texto, setas ou cabeças soltas;
-- corpo com a cabeça **lisa** (sem olhos, nariz ou boca): o rosto entra depois, pelos planos "Olhos" e "Boca";
-- perucas como **volume fechado** (com a parte de dentro), franja acima da linha da sobrancelha;
-- a cor não importa para a Meshy: corpo e cabelos saem só malha ("mesh only") e o jogo pinta a cor chapada
-  definida em `data/` (contrato); nas folhas, cores chapadas e contrastadas ajudam a leitura das formas.
+## Regras (lições do v1)
 
-Se as folhas vierem com várias vistas na mesma imagem, o recorte é feito por script (como o
-`crop_concept.py` fez para a protagonista) e os recortes ficam em `vistas/`.
+- Nunca recortar rostos de ilustrações: o rosto é o atlas desenhado por código (`desenhar_rosto.py`).
+- A imagem enviada à Meshy precisa parecer um boneco 3D, com luz uniforme e fundo liso. Nas folhas: sem texto,
+  setas, cabeças soltas ou fundo desenhado; frente, lado e costas na mesma escala.
+- Corpo com a cabeça lisa (sem olhos, nariz ou boca); perucas como volume fechado, franja acima da sobrancelha.
 
-## Nomes das 5 perucas
+## Como rodar o preparador
 
-Pelo contrato as perucas se chamam `cabelo_1` a `cabelo_5` (`assets/modelos/aldeao_v2/cabelos/cabelo_N.glb`).
-O número segue a ordem das folhas; o nome legível de cada penteado vai em `data/villager_looks.json`
-(agente de código), não no pipeline.
+```
+cd tools/arte
+uv run aldeao_v2/preparar_vistas.py                                   # todas as folhas, vistas frente,lado,costas
+uv run aldeao_v2/preparar_vistas.py --folha cabelo_1.png --vistas frente,costas
+uv run aldeao_v2/preparar_vistas.py --folha corpo.png --vistas frente:1,lado:2,costas:3   # escolher por índice
+uv run aldeao_v2/preparar_vistas.py --folha corpo.png --recorte 150,90,1180,660          # só uma região
+```
+
+Se a folha tiver figuras a mais (textos grandes, poses extras), o script lista as caixas encontradas e sai como
+`vista_N`; escolha com `nome:índice`.
