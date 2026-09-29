@@ -2700,3 +2700,22 @@ onde errou, correções manuais e quanto tempo levou.
   arquivos): fecha nos 48 quadros, falta máxima 2,5 mm. Nenhum arquivo aprovado mudou.
 - **O que deu errado:** a primeira versão do giro do tronco tinha os sinais embolados; reescrita antes de rodar.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.
+
+## 2026-09-29 — Prova de operação, passo 4: GIFs com dois aldeões na mesma roda
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** GIFs na câmera do jogo (aldeão a 112 px) e de lado (256 px), dois aldeões em lados opostos da
+  mesma roda, o segundo com fase +0,5, mais a versão × #6A5B7C.
+- **Feito:** `tools/arte/prova_operacao/gif_roda.py` (Blender: dois `aldeao_corpo.glb` aprovados, cabelos 1 e 3
+  rígidos no Head, clipe tirado do `girar_roda.glb`, toon do `prot_lib`) e `gif_roda_montar.py` (PIL). Câmera do
+  jogo no zoom 2,5, em pixels reais; lado ortográfico a 640 px/m, 22° acima do chão; 48 quadros a 24 fps.
+- **Fase do segundo aldeão:** do outro lado, a alça B gira no sentido oposto visto por ele. Com "+0,5" tocado para
+  a frente, as mãos só coincidem com a alça em 2 instantes; o certo é tocar o mesmo clipe **ao contrário, com fase
+  0,5 − t**. Os GIFs usam isso (anotado no `clipes.json`).
+- **Conferência na cena dos GIFs:** faltas palma-manopla iguais às do bake nos dois aldeões (raio 0,10: 35,4 mm;
+  raio 0,06: 2,5 mm): o clipe exportado sem malha serve no arquivo aprovado, nos dois lados.
+- **Saída:** `assets/previews/prova_operacao/roda_{jogo,lado}.gif` e `_crepusculo.gif` (raio pedido, 0,10 m) e os
+  mesmos em `variante_r06/` (0,06 m); medidas em `roda_gif_medidas.json`.
+- **O que deu errado:** na primeira rodada a cena ficou 19 cm abaixo do chão (centralizei a roda também em z);
+  corrigido para centralizar só em x/y.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
