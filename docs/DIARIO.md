@@ -2963,3 +2963,20 @@ onde errou, correções manuais e quanto tempo levou.
   rodar de novo não muda nada; com um `Transform3D` no `_subresources`, recusa. `conferir` nos 5 GLBs com animação:
   só `remove_immutable_tracks = true` fora do contrato.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
+
+## 2026-09-29 — Corpo e clipes da prova importados com a pose inteira (trilhas constantes mantidas)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** rodar o `godot_import.py` no `aldeao_corpo.glb` e nos 4 GLBs de clipe da prova, reimportar sem janela e
+  conferir no Godot: rotação dos 24 ossos e posição do Hips em todo clipe; chaves inteiras a 24 fps a partir de 0; GLB
+  do corpo sem mudança.
+- **Feito:** `godot_import.py corrigir` nos 5 (só `animation/remove_immutable_tracks` estava fora: true → false; uma
+  linha por `.import`); `conferir` depois: os 5 ok. Cache dos 5 apagado em `.godot/imported` e
+  `godot-mono --headless --import`.
+- **Conferência no Godot:** nos 4 clipes da prova (`girar_roda`, `girar_roda_b`, raiz e variante) e nos 2 do corpo
+  (`idle`, `run`): **rotação para os 24 ossos** do esqueleto (nenhum faltando), **posição do Hips** presente, **72
+  trilhas** (rotação, posição e escala dos 24 ossos, antes 10 a 12 nos clipes e 23 no corpo), todas com as chaves
+  inteiras: **49** nos clipes (0 a 2,0 s), **240** no idle (0 a 9,958 s), **18** no run (0 a 0,708 s), todas em múltiplos
+  de 1/24 s a partir de 0, loop ligado.
+- **GLB do corpo sem mudança:** sha256 `3138cbf652d0d840c2ab911b676bb20d3116f14172e15163c8232a3fa74b49a2`.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
