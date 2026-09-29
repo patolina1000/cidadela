@@ -2382,3 +2382,28 @@ onde errou, correções manuais e quanto tempo levou.
   o corpo. É o jeito do clipe; se ler mal no jogo, Run_02 é a troca barata.
 - **Créditos:** 11. **Gerações:** 1 rig (2 tentativas recusadas sem custo) + 1 tarefa de animação com 2 ações.
   **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.
+
+## 2026-09-29 — Aldeão v2, passo 8: retalhos "Olhos" e "Boca" no corpo com rig
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** janela dos olhos aprovada a ±45° (olhos no tamanho atual); colocar os retalhos no `aldeao_corpo.glb`
+  com rig, peso 100% no osso "Head", e conferir nos quadros do idle e do run que acompanham a cabeça sem
+  atravessar a pele.
+- **Feito (`tools/arte/aldeao_v2/colocar_retalhos.py`; funções de rig fatoradas em `rig_lib.py`):** retalhos
+  criados na pose de repouso (olhos ±45°, altura da b, 109 × 68 mm; boca na janela padrão), UV 0..1, grade
+  32×20 e 16×8, materiais "rosto_olhos" e "rosto_boca" (atlas embutido como cor + alfa, foscos; o jogo troca pelo
+  shader toon e escolhe a célula), grupo de vértices "Head" com peso 1 e modificador Armature; exportação pelas
+  faixas NLA em pose ativa. Conferência por BVH nos quadros 0/24/48/72/96 do idle e 0/3/6/9/12 do run: distância
+  com sinal de cada vértice dos retalhos à pele.
+- **Problema e correção:** com folga de 1,5 mm e a pele livre, os olhos entravam até 0,8 mm na pele em três quadros
+  do idle (a pele das têmporas segue em parte o pescoço; o retalho segue só o Head). Duas medidas: folga de
+  **2 mm** (o máximo do contrato) e a pele da frente da cabeça sob as janelas, com 1,5 cm de margem e transição
+  suave, passa a seguir **100% o osso Head** (como o v1 fazia). Resultado: folga mínima 1,83 mm e máxima 3,6 mm em
+  todos os quadros conferidos; nunca atravessa. Também: um `flat_material` na prévia renomeava o material do
+  corpo para "pele.001" no arquivo; removido (o material "pele" do arquivo fica).
+- **Aviso de coordenadas:** `face_patch` passou a usar coordenadas de mundo (a malha reimportada é filha do
+  armature com escala 0,004, e as coordenadas locais estavam 250× maiores).
+- **Entrega:** `assets/modelos/aldeao_v2/aldeao_corpo.glb` (corpo + armature + idle-loop + run-loop + Olhos + Boca),
+  `aldeao_corpo_retalhos.json` (janelas e folgas), prévias `assets/previews/aldeao_v2/retalhos_idle_jogo.png` e
+  `retalhos_run_tres_quartos.png`.
+- **Créditos:** 0 neste passo. **Correções manuais:** nenhuma. **Tempo:** ~50 min.

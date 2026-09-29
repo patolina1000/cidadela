@@ -204,7 +204,7 @@ def face_patch(body_obj, name: str, rect, cols: int, rows: int, offset_m=0.0015,
     x0, zt, x1, zb = rect
     depsgraph = bpy.context.evaluated_depsgraph_get()
     inv = body_obj.matrix_world.inverted()
-    coords = np.array([v.co[:] for v in body_obj.data.vertices])
+    coords = np.array([[q.x, q.y, q.z] for q in (body_obj.matrix_world @ v.co for v in body_obj.data.vertices)])  # mundo
     head = coords[coords[:, 2] >= zb - 0.02]
     yc = float((head[:, 1].min() + head[:, 1].max()) / 2)
     band = head[np.abs(head[:, 2] - (zt + zb) / 2) < 0.01]

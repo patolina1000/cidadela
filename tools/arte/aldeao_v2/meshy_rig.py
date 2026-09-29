@@ -88,6 +88,7 @@ def main():
     p.add_argument("--modelo", help="GLB a enviar no lugar do aldeao_corpo.glb (ex.: cópia a 1,0 m para a estimativa de pose)")
     p.add_argument("--altura", type=float, default=HEIGHT_M, help="height_meters enviado ao rig")
     p.add_argument("--task-id", help="rig sobre uma tarefa da própria Meshy (input_task_id), em vez de enviar o GLB limpo")
+    p.add_argument("--extra", help="action_ids (vírgula) de clipes extras sobre o rig já feito; saem em extras_<ids>.glb")
     args = p.parse_args()
     meshy = Meshy(load_key())
 
@@ -103,6 +104,27 @@ def main():
         return
 
     state = json.loads(STATE_FILE.read_text()) if STATE_FILE.exists() else {}
+    if args.extra:
+        ids = [int(x) for x in args.extra.split(",")]
+        spent = sum(t.get("creditos") or 0 for t in state.values())
+        print(f"saldo: {meshy.get('/v1/balance')['balance']}; extras {ids}: {COST_ACTION * len(ids)} créditos (gasto na etapa até agora {spent})")
+        if not args.run:
+            return
+        if spent + COST_ACTION * len(ids) > LIMIT:
+            sys.exit("passaria da trava de créditos: pare e pergunte")
+        task_id = meshy.post("/v1/animations", {"rig_task_id": state["rig"]["task_id"], "action_ids": ids})
+        key = "extras_" + "_".join(map(str, ids))
+        state[key] = {"task_id": task_id, "status": "PENDING", "action_ids": ids}
+        STATE_FILE.write_text(json.dumps(state, indent=2))
+        task = meshy.wait("/v1/animations", task_id)
+        state[key].update(status=task["status"], creditos=task.get("consumed_credits"), erro=(task.get("task_error") or {}).get("message"))
+        STATE_FILE.write_text(json.dumps(state, indent=2))
+        if task["status"] != "SUCCEEDED":
+            sys.exit(f"extras falharam: {state[key]['erro']}")
+        fetch(task["result"]["animation_glb_url"], OUT / f"{key}.glb")
+        (OUT / f"{key}.json").write_text(json.dumps({"action_ids": ids, "result": task["result"]}, indent=2))
+        print(f"saldo final: {meshy.get('/v1/balance')['balance']} créditos")
+        return
     print(f"saldo: {meshy.balance() if hasattr(meshy, 'balance') else meshy.get('/v1/balance')['balance']} créditos")
     spent = sum(t.get("creditos") or 0 for t in state.values())
     todo = [s for s in ("rig", "animacoes") if state.get(s, {}).get("status") != "SUCCEEDED"]
