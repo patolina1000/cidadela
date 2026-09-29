@@ -2646,3 +2646,25 @@ onde errou, correções manuais e quanto tempo levou.
   103 mm (25% da altura). Mãos em luva, sem dedos nem ossos de dedo, forma de punho meio fechado.
 - **O que deu errado:** o primeiro close das mãos estourou no branco (luz do `setup_scene`); exposição −1,2.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Prova de operação, passo 2: normalização da escala numa cópia
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** aplicar a escala do Armature (1, em metros) numa cópia, tocar idle-loop e run-loop nas duas versões e
+  medir a maior diferença de vértice em 0/25/50/75% do clipe; dizer se é segura e o que mudaria no jogo.
+- **Feito:** `tools/arte/prova_operacao/normalizar.py`: ossos (`armature.data.transform`) e malhas filhas
+  (`mesh.transform`) multiplicados por 0,004, escala do objeto 1, e as 144 curvas de posição dos ossos (24 ossos ×
+  3 eixos × 2 clipes) multiplicadas por 0,004 (estão no espaço do osso, em unidades de 4 mm); rotações intactas.
+  Exportado como o `montar_rig.py` (NLA, POSE, sem otimização): `assets/modelos/prova_operacao/aldeao_normalizado.glb`.
+  O `aldeao_corpo.glb` aprovado não foi tocado.
+- **Resultado (`assets/previews/prova_operacao/normalizacao.json`):** nó Armature do glTF sem escala; vértices
+  correspondentes (por posição em repouso; o exportador separou 2 vértices do corpo, 2.557 → 2.559) diferem no
+  máximo **0,0085 mm** (idle 0,005; run 0,0085) nos 8 quadros; cabeças dos ossos ≤ 0,0074 mm; repouso no mundo
+  dos ossos de encaixe (Head, Spine02) ≤ 0,004 mm. A rotação de repouso aparece com 0,04°, ruído de ponto flutuante
+  ao tirar a rotação de uma matriz com escala 0,004 (os vértices provam que é < 0,002°).
+- **Leitura:** a normalização é segura, é só troca de unidade. No jogo nada muda no código: o encaixe usa
+  `GetBoneGlobalRest(osso)⁻¹ × skeletonInModel⁻¹`, e `skeletonInModel` perde o 0,004 ao mesmo tempo que o repouso
+  passa a metros; cabelos (no espaço do corpo) e retalhos (skinned) seguem iguais; nenhum número do `src/View`
+  depende da escala. O que muda: valores em espaço de osso passam a metros (posição do Hips nos clipes, IK por
+  código), e o importador do Blender passa a criar ossos com comprimento de verdade.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.

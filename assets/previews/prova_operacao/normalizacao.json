@@ -1,0 +1,90 @@
+{
+  "normalizacao": {
+    "escala_aplicada": 0.003999997861683369,
+    "curvas_de_posicao_escaladas": 144,
+    "repouso_mundo_dif_posicao_mm": 0.007114,
+    "repouso_mundo_dif_rotacao_graus": 0.039565
+  },
+  "comparacao": {
+    "escala_armature": [
+      0.003999997861683369,
+      1.0
+    ],
+    "gltf_no_armature_normalizado": {
+      "scale": null,
+      "translation": [
+        3.322361226310022e-05,
+        0,
+        -0.006598751991987228
+      ]
+    },
+    "repouso_max_mm": 0.0002,
+    "vertices": [
+      [
+        153,
+        693,
+        2557
+      ],
+      [
+        153,
+        693,
+        2559
+      ]
+    ],
+    "repouso_encaixes": {
+      "Head": {
+        "posicao_mm": 0.0039
+      },
+      "Spine02": {
+        "posicao_mm": 0.00268
+      }
+    },
+    "clipes": {
+      "idle-loop": {
+        "0%": {
+          "quadro": 1,
+          "vertices_max_mm": 0.0049,
+          "ossos_max_mm": 0.0068
+        },
+        "25%": {
+          "quadro": 61,
+          "vertices_max_mm": 0.005,
+          "ossos_max_mm": 0.0068
+        },
+        "50%": {
+          "quadro": 120,
+          "vertices_max_mm": 0.0048,
+          "ossos_max_mm": 0.0069
+        },
+        "75%": {
+          "quadro": 180,
+          "vertices_max_mm": 0.0049,
+          "ossos_max_mm": 0.0068
+        }
+      },
+      "run-loop": {
+        "0%": {
+          "quadro": 1,
+          "vertices_max_mm": 0.0085,
+          "ossos_max_mm": 0.0071
+        },
+        "25%": {
+          "quadro": 5,
+          "vertices_max_mm": 0.0055,
+          "ossos_max_mm": 0.0059
+        },
+        "50%": {
+          "quadro": 10,
+          "vertices_max_mm": 0.0052,
+          "ossos_max_mm": 0.0059
+        },
+        "75%": {
+          "quadro": 14,
+          "vertices_max_mm": 0.0069,
+          "ossos_max_mm": 0.0074
+        }
+      }
+    },
+    "maior_diferenca_mm": 0.0085
+  }
+}
