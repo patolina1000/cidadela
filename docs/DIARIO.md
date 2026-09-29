@@ -2879,3 +2879,22 @@ onde errou, correções manuais e quanto tempo levou.
 - **Corpo:** `aldeao_corpo.glb.import` idêntico ao do `master`. Observação: ele está com `animation/fps=30`, então o
   Godot reamostra o `idle` e o `run` do corpo a 30 fps (chaves a cada 0,0333 s); não mudei por não estar no pedido.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Corpo do aldeão v2 importado a 24 fps
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** com o aval do Arthur (a regra de 24 fps do contrato de animação vale também para o corpo), mudar só
+  `animation/fps` para 24 no `aldeao_corpo.glb.import` e reimportar só esse arquivo; o GLB não muda.
+- **Feito:** uma linha no `.import` (`animation/fps=30` → `24`); cache do corpo apagado em `.godot/imported` e
+  `godot-mono --headless --import`; nenhum outro arquivo mudou; sha256 do GLB continua
+  `11c7d12bc4c522808546f61f3136031e2fce0cc6ccf9e789abd02779d110febf`.
+- **Conferência no Godot:** `idle` 10,0 s e `run` 0,75 s (as mesmas de antes), loop ligado, todas as chaves de todas as
+  trilhas em múltiplos de 1/24 s a partir de 0 (antes: 1/30 s).
+- **Achado:** dentro do GLB do corpo as chaves começam em 1/24 s (quadro 1 do Blender), não em 0; o corpo foi
+  exportado antes da regra "primeira chave em t = 0". O importador cria uma chave em 0 igual à de 1/24 s: no `run`,
+  22 de 22 trilhas de rotação repetem a pose no começo: a mesma pose aparece em 0 e em 1/24 s (0,75 s é o mesmo
+  instante que 0 no laço), ou seja, **1 quadro parado a mais em cada ciclo** (~42 ms a 1×; o ciclo tem 19 amostras
+  em vez de 18). No `idle`,
+  8 de 22 trilhas (10 s, quase invisível). Corrigir pede reexportar o corpo com as chaves a partir de 0 (o
+  `montar_rig.py` pelo `export_clip` do contrato), o que muda o sha256 do aprovado: fica para o aval do Arthur.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
