@@ -3956,4 +3956,28 @@ onde errou, correções manuais e quanto tempo levou.
     animation/remove_immutable_tracks = false).`
   - `dotnet build`: 0 erros, 0 avisos.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 19:48–19:50 de relógio.
+- **Tempo:** 19:48 de relógio (poucos minutos).
+
+---
+
+## 2026-09-29 — Teste das trilhas repetido com a pose inteira: nada congela
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`, com o MCP godot-ai.
+- **Pedido:** repetir o teste do posto (entrar vindo do run, no meio da passada, e vindo do idle) com os clipes
+  importados; medir pernas, pescoço, cabeça e `Spine` contra a pose do clipe e a palma-manopla depois da mistura;
+  conferir que a troca idle ↔ run do corpo não deixa osso preso.
+- **Como:** cada osso comparado com o valor da trilha de rotação do clipe que está tocando, no tempo atual dele.
+  `deterministic` continua `false`; os clipes importados têm as 72 trilhas (24 de rotação).
+- **Resultado:**
+
+  | Caso | pernas, neck, Head, Spine (pior) | palma aos 0,5 s | palma, pior da volta seguinte |
+  |---|---|---|---|
+  | vindo do run (pés a 0,123 m) | 0,00° | 0,07 / 0,06 mm | 2,44 mm |
+  | vindo do idle | 0,00° | 0,07 / 0,09 mm | 2,44 mm |
+
+  - Depois de uma volta vindo do run, os 24 ossos ficam a no máximo 0,12° do clipe.
+  - Corpo fora do posto, os 24 ossos contra o clipe que toca: idle 0,11°; idle → run 0,19°; run → idle 0,17°;
+    idle → run de novo 0,19°. É o atraso de um quadro entre o tempo lido e a pose aplicada; nenhum osso preso.
+  - Prints: `docs/prints/prova_operacao_pose_inteira_run_antes.png`, `…_run_depois.png` e `…_idle_depois.png`.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:48–19:52 de relógio.
