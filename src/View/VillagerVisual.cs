@@ -164,25 +164,34 @@ public partial class VillagerVisual : Node3D
 
     // ---- placeholder ------------------------------------------------------------------------------------------
 
+    // Malhas do placeholder compartilhadas por todos os aldeões (como o corpo da arte será um GLB só).
+    private static CapsuleMesh? _bodyMesh;
+    private static SphereMesh? _headMesh, _hairMesh;
+    private static ArrayMesh? _eyesPatch, _mouthPatch;
+
     private void BuildPlaceholder()
     {
         ShaderMaterial skin = VillagerLooks.SkinMaterial();
+        _bodyMesh ??= new CapsuleMesh { Radius = BodyRadius, Height = BodyHeight };
+        _headMesh ??= new SphereMesh { Radius = HeadRadius, Height = HeadRadius * 2f };
         _pivot.AddChild(new MeshInstance3D
         {
             Name = "Body",
-            Mesh = new CapsuleMesh { Radius = BodyRadius, Height = BodyHeight },
+            Mesh = _bodyMesh,
             MaterialOverride = skin,
             Position = new Vector3(0f, BodyHeight / 2f, 0f),
         });
         var head = new Node3D { Name = "Head", Position = new Vector3(0f, HeadY, 0f) };
         _pivot.AddChild(head);
-        head.AddChild(new MeshInstance3D { Name = "Skull", Mesh = new SphereMesh { Radius = HeadRadius, Height = HeadRadius * 2f }, MaterialOverride = skin });
+        head.AddChild(new MeshInstance3D { Name = "Skull", Mesh = _headMesh, MaterialOverride = skin });
 
         // Retalhos curvos na frente da cabeça (-Z), com a proporção da célula de cada atlas.
         VillagerLooks.FaceInfo info = VillagerLooks.Face();
         const float eyesWidth = 0.11f, mouthWidth = 0.05f;
-        var eyes = new MeshInstance3D { Name = "Olhos", Mesh = Patch(eyesWidth, eyesWidth / info.Eyes.Aspect, HeadRadius + PatchGap, pitch: 0.12f) };
-        var mouth = new MeshInstance3D { Name = "Boca", Mesh = Patch(mouthWidth, mouthWidth / info.Mouth.Aspect, HeadRadius + PatchGap, pitch: -0.45f) };
+        _eyesPatch ??= Patch(eyesWidth, eyesWidth / info.Eyes.Aspect, HeadRadius + PatchGap, pitch: 0.12f);
+        _mouthPatch ??= Patch(mouthWidth, mouthWidth / info.Mouth.Aspect, HeadRadius + PatchGap, pitch: -0.45f);
+        var eyes = new MeshInstance3D { Name = "Olhos", Mesh = _eyesPatch };
+        var mouth = new MeshInstance3D { Name = "Boca", Mesh = _mouthPatch };
         head.AddChild(eyes);
         head.AddChild(mouth);
         _face = new VillagerFace(Seed, eyes, mouth);
@@ -326,9 +335,10 @@ public partial class VillagerVisual : Node3D
         {
             // Tufo provisório: calota um pouco diferente por variação, para as variações se distinguirem.
             float spread = 0.86f + 0.05f * hairVariant;
+            _hairMesh ??= new SphereMesh { Radius = HeadRadius, Height = HeadRadius * 2f };
             _hair = new MeshInstance3D
             {
-                Mesh = new SphereMesh { Radius = HeadRadius, Height = HeadRadius * 2f },
+                Mesh = _hairMesh,
                 MaterialOverride = VillagerLooks.HairMaterial(),
                 Position = _headTop + new Vector3(0f, -HeadRadius * 0.3f, 0.02f),
                 Scale = new Vector3(spread, 0.42f, spread), // calota só no alto da cabeça, longe dos olhos

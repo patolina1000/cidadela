@@ -2047,3 +2047,28 @@ onde errou, correções manuais e quanto tempo levou.
   Segundos" da Biografia volta quando o v2 for aprovado. Nada da branch `arte` foi mesclado.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 00:40–01:10 de relógio (contrato, tarefas 2 e 3, prints e diário).
+
+---
+
+## 2026-09-29 — Aldeão v2: rosto por alpha blend (no lugar do scissor) e conferência com 500 aldeões
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`, com o MCP godot-ai.
+- **Pedido:** trocar o alpha scissor do `VillagerFace.gdshader` por alpha blend (o atlas da arte terá olheiras
+  com borda desfocada, e o scissor corta seco): `blend_mix`, `depth_draw_never`, `cull_back`, sombra projetada
+  desligada, mesma luz do `Toon.gdshaderinc`. Conferir na FaceTest que o cabelo opaco continua escondendo o
+  rosto onde passa na frente, e que 500 aldeões não caem abaixo de 60 FPS.
+- **O que foi feito:**
+  - Shader: `render_mode blend_mix, depth_draw_never, cull_back, shadows_disabled, specular_disabled`; saíram
+    `alpha_to_coverage`, `ALPHA_SCISSOR_THRESHOLD` e `ALPHA_ANTIALIASING_EDGE`. O retalho não escreve
+    profundidade, mas continua testado contra o que é opaco, então o cabelo o cobre.
+  - FaceTest ganhou a tecla **H** (desce o tufo de cabelo até cobrir os olhos) e a tecla **5** (500 aldeões
+    placeholder em fileiras atrás do principal, cada um numa expressão, piscando; o rótulo mostra os FPS), e
+    a cena `scenes/tests/FaceTestCrowd.tscn` abre já com as duas ligadas (as teclas pelo MCP dependem do
+    foco da janela). As malhas do placeholder (cápsula, cabeça, tufo e os dois retalhos) passaram a ser
+    compartilhadas entre todos os aldeões, como o corpo da arte será um GLB só.
+  - **Medido (3840×2160, janela com foco):** 501 aldeões com rosto em blend a **100 FPS**; o rosto do aldeão
+    da frente some atrás do cabelo descido. Print: `docs/prints/aldeao_v2_rosto_blend_500.png`.
+  - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+- **O que deu errado:** nada.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 01:12–01:22 de relógio.
