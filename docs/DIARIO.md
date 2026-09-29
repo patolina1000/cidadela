@@ -2319,3 +2319,29 @@ onde errou, correções manuais e quanto tempo levou.
   c mais clara. A c fixa o queixo erguido na pose de repouso, o que muda o personagem; a b não muda nada.
   Sugestão: b, ou b com uns 5° de inclinação, se o queixo erguido agradar.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Aldeão v2, passo 7: nova prova do rosto (tamanhos reais, janela por ângulo, olhos maiores, luz do jogo)
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** corpo limpo aprovado; variação b escolhida; a prova anterior deixou os olhos como fendas nas laterais
+  (janela de 97% da largura, projeção até ±72°). Medir o tamanho real no jogo e usar na prova; janela dos olhos
+  até ±35° e ±45° com a altura da b; olhos 30% maiores na célula; material fiel ao jogo; folha com as duas larguras
+  (o texto do pedido chegou cortado no item 5; assumi: duas larguras × três zooms + linha de crepúsculo).
+- **Tamanho real (`tools/arte/aldeao_v2/medir_zoom.py`):** a câmera do jogo (`CameraRig.cs`: perspectiva, FOV 45°
+  vertical, inclinação 55°, 16 m no zoom 1, zoom 0,4 a 2,5) reproduzida no Blender em 3024×1890, medindo a
+  caixa de pixels do modelo. Protagonista (GLB de 0,80 m): 28 / 68 / 179 px nos zooms 0,4 / 1 / 2,5. Aldeão de
+  0,40 m: 19 / 44 / 112 px (medido direto; pela proporção 0,40/0,75 sobre a protagonista daria 15 / 36 / 95, mas
+  a cabeça grande e a profundidade do corpo contam na caixa). Validação pelo godot-ai: o jogo abriu no menu
+  (janela de 3840×2160), a captura em resolução cheia estourou o limite de 4 MB do MCP e a de 1024 px veio
+  congelada com a janela em segundo plano; a medida usada é a do Blender, que é a mesma conta da câmera.
+- **Atlas (`desenhar_rosto.py`):** olhos e olheiras 30% maiores (raios, pupilas, cílios) dentro da mesma célula,
+  centros aproximados de 82/174 para 88/168 para caber com a olheira; rabo do desfoque cortado abaixo de 12/255;
+  resíduo de 1 a 2 de alfa do LANCZOS na margem zerado. Formato do `rosto.json` e nomes dos quadros iguais.
+- **Prova (`prova_rosto.py`, `prova_rosto_folha.py`):** `face_patch` aceita ângulo máximo: a largura vira a corda
+  do ângulo e a altura segue a proporção 8:5 da célula, centrada na janela da b. Janela dos olhos: ±35° = 89 mm
+  de largura; ±45° = 109 mm (antes: 146 mm a ±72°). Pele #AEBFD3 fosca (rugosidade 1, sem especular), sol frio
+  fraco quase de cima, ambiente roxo-acinzentado; retalhos difusos com a mesma luz. Folha
+  `assets/previews/aldeao_v2/prova_rosto_2.png`: 19, 44 e 112 px e 44 px × crepúsculo, para as duas larguras.
+- **Leitura:** as duas tiram a cara de alienígena. A ±45° lê melhor a 44 px (olhos maiores e mais separados) e
+  ainda fica inteira na frente do rosto; a ±35° junta os olhos demais. A 19 px nada lê em nenhuma. Sugestão: ±45°.
+- **Créditos:** 0 nesta parte (o rig está no passo 6). **Correções manuais:** nenhuma. **Tempo:** ~1 h 20.

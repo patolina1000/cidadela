@@ -2,6 +2,7 @@
 altura, mais a linha de 48 px multiplicada por #6A5B7C (crepúsculo).
 
 Uso: uv run prova_rosto_folha.py <pasta_dos_renders> <saida.png>
+Tamanhos reais do jogo (3024x1890): aldeão com 19, 44 e 112 px nos zooms 0,4, 1 e 2,5.
 """
 
 import sys
@@ -11,8 +12,11 @@ from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 FONT = "/System/Library/Fonts/Supplemental/Arial.ttf"
 EXPRESSIONS = ["distraido", "esforco", "feliz", "sonolento", "dormindo", "espantado", "preocupado", "chorando", "bravo"]
-VARIANTS = [("a", "a) janela atual"), ("b", "b) janela dos olhos 10% mais alta"), ("c", "c) cabeça 10° para cima")]
-GROUND = (112, 108, 122)
+VARIANTS = [("p35", "janela dos olhos até ±35°"), ("p45", "janela dos olhos até ±45°")]
+# Altura do aldeão em pixels na câmera do jogo em 3024x1890 (medido em medir_zoom.py): zoom 0,4 / 1 / 2,5.
+SIZES = [("zoom mínimo (19 px)", 19, 40, False), ("zoom padrão (44 px)", 44, 64, False), ("zoom máximo (112 px)", 112, 132, False),
+         ("zoom padrão × crepúsculo", 44, 64, True)]
+GROUND = (78, 74, 88)  # chão escuro do jogo
 TWILIGHT = (106, 91, 124)
 
 
@@ -37,13 +41,13 @@ def tile(sprite: Image.Image, size: int, twilight=False) -> Image.Image:
 def main() -> None:
     renders, out = Path(sys.argv[1]), Path(sys.argv[2])
     font, small = ImageFont.truetype(FONT, 20), ImageFont.truetype(FONT, 14)
-    rows = [("96 px", 96, 120, False), ("48 px", 48, 64, False), ("48 px × crepúsculo", 48, 64, True)]
+    rows = SIZES
     cell = 130
     block_h = 34 + sum(r[2] + 6 for r in rows) + 12
-    sheet = Image.new("RGBA", (110 + cell * 9, 28 + block_h * len(VARIANTS)), (236, 233, 240, 255))
+    sheet = Image.new("RGBA", (150 + cell * 9, 28 + block_h * len(VARIANTS)), (236, 233, 240, 255))
     d = ImageDraw.Draw(sheet)
     for c, name in enumerate(EXPRESSIONS):
-        d.text((110 + c * cell + 4, 6), name, fill=(40, 36, 48), font=small)
+        d.text((150 + c * cell + 4, 6), name, fill=(40, 36, 48), font=small)
     for b, (key, label) in enumerate(VARIANTS):
         y = 28 + b * block_h
         d.text((8, y + 6), label, fill=(30, 26, 40), font=font)
@@ -52,7 +56,7 @@ def main() -> None:
             d.text((8, y + size // 2 - 8), rname, fill=(90, 86, 100), font=small)
             for c, name in enumerate(EXPRESSIONS):
                 sprite = villager(renders / f"{key}_{name}.png", height)
-                sheet.alpha_composite(tile(sprite, size, twilight), (110 + c * cell + (cell - size) // 2, y))
+                sheet.alpha_composite(tile(sprite, size, twilight), (150 + c * cell + (cell - size) // 2, y))
             y += size + 6
     sheet.convert("RGB").save(out)
     print(out)

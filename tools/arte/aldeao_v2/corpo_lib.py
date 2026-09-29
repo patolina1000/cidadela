@@ -113,12 +113,14 @@ def face_flatness(pts: np.ndarray, box: dict, raise_frac=0.0) -> dict:
     return out
 
 
-def flat_material(objects, color, name="pele"):
+def flat_material(objects, color, name="pele", matte=False):
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     bsdf = mat.node_tree.nodes["Principled BSDF"]
     bsdf.inputs["Base Color"].default_value = color
-    bsdf.inputs["Roughness"].default_value = 0.9
+    bsdf.inputs["Roughness"].default_value = 1.0 if matte else 0.9
+    if matte and "Specular IOR Level" in bsdf.inputs:
+        bsdf.inputs["Specular IOR Level"].default_value = 0.0
     for obj in mesh_objects(objects):
         obj.data.materials.clear()
         obj.data.materials.append(mat)
@@ -129,6 +131,21 @@ def set_smooth(objects, smooth=True):
     for obj in mesh_objects(objects):
         for p in obj.data.polygons:
             p.use_smooth = smooth
+
+
+def twilight_lights(scene):
+    """Luz do jogo (GDD, seção 17): crepúsculo frio vindo de cima, fraco, ambiente roxo-acinzentado."""
+    for obj in [o for o in scene.objects if o.type == "LIGHT"]:
+        bpy.data.objects.remove(obj)
+    sun = bpy.data.objects.new("crepusculo", bpy.data.lights.new("crepusculo", "SUN"))
+    sun.data.energy = 1.6
+    sun.data.color = (0.72, 0.78, 0.95)
+    sun.data.angle = math.radians(20)
+    sun.rotation_euler = (math.radians(28), 0, math.radians(-20))  # quase de cima, um pouco da frente
+    scene.collection.objects.link(sun)
+    bg = scene.world.node_tree.nodes["Background"]
+    bg.inputs["Color"].default_value = (0.36, 0.33, 0.44, 1)
+    bg.inputs["Strength"].default_value = 0.55
 
 
 def setup_scene(resolution=1024, transparent=False):
@@ -178,7 +195,7 @@ def game_camera_offset(distance: float) -> Vector:
 
 # ---------- retalhos do rosto ----------
 
-def face_patch(body_obj, name: str, rect, cols: int, rows: int, offset_m=0.0015, grid=(24, 12)) -> bpy.types.Object:
+def face_patch(body_obj, name: str, rect, cols: int, rows: int, offset_m=0.0015, grid=(24, 12), phi_max_deg=None) -> bpy.types.Object:
     """Retalho curvo na frente da cabeça, afastado offset_m da pele, UV de 0 a 1 (o material escolhe a célula).
     Projeção cilíndrica em volta do eixo vertical da cabeça: cada linha da grade fica na altura z da janela e
     cada coluna num ângulo, de -phi_max a +phi_max, escolhido para que a corda corresponda à largura da janela.
@@ -192,7 +209,16 @@ def face_patch(body_obj, name: str, rect, cols: int, rows: int, offset_m=0.0015,
     yc = float((head[:, 1].min() + head[:, 1].max()) / 2)
     band = head[np.abs(head[:, 2] - (zt + zb) / 2) < 0.01]
     r_mid = float(band[:, 0].max() - band[:, 0].min()) / 2 if len(band) else float(head[:, 0].max() - head[:, 0].min()) / 2
-    phi_max = math.asin(min(0.995, (x1 - x0) / 2 / r_mid))
+    if phi_max_deg is not None:
+        # Janela pela corda do ângulo pedido; a altura segue a proporção da célula, centrada na janela dada.
+        phi_max = math.radians(phi_max_deg)
+        aspect = (x1 - x0) / (zt - zb)
+        half_w = r_mid * math.sin(phi_max)
+        zc = (zt + zb) / 2
+        x0, x1 = (x0 + x1) / 2 - half_w, (x0 + x1) / 2 + half_w
+        zt, zb = zc + half_w / aspect, zc - half_w / aspect
+    else:
+        phi_max = math.asin(min(0.995, (x1 - x0) / 2 / r_mid))
     nx, nz = grid
     bm = bmesh.new()
     verts = []
@@ -229,11 +255,13 @@ def face_patch(body_obj, name: str, rect, cols: int, rows: int, offset_m=0.0015,
     for p in mesh.polygons:
         p.use_smooth = True
     obj["phi_max_graus"] = math.degrees(phi_max)
+    obj["janela"] = [x0, zt, x1, zb]
     return obj
 
 
-def patch_material(name: str, image_path: Path, cols: int, rows: int):
-    """Material sem luz com o atlas: célula escolhida pelo nó Mapping (set_cell)."""
+def patch_material(name: str, image_path: Path, cols: int, rows: int, lit=False):
+    """Material com o atlas: célula escolhida pelo nó Mapping (set_cell). lit=False: emissão (sem luz);
+    lit=True: difuso fosco, recebe a mesma luz do corpo."""
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     nodes, links = mat.node_tree.nodes, mat.node_tree.links
@@ -241,7 +269,12 @@ def patch_material(name: str, image_path: Path, cols: int, rows: int):
     out = nodes.new("ShaderNodeOutputMaterial")
     mix = nodes.new("ShaderNodeMixShader")
     transp = nodes.new("ShaderNodeBsdfTransparent")
-    emit = nodes.new("ShaderNodeEmission")
+    if lit:
+        emit = nodes.new("ShaderNodeBsdfDiffuse")
+        emit.inputs["Roughness"].default_value = 1.0
+        emit.outputs["BSDF"].name = "BSDF"
+    else:
+        emit = nodes.new("ShaderNodeEmission")
     tex = nodes.new("ShaderNodeTexImage")
     tex.image = bpy.data.images.load(str(image_path))
     tex.interpolation = "Linear"
@@ -254,7 +287,7 @@ def patch_material(name: str, image_path: Path, cols: int, rows: int):
     links.new(tex.outputs["Color"], emit.inputs["Color"])
     links.new(tex.outputs["Alpha"], mix.inputs["Fac"])
     links.new(transp.outputs["BSDF"], mix.inputs[1])
-    links.new(emit.outputs["Emission"], mix.inputs[2])
+    links.new(emit.outputs[0], mix.inputs[2])
     links.new(mix.outputs["Shader"], out.inputs["Surface"])
     if hasattr(mat, "surface_render_method"):
         mat.surface_render_method = "BLENDED"

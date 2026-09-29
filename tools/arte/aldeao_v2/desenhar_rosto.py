@@ -45,7 +45,10 @@ MOIST = (246, 243, 236)
 TWILIGHT = (106, 91, 124)  # #6A5B7C
 CAVITY = tuple(round(b * 0.62 + s * 0.38) for b, s in zip(BONE, SHADOW))
 
-L, R = (82, 124), (174, 118)  # centros dos olhos (o direito menor e mais alto)
+# Olhos 30% maiores dentro da mesma célula (pedido de 29/09/2026: o GDD pede olhos enormes); os centros
+# aproximam um pouco para caber com a olheira. O direito menor e mais alto.
+EYE_SCALE = 1.3
+L, R = (88, 124), (168, 118)
 
 EYES = ["aberto", "fechado", "meio_fechado", "arregalado", "feliz", "apertado", "preocupado", "bravo", "lagrima"]
 MOUTHS = ["entreaberta", "sorriso", "o", "tensa", "triste", "brava", "dormindo"]
@@ -201,13 +204,15 @@ def olheira(face, eye: Eye, alpha=110, bag=55):
     sharp = ImageChops.add(sharp, crescent.point(lambda v: v * bag // 255))
     soft = sharp.filter(ImageFilter.GaussianBlur(5.0 * S))
     layer = Image.new("RGBA", face.size, (*SHADOW, 0))
-    layer.putalpha(ImageChops.lighter(sharp, soft))
+    layer.putalpha(ImageChops.lighter(sharp, soft).point(lambda v: 0 if v < 12 else v))
     face.alpha_composite(layer)
 
 
 def draw_eye(face, eye: Eye, *, cover_in, cover_out, pupil, look, raise_lower=0.0, lash=4.2, cavity=0.42,
              moist=False, seed=0, curve=0.0, straight=False, flat_floor=False, closed=False, floor_alpha=95,
              angle=None, floor_width=1.1, floor_profile=None):
+    lash, floor_width = lash * EYE_SCALE ** 0.5, floor_width * EYE_SCALE ** 0.5
+    look = (look[0] * EYE_SCALE, look[1] * EYE_SCALE)
     layer = Image.new("RGBA", face.size, (0, 0, 0, 0))
     if closed:  # só a linha dos cílios, grossa e curvada para baixo
         line = eye.lid(0.80, 0.86, curve=0.16)
@@ -258,9 +263,10 @@ def tear_streak(face, start, length, seed, lean=0.0, width=6.0):
 
 
 def eyes_pair(kind: str):
+    k = EYE_SCALE
     if kind == "arregalado":  # redondo, totalmente aberto
-        return Eye(L, +1, 30, 28, 26, 2), Eye(R, -1, 26, 25, 23, 2)
-    return Eye(L, +1, 31, 25, 24, 7), Eye(R, -1, 27, 22, 21, 6)
+        return Eye(L, +1, 30 * k, 28 * k, 26 * k, 2 * k), Eye(R, -1, 26 * k, 25 * k, 23 * k, 2 * k)
+    return Eye(L, +1, 31 * k, 25 * k, 24 * k, 7 * k), Eye(R, -1, 27 * k, 22 * k, 21 * k, 6 * k)
 
 
 def draw_eyes(kind: str, face: Image.Image) -> None:
@@ -272,7 +278,7 @@ def draw_eyes(kind: str, face: Image.Image) -> None:
     seed = 100 + EYES.index(kind) * 10
     for i, eye in enumerate((left, right)):
         s = seed + i * 3
-        p = 8 if i == 0 else 7
+        p = (8 if i == 0 else 7) * EYE_SCALE
         if kind == "aberto":  # distraído: pálpebra cobre 1/3, mais pesada por fora, olhar baixo e para o lado
             draw_eye(face, eye, cover_in=0.24, cover_out=0.40, pupil=p, look=(5, 4) if i == 0 else (-1, 5), seed=s)
         elif kind == "meio_fechado":  # sonolento: 2/3 coberto, pupila meio escondida
@@ -299,8 +305,8 @@ def draw_eyes(kind: str, face: Image.Image) -> None:
         else:
             raise ValueError(kind)
     if kind == "lagrima":
-        tear_streak(face, (left.outer[0] + 6, left.cy + left.h * 0.64), 40, seed + 7, lean=-0.08, width=6.5)
-        tear_streak(face, (right.cx + 4, right.cy + right.h * 0.70), 24, seed + 8, lean=0.05, width=5.0)
+        tear_streak(face, (left.outer[0] + 6, left.cy + left.h * 0.64), 34, seed + 7, lean=-0.08, width=6.5)
+        tear_streak(face, (right.cx + 4, right.cy + right.h * 0.70), 22, seed + 8, lean=0.05, width=5.0)
 
 
 # ---------- boca: variações da dobra ----------
@@ -380,8 +386,11 @@ def atlas(names, cell_size, grid, painter, window):
         cell = cell_from(face, window, cell_size)
         alpha = np.asarray(cell.getchannel("A"))
         border = np.concatenate([alpha[:MARGIN].ravel(), alpha[-MARGIN:].ravel(), alpha[:, :MARGIN].ravel(), alpha[:, -MARGIN:].ravel()])
-        if border.any():
+        if border.max() > 2:
             raise RuntimeError(f"quadro {name!r} invade a margem de {MARGIN} px (alfa máximo {border.max()})")
+        a = np.array(cell.getchannel("A"))  # resíduo do LANCZOS (alfa 1 ou 2) na margem vira zero
+        a[:MARGIN] = 0; a[-MARGIN:] = 0; a[:, :MARGIN] = 0; a[:, -MARGIN:] = 0
+        cell.putalpha(Image.fromarray(a))
         sheet.paste(cell, ((i % cols) * w, (i // cols) * h))
     return sheet, faces
 
