@@ -1,0 +1,314 @@
+{
+  "corpo": {
+    "frente": {
+      "altura_px": 857,
+      "largura_px": 467,
+      "caixa": [
+        279,
+        83,
+        746,
+        940
+      ],
+      "eixo_cabeca_x": 514,
+      "pescoco_y": 215,
+      "pescoco_largura_px": 38,
+      "cabeca_altura_px": 132,
+      "ombros": {
+        "y": 282,
+        "x0": 427,
+        "x1": 601,
+        "largura_px": 174
+      },
+      "pes": [
+        [
+          375,
+          444,
+          411.98068181818184
+        ],
+        [
+          582,
+          654,
+          614.8511111111111
+        ]
+      ]
+    },
+    "lado": {
+      "altura_px": 860,
+      "largura_px": 133,
+      "caixa": [
+        445,
+        82,
+        578,
+        942
+      ],
+      "eixo_cabeca_x": 508,
+      "pescoco_y": 219,
+      "pescoco_largura_px": 40,
+      "cabeca_altura_px": 137,
+      "ombros": {
+        "y": 285,
+        "x0": 487,
+        "x1": 561,
+        "largura_px": 74
+      },
+      "pes": [
+        [
+          453,
+          578,
+          521.3617083946981
+        ]
+      ]
+    },
+    "costas": {
+      "altura_px": 858,
+      "largura_px": 466,
+      "caixa": [
+        279,
+        83,
+        745,
+        941
+      ],
+      "eixo_cabeca_x": 509,
+      "pescoco_y": 214,
+      "pescoco_largura_px": 37,
+      "cabeca_altura_px": 131,
+      "ombros": {
+        "y": 280,
+        "x0": 425,
+        "x1": 596,
+        "largura_px": 171
+      },
+      "pes": [
+        [
+          373,
+          440,
+          409.9286516853933
+        ],
+        [
+          579,
+          648,
+          608.5117808219178
+        ]
+      ]
+    }
+  },
+  "corpo_comparacao": {
+    "altura_px": {
+      "frente": 857,
+      "lado": 860,
+      "costas": 858
+    },
+    "altura_dif_max_pct": 0.3,
+    "cabeca_altura_px": {
+      "frente": 132,
+      "lado": 137,
+      "costas": 131
+    },
+    "ombros_frente_costas_px": [
+      174,
+      171
+    ],
+    "ombros_dif_pct": 1.7,
+    "pes_distancia_centros_px": [
+      202.9,
+      198.6
+    ],
+    "pes_distancia_dif_pct": 2.1,
+    "pes_distancia_pct_altura": [
+      23.7,
+      23.1
+    ],
+    "pes_largura_px": {
+      "frente": [
+        69,
+        72
+      ],
+      "costas": [
+        67,
+        69
+      ]
+    },
+    "pe_perfil": {
+      "comprimento_px": 125,
+      "comprimento_pct_altura": 14.5,
+      "calcanhar_atras_do_eixo_da_cabeca_pct_altura": 8.1,
+      "ponta_a_frente_do_eixo_da_cabeca_pct_altura": 6.4
+    }
+  },
+  "rosto": {
+    "corpo_frente": {
+      "cabeca_largura_px": 115,
+      "cabeca_altura_px": 132,
+      "cabeca_largura_sobre_altura": 0.871,
+      "pixels": 3946,
+      "tom_medio": 197.5,
+      "tom_p5_p95": [
+        179.6,
+        214.5
+      ],
+      "residuo_quadratico_dp": 1.96,
+      "residuo_quadratico_max": 7.3,
+      "passa_alta_dp": 0.73,
+      "passa_alta_max": 4.3
+    },
+    "chifres_frente": {
+      "cabeca_largura_px": 469,
+      "cabeca_altura_px": 546,
+      "cabeca_largura_sobre_altura": 0.859,
+      "pixels": 62100,
+      "tom_medio": 203.5,
+      "tom_p5_p95": [
+        186.3,
+        219.2
+      ],
+      "residuo_quadratico_dp": 1.74,
+      "residuo_quadratico_max": 6.2,
+      "passa_alta_dp": 0.56,
+      "passa_alta_max": 2.8
+    }
+  },
+  "chifres": {
+    "frente": [
+      {
+        "caixa": [
+          278,
+          90,
+          378,
+          271
+        ],
+        "centro": [
+          326.7,
+          190.7
+        ],
+        "altura_px": 181,
+        "largura_px": 100,
+        "pixels": 11124
+      },
+      {
+        "caixa": [
+          653,
+          144,
+          742,
+          275
+        ],
+        "centro": [
+          696.3,
+          209.4
+        ],
+        "altura_px": 131,
+        "largura_px": 89,
+        "pixels": 8086
+      }
+    ],
+    "lado": [
+      {
+        "caixa": [
+          405,
+          140,
+          587,
+          287
+        ],
+        "centro": [
+          490.3,
+          214.8
+        ],
+        "altura_px": 147,
+        "largura_px": 182,
+        "pixels": 13122
+      }
+    ],
+    "costas": [
+      {
+        "caixa": [
+          285,
+          140,
+          368,
+          293
+        ],
+        "centro": [
+          327.1,
+          211.0
+        ],
+        "altura_px": 153,
+        "largura_px": 83,
+        "pixels": 8447
+      },
+      {
+        "caixa": [
+          666,
+          90,
+          752,
+          293
+        ],
+        "centro": [
+          708.2,
+          191.5
+        ],
+        "altura_px": 203,
+        "largura_px": 86,
+        "pixels": 10162
+      }
+    ],
+    "topo": [
+      {
+        "caixa": [
+          297,
+          308,
+          385,
+          612
+        ],
+        "centro": [
+          341.2,
+          467.1
+        ],
+        "altura_px": 304,
+        "largura_px": 88,
+        "pixels": 15214
+      },
+      {
+        "caixa": [
+          647,
+          374,
+          730,
+          615
+        ],
+        "centro": [
+          687.4,
+          489.9
+        ],
+        "altura_px": 241,
+        "largura_px": 83,
+        "pixels": 11815
+      }
+    ]
+  },
+  "chifres_comparacao": {
+    "altura_esquerdo_frente_costas_perfil_px": [
+      131,
+      153,
+      147
+    ],
+    "altura_direito_frente_costas_px": [
+      181,
+      203
+    ],
+    "altura_esquerdo_frente_x_costas_dif_pct": 15.5,
+    "altura_direito_frente_x_costas_dif_pct": 11.5,
+    "altura_esquerdo_frente_x_perfil_dif_pct": 11.5,
+    "esquerdo_x_direito_na_frente_altura_dif_pct": 32.1,
+    "distancia_entre_centros_px": {
+      "frente": 369.6,
+      "costas": 381.1,
+      "topo": 346.2
+    },
+    "frente_para_tras_px": {
+      "perfil": 182,
+      "topo": [
+        304,
+        241
+      ]
+    },
+    "distancia_frente_x_topo_dif_pct": 6.5,
+    "frente_para_tras_perfil_x_topo_dif_pct": 50.2
+  }
+}

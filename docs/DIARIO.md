@@ -2996,3 +2996,28 @@ onde errou, correções manuais e quanto tempo levou.
   O fundo das folhas é liso (±1,5 nível), então o limiar 8 separa bem: 3 e 4 figuras, pescoço, mãos e pontas dos
   chifres inteiros (conferido nas prévias).
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Protagonista v2: folha de conferência dos recortes
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** folha com cada vista e a altura em px; dizer se as três vistas do corpo batem (altura, ombros, pés), se a
+  frente da cabeça está lisa e se as quatro vistas dos chifres são coerentes.
+- **Feito:** `tools/arte/protagonista_v2/conferir_recortes.py` → `assets/previews/protagonista_v2/recortes.png` e
+  `recortes.json` (as vistas de cada folha já estão na mesma escala; as medidas são no quadro de 1024 px).
+- **Corpo:** altura 857 / 860 / 858 px (frente/perfil/costas), **0,3%**; cabeça (topo ao pescoço) 132 / 137 / 131 px;
+  ombros (maior largura da faixa central de 3% a 8% da altura abaixo do pescoço) 174 / 171 px frente/costas, **1,7%**;
+  pés: distância entre os centros 203 / 199 px, **2,1%** (23,7% e 23,1% da altura), largura 69–72 / 67–69 px; no perfil
+  o pé tem 125 px (14,5% da altura), calcanhar 8,1% atrás do eixo da cabeça e ponta 6,4% à frente. As três batem.
+- **Rosto:** liso. Na elipse do rosto, depois de tirar o sombreado suave (ajuste quadrático), o tom varia 1,96 níveis
+  (desvio padrão), máximo 7,3; passa-alta (tom − desfoque de 5 px) no máximo 4,3 níveis, sem nenhuma marca de olho,
+  nariz ou boca (esses dariam dezenas de níveis). O busto dos chifres, em escala maior, dá 1,74 / 2,8. Cabeça do corpo
+  e do busto com a mesma proporção (largura/altura 0,87 e 0,86).
+- **Chifres:** frente, perfil e costas coerentes; o **topo não**. Os chifres são assimétricos de propósito na folha (o
+  direito dela é 32% mais alto que o esquerdo na frente), e as costas repetem isso espelhado. Altura do esquerdo:
+  131 px na frente, 153 nas costas, 147 no perfil (11% a 15% de diferença; nas costas os dois chifres saem ~12% maiores,
+  provavelmente perspectiva da imagem, com as pontas inclinadas para trás, mais perto da câmera). Distância entre os
+  chifres: 370 / 381 / 346 px (frente/costas/topo, 6,5%). **Frente para trás: 182 px no perfil contra 304 e 241 px no
+  topo (50%)**: no topo os chifres correm ao longo da cabeça por quase todo o comprimento dela, e no perfil ocupam cerca
+  de um terço. Recomendação: gerar na Meshy com frente, perfil e costas e deixar o topo de fora (como no plano dos
+  cabelos do aldeão: o topo só entra se o resultado vier errado).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.
