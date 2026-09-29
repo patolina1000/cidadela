@@ -2587,3 +2587,20 @@ onde errou, correções manuais e quanto tempo levou.
   importar não é do GLB: é a forma de osso que o importador do Blender cria (desligada com `disable_bone_shape`).
 - **Observação:** a pose de repouso da v1 é T (braços na horizontal), não A como a do aldeão v2.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Protagonista v2, passo 3: medidas da v1
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** triângulos por material e por região (osso de maior peso), altura e cores médias de pele e cabelo
+  na textura, em `assets/previews/protagonista_v2/v1_medidas.json`. Feito antes do passo 2 porque a coluna (b) da
+  folha de diagnóstico usa a cor da pele medida.
+- **Feito:** `tools/arte/protagonista_v2/medir_v1.py` (Blender headless, pose de repouso).
+- **Medidas:** altura **0,80 m**; **2.974 triângulos** (Material_1 2.970, Cristal 4). Por região, pelo osso
+  dominante de cada triângulo (soma dos pesos dos 3 vértices): cabeça/cabelo **383** (13%), tronco **709** (24%,
+  inclui os 4 do cristal), braços e mãos **786** (26%), pernas e pés **1.096** (37%). A cabeça tem pouco: parte
+  do cabelo longo segue os ossos do tronco. Para comparar: o aldeão v2 tem 2.424 no corpo + ~760 no cabelo.
+- **Cores (textura):** pele **#91ADB7**, cabelo **#75929F**. A textura da Meshy é um atlas em cacos, então as
+  amostras vêm da geometria: pele = triângulos com osso dominante mão ou pé (descalça; os antebraços têm faixas),
+  273 triângulos, 9.559 texels; cabelo = cabeça acima do osso `neck` com normal para trás ou para cima (nuca e
+  topo, onde só há cabelo), 117 triângulos, 5.739 texels. Cada triângulo é rasterizado na UV; média em espaço linear.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
