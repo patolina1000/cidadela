@@ -2454,3 +2454,38 @@ onde errou, correções manuais e quanto tempo levou.
 - **GIFs:** `assets/previews/aldeao_v2/clipes_finais/idle_Idle_3_{jogo,lado}.gif` e `run_Run_02_{jogo,lado}.gif`
   (jogo a 44 px ampliado 3×; lado a 256 px; chão em grade na passada). O idle de 10 s vai a 12 fps.
 - **Créditos:** 0 neste passo. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Aldeão v2, passo 11: piloto dos cabelos com o cabelo 4 (longo liso), 20 créditos
+
+- **Agente / modelo:** Claude Code + Fable 5.1, agente de ARTE na branch `arte`.
+- **Pedido:** seguir o `PLANO_CABELOS.md` só com o cabelo 4: gerar na Meshy, extrair a peruca, encaixar na cabeça
+  do corpo aprovado, abrir a janela dos olhos, decimar a ≤ 800; prévia em 44 e 112 px com crepúsculo; conferir
+  com idle e run que o cabelo rígido não atravessa o corpo nem os retalhos; até 2 gerações.
+- **Meshy (`meshy_cabelo.py`):** Multi-Image to 3D com frente, lado, costas e topo, só malha, remesh a 3.000,
+  1 geração (20 créditos; saldo 2.398 → 2.378): `assets/conceitos/aldeao_v2/meshy/cabelos/cabelo_4_1.glb`,
+  3.104 triângulos, cabeça + cabelo + um toco de pescoço que a Meshy inventou.
+- **Extração (`extrair_peruca.py`), o que funcionou e o que não:**
+  - o GLB da Meshy vem com os **vértices duplicados por face** (3.342 → 1.555 depois de fundir): sem fundir,
+    cada triângulo é uma ilha, a decimação racha a malha e qualquer crescimento de região para. Custou três
+    rodadas até perceber;
+  - achar a cabeça da folha por ajuste de elipsoide **não fecha**: o rosto visível é uma faixa estreita entre as
+    mechas, quase plana, e o ajuste (esfera, forma fixa, escala por eixo) diverge ou erra 1 cm. Para o piloto a
+    cabeça da folha é ancorada em medidas da própria folha (`PRIOR[4]`: largura 75% e altura 74% da silhueta,
+    topo 5% abaixo do topo) mais a frente do rosto medida no modelo, e o elipsoide da cabeça do corpo é mapeado
+    com escala por eixo. Para os outros cabelos é preciso medir os mesmos três números em cada folha;
+  - separar rosto de cabelo por **crescimento de região** a partir da frente dos olhos, só por arestas com menos
+    de 32° (a linha do cabelo é viva) e sem sair mais de 2,5 cm do elipsoide: 446 faces de rosto + 161 do toco
+    de pescoço removidas; sobra a peruca em 7 pedaços (24 faces soltas descartadas);
+  - encaixe: 25 vértices empurrados para fora do corpo (+1,5 mm) e 39 para 2 mm do retalho dos olhos; franja:
+    nenhuma face abaixo da linha dos olhos (o repartido no meio deixa o rosto livre);
+  - decimação 2.473 → **759 triângulos**; material "cabelo" #4B5A69; exportação rígida no espaço do corpo em
+    repouso: `assets/modelos/aldeao_v2/cabelos/cabelo_4.glb` (+ `cabelo_4_relatorio.json`).
+- **Conferência:** repouso: 0,46 mm do corpo (pior ponto nos ombros, z 0,195 m: as pontas encostam nos ombros)
+  e 1,87 mm do retalho dos olhos (14 vértices de franja na frente dele). Idle: 1,5 mm do corpo. **Run: as
+  mechas entram até 37 mm nos ombros e braços** (z 0,166 m), porque o cabelo é rígido no Head e os braços
+  balançam por dentro das mechas; peruca e retalhos seguem o mesmo osso, então a folga entre eles é a do
+  repouso em todo quadro. Saídas possíveis: encurtar as pontas até o queixo (muda o desenho), ou aceitar (a
+  44 px na câmera do jogo o braço some sob a mecha). Decisão do Arthur.
+- **Prévia:** `assets/previews/aldeao_v2/cabelo_4_previa.png` (frente, lado, 3/4, jogo; 112 px, 44 px e 44 px ×
+  crepúsculo; rosto distraído).
+- **Créditos:** 20. **Gerações:** 1 de 2. **Correções manuais:** nenhuma. **Tempo:** ~2 h.
