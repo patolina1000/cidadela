@@ -9,7 +9,7 @@ namespace Cidadela.View;
 /// Biografia (scenes/Biography.tscn): a enciclopédia do jogo. Colunas: categorias, entradas da categoria,
 /// palco 3D no centro com a iluminação do jogo, texto à direita. No palco, arrastar com o botão esquerdo
 /// gira e a roda aproxima. Embaixo, botões de animação da entrada (clipes dos personagens; funcionando e
-/// parada nas máquinas). Tudo vem de data/biography.json.
+/// parada nas máquinas) e, no aldeão, expressões, cabelos, tons e chapéu. Tudo vem de data/biography.json.
 /// </summary>
 public partial class BiographyRoot : Node3D
 {
@@ -24,6 +24,9 @@ public partial class BiographyRoot : Node3D
     private Node3D _stage = null!;
     private Node3D? _model;
     private CastellanVisual? _castellan;
+    private VillagerVisual? _villager;
+    private VillagerVisual.DrawState _villagerState;
+    private int _villagerSeed = 1; // muda o tom do cabelo (sorteado pelo id)
     private Camera3D _camera = null!;
     private float _yaw = Mathf.Pi, _pitch = 0.32f, _distance = 3f, _targetHeight = 0.4f;
     private bool _dragging;
@@ -129,6 +132,8 @@ public partial class BiographyRoot : Node3D
     public override void _Process(double delta)
     {
         float dt = (float)delta;
+        if (_villager is not null)
+            _villager.UpdateFrom(_villagerState, _data, dt);
         if (_machineWorld is not null && _machineView is not null)
         {
             int ticks = _machineClock.Advance(delta);
@@ -160,6 +165,7 @@ public partial class BiographyRoot : Node3D
         _model?.QueueFree();
         _model = null;
         _castellan = null;
+        _villager = null;
         _machineRoot?.QueueFree();
         _machineRoot = null;
         _machineWorld = null;
@@ -178,6 +184,14 @@ public partial class BiographyRoot : Node3D
                 _castellan = new CastellanVisual { Name = "Castellan" };
                 _model = _castellan;
                 _targetHeight = 0.42f; _distance = 2.4f;
+                break;
+            case "villager":
+                _villager = new VillagerVisual { Name = "Villager", Seed = _villagerSeed };
+                // Olha para -Z, onde a câmera começa; posição em células (o visual soma 0,5).
+                _villagerState = new VillagerVisual.DrawState(new System.Numerics.Vector2(-0.5f, -0.5f), new System.Numerics.Vector2(0f, -1f),
+                    1, VillagerExpression.Distracted, false, null, null, -1f, 0f);
+                _model = _villager;
+                _targetHeight = 0.22f; _distance = 1.4f;
                 break;
             case "building":
                 BuildingType type = _data.Building(entry.ModelArg);
@@ -342,6 +356,7 @@ public partial class BiographyRoot : Node3D
         _model?.QueueFree();
         _model = null;
         _castellan = null;
+        _villager = null;
         _machineRoot?.QueueFree();
         _machineRoot = null;
         _machineWorld = null;
@@ -380,13 +395,55 @@ public partial class BiographyRoot : Node3D
             string a = animation;
             row.AddChild(SmallButton(a, () => PlayAnimation(a)));
         }
-        // Aguardando o novo aldeão: a entrada dele tinha aqui os botões de expressão e de cabelo.
+        if (entry.ModelKind != "villager")
+            return;
+
+        var faces = new HFlowContainer();
+        faces.AddThemeConstantOverride("h_separation", 4);
+        faces.AddThemeConstantOverride("v_separation", 4);
+        _controls.AddChild(Caption("Expressão"));
+        _controls.AddChild(faces);
+        string[] faceNames = { "distraído", "esforço", "feliz", "sonolento", "dormindo", "espantado", "preocupado", "chorando", "bravo" };
+        for (int i = 0; i < faceNames.Length; i++)
+        {
+            VillagerExpression face = VillagerExpressions.All[i];
+            faces.AddChild(SmallButton(faceNames[i], () => _villagerState = _villagerState with { Expression = face, Resting = face == VillagerExpression.Sleeping }));
+        }
+
+        var hairs = new HFlowContainer();
+        hairs.AddThemeConstantOverride("h_separation", 4);
+        hairs.AddThemeConstantOverride("v_separation", 4);
+        _controls.AddChild(Caption("Cabelo"));
+        _controls.AddChild(hairs);
+        for (int v = 1; v <= Villager.HairVariants; v++)
+        {
+            int variant = v;
+            string name = VillagerLooks.HairFor(v)?.Name ?? $"{v}";
+            hairs.AddChild(SmallButton(name, () =>
+            {
+                _villagerState = _villagerState with { HairVariant = variant };
+                _villager?.ResetLook();
+            }));
+        }
+        hairs.AddChild(SmallButton("outro tom", () =>
+        {
+            // O tom é sorteado pelo id: trocar a semente troca o tom (e refaz o cabelo).
+            _villagerSeed++;
+            if (_villager is not null)
+            {
+                _villager.Seed = _villagerSeed;
+                _villager.ResetLook();
+            }
+        }));
+        hairs.AddChild(SmallButton("chapéu", () => _villagerState = _villagerState with { JobResource = _villagerState.JobResource is null ? "wood" : null }));
     }
 
     private void PlayAnimation(string animation)
     {
         if (_castellan is not null)
             _castellan.PlayClip(animation);
+        else if (_villager is not null)
+            _villager.PreviewClip = animation;
         else if (_current is { ModelKind: "building" })
             _machineRunning = animation == "funcionando";
     }

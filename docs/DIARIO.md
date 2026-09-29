@@ -2900,3 +2900,19 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 105 aprovados (sem mudança na simulação).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 03:40–04:05 de relógio.
+
+---
+
+## 2026-09-29 — Aldeão v2 de volta na Biografia
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`, com o MCP godot-ai.
+- **Pedido:** "os aldeões não estão aparecendo na biografia" (a entrada "Os Segundos" e o caso "villager" do
+  palco tinham saído com o v1 e ficaram marcados "aguardando o novo aldeão").
+- **O que foi feito:** entrada "Os Segundos" em `data/biography.json` com os clipes `idle` e `run`;
+  `BiographyRoot` monta um `VillagerVisual` v2 no palco (de frente para a câmera) com os botões de animação,
+  as 9 expressões (dormindo liga o descanso), os 5 cabelos, "outro tom" (troca a semente, que sorteia o tom) e
+  chapéu. O operador que ficava ao lado das máquinas não voltou: precisa do clipe `work`, que ainda não existe.
+- **Conferido no jogo:** print `docs/prints/aldeao_v2_biografia.png`. `dotnet build`: 0 erros, 0 avisos. Sem
+  mudança na simulação.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 04:10–04:16 de relógio.

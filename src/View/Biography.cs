@@ -16,7 +16,7 @@ public static class Biography
     public sealed record Entry(string Id, string Name, string CategoryId, string Description, string Story,
         string Model, IReadOnlyList<string> Animations, bool Discovered)
     {
-        /// <summary>"castellan", "building", "item", "resource" ou "" (só texto).</summary>
+        /// <summary>"castellan", "villager", "building", "item", "resource" ou "" (só texto).</summary>
         public string ModelKind => Model.Split(':')[0];
         /// <summary>O que vem depois dos dois-pontos (kind de buildings/items/resources), ou "".</summary>
         public string ModelArg => Model.Contains(':') ? Model[(Model.IndexOf(':') + 1)..] : "";
