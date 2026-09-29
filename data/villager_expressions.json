@@ -1,0 +1,18 @@
+{
+  // Expressões do aldeão (GDD, tabela de expressões): cada uma vira um quadro dos olhos e um da boca.
+  // Os nomes de quadro são PROVISÓRIOS (o atlas de teste é gerado por código); a arte entrega os nomes reais
+  // no rosto.json (contrato v2, campo "expressoes"), que, quando existir, vale no lugar deste arquivo.
+  // olhosFechados: quadro dos olhos usado ao piscar.
+  "olhosFechados": "fechado",
+  "expressoes": {
+    "distraido":  { "olhos": "distraido",  "boca": "entreaberta" },
+    "esforco":    { "olhos": "esforco",    "boca": "esforco" },
+    "feliz":      { "olhos": "feliz",      "boca": "sorriso" },
+    "sonolento":  { "olhos": "sonolento",  "boca": "neutra" },
+    "dormindo":   { "olhos": "fechado",    "boca": "entreaberta" },
+    "espantado":  { "olhos": "espantado",  "boca": "o" },
+    "preocupado": { "olhos": "preocupado", "boca": "triste" },
+    "chorando":   { "olhos": "chorando",   "boca": "triste" },
+    "bravo":      { "olhos": "bravo",      "boca": "neutra" }
+  }
+}
