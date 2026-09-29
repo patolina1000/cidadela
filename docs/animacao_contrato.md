@@ -93,7 +93,12 @@ máquinas vierem.
 
 ## O JOGO É ESTRITO
 
-- Hoje o `ExternalClips` converte a escala do clipe e corta o começo, porque os clipes da prova vieram fora deste
-  formato.
-- Quando os clipes da arte chegarem no formato novo, ele deixa de converter e de cortar. Passa a recusar, com
-  aviso, clipe com escala ou repouso diferente do corpo.
+- Em vigor desde 29/09/2026: o `ExternalClips` não converte escala nem corta o começo. Ele recusa, com um aviso
+  que lista os motivos, clipe com:
+  - Armature em escala diferente da do corpo;
+  - ossos diferentes dos do corpo;
+  - repouso diferente em mais de 0,01 mm;
+  - primeira chave fora de t = 0.
+- O importador do Godot sempre recria uma chave em t = 0, segurando o primeiro quadro. Por isso um clipe com o
+  começo atrasado é pego pela duração: se ela passar de meio quadro de diferença para a `duracao_s` do
+  `clipes.json`, o clipe é recusado.

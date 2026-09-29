@@ -3697,3 +3697,13 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** nada.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:23–19:25 de relógio.
+
+---
+
+## 2026-09-29 — Contrato de animação: modo estrito em vigor
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`. Só documentação.
+- **O que foi feito:** a seção "O JOGO É ESTRITO" do `docs/animacao_contrato.md` descrevia o modo estrito como
+  futuro; passou a descrever o que está em vigor: os quatro motivos de recusa e a verificação pela duração do
+  `clipes.json`, que é como o jogo pega um começo atrasado. Nenhuma regra mudou.
+- **Tempo:** 19:25 de relógio (poucos minutos).
