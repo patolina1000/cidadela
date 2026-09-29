@@ -3513,3 +3513,101 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** nada.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:02–19:05 de relógio.
+
+---
+
+## 2026-09-29 — Prova de operação: clipes reexportados pelo contrato de animação (metros, t = 0, 24 fps)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** o jogo contornou três problemas dos clipes da prova (escala 0,004, primeira chave em 1/24 s,
+  reamostragem a 30 fps); corrigir na origem pelo contrato novo (`docs/animacao_contrato.md`, lido do disco da
+  worktree do `master`, onde ainda não está commitado) e conferir.
+- **Feito:** `operacao_lib.export_clip` (esqueleto só, Armature em metros por `rig_lib.apply_armature_scale`, chaves
+  deslocadas para começar no quadro 0, cena a 24 fps, uma faixa NLA por ação, POSE) e `gltf_clip_times` (lê do GLB
+  os tempos das chaves e a escala do nó); `reexportar_clipes.py` (reexporta sem refazer o IK, no mesmo lugar);
+  `conferir_clipes.py` (confere contra o corpo aprovado, com o corpo no posto e a roda física girando como no jogo).
+- **Arquivos (raiz e `variante_r06`, `clipes/girar_roda.glb`):** antes, Armature 0,004 e chaves de 0,0417 a
+  2,0417 s; agora nó Armature sem escala, **chaves de 0 a 2,0 s, 49 chaves, 24 fps**, sem malha.
+- **Conferência (`assets/previews/prova_operacao/[variante_r06/]conferencia_clipes.json`):** mesmos 24 ossos;
+  repouso igual ao do `aldeao_corpo.glb` a **0,0054 mm** e 0,00002°; palma-manopla nos 48 quadros igual à de antes
+  a **0,1 mm** (arredondamento): raiz 35,4 mm (antes 35,4), variante **2,4 mm** (antes 2,5).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Prova de operação: girar_roda.py exporta pelo contrato e gera um clipe por posto
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido (passo 4 do pedido):** `operacao_lib.py` e `girar_roda.py` exportando sempre pelo contrato (metros, t = 0,
+  24 fps). Feito antes do passo 2 porque o clipe do posto B sai deste script.
+- **Feito:** `operacao_lib.export_clip` (commit anterior) passa a ser a única saída de clipe do `girar_roda.py`; o bake
+  vai do quadro 0 ao 48 (quadro = fase da roda × 48); a cena exporta a 24 fps. O script gera **um clipe por posto**:
+  para cada posto, cena nova com o corpo aprovado, IK para a manopla da alça daquele posto (A: fase p; B: a alça B,
+  que para o aldeão do outro lado está na fase 0,5 − p do círculo dele), bake, laço e exportação num GLB próprio.
+  O `clipes.json` sai com um bloco por posto (posição e giro em relação à roda, fórmula da fase sem inverter).
+  Uma conferência interna (assert) coloca cada posto em volta da roda física e confere que a manopla cai no alvo.
+- **Pendência:** o `gif_roda.py` (GIFs da prova) ainda usa o atalho de tocar o clipe A ao contrário e a primeira
+  chave no quadro 1; precisa ser atualizado antes de refazer os GIFs.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Prova de operação: clipe próprio do posto B (girar_roda_b-loop) e clipes.json por posto
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** clipe por IK para o aldeão B, do outro lado, segurando a alça B; a fase continua a da roda; clipes.json
+  da variante_r06 com um bloco por posto; palma-manopla dos dois postos nos 48 quadros.
+- **Feito:** `girar_roda.py` rodado na variante (0,06 m) e na raiz (0,10 m). Cada posto num GLB próprio:
+  `clipes/girar_roda.glb` (`girar_roda-loop`, posto A) e `clipes/girar_roda_b.glb` (`girar_roda_b-loop`, posto B),
+  mais limpo para o jogo carregar só o clipe do posto ocupado. Os dois: nó Armature sem escala, sem malha, chaves de
+  0 a 2,0 s, 49 chaves, 24 fps, laço 0,0 cm, Hips parado. A raiz ganhou o mesmo formato.
+- **Postos (espaço da roda, glTF: pivô no eixo, eixo +Z; posição = pés):** A em (0; −0,19; +0,1751), giro 180°
+  (olha para −Z, a face da alça A); B em (0; −0,19; −0,1751), giro 0°. Fase: quadro = fase da roda × 48, igual nos dois.
+  Na raiz, ±0,178.
+- **Conferência independente (`conferir_clipes.py`: corpo aprovado posto em cada posto, roda física girando
+  −360° × fase, manopla da alça do posto):** repouso igual ao do corpo a 0,0001 mm; palma-manopla nos 48 quadros:
+  variante **A 2,4 mm, B 2,4 mm** no pior quadro; raiz A 35,4 mm, B 35,4 mm (o problema de alcance conhecido).
+  Contra o atalho antigo (B tocando A ao contrário), a diferença é de 0,1 mm, como esperado com a roda simétrica.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — .import de assets/ gerados pelo Godot sem janela (clipes a 24 fps)
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** gerar com `godot --headless --import` os `.import` que faltam em `assets/`, com `animation/fps = 24` nos
+  GLBs de clipe; commitar; conferir os clipes e o `.import` do corpo.
+- **Cuidado antes de gerar:** a `arte` estava 33 commits atrás do `master` (e nenhum à frente), e o `master` já
+  versiona `.import` de 80 arquivos que existem aqui (aldeão v2: conceitos, meshy, cabelos, rosto, corpo, prévias,
+  mais as 2 texturas extraídas do corpo, `aldeao_corpo_boca.png` e `_olhos.png`). Gerar de novo daria outros `uid` e
+  conflito no merge, então esses **82 arquivos vieram do `master` por `git checkout master -- <arquivo>`**, idênticos
+  (sem merge). O aldeão v1, que o `master` já apagou, tem `.gdignore` nas pastas brutas e não foi tocado; nenhum
+  arquivo versionado mudou com o import.
+- **Gerados agora (Godot 4.7.2 mono, `godot-mono --headless --import --path .`):** 17 `.import` e 2 texturas
+  extraídas: referências da protagonista v2 (5), `v1_diagnostico.png`, closes das mãos (2), `aldeao_normalizado.glb`
+  e as texturas `aldeao_normalizado_boca.png`/`_olhos.png` com os seus `.import`, `roda.glb` (raiz e variante) e os 4
+  GLBs de clipe. Na worktree do `master` a maioria já existia sem versionar: os `uid` batem; os dos 2 PNGs extraídos
+  foram trocados pela versão de lá (compressão VRAM, que o Godot aplica ao detectar uso em 3D).
+- **Clipes:** `animation/fps=24` nos 4 (`clipes/girar_roda.glb`, `clipes/girar_roda_b.glb`, raiz e variante),
+  reimportados. Conferido carregando no Godot: 2,0 s, primeira chave em 0, chaves a cada 0,0417 s (1/24), laço
+  ligado, esqueleto em escala 1 (48 chaves por trilha: o otimizador do importador tira uma redundante).
+- **Corpo:** `aldeao_corpo.glb.import` idêntico ao do `master`. Observação: ele está com `animation/fps=30`, então o
+  Godot reamostra o `idle` e o `run` do corpo a 30 fps (chaves a cada 0,0333 s); não mudei por não estar no pedido.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+---
+
+## 2026-09-29 — Quarto merge da `arte`: clipes da prova pelo contrato e clipe do posto B
+
+- **Agente / modelo:** Claude Code + Opus 5.5, na `master`.
+- **Pedido:** apagar os arquivos soltos em `assets/` que a `arte` agora versiona (só esses), fazer o merge
+  mantendo os dois lados nos conflitos, conferir o sha256 do corpo, build e testes, commit e push.
+- **O que foi feito:**
+  - Os 17 arquivos soltos (`.import` e as duas texturas extraídas do `aldeao_normalizado`) estavam todos em
+    `git ls-tree arte`; apagados um a um, só eles. A árvore ficou limpa antes do merge.
+  - Merge da `arte` em `8f36675` (4 commits): clipes `girar_roda` reexportados pelo contrato (metros, primeira
+    chave em t = 0, 24 fps no `.import`), o clipe do posto B por IK (`girar_roda_b.glb`), `clipes.json` com um
+    bloco por posto (`posto` e `peca`), `.import` gerados pelo Godot sem janela e as ferramentas.
+  - Conflito só no `docs/DIARIO.md` (as entradas dos dois lados, jogo e depois arte). O `docs/GDD.md` não
+    conflitou.
+  - sha256 do `aldeao_corpo.glb`: `11c7d12bc4c522808546f61f3136031e2fce0cc6ccf9e789abd02779d110febf`, igual.
+  - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 116 aprovados.
+- **O que deu errado:** o `.import` do corpo (`assets/modelos/aldeao_v2/aldeao_corpo.glb.import`) com
+  `animation/fps=24` **não veio no merge**. Ele está modificado e não commitado na worktree da arte; na branch
+  `arte` e na `master` continua `animation/fps=30`. Não mexi (território da arte).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:12–19:16 de relógio.
