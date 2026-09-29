@@ -2980,3 +2980,19 @@ onde errou, correções manuais e quanto tempo levou.
   de 1/24 s a partir de 0, loop ligado.
 - **GLB do corpo sem mudança:** sha256 `3138cbf652d0d840c2ab911b676bb20d3116f14172e15163c8232a3fa74b49a2`.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Protagonista v2: recorte das vistas das folhas do corpo e dos chifres
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** começar a protagonista v2 pelo processo do aldeão v2 (contrato `docs/protagonista_v2_contrato.md`, lido
+  na `master`): recortar as vistas das folhas aprovadas `corpo.png` (frente, perfil esquerdo, costas, pose A) e
+  `chifres.png` (frente, perfil esquerdo, costas, topo, sobre busto careca), fundo uniforme, mesma escala por folha.
+- **Feito:** `tools/arte/aldeao_v2/preparar_vistas.py` sem cópia, com `--folha`, `--saida` e **`--limiar 8`**. Saída
+  em `assets/conceitos/protagonista_v2/vistas/`: `corpo_{frente,lado,costas}.png`,
+  `chifres_{frente,lado,costas,topo}.png` e as prévias `_previa_corpo.png`, `_previa_chifres.png` (quadros de 1024 px,
+  fundo #EBEBEB).
+- **O que deu errado:** com o limiar padrão (28) a pele pálida iluminada (só 15 a 23 níveis acima do fundo #DCDCDC)
+  virava fundo: 6 figuras no corpo (cabeças separadas no pescoço) e 5 nos chifres (o chifre do perfil solto da cabeça).
+  O fundo das folhas é liso (±1,5 nível), então o limiar 8 separa bem: 3 e 4 figuras, pescoço, mãos e pontas dos
+  chifres inteiros (conferido nas prévias).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
