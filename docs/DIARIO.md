@@ -2604,3 +2604,28 @@ onde errou, correções manuais e quanto tempo levou.
   273 triângulos, 9.559 texels; cabelo = cabeça acima do osso `neck` com normal para trás ou para cima (nuca e
   topo, onde só há cabelo), 117 triângulos, 5.739 texels. Cada triângulo é rasterizado na UV; média em espaço linear.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
+
+## 2026-09-29 — Protagonista v2, passo 2: folha de diagnóstico da v1 na câmera do jogo
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** folha na câmera do jogo (CameraRig.cs reproduzido no Blender), nos zooms 0,4 / 1 / 2,5, com três
+  colunas: (a) v1 com textura como no jogo, (b) v1 sem textura, chapada na cor média da pele e sombreada como o
+  `Toon.gdshaderinc`, (c) aldeão v2 (corpo + cabelo 4) com o mesmo sombreado; luz fosca, fraca e fria de cima;
+  linha extra multiplicada por #6A5B7C.
+- **Feito:** `tools/arte/protagonista_v2/diagnostico_v1.py` (Blender headless) e `montar_diagnostico.py` (PIL).
+  Câmera: perspectiva, pitch 55°, FOV vertical 45°, 16 m ÷ zoom, 3024×1890, olhando o chão sob o personagem.
+  Toon por nós (`prot_lib.toon_material`): meio-Lambert, 3 faixas, piso 0,35, vezes a luz, mais o ambiente,
+  como emissão (o mundo não soma luz). Luz: direção do crepúsculo das prévias do aldeão (quase de cima, um pouco
+  da frente), cor fria (0,72; 0,78; 0,95) × 0,75; ambiente roxo-acinzentado × 0,6. Coluna (a): material do GLB
+  sob um sol e um mundo iguais, cristal com o reforço de 3× do `CastellanVisual.cs`. Coluna (b): #91ADB7 (passo 3)
+  em tudo, cristal incluído. Coluna (c): pele #AEBFD3, cabelo #6F7F96, retalhos "Olhos" e "Boca" no quadro 0 do atlas.
+  Mesmo recorte nas três colunas de cada zoom, em pixels reais da tela (sem ampliar); a linha de crepúsculo é o zoom 1.
+- **Saída:** `assets/previews/protagonista_v2/v1_diagnostico.png`. Altura em tela: v1 **28 / 68 / 179 px**,
+  aldeão v2 com cabelo **21 / 48 / 122 px** (zooms 0,4 / 1 / 2,5).
+- **Leitura:** com a textura, a v1 lê pelo contraste interno (roupa escura, rosto e mãos claros, cristal); chapada,
+  sobra uma silhueta clara sem rosto e com poucas faixas, porque com a luz de cima quase toda a frente cai na faixa
+  mais clara. O aldeão v2 lê melhor a 48 px pelo rosto em retalho e pelo cabelo mais escuro que a pele.
+  No crepúsculo, a v1 some no chão; o cristal é o que sobra dela no zoom 1.
+- **Escolhas minhas (avisar se for diferente):** pose de repouso (T) nas três colunas, e não um quadro do idle,
+  para não precisar prender o cabelo rígido do aldeão ao osso; fundo do chão #4E4A58, o mesmo das prévias do aldeão.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
