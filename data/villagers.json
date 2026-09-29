@@ -1,12 +1,17 @@
 {
-  // Aldeões trabalhadores (GDD, seção 6).
-  // speed: células por segundo. 1.2 (27/09/2026): a passada natural do "walk" do modelo v1 era 0,207 células/s
-  //   (pernas curtas); a animação toca até 3× mais rápido e o resto desliza. Antes era 3.0, mais rápido que a
-  //   protagonista correndo (2.4). Rever com a passada do run do v2 (campo "passadaRun" do rosto.json), para
-  //   os pés não deslizarem.
+  // Aldeões trabalhadores (GDD, seção 6). Velocidade por patamares (decisão de 29/09/2026):
+  //   velocidade final = patamar × bônus do piso (construções com "speedBonus" em buildings.json) × penalidade,
+  //   presa ao teto. A reprodução do clipe run acompanha a velocidade final, para os pés não deslizarem.
+  // speedTiers: células por segundo; o primeiro é a base, os seguintes são as melhorias (por pesquisa ou era;
+  //   o mecanismo fica para depois; hoje a tecla V do jogo alterna os patamares).
+  // penaltySpeed: velocidade no patamar base com fome ou moral baixa (vira um multiplicador, 0,57 ÷ 0,8 =
+  //   0,7125, aplicado a qualquer patamar; a tecla B do jogo liga a penalidade enquanto fome e moral não existem).
+  // maxSpeed: teto da velocidade final.
   // gatherMultiplier: quanto mais devagar coletam que o Castelão (1.5 = 50% mais lento).
   // carry: quantos itens levam por viagem.
-  "speed": 1.2,
+  "speedTiers": [0.8, 1.0, 1.2],
+  "penaltySpeed": 0.57,
+  "maxSpeed": 1.5,
   "gatherMultiplier": 1.5,
   "carry": 5
 }

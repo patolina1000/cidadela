@@ -12,6 +12,7 @@ namespace Cidadela.View;
 /// numa esteira ou baú (com um item segurado); segurar e arrastar repete célula a célula.
 /// Direito sem arrastar solta o que está escolhido ou desmonta. Teclado: WASD anda, 1–9 escolhem, R gira, Esc solta,
 /// C entra/sai da câmera cinematográfica no que está sob o cursor (ou no Castelão).
+/// Depuração dos aldeões: V alterna o patamar de velocidade, B liga/desliga a penalidade (fome ou moral baixa).
 /// </summary>
 public partial class GameRoot : Node3D
 {
@@ -44,6 +45,8 @@ public partial class GameRoot : Node3D
     private GridPos? _lastBuildCell;
 
     private System.Numerics.Vector2 _lastMoveSent;
+    private int _debugSpeedTier;
+    private bool _debugPenalized;
     private long _ticksAtLastSample;
     private double _sampleTime;
     private int _measuredTicksPerSecond;
@@ -126,6 +129,18 @@ public partial class GameRoot : Node3D
         else if (k == Key.C)
         {
             ToggleCinematic();
+        }
+        else if (k == Key.V)
+        {
+            // Depuração: alterna o patamar de velocidade de todos (até existir pesquisa ou era).
+            _debugSpeedTier = (_debugSpeedTier + 1) % _world.Data.Villagers.SpeedTiers.Count;
+            _world.Enqueue(new SetSpeedTierCommand(_debugSpeedTier));
+        }
+        else if (k == Key.B)
+        {
+            // Depuração: penalidade de fome ou moral baixa em todos (até existirem fome e moral).
+            _debugPenalized = !_debugPenalized;
+            _world.Enqueue(new SetPenalizedCommand(_debugPenalized));
         }
         else if (k == Key.Escape)
         {
@@ -290,7 +305,8 @@ public partial class GameRoot : Node3D
         System.Numerics.Vector2 p = castellan.Position;
         _debugLabel.Text =
             $"Tick {_world.TickCount}  |  {_measuredTicksPerSecond} ticks/s (alvo {SimClock.TicksPerSecond})  |  " +
-            $"{Engine.GetFramesPerSecond()} FPS  |  Castelão ({p.X:0.0}, {p.Y:0.0})  |  grama: {_view.GrassTufts} tufos";
+            $"{Engine.GetFramesPerSecond()} FPS  |  Castelão ({p.X:0.0}, {p.Y:0.0})  |  grama: {_view.GrassTufts} tufos  |  " +
+            $"aldeões: patamar {_debugSpeedTier + 1}/{_world.Data.Villagers.SpeedTiers.Count} ({_world.Data.Villagers.SpeedTiers[_debugSpeedTier]:0.00} cél/s){(_debugPenalized ? ", com penalidade" : "")}  [V patamar, B penalidade]";
 
         _inventoryLabel.Text = _selected is not null
             ? $"Construindo {_selected.Name} ({DirectionName(_buildDirection)}) — R gira, botão direito cancela"

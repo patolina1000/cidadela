@@ -43,6 +43,18 @@ public sealed class Villager
     /// <summary>Descansando (dormindo). Ainda não há noite na simulação; quem for criar a noite liga isto.</summary>
     public bool Resting { get; private set; }
 
+    /// <summary>Patamar de velocidade (índice em <see cref="VillagerStats.SpeedTiers"/>): 0 = base; as melhorias sobem.</summary>
+    public int SpeedTier { get; private set; }
+
+    /// <summary>Com fome ou moral baixa: a velocidade cai pela penalidade. Os dois estados ainda não existem; quem os criar liga isto.</summary>
+    public bool Penalized { get; private set; }
+
+    /// <summary>
+    /// Velocidade final neste tick, em células por segundo: patamar × bônus do piso da célula × penalidade,
+    /// presa ao teto (decisão de 29/09/2026). A view lê para a animação acompanhar (os pés não deslizam).
+    /// </summary>
+    public float Speed { get; private set; }
+
     /// <summary>Posição contínua no plano da grade (X, Z), em células; (x, z) = centro da célula x, z.</summary>
     public Vector2 Position { get; private set; }
 
@@ -74,12 +86,19 @@ public sealed class Villager
         Position = position;
         PreviousPosition = position;
         Stats = stats;
+        Speed = stats.BaseSpeed;
         // Mistura simples do id: aldeões vizinhos não saem com cabelos em sequência.
         HairVariant = 1 + (int)(((uint)id * 2654435761u >> 16) % HairVariants);
     }
 
     /// <summary>Liga ou desliga o descanso (o sistema de noite, quando existir, chama isto).</summary>
     public void SetResting(bool resting) => Resting = resting;
+
+    /// <summary>Muda o patamar de velocidade (pesquisa ou era, quando existirem; hoje a tecla de depuração). Fora da lista, prende nas pontas.</summary>
+    public void SetSpeedTier(int tier) => SpeedTier = Math.Clamp(tier, 0, Stats.SpeedTiers.Count - 1);
+
+    /// <summary>Liga ou desliga a penalidade de velocidade (fome ou moral baixa, quando existirem).</summary>
+    public void SetPenalized(bool penalized) => Penalized = penalized;
 
     internal void AssignHome(Building? home)
     {
@@ -105,6 +124,7 @@ public sealed class Villager
     internal void Tick(SimWorld world)
     {
         PreviousPosition = Position;
+        Speed = Stats.FinalSpeed(SpeedTier, world.FloorBonusAt(Cell), Penalized);
         if (_happyTicks > 0)
             _happyTicks--;
         if (Home?.Workplace is not Workplace work)
@@ -252,7 +272,7 @@ public sealed class Villager
     /// <summary>Anda pelo caminho; true quando chegou. Se a próxima célula virou sólida, replaneja.</summary>
     private bool FollowPath(SimWorld world)
     {
-        float budget = Stats.CellsPerSecond / SimClock.TicksPerSecond;
+        float budget = Speed / SimClock.TicksPerSecond;
         while (budget > 0f && _path.Count > 0)
         {
             GridPos next = _path.Peek();

@@ -2,6 +2,8 @@
   // O que o Castelão pode construir (GDD, seções 4, 7 e 10). A ordem aqui é a ordem da barra (teclas 1, 2, 3...).
   // cost: itens gastos (devolvidos ao desmontar). solid: se bloqueia a passagem.
   // beltSpeed: se é esteira, quantas células por segundo os itens andam. storage: se guarda itens (baú).
+  // speedBonus: multiplicador da velocidade de quem anda sobre a construção (pisos construídos do GDD; só vale
+  //   em construção não sólida; 1 = nenhum). Nenhum piso existe ainda.
   // job: cabana de trabalho; um aldeão livre vira o trabalhador e coleta "resource" num raio de "radius"
   //   células em volta da cabana, guardando até "capacity" itens (que ela solta na esteira ou baú à frente).
   "belt":    { "name": "Esteira",  "cost": { "wood": 1 },                         "solid": false, "beltSpeed": 1.5 },

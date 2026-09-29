@@ -215,6 +215,12 @@ public sealed class SimWorld
         building.Workplace?.Stored.MoveAllTo(Castellan.Inventory);
     }
 
+    /// <summary>
+    /// Multiplicador de velocidade do piso na célula (GDD, pisos construídos): a construção não sólida que
+    /// estiver ali com "speedBonus"; 1 sem piso. Os pisos construídos ainda não existem; o gancho já vale.
+    /// </summary>
+    public float FloorBonusAt(GridPos cell) => BuildingAt(cell) is { Type.Solid: false } floor ? floor.Type.SpeedBonus : 1f;
+
     /// <summary>Recurso não esgotado naquela célula, ou null.</summary>
     public ResourceNode? ResourceAt(GridPos cell) =>
         _resourceByCell.TryGetValue(cell, out ResourceNode? node) && !node.IsDepleted ? node : null;

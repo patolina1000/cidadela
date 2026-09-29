@@ -54,6 +54,13 @@ Mudanças só com aval do Arthur: quem precisar mudar algo, para e pergunta.
   ```
 - O índice 0 é o quadro padrão: olhos "distraido" e boca "entreaberta".
 
+## VELOCIDADE (decisão de 29/09/2026)
+
+- A velocidade do aldeão é por patamares, em `data/villagers.json`: base 0,8 células/s; melhorias 1,0 e 1,2 (por pesquisa ou era, mecanismo a definir); penalidade de 0,57 no patamar base com fome ou moral baixa.
+- Velocidade final = patamar × bônus do piso × penalidade, com teto configurável de 1,5 células/s. É estado da simulação, em ticks.
+- O jogo toca o clipe run a (velocidade final ÷ passadaRun): com passadaRun 0,383 m/s, a base fica em 2,09× e a melhoria maior em 3,13×. A arte não precisa mudar a passada por isso; se um dia a corrida parecer acelerada demais, a conversa é sobre a passada, não sobre a velocidade.
+- (Substitui a regra anterior de reprodução entre 1,0× e 1,5×.)
+
 ## CABELOS
 
 - Uma malha cada, com no máximo 800 triângulos.

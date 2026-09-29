@@ -170,6 +170,8 @@ Aldeões são a "matéria-prima viva" do jogo: chegam como camponeses e a automa
 
 **Trabalho básico (protótipo, 25/09/2026):** cabanas de trabalho dão ofício aos aldeões livres. Cabana do Lenhador (madeira), do Pedreiro (pedra) e do Mineiro (ferro): ao construir uma, o aldeão livre mais perto vira o trabalhador. Ele acha sozinho o recurso mais perto dentro do raio da cabana (12 células), anda até ele desviando de obstáculos, coleta até 5 itens e volta para entregar. A cabana guarda até 50 e solta na esteira ou baú à sua frente, então os aldeões alimentam a fábrica. Desmontar a cabana libera o aldeão. Números em `data/villagers.json` e `data/buildings.json`.
 
+**Velocidade dos aldeões (decidido em 29/09/2026):** por patamares, não um valor fixo, tudo em `data/villagers.json`: base 0,8 células/s; melhorias 1,0 e 1,2 (liberadas por pesquisa ou era, mecanismo a definir; até lá, a tecla V do jogo alterna os patamares); penalidade de 0,57 no patamar base quando o aldeão está com fome ou com moral baixa (a regra já existe na simulação, esperando esses estados; a tecla B a liga). Velocidade final = patamar × bônus do piso construído × penalidade, presa a um teto configurável de 1,5 células/s. A velocidade é estado da simulação, calculada a cada tick como o resto, e a reprodução do clipe de corrida acompanha sempre a velocidade final, para os pés não deslizarem (com a passada de 0,383 m/s do modelo v2, a base toca a 2,09×).
+
 ### Educação como linha de produção
 
 Escolas funcionam como máquinas: recebem um aldeão + insumos + tempo e "produzem" um especialista.

@@ -7,8 +7,9 @@ namespace Cidadela.View;
 /// <summary>
 /// Cena de comparação de velocidades do aldeão v2 (scenes/tests/VelocidadeAldeao.tscn): no crepúsculo do
 /// jogo, quatro aldeões correm em círculos lado a lado, cada um numa velocidade (<see cref="Speeds"/>, em
-/// células por segundo); a reprodução do clipe run acompanha a velocidade sem teto (velocidade ÷ passadaRun),
-/// então os pés nunca deslizam e o que muda é o quanto a corrida parece acelerada. O rótulo sobre cada um
+/// células por segundo: a penalidade, a base e as duas melhorias de data/villagers.json); a reprodução do
+/// clipe run acompanha a velocidade (velocidade ÷ passadaRun), então os pés nunca deslizam e o que muda é o
+/// quanto a corrida parece acelerada. O rótulo sobre cada um
 /// mostra velocidade e reprodução. A câmera fica no zoom padrão do jogo (55°, 16 unidades); a roda aproxima
 /// e afasta como no jogo. Esc volta ao menu. Serve para o humano escolher a velocidade olhando, sem mudar
 /// data/villagers.json.
@@ -47,7 +48,7 @@ public partial class VelocidadeAldeaoRoot : Node3D
         {
             var center = new Vector3(FieldSize / 2f + (i - (Speeds.Length - 1) / 2f) * Spacing, 0f, FieldSize / 2f);
             _centers.Add(center);
-            var visual = new VillagerVisual { Name = $"Villager_{i}", Seed = i + 1, ClampAnimationSpeed = false };
+            var visual = new VillagerVisual { Name = $"Villager_{i}", Seed = i + 1 };
             AddChild(visual);
             _villagers.Add(visual);
 

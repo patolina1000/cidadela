@@ -3002,3 +3002,39 @@ onde errou, correções manuais e quanto tempo levou.
   velocidade precisa ser revista (ou a passada refeita pela arte).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 16:58–17:08 de relógio.
+
+---
+
+## 2026-09-29 — Velocidade do aldeão por patamares (estado da simulação), teclas de debug V e B
+
+- **Agente / modelo:** Claude Code + Fable 5.1, na `master`, com o MCP godot-ai.
+- **Pedido (decisão do humano):** velocidade por patamares em `data/villagers.json`: base 0,8; melhorias 1,0 e
+  1,2 (por pesquisa ou era, mecanismo depois; tecla de debug para alternar); penalidade 0,57 com fome ou moral
+  baixa (regra pronta para quando existirem). Final = patamar × bônus do piso × penalidade, teto configurável
+  1,5. Reprodução do run sempre igual à velocidade final. Velocidade como estado da simulação, em ticks.
+  Registrar no contrato, no GDD (seção 6) e no diário; commit e push.
+- **O que foi feito:**
+  - `data/villagers.json`: `speedTiers` [0.8, 1.0, 1.2], `penaltySpeed` 0.57 (velocidade no patamar base com a
+    penalidade; vira o fator 0,7125 aplicado a qualquer patamar), `maxSpeed` 1.5; `speed` saiu.
+    `data/buildings.json`: campo opcional `speedBonus` (multiplicador de quem anda sobre a construção não
+    sólida; é o gancho dos pisos construídos do GDD; nenhum piso existe ainda).
+  - Simulação: `VillagerStats(SpeedTiers, PenaltyFactor, MaxSpeed, …)` com `FinalSpeed(tier, floorBonus,
+    penalized)`; `Villager.SpeedTier`, `Villager.Penalized` e `Villager.Speed` (calculada a cada tick pela
+    fórmula, com `SimWorld.FloorBonusAt(cell)`), usada no deslocamento; comandos `SetSpeedTierCommand` e
+    `SetPenalizedCommand` (todos os aldeões; a pesquisa ou era e a fome ou moral, quando existirem, chamam
+    `SetSpeedTier` e `SetPenalized` por aldeão). Validação do JSON: patamares positivos e crescentes,
+    penalidade positiva até o base, teto positivo.
+  - View: a reprodução do run é sempre velocidade real ÷ passadaRun (o clamp 1,0×–1,5× e o aviso da regra
+    antiga saíram; a cena `VelocidadeAldeao` ficou igual, só sem a opção que desligava o clamp). `GameRoot`:
+    tecla **V** alterna o patamar, **B** liga/desliga a penalidade; o rótulo de depuração mostra
+    "aldeões: patamar 2/3 (1,00 cél/s), com penalidade".
+  - Testes: `VillagerSpeedTests` (8 novos: base, comando de patamar com prisão nas pontas, penalidade pelo
+    fator do JSON, teto, piso multiplicando, deslocamento pela velocidade final, dados reais, JSON inválido).
+    `dotnet test`: **116 aprovados**. `dotnet build`: 0 erros, 0 avisos.
+  - Documentos: seção VELOCIDADE no `docs/aldeao_v2_contrato.md` (substitui a regra 1,0×–1,5×; a arte não
+    precisa mudar a passada); parágrafo "Velocidade dos aldeões" na seção 6 do GDD vivo (rev 91) e no
+    `docs/GDD.md`.
+  - Conferido no jogo pelo MCP: V e B mudam o rótulo, sem erros no log.
+- **O que deu errado:** nada.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 17:15–17:35 de relógio.

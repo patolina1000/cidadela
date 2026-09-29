@@ -109,6 +109,8 @@ public sealed class GameData
             CheckItems(itemKinds, b.Cost, $"custo de \"{kind}\"");
             if (b.BeltSpeed < 0f)
                 throw new FormatException($"beltSpeed negativo em \"{kind}\".");
+            if (b.SpeedBonus <= 0f)
+                throw new FormatException($"speedBonus de \"{kind}\" precisa ser positivo.");
             JobType? job = null;
             if (b.Job is JobData j)
             {
@@ -116,7 +118,7 @@ public sealed class GameData
                     throw new FormatException($"Ofício inválido em \"{kind}\": precisa de um recurso, radius e capacity positivos.");
                 job = new JobType(j.Name, j.Resource, j.Radius, j.Capacity);
             }
-            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job));
+            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus));
         }
 
         var recipes = new List<RecipeType>();
@@ -135,9 +137,16 @@ public sealed class GameData
 
         var v = JsonSerializer.Deserialize<VillagerData>(villagersJson, JsonOptions)
             ?? throw new FormatException("villagers.json vazio.");
-        if (v.Speed <= 0f || v.GatherMultiplier <= 0f || v.Carry <= 0)
-            throw new FormatException("villagers.json: speed, gatherMultiplier e carry precisam ser positivos.");
-        var villagers = new VillagerStats(v.Speed, v.GatherMultiplier, v.Carry);
+        if (v.SpeedTiers.Count == 0)
+            throw new FormatException("villagers.json: speedTiers precisa de ao menos um patamar (o base).");
+        for (int i = 0; i < v.SpeedTiers.Count; i++)
+            if (v.SpeedTiers[i] <= 0f || (i > 0 && v.SpeedTiers[i] < v.SpeedTiers[i - 1]))
+                throw new FormatException("villagers.json: speedTiers precisam ser positivos e em ordem crescente.");
+        if (v.PenaltySpeed <= 0f || v.PenaltySpeed > v.SpeedTiers[0])
+            throw new FormatException("villagers.json: penaltySpeed precisa ser positivo e no máximo o patamar base.");
+        if (v.MaxSpeed <= 0f || v.GatherMultiplier <= 0f || v.Carry <= 0)
+            throw new FormatException("villagers.json: maxSpeed, gatherMultiplier e carry precisam ser positivos.");
+        var villagers = new VillagerStats(v.SpeedTiers, v.PenaltySpeed / v.SpeedTiers[0], v.MaxSpeed, v.GatherMultiplier, v.Carry);
 
         var terrains = new List<TerrainType>();
         if (terrainJson is null)
@@ -205,6 +214,7 @@ public sealed class GameData
         public float BeltSpeed { get; set; }
         public bool Storage { get; set; }
         public JobData? Job { get; set; }
+        public float SpeedBonus { get; set; } = 1f;
     }
 
     private sealed class JobData
@@ -224,7 +234,9 @@ public sealed class GameData
 
     private sealed class VillagerData
     {
-        public float Speed { get; set; } = 3f;
+        public List<float> SpeedTiers { get; set; } = new();
+        public float PenaltySpeed { get; set; }
+        public float MaxSpeed { get; set; } = 1.5f;
         public float GatherMultiplier { get; set; } = 1.5f;
         public int Carry { get; set; } = 5;
     }

@@ -27,8 +27,8 @@ internal static class TestWorlds
         { "shafts": { "machine": "sawmill", "inputs": { "wood": 1 }, "outputs": { "shaft": 2 }, "seconds": 1 } }
         """;
 
-    /// <summary>Aldeão de teste: 5 células/s, coleta no mesmo tempo que o Castelão, carrega 2.</summary>
-    public const string VillagerStats = """{ "speed": 5.0, "gatherMultiplier": 1.0, "carry": 2 }""";
+    /// <summary>Aldeão de teste: patamares 5, 6 e 8 células/s, penalidade 2,5 no base (fator 0,5), teto 7; coleta no mesmo tempo que o Castelão, carrega 2.</summary>
+    public const string VillagerStats = """{ "speedTiers": [5.0, 6.0, 8.0], "penaltySpeed": 2.5, "maxSpeed": 7.0, "gatherMultiplier": 1.0, "carry": 2 }""";
 
     public const string CastellanStats ="""{ "speed": 6.0, "reach": 10.0, "gatherReach": 1.0, "radius": 0.3 }""";
 
@@ -37,6 +37,7 @@ internal static class TestWorlds
           "belt":  { "name": "Esteira", "cost": { "wood": 1 }, "solid": false, "beltSpeed": 1.5 },
           "chest": { "name": "Baú",     "cost": { "wood": 4 }, "solid": true,  "storage": true },
           "sawmill": { "name": "Serraria", "cost": { "wood": 8 }, "solid": true },
+          "floor": { "name": "Piso de teste", "cost": { "wood": 1 }, "solid": false, "speedBonus": 1.2 },
           "lumber_hut": { "name": "Cabana do Lenhador", "cost": { "wood": 2 }, "solid": true,
                           "job": { "name": "Lenhador", "resource": "wood", "radius": 8, "capacity": 3 } }
         }

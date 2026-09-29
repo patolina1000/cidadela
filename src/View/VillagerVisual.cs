@@ -11,7 +11,7 @@ namespace Cidadela.View;
 /// simulação → clipe (contrato de 29/09/2026, só idle e run por enquanto): andando e carregando → run; parado,
 /// trabalhando (coletando, com o golpe procedural do corpo) e descansando → idle. Quando a arte entregar carry,
 /// work e sleep, <see cref="ClipFor"/> passa a usá-los. O run toca no ritmo da velocidade real ÷ passada do
-/// rosto.json, com teto (<see cref="MaxAnimationSpeed"/>).
+/// rosto.json, sem teto: a velocidade final já é estado da simulação (patamares; decisão de 29/09/2026).
 /// Enquanto os arquivos da arte não existem (ou com <see cref="ForcePlaceholder"/>), desenha um placeholder:
 /// cápsula com cabeça esférica, os dois retalhos curvos do rosto e um tufo de cabelo, com os mesmos materiais.
 /// </summary>
@@ -21,11 +21,6 @@ public partial class VillagerVisual : Node3D
     private const float SwingSmoothing = 30f;
     private const float ClipBlendSeconds = 0.15f;
     private const float StrideSmoothing = 10f;
-    /// <summary>
-    /// Regra de velocidade (29/09/2026): a reprodução do run é velocidade ÷ passadaRun e fica entre 1,0× e
-    /// 1,5×, para os pés não deslizarem nem a corrida parecer acelerada. A velocidade em data/ deve caber nisso.
-    /// </summary>
-    public const float MinAnimationSpeed = 1f, MaxAnimationSpeed = 1.5f;
     private const float PatchGap = 0.0015f; // retalhos 1,5 mm fora da pele (contrato: 1 a 2 mm)
 
     // Placeholder: cápsula de 0,30 m e cabeça de raio 0,095 (altura total ≈ 0,43 m, a do contrato).
@@ -40,11 +35,6 @@ public partial class VillagerVisual : Node3D
     /// <summary>Clipe forçado em 1× (palco da Biografia); null = pelo estado da simulação.</summary>
     public string? PreviewClip { get; set; }
 
-    /// <summary>
-    /// Prende a reprodução do run entre 1,0× e 1,5× (regra de velocidade). A cena de comparação de velocidades
-    /// desliga isto para a reprodução acompanhar a velocidade sem teto, e os pés nunca deslizarem.
-    /// </summary>
-    public bool ClampAnimationSpeed { get; set; } = true;
 
     /// <summary>Encaixe "Cabelo" (espaço do corpo em pose de repouso, preso ao osso da cabeça).</summary>
     public Node3D? HairSocket { get; private set; }
@@ -319,15 +309,10 @@ public partial class VillagerVisual : Node3D
         if (_animations.CurrentAnimation != clip && _animations.HasAnimation(clip))
             _animations.Play(clip, ClipBlendSeconds);
 
-        // Clipe de movimento no ritmo da velocidade real ÷ passada, preso entre 1,0× e 1,5×; os outros em 1×.
+        // Clipe de movimento sempre no ritmo da velocidade real ÷ passada (os pés não deslizam); os outros em 1×.
         float targetScale = 1f;
         if (PreviewClip is null && clip is "run" or "carry" && _runStride > 0f && dt > 0f)
-        {
-            float ratio = walked / dt / _runStride;
-            targetScale = ClampAnimationSpeed ? Mathf.Clamp(ratio, MinAnimationSpeed, MaxAnimationSpeed) : Mathf.Max(ratio, 0.01f);
-        }
-        if (data is not null)
-            VillagerLooks.CheckSpeedRule(data.Villagers.CellsPerSecond);
+            targetScale = Mathf.Max(walked / dt / _runStride, 0.01f);
         _animations.SpeedScale = Mathf.Lerp(_animations.SpeedScale, targetScale, 1f - Mathf.Exp(-StrideSmoothing * dt));
     }
 
