@@ -5459,3 +5459,23 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:05 de relógio (fim).
+
+---
+
+## 2026-09-30 — Protagonista v2: colisão e FPS antes/depois (3024×1890, fora do editor)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (passos 7 e 8):** manter o raio de colisão 0,15 aprovado; FPS antes e depois em 3024×1890 fora do editor.
+- **Colisão:** `data/castellan.json` `radius` continua 0,15; a troca de modelo não mexe na simulação.
+- **FPS (V-Sync desligado, sem Blender rodando):**
+
+  | Cena | Antes (v1) | Depois (v2) |
+  | --- | --- | --- |
+  | `Main` (bosque, pedras) | 80–82 | 81 |
+  | `CenarioTeste` | 99–105 | 101–104 |
+
+  Sem custo mensurável (a v2 tem 2.482 triângulos nas regiões + retalhos, cabelo 927, chifres 291, cristal 24). Nas
+  rodadas de antes o Arthur estava usando o Safari e o WhatsApp (o jogo continuou desenhando na Retina); nas de depois o
+  Godot ficou na frente.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 01:06 de relógio (fim).
