@@ -94,16 +94,30 @@ public sealed class GameData
             if (r.GatherSeconds <= 0f || r.Amount <= 0)
                 throw new FormatException($"Recurso \"{kind}\" precisa de gatherSeconds e amount positivos.");
             ItemType item = items.Find(i => i.Kind == kind)!;
-            if (r.TrunkRadius is float t && (t <= 0f || t >= 0.5f))
-                throw new FormatException($"Recurso \"{kind}\": trunkRadius precisa ficar entre 0 e 0,5 (dentro da célula).");
-            resources[kind] = new ResourceType(kind, item.Name, SecondsToTicks(r.GatherSeconds), r.Amount, r.TrunkRadius);
+            var variants = new List<ResourceVariant>();
+            if (r.Variants is { Count: > 0 })
+                foreach (VariantData vd in r.Variants)
+                    variants.Add(new ResourceVariant(vd.Weight, vd.Radius));
+            else if (r.TrunkRadius is float t)
+                variants.Add(new ResourceVariant(1f, t));
+            float minScale = r.Scale is { Count: 2 } ? r.Scale[0] : 1f, maxScale = r.Scale is { Count: 2 } ? r.Scale[1] : 1f;
+            if (minScale <= 0f || maxScale < minScale)
+                throw new FormatException($"Recurso \"{kind}\": scale precisa ser [mínima, máxima], positivas.");
+            foreach (ResourceVariant rv in variants)
+            {
+                if (rv.Weight <= 0f)
+                    throw new FormatException($"Recurso \"{kind}\": peso de variação precisa ser positivo.");
+                if (rv.Radius <= 0f || rv.Radius * maxScale >= 0.5f)
+                    throw new FormatException($"Recurso \"{kind}\": o raio de bloqueio precisa ficar entre 0 e 0,5 (dentro da célula), já com a escala.");
+            }
+            resources[kind] = new ResourceType(kind, item.Name, SecondsToTicks(r.GatherSeconds), r.Amount, variants, minScale, maxScale);
         }
 
         var c = JsonSerializer.Deserialize<CastellanData>(castellanJson, JsonOptions)
             ?? throw new FormatException("castellan.json vazio.");
         if (c.Speed <= 0f)
             throw new FormatException("castellan.json: speed precisa ser positivo.");
-        var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius, c.GatherTrunkReach);
+        var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius, c.GatherSurfaceReach);
 
         var buildings = new List<BuildingType>();
         foreach ((string kind, BuildingData b) in Ordered<BuildingData>(buildingsJson, "buildings.json"))
@@ -149,7 +163,7 @@ public sealed class GameData
         if (v.MaxSpeed <= 0f || v.GatherMultiplier <= 0f || v.Carry <= 0)
             throw new FormatException("villagers.json: maxSpeed, gatherMultiplier e carry precisam ser positivos.");
         var villagers = new VillagerStats(v.SpeedTiers, v.PenaltySpeed / v.SpeedTiers[0], v.MaxSpeed, v.GatherMultiplier, v.Carry,
-            v.Radius, v.TreeCellCost);
+            v.Radius, v.ResourceCellCost);
 
         var terrains = new List<TerrainType>();
         if (terrainJson is null)
@@ -243,7 +257,7 @@ public sealed class GameData
         public float GatherMultiplier { get; set; } = 1.5f;
         public int Carry { get; set; } = 5;
         public float Radius { get; set; } = 0.15f;
-        public float TreeCellCost { get; set; } = 0.5f;
+        public float ResourceCellCost { get; set; } = 0.5f;
     }
 
     private sealed class ResourceData
@@ -251,6 +265,14 @@ public sealed class GameData
         public float GatherSeconds { get; set; }
         public int Amount { get; set; }
         public float? TrunkRadius { get; set; }
+        public List<VariantData>? Variants { get; set; }
+        public List<float>? Scale { get; set; }
+    }
+
+    private sealed class VariantData
+    {
+        public float Weight { get; set; } = 1f;
+        public float Radius { get; set; }
     }
 
     private sealed class CastellanData
@@ -259,6 +281,6 @@ public sealed class GameData
         public float Reach { get; set; } = 10f;
         public float GatherReach { get; set; } = 1f;
         public float Radius { get; set; } = 0.3f;
-        public float GatherTrunkReach { get; set; } = 1.3f;
+        public float GatherSurfaceReach { get; set; } = 1.3f;
     }
 }

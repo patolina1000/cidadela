@@ -45,15 +45,15 @@ public sealed class Castellan
         Vector2.Distance(Position, new Vector2(cell.X, cell.Z)) <= Stats.Reach;
 
     /// <summary>
-    /// Se está perto o bastante para coletar a célula: do centro do corpo até a borda da célula; se o recurso tem tronco
-    /// (<paramref name="trunkRadius"/>), até a superfície do tronco. Encostado de lado ou na diagonal conta; uma célula
-    /// de folga já não.
+    /// Se está perto o bastante para coletar a célula: do centro do corpo até a borda da célula; se o recurso só bloqueia
+    /// um círculo (<paramref name="blockRadius"/>), até a borda do círculo. Encostado de lado ou na diagonal conta; uma
+    /// célula de folga já não.
     /// </summary>
-    public bool CanGather(GridPos cell, float? trunkRadius = null)
+    public bool CanGather(GridPos cell, float? blockRadius = null)
     {
         Vector2 center = Position + new Vector2(0.5f, 0.5f);
-        if (trunkRadius is float t)
-            return Vector2.Distance(center, new Vector2(cell.X + 0.5f, cell.Z + 0.5f)) - t <= Stats.GatherTrunkReach;
+        if (blockRadius is float t)
+            return Vector2.Distance(center, new Vector2(cell.X + 0.5f, cell.Z + 0.5f)) - t <= Stats.GatherSurfaceReach;
         var nearest = new Vector2(Math.Clamp(center.X, cell.X, cell.X + 1), Math.Clamp(center.Y, cell.Z, cell.Z + 1));
         return Vector2.Distance(center, nearest) <= Stats.GatherReach;
     }
@@ -77,7 +77,7 @@ public sealed class Castellan
     internal void StartGathering(SimWorld world, GridPos cell)
     {
         ResourceNode? node = world.ResourceAt(cell);
-        if (node is null || !CanGather(cell, node.Type.TrunkRadius))
+        if (node is null || !CanGather(cell, node.BlockRadius))
             return;
         if (node != GatherTarget)
             _gatherTicks = 0;
@@ -106,10 +106,11 @@ public sealed class Castellan
         Vector2 tryZ = Vector2.Clamp(Position + new Vector2(0f, step.Y), Vector2.Zero, max);
         if (!Collides(world, tryZ))
             Position = tryZ;
-        // Troncos (círculos): anda e é empurrado para fora, então desliza em volta e passa no vão entre dois troncos.
-        // Se o empurrão a jogar numa parede, fica onde estava.
+        // Recursos (círculos: tronco, pedra, veio): anda e é empurrada para fora, então desliza em volta e passa no vão
+        // entre dois vizinhos. Se o empurrão a jogar numa parede, ou se o vão for mais estreito que o corpo (sobra
+        // sobreposição), fica onde estava.
         Vector2 pushed = Vector2.Clamp(world.PushOutOfTrunks(Position, Stats.Radius), Vector2.Zero, max);
-        Position = Collides(world, pushed) ? start : pushed;
+        Position = Collides(world, pushed) || world.OverlapsResourceCircle(pushed, Stats.Radius) ? start : pushed;
 
         Facing = Vector2.Normalize(_moveDirection);
     }
@@ -136,7 +137,7 @@ public sealed class Castellan
         for (int z = (int)MathF.Floor(center.Y - r); z <= (int)MathF.Floor(center.Y + r); z++)
         {
             var cell = new GridPos(x, z);
-            if (world.IsSolid(cell) && world.TrunkAt(cell) is null && CircleHitsCell(center, cell))
+            if (world.IsSolid(cell) && world.BlockRadiusAt(cell) is null && CircleHitsCell(center, cell))
                 return true;
         }
         return false;
@@ -147,7 +148,7 @@ public sealed class Castellan
         ResourceNode? node = GatherTarget;
         if (node is null)
             return;
-        if (node.IsDepleted || !CanGather(node.Cell, node.Type.TrunkRadius))
+        if (node.IsDepleted || !CanGather(node.Cell, node.BlockRadius))
         {
             StopGathering();
             return;

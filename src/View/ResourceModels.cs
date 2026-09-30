@@ -7,9 +7,9 @@ using Godot;
 namespace Cidadela.View;
 
 /// <summary>
-/// Recursos do mapa com os modelos do CENÁRIO (assets/cenario/cenario.json): por célula, a variação é sorteada pelo
-/// peso do manifesto e o giro (0–360°) e a escala (0,9–1,1) também, tudo fixo pela posição (a mesma célula sempre dá a
-/// mesma árvore). Um MultiMesh por variação; cada recurso é uma instância, e a transformação dela encolhe e sacode na
+/// Recursos do mapa com os modelos do CENÁRIO (assets/cenario/cenario.json): a variação e a escala vêm do nó da
+/// simulação (sorteadas por célula com os pesos de data/resources.json, na ordem das variações do manifesto, porque o
+/// círculo que bloqueia depende delas); o giro (0–360°), que não muda o jogo, é sorteado aqui pela mesma célula. Um MultiMesh por variação; cada recurso é uma instância, e a transformação dela encolhe e sacode na
 /// coleta. Os materiais do GLB viram o Toon.gdshader pela cor do glTF, com a borda de luz fria nos materiais de
 /// "coldRim" e o esmaecimento do que tapa a protagonista nas árvores (data/visual.json). Um material por combinação
 /// (cor, borda, esmaecimento), compartilhado. Recurso sem entrada no manifesto: forma provisória (esfera).
@@ -17,7 +17,7 @@ namespace Cidadela.View;
 public partial class ResourceModels : Node3D
 {
     private const string ManifestPath = "res://assets/cenario/cenario.json";
-    private const float MinScale = 0.9f, MaxScale = 1.1f;
+    private static readonly HashSet<string> WarnedKinds = new();
 
     private static readonly Dictionary<(Color, bool, bool), ShaderMaterial> Materials = new();
 
@@ -49,10 +49,12 @@ public partial class ResourceModels : Node3D
         {
             if (!manifest.TryGetValue(resource.Kind, out List<Variant>? variants) || variants.Count == 0)
                 variants = new List<Variant> { Variant.Provisional(resource.Kind, data) };
-            uint h = Hash(resource.Cell.X, resource.Cell.Z);
-            Variant variant = Pick(variants, Unit(h));
-            float yaw = Unit(Hash2(h, 1)) * Mathf.Tau;
-            float scale = Mathf.Lerp(MinScale, MaxScale, Unit(Hash2(h, 2)));
+            uint h = CellHash.Of(resource.Cell.X, resource.Cell.Z);
+            if (resource.Type.Variants.Count > 0 && resource.Type.Variants.Count != variants.Count && WarnedKinds.Add(resource.Kind))
+                GD.PushWarning($"[cenário] {resource.Kind}: {resource.Type.Variants.Count} variações em data/resources.json e {variants.Count} no manifesto; a simulação e o desenho podem discordar.");
+            Variant variant = variants[Math.Clamp(resource.Variant, 0, variants.Count - 1)];
+            float yaw = CellHash.Unit(CellHash.Mix(h, 1)) * Mathf.Tau;
+            float scale = resource.Scale;
             picks.Add((resource, variant, yaw, scale));
             counts[variant] = counts.GetValueOrDefault(variant) + 1;
         }
@@ -77,7 +79,7 @@ public partial class ResourceModels : Node3D
             var handle = new Handle
             {
                 Mesh = meshes[variant], Index = next[variant]++, Yaw = yaw, Scale = scale, Height = variant.Height * scale,
-                Bounds = variant.Mesh.GetAabb(), TrunkRadius = resource.Type.TrunkRadius,
+                Bounds = variant.Mesh.GetAabb(), TrunkRadius = resource.Kind == "wood" ? resource.BlockRadius : null,
                 Position = new Vector3(resource.Cell.X + 0.5f, 0f, resource.Cell.Z + 0.5f),
             };
             _handles[resource] = handle;
@@ -282,32 +284,4 @@ public partial class ResourceModels : Node3D
         public List<string> ColdRim { get; set; } = new();
         public bool CastsShadow { get; set; } = true;
     }
-
-    // ---- Sorteio fixo pela posição ---------------------------------------------------------------------------
-
-    private static Variant Pick(List<Variant> variants, float r)
-    {
-        float total = 0f;
-        foreach (Variant v in variants)
-            total += v.Weight;
-        float acc = 0f;
-        foreach (Variant v in variants)
-        {
-            acc += v.Weight / Math.Max(total, 1e-6f);
-            if (r < acc)
-                return v;
-        }
-        return variants[^1];
-    }
-
-    private static uint Hash(int x, int z) => Hash2((uint)x * 73856093u ^ (uint)z * 19349663u, 0);
-
-    private static uint Hash2(uint h, uint salt)
-    {
-        h ^= salt * 0x9E3779B9u;
-        h ^= h >> 16; h *= 0x7FEB352Du; h ^= h >> 15; h *= 0x846CA68Bu; h ^= h >> 16;
-        return h;
-    }
-
-    private static float Unit(uint h) => (h & 0xFFFFFF) / (float)0x1000000;
 }

@@ -277,7 +277,7 @@ public sealed class Villager
     /// </summary>
     private bool Touching(SimWorld world, ResourceNode node)
     {
-        if (node.Type.TrunkRadius is not float trunk)
+        if (node.BlockRadius is not float trunk)
             return true;
         var center = new Vector2(node.Cell.X, node.Cell.Z);
         Vector2 toTrunk = center - Position;
@@ -331,7 +331,7 @@ public sealed class Villager
                 return false;
             }
             var target = new Vector2(next.X, next.Z);
-            float arrive = world.TrunkAt(next) is float trunk ? trunk + Stats.Radius + 0.02f : 0f;
+            float arrive = world.BlockRadiusAt(next) is float trunk ? trunk + Stats.Radius + 0.02f : 0f;
             Vector2 delta = target - Position;
             float distance = delta.Length();
             if (distance - arrive > budget)
@@ -401,7 +401,7 @@ public sealed class Villager
     private bool TrySetPath(SimWorld world, List<GridPos> goals)
     {
         List<GridPos>? path = GridPath.Find(world.BlocksVillager, Cell, goals,
-            cell => world.TrunkAt(cell) is null ? 0f : Stats.TreeCellCost);
+            cell => world.BlockRadiusAt(cell) is null ? 0f : Stats.ResourceCellCost);
         if (path is null)
             return false;
         _path.Clear();

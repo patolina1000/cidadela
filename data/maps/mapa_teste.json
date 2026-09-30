@@ -38,6 +38,11 @@
     { "kind": "wood",  "x": 11,  "z": 10 },
     { "kind": "wood",  "x": 11,  "z": 11 },
     { "kind": "wood",  "x": 11,  "z": 12 },
+    // Pedras e um veio na borda leste do bosque (29/09/2026): testar passar entre pedra e árvore e coletar encostado.
+    { "kind": "stone", "x": 12, "z": 8 },
+    { "kind": "stone", "x": 13, "z": 9 },
+    { "kind": "stone", "x": 12, "z": 10 },
+    { "kind": "iron",  "x": 13, "z": 11 },
     { "kind": "stone", "x": 26, "z": 4 },
     { "kind": "stone", "x": 27, "z": 5 },
     { "kind": "iron",  "x": 25, "z": 26 },

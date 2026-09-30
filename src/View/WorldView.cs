@@ -631,7 +631,7 @@ public partial class WorldView : Node3D
         _hover.Position = CellCenter(c, 0.02f);
         Castellan castellan = _world.Castellan;
         if (_world.ResourceAt(c) is not null)
-            _hoverMaterial.AlbedoColor = castellan.CanGather(c, _world.ResourceAt(c)!.Type.TrunkRadius)
+            _hoverMaterial.AlbedoColor = castellan.CanGather(c, _world.ResourceAt(c)!.BlockRadius)
                 ? Palette.Bone with { A = 0.55f }
                 : Palette.Warning with { A = 0.45f };
         else if (castellan.CanReach(c))

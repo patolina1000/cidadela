@@ -4597,3 +4597,43 @@ onde errou, correções manuais e quanto tempo levou.
   ele. Log sem erros. Print: `docs/prints/copas_sem_borda.png`.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 23:06–23:08 de relógio.
+
+---
+
+## 2026-09-29 — Pedras e veios: bloqueio pela base (círculo por variação), coleta encostada, aldeões iguais
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (Arthur: "o hitbox das pedras também está bugado"):** pedra e veio bloqueavam a célula inteira, mas o modelo
+  ocupa só o centro. Corrigir como na árvore: bloqueio pelo contorno real (raio ou elipse por variação, lido do GLB,
+  números em data/), deslizando sem enroscar, coleta encostada no modelo, clique pelo modelo inteiro, aldeões iguais;
+  testes de vão pedra–pedra e pedra–árvore.
+- **Medida nos GLBs** (vértices, no plano do chão): base (abaixo de 0,25 m) das pedras 0,32–0,47 m de raio, dos veios
+  0,34–0,40; tronco das árvores 0,12–0,16 (confirma o 0,15). Escolhi **círculo**, não elipse: o giro de cada instância
+  é sorteado de 0 a 360°, então uma elipse teria de girar junto; o círculo não depende do giro.
+- **O que foi feito:**
+  - O sorteio da **variação e da escala passou para a simulação** (`ResourceNode.Variant`, `Scale`, `BlockRadius`, pelo
+    hash da célula, `CellHash`), porque o raio de bloqueio depende da variação; a cena lê a variação e a escala do nó e
+    só sorteia o giro (que não muda o jogo). `data/resources.json`: cada recurso com `variants` (peso e raio, na ordem
+    do manifesto do cenário) e `scale` [0,9; 1,1]. Raios: árvore 0,15; pedra 0,35 / 0,41 / 0,29 / 0,42; veio 0,30 /
+    0,35 / 0,36 / 0,32 (o maior raio da base × 0,9, porque a base é irregular e o vértice mais longe exagera). A cena
+    avisa se o número de variações de `data/` e do manifesto discordarem.
+  - Todo recurso com variações bloqueia só o círculo (× escala): o Castelão desliza em volta (o mesmo empurrão dos
+    troncos); se o vão entre dois vizinhos for mais estreito que o corpo, ela não passa (antes o empurrão alternado
+    deixava atravessar); a coleta conta até a borda do círculo (`gatherSurfaceReach`, 1,3, o nome novo de
+    `gatherTrunkReach`); os aldeões atravessam a célula desviando do círculo (`resourceCellCost`, o nome novo de
+    `treeCellCost`). O clique em pedra e veio já era pela caixa do modelo inteiro.
+  - `data/maps/mapa_teste.json`: três pedras e um veio na borda leste do bosque, para o Arthur testar.
+- **Consequência dos números:** duas pedras lado a lado deixam um vão de 0,16–0,42 m (os modelos quase se encostam),
+  menor que o corpo da protagonista (0,6): ali ela não passa, como se vê; na diagonal (0,5–0,8 m) passa. O aldeão
+  (0,3) passa nos vãos maiores. Num vão mais estreito que o corpo do aldeão ele ainda pode passar raspando (não
+  tem a trava da protagonista), como já passa rente às quinas hoje.
+- **Testes:** 9 novos (`StoneGapTests`): para encostada na base (0,6 do centro, não na borda da célula), passa na
+  diagonal pedra–pedra e pedra–árvore, não se espreme em vão menor que o corpo (pedra–pedra 0,4, pedra–árvore 0,55),
+  coleta pedra na diagonal, aldeão atravessa um muro pelo vão pedra–pedra e pedra–árvore, a pedra não bloqueia o
+  caminho do aldeão. `dotnet test`: 154 aprovados. Custo do caminho (100 aldeões): 0,14–0,16 ms por tick (igual).
+- **No jogo:** `Main` reaberto; a protagonista entra entre as três pedras novas (em 12,2; 9,4), onde antes as células
+  inteiras bloqueavam. Prints: `docs/prints/pedras_jogo.png`; GIF da simulação vista de cima
+  `docs/prints/pedras_passagem.gif` (desliza em volta da pedra, diagonal pedra–árvore, aldeão entre pedra e tronco).
+- `dotnet build`: 0 erros, 0 avisos.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 23:08–23:24 de relógio.

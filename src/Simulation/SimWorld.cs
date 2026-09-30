@@ -229,19 +229,34 @@ public sealed class SimWorld
     public Building? BuildingAt(GridPos cell) => _buildingByCell.GetValueOrDefault(cell);
 
     /// <summary>Se a célula bloqueia a passagem (fora do mapa, recurso ou construção sólida).</summary>
-    /// <summary>Raio do tronco do recurso na célula (árvore), ou null se não há recurso com tronco.</summary>
-    public float? TrunkAt(GridPos cell) => ResourceAt(cell)?.Type.TrunkRadius;
+    /// <summary>Raio do círculo que o recurso da célula bloqueia (tronco, base da pedra ou do veio), ou null.</summary>
+    public float? BlockRadiusAt(GridPos cell) => ResourceAt(cell)?.BlockRadius;
 
     /// <summary>
-    /// Se a célula bloqueia o caminho dos aldeões: como <see cref="IsSolid"/>, menos a célula de árvore, que só bloqueia
-    /// o tronco (o aldeão passa sob a copa, desviando do tronco ao andar).
+    /// Se a célula bloqueia o caminho dos aldeões: como <see cref="IsSolid"/>, menos a célula de recurso que só bloqueia um
+    /// círculo (o aldeão passa sob a copa ou rente à pedra, desviando do círculo ao andar).
     /// </summary>
-    public bool BlocksVillager(GridPos cell) => IsSolid(cell) && TrunkAt(cell) is null;
+    public bool BlocksVillager(GridPos cell) => IsSolid(cell) && BlockRadiusAt(cell) is null;
 
     /// <summary>
-    /// Empurra um corpo (posição no centro de célula, como a do Castelão e a dos aldeões) para fora dos troncos em volta:
-    /// quem anda contra um tronco desliza em volta dele, em vez de parar. Poucas passadas bastam para dois troncos.
+    /// Empurra um corpo (posição no centro de célula, como a do Castelão e a dos aldeões) para fora dos círculos dos
+    /// recursos em volta (troncos, pedras, veios): quem anda contra um desliza em volta dele, em vez de parar. Poucas
+    /// passadas bastam para dois vizinhos.
     /// </summary>
+    /// <summary>Se o corpo invade o círculo de algum recurso em volta (sobra de empurrão entre dois vizinhos apertados).</summary>
+    public bool OverlapsResourceCircle(Vector2 position, float radius)
+    {
+        int cx = (int)MathF.Round(position.X), cz = (int)MathF.Round(position.Y);
+        for (int dx = -1; dx <= 1; dx++)
+        for (int dz = -1; dz <= 1; dz++)
+        {
+            var cell = new GridPos(cx + dx, cz + dz);
+            if (BlockRadiusAt(cell) is float r && Vector2.Distance(position, new Vector2(cell.X, cell.Z)) < radius + r - 0.001f)
+                return true;
+        }
+        return false;
+    }
+
     public Vector2 PushOutOfTrunks(Vector2 position, float radius)
     {
         for (int pass = 0; pass < 3; pass++)
@@ -252,7 +267,7 @@ public sealed class SimWorld
             for (int dz = -1; dz <= 1; dz++)
             {
                 var cell = new GridPos(cx + dx, cz + dz);
-                if (TrunkAt(cell) is not float trunk)
+                if (BlockRadiusAt(cell) is not float trunk)
                     continue;
                 var center = new Vector2(cell.X, cell.Z);
                 Vector2 away = position - center;

@@ -2,11 +2,21 @@
   // Nós de recurso bruto do mapa (GDD, seções 4 e 10). A chave é o item que o nó dá (data/items.json).
   // gatherSeconds: tempo para o Castelão coletar 1 item à mão.
   // amount: quantos itens cada nó tem antes de se esgotar.
-  // trunkRadius (opcional): o nó bloqueia só o tronco, um círculo desse raio em metros no centro da célula, e a coleta
-  //   conta até ele (data/castellan.json, gatherTrunkReach). Sem ele, bloqueia a célula inteira (pedra e veio enchem a
-  //   célula). 0,15 = o tronco das árvores do CENÁRIO (~0,1–0,15 m). Com o Castelão de raio 0,3, o vão entre dois
-  //   troncos vizinhos fica em 0,7 m: ela passa deslizando (em 0,2 o vão era 0,6, igual ao corpo, e ela enroscava).
-  "wood":  { "gatherSeconds": 1.0, "amount": 30, "trunkRadius": 0.15 },
-  "stone": { "gatherSeconds": 1.5, "amount": 30 },
-  "iron":  { "gatherSeconds": 2.0, "amount": 20 }
+  // variants (opcional): as variações do modelo, NA ORDEM de assets/cenario/cenario.json. Cada nó sorteia uma pelo
+  //   weight, fixo pela célula, e bloqueia só um círculo de radius metros no centro da célula (o tronco da árvore, a base
+  //   da pedra ou do veio), multiplicado pela escala sorteada em scale [mínima, máxima] (o modelo é desenhado nela).
+  //   Quem anda contra o círculo desliza em volta; a coleta conta até a borda dele (data/castellan.json,
+  //   gatherSurfaceReach); os aldeões atravessam a célula desviando do círculo. Sem variants, o nó bloqueia a célula
+  //   inteira. trunkRadius: atalho de uma variação só.
+  //   Raios medidos nos GLBs (29/09/2026): tronco 0,12–0,16 m; pedra e veio, o maior raio da base (abaixo de 0,25 m de
+  //   altura) × 0,9, porque a base é irregular e o vértice mais longe exagera o corpo.
+  "wood":  { "gatherSeconds": 1.0, "amount": 30, "scale": [0.9, 1.1],
+             "variants": [ { "weight": 0.3, "radius": 0.15 }, { "weight": 0.3, "radius": 0.15 },
+                           { "weight": 0.1, "radius": 0.15 }, { "weight": 0.3, "radius": 0.15 } ] },
+  "stone": { "gatherSeconds": 1.5, "amount": 30, "scale": [0.9, 1.1],
+             "variants": [ { "weight": 0.25, "radius": 0.35 }, { "weight": 0.25, "radius": 0.41 },
+                           { "weight": 0.25, "radius": 0.29 }, { "weight": 0.25, "radius": 0.42 } ] },
+  "iron":  { "gatherSeconds": 2.0, "amount": 20, "scale": [0.9, 1.1],
+             "variants": [ { "weight": 0.25, "radius": 0.30 }, { "weight": 0.25, "radius": 0.35 },
+                           { "weight": 0.25, "radius": 0.36 }, { "weight": 0.25, "radius": 0.32 } ] }
 }

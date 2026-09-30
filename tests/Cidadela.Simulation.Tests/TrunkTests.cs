@@ -10,7 +10,7 @@ public class TrunkTests
     // Os dados de teste com o tronco da árvore e o alcance até ele iguais aos de data/.
     internal static GameData TrunkData() => GameData.Parse(TestWorlds.Items,
         TestWorlds.Resources.Replace("\"amount\": 30 }", "\"amount\": 30, \"trunkRadius\": 0.2 }"),
-        TestWorlds.CastellanStats.Replace("\"radius\": 0.3", "\"radius\": 0.3, \"gatherTrunkReach\": 1.3"),
+        TestWorlds.CastellanStats.Replace("\"radius\": 0.3", "\"radius\": 0.3, \"gatherSurfaceReach\": 1.3"),
         TestWorlds.VillagerStats, TestWorlds.Buildings, TestWorlds.Recipes);
 
     private static SimWorld Open(int x, int z, string resources) => MapLoader.Parse($$"""
@@ -57,14 +57,14 @@ public class TrunkTests
     {
         SimWorld world = Open(4, 4, $$"""[{ "kind": "wood", "x": {{x}}, "z": {{z}} }]""");
         ResourceNode tree = world.ResourceAt(new GridPos(x, z))!;
-        Assert.Equal(can, world.Castellan.CanGather(tree.Cell, tree.Type.TrunkRadius));
+        Assert.Equal(can, world.Castellan.CanGather(tree.Cell, tree.BlockRadius));
     }
 
     [Fact]
     public void ATrunkWiderThanTheCellIsRejected()
     {
         string resources = System.Text.RegularExpressions.Regex.Replace(TestWorlds.DataFile("resources.json"),
-            "\"trunkRadius\": [0-9.]+", "\"trunkRadius\": 0.7");
+            "\"radius\": [0-9.]+", "\"radius\": 0.7");
         Assert.Throws<FormatException>(() => GameData.Parse(
             TestWorlds.DataFile("items.json"), resources, TestWorlds.DataFile("castellan.json"),
             TestWorlds.DataFile("villagers.json"), TestWorlds.DataFile("buildings.json"),

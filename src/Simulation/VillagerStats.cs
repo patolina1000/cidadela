@@ -10,10 +10,11 @@ namespace Cidadela.Simulation;
 /// resultante no patamar base, "penaltySpeed"); <paramref name="MaxSpeed"/>: teto da velocidade final.
 /// Velocidade final = patamar × bônus do piso × penalidade, presa ao teto (<see cref="FinalSpeed"/>).
 /// </summary>
-/// <paramref name="Radius"/>: raio do corpo, para desviar dos troncos; <paramref name="TreeCellCost"/>: custo extra de
-/// caminho para atravessar a célula de uma árvore (prefere o chão aberto, mas passa sob a copa se for mais curto).
+/// <paramref name="Radius"/>: raio do corpo, para desviar dos recursos; <paramref name="ResourceCellCost"/>: custo extra de
+/// caminho para atravessar a célula de um recurso que só bloqueia um círculo (prefere o chão aberto, mas passa sob a copa
+/// ou rente à pedra se for mais curto).
 public sealed record VillagerStats(IReadOnlyList<float> SpeedTiers, float PenaltyFactor, float MaxSpeed,
-    float GatherMultiplier, int Carry, float Radius = 0.15f, float TreeCellCost = 0.5f)
+    float GatherMultiplier, int Carry, float Radius = 0.15f, float ResourceCellCost = 0.5f)
 {
     /// <summary>Velocidade do patamar base (índice 0).</summary>
     public float BaseSpeed => SpeedTiers[0];

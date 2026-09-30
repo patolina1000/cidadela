@@ -8,6 +8,15 @@ public sealed class ResourceNode
     public GridPos Cell { get; }
     public int Remaining { get; private set; }
 
+    /// <summary>Índice da variação sorteada (em <see cref="ResourceType.Variants"/>), fixo pela célula; 0 sem variações.</summary>
+    public int Variant { get; }
+
+    /// <summary>Escala sorteada (fixa pela célula); a cena desenha o modelo nela.</summary>
+    public float Scale { get; }
+
+    /// <summary>Raio do círculo que bloqueia no centro da célula, em metros; null = bloqueia a célula inteira.</summary>
+    public float? BlockRadius { get; }
+
     public string Kind => Type.Kind;
     public bool IsDepleted => Remaining <= 0;
 
@@ -17,6 +26,25 @@ public sealed class ResourceNode
         Type = type;
         Cell = cell;
         Remaining = type.StartAmount;
+        uint h = CellHash.Of(cell.X, cell.Z);
+        Variant = Pick(type.Variants, CellHash.Unit(h));
+        Scale = type.MinScale + (type.MaxScale - type.MinScale) * CellHash.Unit(CellHash.Mix(h, 2));
+        BlockRadius = type.Variants.Count > 0 ? type.Variants[Variant].Radius * Scale : null;
+    }
+
+    private static int Pick(System.Collections.Generic.IReadOnlyList<ResourceVariant> variants, float r)
+    {
+        float total = 0f;
+        foreach (ResourceVariant v in variants)
+            total += v.Weight;
+        float acc = 0f;
+        for (int i = 0; i < variants.Count; i++)
+        {
+            acc += variants[i].Weight / total;
+            if (r < acc)
+                return i;
+        }
+        return System.Math.Max(0, variants.Count - 1);
     }
 
     /// <summary>Tira 1 item. Falso se já estava esgotado.</summary>
