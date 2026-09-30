@@ -4175,3 +4175,46 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:49–21:52 de relógio.
+
+---
+
+## 2026-09-29 — Diagnóstico de FPS: o "18 FPS" do print do menu de pausa
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`. Só medição; nenhum código ficou mudado.
+- **Pedido:** tarefa 2, passo 4: o `menu_pausa.png` mostra 18 FPS; medir no jogo (com o editor aberto e fora dele) em
+  3024×1890 e dizer de onde vem. Só diagnóstico, sem otimizar.
+- **Resposta curta:** o 18 FPS é uma **leitura congelada da abertura**, não o desempenho do jogo. A linha de depuração é
+  atualizada pelo `GameRoot`, que para quando o menu de pausa pausa a árvore; o Esc foi dado uns 3 s depois de abrir,
+  quando o FPS do Godot (média do último segundo) ainda está baixo pela carga e pela compilação dos shaders (logo
+  após abrir a linha mostra **2 FPS**: `docs/prints/fps_abertura_2fps.png`). O mesmo vale para os 17 e 42 FPS dos
+  prints da tarefa 1. A captura do godot-ai não pesa.
+- **Método:** V-Sync desligado pelo `settings.cfg` durante as medidas (religado no fim); fora do editor com
+  `Godot --path . --print-fps --screen 0`, janela conferida em **3024×1890** (Retina, abaixo do entalhe; tela 3024×1964)
+  e o app da frente registrado a cada segundo com `lsappinfo`; pelo editor, painel F3 e o contador de quadros
+  desenhados do godot-ai. A/B da grama: F4 no editor e, fora dele, um esconderijo temporário por variável de
+  ambiente (desfeito, não commitado).
+- **Números (V-Sync desligado, janela na frente):**
+
+  | Onde | Cena | Com grama | Sem grama |
+  | --- | --- | --- | --- |
+  | Fora do editor, 3024×1890, Retina 120 Hz | Jogo (`Main`) | 79–80 FPS (12,6 ms) | 120 FPS (teto da tela) |
+  | Fora do editor, 3024×1890 | Menu inicial | 63–69 FPS (15 ms) | 120 FPS (teto) |
+  | Fora do editor, 3024×1890 | Menu inicial sem os 4 aldeões | 64–69 FPS | — |
+  | Pelo editor, 3840×2160 (monitor externo 1920×1080 a 2×, 100 Hz) | Jogo | 57–59 FPS (16,9 ms) | 84 FPS (11,9 ms) |
+  | Pelo editor, 3840×2160 | Jogo com o menu de pausa aberto | ~54 FPS (697 quadros desenhados em 12,8 s) | — |
+  | Pelo editor | Jogo, com 4 capturas do godot-ai seguidas | 57 FPS | — |
+
+- **De onde vem o custo:** renderização (a CPU do jogo fica em 0,0–0,2 ms). A **grama** é a maior parte: no jogo,
+  ~5 ms por quadro em 3840×2160 e é o que separa 80 de 120 FPS em 3024×1890; no **menu inicial** pesa mais (cai para
+  ~65 FPS), porque a câmera fica baixa, olhando a grama rente até o horizonte, com muitos tufos perto e em pé. Os 4
+  aldeões do menu não custam nada mensurável. Com o menu de pausa aberto o mundo continua sendo desenhado atrás
+  (~54 FPS no editor); só o texto do FPS para.
+- **Armadilhas de medição encontradas (valem para as próximas):** (1) com outro app na frente, o macOS freia o jogo:
+  fora do editor caiu para 26–44 FPS em duas rodadas em que não confirmei a frente, e voltou a 79–80 com o Godot na
+  frente o tempo todo; (2) com a janela coberta, o jogo processa mas não desenha (3.515 quadros processados e 502
+  desenhados em 37 s), e o painel F3 mostra 145 FPS, que é só CPU; (3) FPS lido nos primeiros segundos, ou com a
+  árvore pausada, não vale.
+- **Não otimizei nada.** Se o Arthur quiser mexer: no menu, a grama perto da câmera baixa é o primeiro alvo (é visual
+  aprovado: precisa da decisão dele); no jogo há folga (80 FPS em 3024×1890).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:52–22:00 de relógio.
