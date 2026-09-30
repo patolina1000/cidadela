@@ -27,6 +27,12 @@ public sealed class SimWorld
     /// <summary>Quantas vezes as redes de mana foram refeitas (testes: só quando algo muda).</summary>
     public int ManaRebuilds { get; private set; }
 
+    /// <summary>A gravação de ladainha em andamento (ensinar por demonstração), ou null.</summary>
+    public TeachingSession? Teaching { get; private set; }
+
+    /// <summary>O resultado da última entrega ("Pronto"): aceita, ou por que o aldeão recusou.</summary>
+    public LitanyFit? LastTeachResult { get; private set; }
+
     /// <summary>Muda a cada construção colocada ou tirada; a cena usa para saber quando redesenhar.</summary>
     public int BuildingsVersion { get; private set; }
     public IReadOnlyList<Villager> Villagers => _villagers;
@@ -239,14 +245,19 @@ public sealed class SimWorld
         if (BuildingAt(cell) is not Building target || !Castellan.CanReach(cell))
             return;
 
+        bool put = false;
         if (target.Storage is Inventory storage && Castellan.Inventory.TryRemoveOne(kind))
         {
             storage.Add(kind);
+            put = true;
         }
         else if (target.Machine is MachineState machine && machine.Accepts(kind) && Castellan.Inventory.TryRemoveOne(kind))
         {
             machine.Input.Add(kind);
+            put = true;
         }
+        if (put)
+            Record(new LitanyCommand(LitanyVerb.Put, new LitanyTarget(LitanyTargetKind.Building, cell), kind));
     }
 
     /// <summary>Se o item é pesado (carga por viagem: 1 por ponto de Força; o leve vai de 10 em 10).</summary>
@@ -268,10 +279,50 @@ public sealed class SimWorld
     {
         if (BuildingAt(cell) is not Building building || !Castellan.CanReach(cell))
             return;
-        building.Storage?.MoveAllTo(Castellan.Inventory);
-        building.Machine?.Output.MoveAllTo(Castellan.Inventory);
-        building.Workplace?.Stored.MoveAllTo(Castellan.Inventory);
+        foreach (Inventory? stock in new[] { building.Storage, building.Machine?.Output, building.Workplace?.Stored })
+        {
+            if (stock is null)
+                continue;
+            if (Teaching is not null)
+                foreach ((string kind, int amount) in stock.Counts)
+                    if (amount > 0)
+                        Teaching.Record(new LitanyCommand(LitanyVerb.Take, new LitanyTarget(LitanyTargetKind.Building, cell), kind));
+            stock.MoveAllTo(Castellan.Inventory);
+        }
     }
+
+    // ---- Ensinar por demonstração (docs/ladainhas.md) --------------------------------------------------------
+
+    internal void StartTeaching(int villagerId)
+    {
+        foreach (Villager v in _villagers)
+            if (v.Id == villagerId)
+            {
+                Teaching = new TeachingSession(v);
+                LastTeachResult = null;
+            }
+    }
+
+    internal void FinishTeaching()
+    {
+        if (Teaching is not TeachingSession session)
+            return;
+        var litany = new Litany($"ensinada {TickCount}", session.Commands.ToArray());
+        LastTeachResult = session.Villager.Learn(this, litany);
+        if (LastTeachResult == LitanyFit.Ok)
+            Teaching = null; // recusada: continua gravando, para a protagonista apagar ou cancelar
+    }
+
+    internal void CancelTeaching() => Teaching = null;
+
+    internal void RecordGoToHere()
+    {
+        var cell = new GridPos((int)MathF.Round(Castellan.Position.X), (int)MathF.Round(Castellan.Position.Y));
+        Teaching?.Record(new LitanyCommand(LitanyVerb.GoTo, new LitanyTarget(LitanyTargetKind.Cell, cell)));
+    }
+
+    /// <summary>Grava o que a protagonista acabou de fazer, se há gravação em andamento.</summary>
+    internal void Record(LitanyCommand command) => Teaching?.Record(command);
 
     /// <summary>
     /// Multiplicador de velocidade do piso na célula (GDD, pisos construídos): a construção não sólida que
@@ -464,7 +515,10 @@ public sealed class SimWorld
             }
         }
         if (best is not null)
+        {
             Castellan.TakePost(best, bestSlot);
+            Record(new LitanyCommand(LitanyVerb.Operate, new LitanyTarget(LitanyTargetKind.Building, best.Cell)));
+        }
     }
 
     /// <summary>Se a célula é margem (terra encostada na água, onde se cava argila; docs/linha_aldeoes.md).</summary>

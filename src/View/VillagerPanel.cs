@@ -12,6 +12,16 @@ public partial class VillagerPanel : PanelContainer
     private Label _title = null!, _state = null!;
     private LitanyBlocks _blocks = null!;
     private SimWorld _world = null!;
+    private bool _recordingShown;
+
+    /// <summary>Por que o aldeão recusou a ladainha (a interface diz; docs/ladainhas.md).</summary>
+    public static string RefusalText(LitanyFit fit) => fit switch
+    {
+        LitanyFit.TooLong => "RECUSOU: comandos demais para a Inteligência dele.",
+        LitanyFit.TooHard => "RECUSOU: um comando que a Inteligência dele não entende.",
+        LitanyFit.Empty => "RECUSOU: nada foi gravado.",
+        _ => "",
+    };
 
     /// <summary>O aldeão mostrado, ou null (painel escondido).</summary>
     public Villager? Villager { get; private set; }
@@ -53,10 +63,27 @@ public partial class VillagerPanel : PanelContainer
     {
         if (Villager is not Villager v)
             return;
+        if (_world.Teaching is TeachingSession session && session.Villager == v)
+        {
+            // Gravando: os blocos são o que ela já fez.
+            _title.Text = $"ENSINANDO o aldeão {v.Id}   ·   {session.Commands.Count}/{v.Stats.MaxCommands(v.Intelligence)} comandos";
+            _state.Text = (_world.LastTeachResult is LitanyFit fit && fit != LitanyFit.Ok ? RefusalText(fit) + "\n" : "") +
+                "Faça a tarefa: colher, pegar (clique no baú ou máquina), pôr (item na mão), operar (E).\n" +
+                "G marca \"ir até\" aqui   ·   Enter: pronto   ·   Esc: cancelar";
+            _state.AddThemeColorOverride("font_color", Palette.Sickly);
+            _blocks.ShowRecording(_world, session.Commands);
+            _recordingShown = true;
+            return;
+        }
+        if (_recordingShown)
+        {
+            _recordingShown = false;
+            _blocks.Show(_world, v);
+        }
         _title.Text = $"Aldeão {v.Id}   ·   Força {v.Strength}  Agilidade {v.Agility}  Inteligência {v.Intelligence}";
         string carrying = v.CarryingCount > 0 ? $"   ·   leva {v.CarryingCount} {_world.Data.Item(v.CarryingKind!).Name.ToLowerInvariant()}" : "";
         _state.Text = v.Litany is null
-            ? "Sem ladainha: parado. (O aldeão não faz nada sozinho.)" + carrying
+            ? "Sem ladainha: parado. (O aldeão não faz nada sozinho.)   T: ensinar" + carrying
             : v.Stuck is LitanyStuck reason
                 ? $"TRAVADO em \"{LitanyText.Command(v.CurrentCommand!, _world)}\": {LitanyText.Stuck(reason, v.CurrentCommand, _world)}" + carrying
                 : $"Ladainha \"{v.Litany.Name}\" ({v.Litany.Commands.Count}/{v.Stats.MaxCommands(v.Intelligence)} comandos)" + carrying;

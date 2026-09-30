@@ -15,39 +15,56 @@ public partial class LitanyBlocks : Control
 
     private SimWorld? _world;
     private Villager? _villager;
-    private readonly List<string> _lines = new();
+    private IReadOnlyList<LitanyCommand>? _recording;
 
+    /// <summary>Mostra a ladainha do aldeão (o comando atual aceso).</summary>
     public void Show(SimWorld world, Villager? villager)
     {
         _world = world;
         _villager = villager;
-        int count = villager?.Litany?.Commands.Count ?? 0;
+        _recording = null;
+        Resize(villager?.Litany?.Commands.Count ?? 0);
+    }
+
+    /// <summary>Mostra o que está sendo gravado (ensinar por demonstração), sem comando aceso.</summary>
+    public void ShowRecording(SimWorld world, IReadOnlyList<LitanyCommand> commands)
+    {
+        _world = world;
+        _recording = commands;
+        Resize(commands.Count);
+    }
+
+    private void Resize(int count)
+    {
         CustomMinimumSize = new Vector2(Width, (BlockHeight + Gap) * count + NotchDepth + 4f);
         QueueRedraw();
     }
 
     public override void _Process(double delta)
     {
-        if (_villager is not null)
-            QueueRedraw(); // o comando atual muda sozinho
+        if (_villager is not null || _recording is not null)
+            QueueRedraw(); // o comando atual muda sozinho; a gravação cresce
     }
 
     public override void _Draw()
     {
-        if (_world is null || _villager?.Litany is not Litany litany)
+        IReadOnlyList<LitanyCommand>? commands = _recording ?? _villager?.Litany?.Commands;
+        if (_world is null || commands is null)
             return;
+        if (_recording is not null && CustomMinimumSize.Y < (BlockHeight + Gap) * commands.Count)
+            Resize(commands.Count);
         Font font = ThemeDB.FallbackFont;
-        for (int i = 0; i < litany.Commands.Count; i++)
+        for (int i = 0; i < commands.Count; i++)
         {
-            LitanyCommand c = litany.Commands[i];
-            bool current = i == _villager.CommandIndex;
+            LitanyCommand c = commands[i];
+            bool current = _recording is null && i == _villager!.CommandIndex;
             float y = i * (BlockHeight + Gap);
             Color color = LitanyText.BlockColor(c.Verb);
             if (!current)
                 color = color.Darkened(0.35f);
             Vector2[] shape = BlockShape(y);
             DrawColoredPolygon(shape, color);
-            Color edge = current && _villager.Stuck is not null ? Palette.Pumpkin : current ? Palette.Bone : color.Darkened(0.4f);
+            Color edge = current && _villager!.Stuck is not null ? Palette.Pumpkin : current ? Palette.Bone : color.Darkened(0.4f);
             var outline = new Vector2[shape.Length + 1];
             shape.CopyTo(outline, 0);
             outline[^1] = shape[0];

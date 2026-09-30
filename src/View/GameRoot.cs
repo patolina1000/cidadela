@@ -163,8 +163,8 @@ public partial class GameRoot : Node3D
                 _villagerPanel.ShowVillager(villager); // clicar no aldeão mostra a ladainha dele em blocos
                 return;
             }
-            if (click.Pressed)
-                _villagerPanel.ShowVillager(null);
+            if (click.Pressed && _world.Teaching is null)
+                _villagerPanel.ShowVillager(null); // gravando, o painel fica: clicar é ensinar
             if (click.Pressed && !_clock.Paused && TargetUnder(click.Position) is GridPos cell)
                 ActAt(cell);
         }
@@ -180,6 +180,18 @@ public partial class GameRoot : Node3D
             int index = _hotbar.Page * Hotbar.PageSize + (int)(k - Key.Key1);
             if (index < _hotbarTypes.Count)
                 Select(_selected == _hotbarTypes[index] ? null : index); // mesma tecla desmarca
+        }
+        else if (k == Key.T && _villagerPanel.Villager is Villager pupil && _world.Teaching is null)
+        {
+            _world.Enqueue(new StartTeachingCommand(pupil.Id)); // ensinar por demonstração
+        }
+        else if (k == Key.G && _world.Teaching is not null)
+        {
+            _world.Enqueue(new MarkGoToCommand()); // "ir até" aqui
+        }
+        else if (k is Key.Enter or Key.KpEnter && _world.Teaching is not null)
+        {
+            _world.Enqueue(new FinishTeachingCommand()); // pronto: o aldeão começa a repetir
         }
         else if (k == Key.N && _world.Villagers.Count > 0)
         {
@@ -248,6 +260,11 @@ public partial class GameRoot : Node3D
             if (_camera.IsCinematic)
             {
                 ToggleCinematic();
+                return;
+            }
+            if (_world.Teaching is not null)
+            {
+                _world.Enqueue(new CancelTeachingCommand()); // Esc cancela a gravação
                 return;
             }
             if (_villagerPanel.Villager is not null)

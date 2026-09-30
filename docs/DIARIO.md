@@ -6284,3 +6284,23 @@ onde errou, correções manuais e quanto tempo levou.
   passaram. Teste A pelo godot-ai: etiqueta de trava, painel com o bloco aceso (print `docs/prints/ladainhas_passo7_blocos.png`).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 20:17–20:21 de relógio.
+
+## 2026-09-30 — Ladainhas, passo 8: ensinar por demonstração
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 8 do plano (Q8, Q11).
+- **Feito:**
+  - Simulação: `TeachingSession` e os comandos `StartTeachingCommand`, `FinishTeachingCommand`, `CancelTeachingCommand`,
+    `MarkGoToCommand`. Enquanto grava, vira comando o que a protagonista faz, pela intenção: colher/arrancar/cavar =
+    "[verbo] [recurso] mais perto" em volta de onde ela colheu (raio 8), tirar do baú/máquina = pegar (um por item),
+    pôr item = pôr, E numa máquina = operar, G = "ir até" a célula onde ela está (o andar livre não grava, Q11).
+    Repetições seguidas viram um comando. "Pronto" entrega; se o aldeão recusa (longa demais etc.), a gravação continua e
+    o motivo fica em `LastTeachResult`.
+  - Interface: com um aldeão no painel, **T** começa a ensinar; o painel mostra "ENSINANDO", a contagem N/6, o que fazer, e
+    os blocos gravados ao vivo; **G** marca "ir até" aqui; **Enter** pronto; **Esc** cancela. Recusa aparece em palavras.
+- **Testes:** `TeachTests` (colher + pôr duas vezes vira [colher tora perto de (6, 6), pôr tora no baú] e o aldeão
+  repete; pegar, pôr, operar e marcar são gravados; 7 comandos na Int 1 são recusados e a gravação continua até
+  cancelar; sem gravar nada é gravado). `dotnet build` 0/0; `dotnet test` 260 passaram. Teste A pelo godot-ai: N, T, G
+  (print `docs/prints/ladainhas_passo8_ensinar.png`).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 20:22–20:23 de relógio.
