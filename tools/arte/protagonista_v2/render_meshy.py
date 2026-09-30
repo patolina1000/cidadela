@@ -197,4 +197,5 @@ def main() -> None:
         print("MEDIDAS " + json.dumps(measures, ensure_ascii=False), flush=True)
 
 
-main()
+if __name__ == "__main__":
+    main()

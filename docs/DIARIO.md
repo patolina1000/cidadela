@@ -3170,3 +3170,24 @@ onde errou, correções manuais e quanto tempo levou.
 - **Nota:** o servidor do visor já estava no ar pelo terminal "Visor" (processo `servir.py` desta worktree); não mexi
   nele.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Protagonista v2: estudo de proporção da cabeça (só prévia)
+
+- **Pedido:** medir cabeça ÷ altura da v1 nas referências; sobre o bruto B, sem salvar GLB, cabeça escalada a partir
+  da base do pescoço para 14% (atual), 18% e a proporção da v1, em 0,80 m e 0,67 m; folha com frente e câmera do jogo
+  (0,4 / 1 / 2,5), aldeão v2 ao lado, px medidos, crepúsculo e a v1 renderizada como referência.
+- **Feito:** `medir_cabeca_v1.py` (Blender: topo = ponto mais alto; queixo = vértice mais baixo do rosto, osso Head, metade
+  da frente, perto da linha do meio; linhas conferidas sobre `v1_frente.png` e `v1_lado.png`), `estudo_cabeca.py`
+  (marcos do B na máscara de frente e montagem da folha) e `render_estudo_cabeca.py` (Blender: deforma só na memória;
+  cabeça escalada acima da base do pescoço com uma faixa de 1,5 cm que só alarga, depois a figura inteira à altura
+  pedida). Saída: `assets/previews/protagonista_v2/estudo_cabeca.png`, `_crepusculo.png` e `.json`. O `render_meshy.py`
+  ganhou a guarda `if __name__ == "__main__"` (é importado pelo estudo).
+- **Medidas (topo ao queixo ÷ altura):** v1 **18,8%** (0,80 m, cabeça 15,0 cm, com o cabelo do topo), aldeão v2 **44,4%**,
+  bruto B **14,1%**. Como 18% e 18,8% quase coincidem, acrescentei **22%** (a estimativa do Diretor). Fatores da cabeça:
+  1,35× (18%), 1,43× (v1), 1,77× (22%). Câmera do jogo: todas as variações a 0,80 m dão ~31 / 80 / 212 px; a 0,67 m,
+  ~26 / 67 / 175 px; a v1 dá **26 / 67 / 178 px**.
+- **Correção do que eu disse no passo 2C:** o alvo de 179 px não pede ~0,67 m. A v1 tem os mesmos 0,80 m do contrato e
+  dá 178 px; o B a 0,80 m dá 212 px porque a câmera a 55° soma a profundidade: na projeção a v1 ocupa 0,451 m (cabeça
+  pendendo para a frente, pés que não avançam) e o B 0,544 m (ereto, nuca atrás, dedos dos pés 6,5 cm à frente); a razão
+  1,21 é a dos px. Os px na câmera dependem da pose e ficam para depois do rig.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 15 min.

@@ -51,5 +51,19 @@
     "tipo": "imagem",
     "caminho": "assets/previews/protagonista_v2/meshy_corpo.png",
     "nota": "A: só a frente. B: frente + perfil + costas. Câmera do jogo 32/81/215 e 32/80/212 px (alvo 28/68/179: a 0,80 m sai ~19% acima). Cabeça L÷A 0,915 / 0,901 (folha 0,935). Recomendação: B (mãos meio fechadas; o perfil reto se corrige na limpeza, as mãos abertas não)."
+  },
+  {
+    "quando": "2026-09-29T21:34:09",
+    "titulo": "Protagonista v2 — estudo da cabeça (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/estudo_cabeca_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T21:34:10",
+    "titulo": "Protagonista v2 — estudo de proporção da cabeça",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/estudo_cabeca.png",
+    "nota": "Cabeça (topo ao queixo ÷ altura): v1 18,8%, aldeão 44,4%, bruto B 14,1%. Variações 14,1 / 18 / 18,8 (v1) / 22% em 0,80 e 0,67 m. A v1 a 0,80 m dá 178 px no zoom 2,5 (o alvo): a diferença para o B (212 px) é de pose, não de altura. Recomendação: 18% a 0,80 m."
   }
 ]
