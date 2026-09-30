@@ -186,7 +186,7 @@ public sealed class GameData
                 moth = new MothType(SecondsToTicks(mo.Seconds), mo.Reach);
             }
             buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus, posts, carriers,
-                b.Hotbar, tower, mana, b.OnResource, b.NextToWater, b.Fixed, moth));
+                b.Hotbar, tower, mana, b.OnResource, b.NextToWater, b.Fixed, moth, b.OnBank));
             if (b.OnResource is string onResource && !resources.ContainsKey(onResource))
                 throw new FormatException($"\"{kind}\": onResource \"{onResource}\" não é um recurso.");
         }
@@ -307,6 +307,7 @@ public sealed class GameData
         public bool NextToWater { get; set; }
         public bool Fixed { get; set; }
         public MothData? Moth { get; set; }
+        public bool OnBank { get; set; }
     }
 
     private sealed class MothData

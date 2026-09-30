@@ -6004,3 +6004,17 @@ onde errou, correções manuais e quanto tempo levou.
   mapa); `ItemWeightTests` com os dois itens novos. `dotnet build` 0/0; `dotnet test` 243 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:13–19:14 de relógio.
+
+## 2026-09-30 — Linha 2, passo 3: Barreiro e Oleiro
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 3 do plano da linha 2.
+- **Feito:** `data/buildings.json` + `data/recipes.json`: Barreiro (10 pedras; só na margem, `onBank`; 1/s; 1 posto;
+  1 argila a cada 6 s, guardada nele; a argila não esgota, L1) e Oleiro (10 pedras + 5 toras; 2/s; 1 posto; 2 argilas +
+  1 jarro → 1 casca em 15 s). `BuildingType.OnBank` e a checagem em `CanBuild`. Modelos provisórios (buraco de barro
+  com pá; bancada com roda de oleiro e vaso). A barra de construção passou de 9 para 11 construções: as teclas 1–9 pegam
+  as 9 primeiras e o resto só por clique até o passo 7 (páginas com Tab).
+- **Testes:** `ClayMachineTests` (Barreiro só na margem; 1 argila/6 s e para cheio em 5; Oleiro sem operador para,
+  com operador e mana 1 casca em 15 s; sem mana para). `dotnet build` 0/0; `dotnet test` 247 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:14–19:15 de relógio.

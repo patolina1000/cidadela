@@ -8,5 +8,7 @@
   "reliquary": { "machine": "reliquary",    "inputs": { "pure_shard": 1 }, "outputs": {}, "seconds": 20, "inputCycles": 5 },
   "mine":      { "machine": "crystal_mine", "inputs": {}, "outputs": { "rotten_shard": 1 }, "seconds": 5 },
   "well":      { "machine": "well",         "inputs": {}, "outputs": { "water_jar": 1 },    "seconds": 8 },
+  "clay":      { "machine": "clay_pit",     "inputs": {}, "outputs": { "clay": 1 },         "seconds": 6 },
+  "shell":     { "machine": "potter",       "inputs": { "clay": 2, "water_jar": 1 }, "outputs": { "shell": 1 }, "seconds": 15 },
   "purify":    { "machine": "purifier",     "inputs": { "rotten_shard": 2, "water_jar": 1 }, "outputs": { "pure_shard": 1 }, "seconds": 10 }
 }

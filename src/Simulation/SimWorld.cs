@@ -590,7 +590,7 @@ public sealed class SimWorld
         }
         else if (resource is not null)
             return BuildCheck.Occupied;
-        if (IsWater(cell) || (type.NextToWater && !TouchesWater(cell)))
+        if (IsWater(cell) || (type.NextToWater && !TouchesWater(cell)) || (type.OnBank && !IsBank(cell)))
             return BuildCheck.WrongGround;
         if (type.Solid && Castellan.BodyOverlaps(cell))
             return BuildCheck.Occupied;

@@ -16,6 +16,7 @@
   // mana: mana por segundo. use: gasta trabalhando (máquina só gasta trabalhando: D1 do Arthur); idleUse: gasta parada
   //   (mariposa); supply: gera (Relicário, enquanto queima); capacity: guarda a sobra da rede (Cristal-mãe).
   // onResource: só se constrói sobre esse recurso e tira dele 1 a cada ciclo (a mina sobre o veio; esgotado, para).
+  // onBank: só se constrói na margem (o Barreiro; a argila não esgota, L1 do Arthur).
   // nextToWater: só se constrói encostada de lado na água (o poço). fixed: já vem no mapa e não se desmonta.
   // moth: mariposa de cristal: pega um item LEVE da célula a "reach" células atrás e põe na célula à mesma distância na
   //   frente (R gira ao construir), "seconds" por item, na fração de mana da rede; sem mana, pousa. Nível 1: reach 1.
@@ -33,6 +34,10 @@
                   "mana": { "use": 1 }, "posts": { "count": 1, "name": "Aguadeiro", "tool": "bucket" } },
   "purifier":   { "name": "Purificador", "cost": { "stone": 5, "wood": 5, "pure_shard": 2 }, "solid": true,
                   "mana": { "use": 3 }, "posts": { "count": 1, "name": "Purificador", "tool": "purify" } },
+  "clay_pit":   { "name": "Barreiro", "cost": { "stone": 10 },                      "solid": true, "onBank": true,
+                  "mana": { "use": 1 }, "posts": { "count": 1, "name": "Barreiro", "tool": "shovel" } },
+  "potter":     { "name": "Oleiro",   "cost": { "stone": 10, "wood": 5 },          "solid": true,
+                  "mana": { "use": 2 }, "posts": { "count": 1, "name": "Oleiro", "tool": "potter" } },
   "mother_crystal": { "name": "Cristal-mãe", "cost": {},                             "solid": true, "hotbar": false,
                       "fixed": true, "mana": { "capacity": 1000 } },
   "moth":       { "name": "Mariposa de Cristal", "cost": { "pure_shard": 1 },       "solid": true,
