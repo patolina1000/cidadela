@@ -66,6 +66,7 @@ public static class Outline
         material.SetShaderParameter("outline_color", new Color(settings.Color));
         material.SetShaderParameter("width_px", settings.WidthPx);
         material.SetShaderParameter("reference_height", settings.ReferenceHeight);
+        material.SetShaderParameter("depth_offset", settings.DepthOffset);
         return material;
     }
 }

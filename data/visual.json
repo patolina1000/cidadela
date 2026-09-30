@@ -20,6 +20,7 @@
   // outline: contorno fino escuro do toon (GDD, seção 17; prova pedida pelo Arthur em 29/09/2026), em árvores, pedras,
   //   veios, aldeões, protagonista e construções. color: #1B1620 (o traço do rosto do aldeão); widthPx: espessura em
   //   pixels numa tela de referenceHeight de altura (fica igual em qualquer zoom); enabled: se começa ligado (a tecla O
-  //   do jogo alterna).
-  "outline": { "enabled": true, "color": "#1B1620", "widthPx": 1.5, "referenceHeight": 1890 }
+  //   do jogo alterna). depthOffset: metros que a casca recua da câmera, para não furar camadas sobrepostas da mesma
+  //   malha (as mechas do cabelo); na silhueta não muda nada.
+  "outline": { "enabled": true, "color": "#1B1620", "widthPx": 1.5, "referenceHeight": 1890, "depthOffset": 0.03 }
 }

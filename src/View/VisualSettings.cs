@@ -47,6 +47,7 @@ public sealed class VisualSettings
         public bool Enabled { get; set; } = true;
         public string Color { get; set; } = "#1B1620";
         public float WidthPx { get; set; } = 1.5f;
+        public float DepthOffset { get; set; } = 0.03f;
         public float ReferenceHeight { get; set; } = 1890f;
     }
 

@@ -5480,3 +5480,37 @@ onde errou, correções manuais e quanto tempo levou.
 - **Jogo para o Arthur:** `Main` aberto no editor com a v2 dentro do bosque. Print: `docs/prints/protagonista_v2_bosque.png`.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:06 de relógio (fim).
+
+---
+
+## 2026-09-30 — Cabelo da protagonista "bugado atrás": a casca do contorno furava as mechas
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (Arthur: "o personagem está com o cabelo bugado atrás"):** analisar com prints de perto (câmera cinematográfica
+  por trás e de 3/4 de trás, parada e correndo) antes de mexer, testar 5 hipóteses e dizer qual era; se fosse no GLB,
+  não mexer em `assets/` e avisar.
+- **Antes:** de trás e de 3/4 de trás, cacos escuros irregulares nas costas do cabelo, perto da coroa
+  (`docs/prints/cabelo_antes_contorno_ligado.png`).
+- **Hipóteses, uma por uma:**
+  1. **Recorte pontilhado nas peças dela:** descartada: o recorte só é ligado nos materiais das árvores; os materiais da
+     protagonista não o têm.
+  2. **Cabelo de uma face só com back-face culling:** descartada como causa: com o cabelo desenhando as duas faces
+     (`cull_disabled`, teste) a imagem ficou igual. Os filetes claros que restam nas dobras das mechas são a **borda de
+     luz fria** (ligada nela pelo contrato), não buracos. O teste foi desfeito.
+  3. **Contorno escuro (casca invertida) brigando com o cabelo:** **era esta.** Desligando o contorno (tecla O), os cacos
+     somem (`cabelo_antes_contorno_desligado.png`). O cabelo tem mechas em camadas sobrepostas; a casca (faces de trás
+     empurradas para fora) de uma camada de trás furava a camada da frente.
+  4. **Pesos do cabelo diferentes do Blender:** descartada: correndo e parada, a forma do cabelo de costas bate com o GIF da
+     ARTE (`assets/previews/protagonista_v2/cabelo_gifs/run-loop_costas.gif`); o ponto escuro no alto é o chifre, que
+     aparece por cima do cabelo também no GIF.
+  5. **Ordem de desenho / alfa:** descartada: o material do cabelo é o toon opaco.
+- **Correção (no jogo, não no GLB):** `Outline.gdshader` recua a casca `depth_offset` metros da câmera antes de projetar
+  (`data/visual.json` → `outline.depthOffset` 0,03). Na silhueta, contra o fundo, nada muda; numa malha de camadas a casca
+  de trás fica atrás da camada da frente e não fura. Vale para todo o contorno (árvores, pedras, aldeões, construções).
+- **Depois:** costas e 3/4 de trás sem os cacos, o contorno continua na silhueta. Prints: `docs/prints/cabelo_antes_depois.png`
+  (recorte lado a lado), `cabelo_depois_costas.png`, `cabelo_depois_tres_quartos.png`.
+- **Para o Arthur:** se os filetes claros da borda fria no cabelo incomodarem, dá para desligar a borda só no cabelo (como
+  nas copas).
+- `dotnet build`: 0 erros, 0 avisos.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 01:16 de relógio (fim).
