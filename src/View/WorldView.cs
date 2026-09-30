@@ -55,12 +55,17 @@ public partial class WorldView : Node3D
     /// <summary>Nó desenhado do Castelão, para a câmera seguir.</summary>
     public Node3D CastellanNode => _castellan;
 
-    /// <summary>Recurso desenhado: raiz no chão (escalar não tira o modelo do chão) e último restante visto.</summary>
+    /// <summary>
+    /// Recurso desenhado: um nó vazio no chão (âncora da câmera cinematográfica e dos efeitos), a instância do
+    /// MultiMesh e o último restante visto.
+    /// </summary>
     private sealed class ResourceVisual
     {
         public required Node3D Root { get; init; }
+        public required ResourceModels.Handle Mesh { get; init; }
         public int LastRemaining { get; set; }
         public float Punch { get; set; }
+        public Vector3 LastSize { get; set; } = Vector3.One;
     }
 
     public void Build(SimWorld world)
@@ -72,12 +77,14 @@ public partial class WorldView : Node3D
         // Sem grama embaixo de construções e de recursos (árvores, pedras e veios ainda de pé).
         _grass.Build(world.Grid, world.Data, cell => world.BuildingAt(cell) is not null || world.ResourceAt(cell) is not null);
 
+        var resourceModels = new ResourceModels { Name = "Resources" };
+        AddChild(resourceModels);
+        resourceModels.Build(world.Resources, world.Data);
         foreach (ResourceNode resource in world.Resources)
         {
             var root = new Node3D { Name = $"Resource_{resource.Kind}_{resource.Id}", Position = CellCenter(resource.Cell, 0f) };
             AddChild(root);
-            root.AddChild(ResourceModels.Create(resource.Kind, _world.Data));
-            _resourceVisuals[resource] = new ResourceVisual { Root = root, LastRemaining = resource.Remaining };
+            _resourceVisuals[resource] = new ResourceVisual { Root = root, Mesh = resourceModels[resource], LastRemaining = resource.Remaining };
         }
 
 
@@ -554,7 +561,7 @@ public partial class WorldView : Node3D
             return;
 
         Color color = Palette.ForItem(_world.Data, resource.Kind);
-        Vector3 top = visual.Root.Position + new Vector3(0f, ResourceModels.HeightOf(resource.Kind), 0f);
+        Vector3 top = visual.Root.Position + new Vector3(0f, visual.Mesh.Height, 0f);
         if (resource.Remaining < visual.LastRemaining)
         {
             int taken = visual.LastRemaining - resource.Remaining;
@@ -568,6 +575,7 @@ public partial class WorldView : Node3D
         {
             _effects.Burst(visual.Root.Position + new Vector3(0f, 0.4f, 0f), color, amount: 24, speed: 3.5f);
             visual.Root.Visible = false;
+            ResourceModels.Hide(visual.Mesh);
             _grass.MarkDirty(resource.Cell); // a grama volta onde o recurso acabou
             return;
         }
@@ -576,7 +584,13 @@ public partial class WorldView : Node3D
         float size = Mathf.Lerp(0.55f, 1f, (float)resource.Remaining / resource.Type.StartAmount);
         visual.Punch = Mathf.Lerp(visual.Punch, 0f, 1f - Mathf.Exp(-14f * dt));
         float squash = 0.22f * visual.Punch;
-        visual.Root.Scale = new Vector3(size * (1f + squash), size * (1f - squash), size * (1f + squash));
+        var scale = new Vector3(size * (1f + squash), size * (1f - squash), size * (1f + squash));
+        // Só mexe na instância quando muda: com milhares de árvores paradas, nada é reenviado.
+        if (!scale.IsEqualApprox(visual.LastSize))
+        {
+            visual.LastSize = scale;
+            ResourceModels.SetSize(visual.Mesh, scale);
+        }
     }
 
     /// <summary>

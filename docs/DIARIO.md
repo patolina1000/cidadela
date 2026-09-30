@@ -4419,4 +4419,54 @@ onde errou, correções manuais e quanto tempo levou.
   manchas, relatórios, `cenario.json`, `verificacao.json`, proposta e rascunho de contrato); nada fora da pasta.
   Nenhum outro arquivo da `cenario` ou da `arte` veio junto.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 22:29–22:33 de relógio.
+- **Tempo:** 22:29–22:30 de relógio.
+
+---
+
+## 2026-09-29 — Árvores, pedras e veios do CENÁRIO no jogo (MultiMesh por variação)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (ordem do Arthur, via Diretor):** trocar as formas provisórias de árvore, pedra e veio pelos GLBs, lendo
+  `assets/cenario/cenario.json` (variações, pesos 30/30/10/30 na árvore, giro e escala 0,9–1,1 sorteados por célula de
+  forma fixa pela posição), em MultiMesh; borda fria ligada e recorte da protagonista nas copas; recurso esgotado
+  continua sumindo (tocos não decididos); forçar a reimportação e conferir as datas; FPS antes e depois em 3024×1890
+  fora do editor; abrir o `Main` e deixar o jogo aberto com a câmera num bosque para o Arthur.
+- **O que foi feito:**
+  - **Correção de premissa:** os recursos ainda não estavam em MultiMesh (cada um era um `MeshInstance3D`, para
+    encolher e sacudir sozinho na coleta). Agora estão: `ResourceModels` virou um nó que lê o manifesto, sorteia por
+    célula (hash da posição: variação pelo `weight`, giro 0–360°, escala 0,9–1,1) e cria **um MultiMesh por
+    variação**; cada recurso é uma instância, e a transformação dela encolhe (até 55 %) e sacode na coleta, reenviada
+    só quando muda. Esgotado: a instância vai a escala zero e some (os tocos e manchas do manifesto não são usados).
+    Cada recurso mantém um `Node3D` vazio como âncora da câmera cinematográfica e dos efeitos.
+  - Materiais: cada material do GLB vira o `Toon.gdshader` com a cor do glTF (`baseColorFactor`); a borda fria nos
+    nomes listados em `coldRim` (copa; pedra e musgo; pedra e minério), o recorte da protagonista em todos os
+    materiais das árvores (copa e tronco). Um material por (cor, borda, recorte), compartilhado. Sombra por variação
+    (`castsShadow`). Recurso sem entrada no manifesto continua com a esfera provisória.
+  - Os efeitos de coleta nascem na altura da variação × escala.
+  - `data/maps/mapa_teste.json`: um **bosque de 28 árvores** perto da base (x 6–11, z 7–12, sem tocar construções nem
+    aldeões), para ver as árvores no jogo; as 3 árvores antigas continuam.
+  - `.import` dos GLBs gerados pelo editor (padrão; geração de LOD ligada), commitados junto.
+- **Reimportação:** o scan do editor importou os 18 GLBs às 22:32:25–22:32:33, depois do checkout dos arquivos
+  (22:30:26); `.godot/imported` conferido arquivo por arquivo. O `reimport` forçado pelo godot-ai respondeu
+  "reimportado" mas não reescreveu nada (datas iguais; o GLB não mudou desde a importação): a armadilha do "ok" da
+  nota 01. Os importados valem, porque são mais novos que os GLBs.
+- **FPS (3024×1890 fora do editor, V-Sync desligado, sem Blender rodando):**
+
+  | Cena | Antes (formas provisórias) | Depois (GLBs do CENÁRIO) |
+  | --- | --- | --- |
+  | `Main`, mapa de 7 recursos | 78–86 | 78–79 |
+  | `Main` com o bosque (35 recursos) | — | 80–82 |
+  | `CenarioTeste`, seguidos na mesma hora (Safari na frente, jogo visível na Retina) | 97–101 | 98–102 |
+
+  **Sem custo mensurável.** A primeira medida da cena de teste (118–120, o teto da tela) foi com o Godot na frente; a
+  de depois, com o Arthur usando o Safari, deu 96–101; recompilei o código de antes e medi os dois seguidos nas mesmas
+  condições: iguais. O script de medida agora aceita outro app na frente se o jogo continua desenhando (descarta
+  Blender rodando e o sinal de janela coberta: mais de 125 FPS o tempo todo, só CPU).
+- **No jogo (editor):** `Main` aberto e rodando, protagonista levada até a borda do bosque; as quatro árvores (a de
+  líquen roxo rara), a borda fria nas copas e as sombras aparecem. Log sem erros. Prints:
+  `docs/prints/cenario_bosque_jogo.png` e `cenario_bosque_perto.png`. Ela para na primeira fileira (o bosque é denso),
+  então não houve print dela atrás de uma árvore; o recorte com os GLBs aparece rodando na cena de teste.
+- **Também:** os `.uid` que o Godot gerou para as classes dos ícones (passo anterior).
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 125 aprovados.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:30–22:41 de relógio.
