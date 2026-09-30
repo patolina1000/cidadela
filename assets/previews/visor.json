@@ -79,5 +79,29 @@
     "tipo": "gif",
     "caminho": "assets/previews/prova_operacao/roda_jogo.gif",
     "nota": "Mesmo refazimento; idêntico ao anterior (≤ 1 px por quadro), sem defasagem. Faltas palma-manopla iguais às antigas."
+  },
+  {
+    "quando": "2026-09-29T21:54:16",
+    "titulo": "Protagonista v2 — corpo limpo (sem rig)",
+    "tipo": "glb",
+    "caminho": "assets/modelos/protagonista_v2/protagonista_corpo_limpo.glb",
+    "nota": "B limpo: 0,80 m, cabeça 18%, 2.474 triângulos em 9 malhas (cabeca, tronco, bracos, maos, quadril, roupa_intima, coxas, canelas, pes), pele e tecido. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:54:17",
+    "titulo": "Protagonista v2 — folha do corpo limpo (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/corpo_limpo_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T21:54:18",
+    "titulo": "Protagonista v2 — folha do corpo limpo",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/corpo_limpo.png",
+    "nota": "0,80 m, cabeça 18,05% (silhueta 18,3%), 2.474 triângulos; mãos meio fechadas; clavícula, esterno, joelhos e borda do short alisados; um pouco de glúteo. Câmera do jogo 31 / 80 / 211 px (a pose A ereta; o alvo é a v1 na pose dela). Sem rig: ergonomia.json depois do rig."
   }
 ]

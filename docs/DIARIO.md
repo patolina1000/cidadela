@@ -3236,3 +3236,15 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado e foi corrigido:** cortes retos em todas as bordas somavam 896 triângulos (e o do ombro pegava a
   cabeça); ficaram só os do short. A primeira medida da cabeça (a do aldeão) não convergia por causa do formato.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 30 min.
+
+## 2026-09-29 — Protagonista v2, passo 3B: folha de contato do corpo limpo
+
+- **Feito:** `render_limpo.py` (Blender: frente, lado, costas, 3/4 com o aldeão ao lado; câmera do jogo nos três zooms;
+  regiões pintadas; máscara) e `folha_limpo.py` → `assets/previews/protagonista_v2/corpo_limpo.png`, `_crepusculo.png` e
+  `.json`. Publicados no visor a folha, a versão crepúsculo e o GLB limpo com o aldeão junto; portal "Visor" na folha.
+- **Medidas:** 0,800 m; 2.474 triângulos; cabeça 18,05% pela conta e **18,3% pela silhueta** (head_profile das folhas);
+  câmera do jogo 31 / 80 / 211 px (aldeão 17 / 43 / 111). Como no estudo, a diferença para o alvo de 179 px é a pose
+  (A, ereta) e não a altura; volta a medir depois do rig.
+- **Pendente:** `ergonomia.json` — o `medir_ergonomia.py` precisa do rig (ossos Hips, Spine, braços e IK); sai logo
+  depois do rig, que não fazia parte desta tarefa.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.

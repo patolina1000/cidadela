@@ -1,0 +1,196 @@
+{
+  "render": {
+    "corpo": "assets/modelos/protagonista_v2/protagonista_corpo_limpo.glb",
+    "altura_m": 0.8,
+    "triangulos": {
+      "bracos": 284,
+      "cabeca": 386,
+      "canelas": 136,
+      "coxas": 232,
+      "maos": 442,
+      "pes": 106,
+      "quadril": 32,
+      "roupa_intima": 462,
+      "tronco": 394
+    },
+    "jogo": {
+      "0.4": {
+        "protagonista_px": 31.3,
+        "aldeao_px": 17.2,
+        "caixa_px": [
+          1500.0488018989563,
+          915.8443343639374,
+          1545.5451135635376,
+          947.1143800020218
+        ],
+        "tela": [
+          3024,
+          1890
+        ]
+      },
+      "1.0": {
+        "protagonista_px": 79.9,
+        "aldeao_px": 43.4,
+        "caixa_px": [
+          1481.8112182617188,
+          870.4230719804764,
+          1596.1534280776978,
+          950.2930471301079
+        ],
+        "tela": [
+          3024,
+          1890
+        ]
+      },
+      "2.5": {
+        "protagonista_px": 211.2,
+        "aldeao_px": 111.1,
+        "caixa_px": [
+          1434.513904094696,
+          747.1000474691391,
+          1724.2234153747559,
+          958.276524245739
+        ],
+        "tela": [
+          3024,
+          1890
+        ]
+      }
+    },
+    "triangulos_total": 2474,
+    "cores_regioes": {
+      "cabeca": "#D86161",
+      "tronco": "#D8B161",
+      "bracos": "#B1D861",
+      "maos": "#61D861",
+      "quadril": "#61D8B1",
+      "roupa_intima": "#61B1D8",
+      "coxas": "#6161D8",
+      "canelas": "#B161D8",
+      "pes": "#D861B1"
+    }
+  },
+  "cabeca_silhueta_sobre_altura": 0.1828,
+  "limpeza": {
+    "entrada": "assets/modelos/protagonista_v2/meshy/corpo_b_multi_1.glb",
+    "triangulos_entrada": 2620,
+    "vertices_fundidos": 2141,
+    "simetria": {
+      "lado_mantido": "+x",
+      "rms_frente_da_cabeca_mm": {
+        "+x": 1.95,
+        "-x": 2.14
+      }
+    },
+    "cabeca": {
+      "fator": 1.3551,
+      "escala_do_corpo_k": 0.9398,
+      "pescoco_z": 0.6304,
+      "queixo_z": 0.6556
+    },
+    "alisamento": {
+      "marcados": {
+        "clavicula_esterno": 52,
+        "joelhos": 68,
+        "bordas_do_short": 140,
+        "cotovelos": 62,
+        "base_do_pescoco": 42,
+        "maos_fora": 228
+      },
+      "passos_cabeca": 90,
+      "rosto_calombos_antes_de_decimar": {
+        "pontos": 136,
+        "rms_mm": 0.93,
+        "max_mm": 4.49
+      }
+    },
+    "decimacao": {
+      "juntas": 648,
+      "maos": 230
+    },
+    "cortes_do_short_triangulos": [
+      52,
+      164
+    ],
+    "punhos": [
+      {
+        "ponto": [
+          0.185,
+          0.0103,
+          0.379
+        ],
+        "normal": [
+          0.498,
+          -0.233,
+          -0.835
+        ]
+      },
+      {
+        "ponto": [
+          -0.185,
+          0.0103,
+          0.379
+        ],
+        "normal": [
+          -0.498,
+          -0.233,
+          -0.835
+        ]
+      }
+    ],
+    "rosto_calombos": {
+      "pontos": 17,
+      "rms_mm": 0.76,
+      "max_mm": 1.64
+    },
+    "rosto_medida_do_aldeao_elipsoide": {
+      "pontos": 25,
+      "rms_mm": 3.0,
+      "max_mm": 7.3,
+      "esfera_raio_mm": 64.9,
+      "esfera_rms_mm": 3.81,
+      "esfera_max_mm": 8.51
+    },
+    "altura_m": 0.8,
+    "cabeca_sobre_altura": 0.1805,
+    "regioes": {
+      "cabeca": {
+        "triangulos": 386,
+        "vertices": 209
+      },
+      "tronco": {
+        "triangulos": 394,
+        "vertices": 247
+      },
+      "bracos": {
+        "triangulos": 284,
+        "vertices": 180
+      },
+      "maos": {
+        "triangulos": 442,
+        "vertices": 236
+      },
+      "quadril": {
+        "triangulos": 32,
+        "vertices": 36
+      },
+      "roupa_intima": {
+        "triangulos": 462,
+        "vertices": 283
+      },
+      "coxas": {
+        "triangulos": 232,
+        "vertices": 172
+      },
+      "canelas": {
+        "triangulos": 136,
+        "vertices": 96
+      },
+      "pes": {
+        "triangulos": 106,
+        "vertices": 68
+      }
+    },
+    "triangulos_total": 2474
+  }
+}
