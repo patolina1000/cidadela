@@ -20,6 +20,9 @@ public sealed class Building
     /// <summary>Estado da receita, ou null se não é máquina.</summary>
     public MachineState? Machine { get; }
 
+    /// <summary>Estado da mariposa, ou null se não é mariposa.</summary>
+    public MothState? Moth { get; }
+
     /// <summary>Estado da cabana de trabalho, ou null se não é cabana.</summary>
     public Workplace? Workplace { get; }
 
@@ -78,6 +81,8 @@ public sealed class Building
             Machine = new MachineState(recipe);
         if (type.Job is not null)
             Workplace = new Workplace(type.Job);
+        if (type.Moth is not null)
+            Moth = new MothState(type.Moth);
         Crew = new Villager?[type.Posts?.Count ?? type.Carriers?.Count ?? 0];
     }
 }

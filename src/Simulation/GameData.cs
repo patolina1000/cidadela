@@ -169,8 +169,15 @@ public sealed class GameData
                     throw new FormatException($"Mana inválida em \"{kind}\": use, idleUse, supply e capacity não negativos.");
                 mana = new ManaType(md.Use, md.IdleUse, md.Supply, md.Capacity);
             }
+            MothType? moth = null;
+            if (b.Moth is MothData mo)
+            {
+                if (mo.Seconds <= 0f || mo.Reach <= 0)
+                    throw new FormatException($"Mariposa inválida em \"{kind}\": seconds e reach positivos.");
+                moth = new MothType(SecondsToTicks(mo.Seconds), mo.Reach);
+            }
             buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus, posts, carriers,
-                b.Hotbar, tower, mana, b.OnResource, b.NextToWater, b.Fixed));
+                b.Hotbar, tower, mana, b.OnResource, b.NextToWater, b.Fixed, moth));
             if (b.OnResource is string onResource && !resources.ContainsKey(onResource))
                 throw new FormatException($"\"{kind}\": onResource \"{onResource}\" não é um recurso.");
         }
@@ -290,6 +297,13 @@ public sealed class GameData
         public string? OnResource { get; set; }
         public bool NextToWater { get; set; }
         public bool Fixed { get; set; }
+        public MothData? Moth { get; set; }
+    }
+
+    private sealed class MothData
+    {
+        public float Seconds { get; set; }
+        public int Reach { get; set; } = 1;
     }
 
     private sealed class TowerData

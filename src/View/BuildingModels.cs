@@ -76,6 +76,11 @@ public static class BuildingModels
                 Add(model, new CylinderMesh { TopRadius = 0.0f, BottomRadius = 0.32f, Height = 2.2f, RadialSegments = 6 }, Palette.ManaBlue, new Vector3(0f, 1.1f, 0f));
                 Add(model, new CylinderMesh { TopRadius = 0.0f, BottomRadius = 0.16f, Height = 1.0f, RadialSegments = 5 }, Palette.ManaBlue.Darkened(0.2f), new Vector3(0.3f, 0.5f, 0.1f));
                 break;
+            case "moth":
+                // Pouso baixo com a seta da direção; a mariposa (pontinho de luz) é desenhada à parte pela WorldView.
+                Add(model, new CylinderMesh { TopRadius = 0.18f, BottomRadius = 0.22f, Height = 0.12f, RadialSegments = 8 }, Palette.Stone.Darkened(0.3f), new Vector3(0f, 0.06f, 0f));
+                AddOutputArrow(model);
+                break;
             case "carrier_post":
                 // Tablado com sacos e uma vara de carregar.
                 Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.1f, 0.8f) }, Palette.Wood, new Vector3(0f, 0.05f, 0f));

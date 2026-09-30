@@ -40,6 +40,14 @@ public static class DirectionExtensions
         _ => throw new ArgumentOutOfRangeException(nameof(d)),
     };
 
+    /// <summary>A célula a <paramref name="cells"/> passos nessa direção.</summary>
+    public static GridPos Step(this GridPos cell, Direction d, int cells)
+    {
+        for (int i = 0; i < cells; i++)
+            cell = cell.Step(d);
+        return cell;
+    }
+
     public static Direction Parse(string? text) => text?.ToLowerInvariant() switch
     {
         null or "" or "north" => Direction.North,

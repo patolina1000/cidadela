@@ -5867,3 +5867,19 @@ onde errou, correções manuais e quanto tempo levou.
   máquina. `dotnet build` 0/0; `dotnet test` 214 passaram. Main em headless sem erro.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 16:42–16:45 de relógio.
+
+## 2026-09-30 — Linha da energia, passo 6: mariposas de cristal
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 6 do plano: mariposa nível 1 (docs/linha_energia.md).
+- **Feito:** `MothType` ("moth": seconds, reach), `MothState` (item levado, voo, pousada), `SimWorld.TickMoths`.
+  Parada, a mariposa pega o primeiro item **leve** da célula de trás (saída de máquina, baú ou a ponta de uma esteira a
+  partir da metade dela) que a célula da frente aceita agora (entrada de máquina, baú ou entrada de esteira), voa
+  1,2 s na fração de mana da rede e entrega; se o destino encheu no caminho, espera no ar (conta como parada). Sem mana,
+  pousa. Gasta 0,5/s voando e 0,1/s parada. Desmontar devolve o item que levava. `data/buildings.json`: Mariposa de
+  Cristal (1 puro, alcance 1). O nível 2 ficou fora ("a definir"). Modelo provisório: pouso baixo com a seta (o
+  pontinho de luz é do passo 9). `Direction.Step(cell, d, n)`.
+- **Testes:** `MothTests` (recusa pesado; 1 item a cada 1,2 s; baú → mariposa → esteira → mariposa → Purificador;
+  tira da saída de máquina; sem mana pousa; 0,1 parada × 0,5 voando). `dotnet build` 0/0; `dotnet test` 220 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 16:46–16:47 de relógio.

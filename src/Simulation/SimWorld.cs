@@ -38,6 +38,7 @@ public sealed class SimWorld
     private readonly List<Building> _belts = new();
     private readonly List<Building> _machines = new();
     private readonly List<Building> _workplaces = new();
+    private readonly List<Building> _moths = new();
     /// <summary>Construções que chamam aldeões (cabanas e postos), na ordem em que foram construídas.</summary>
     private readonly List<Building> _staffed = new();
     private int _nextItemId = 1;
@@ -64,6 +65,7 @@ public sealed class SimWorld
         TickBelts();
         UpdateMana();
         TickMachines();
+        TickMoths();
         foreach (Villager villager in _villagers)
             villager.Tick(this);
         TickWorkplaces();
@@ -168,9 +170,14 @@ public sealed class SimWorld
     private static float SupplyOf(Building b) =>
         b.Type.Mana is not { Supply: > 0f } mana ? 0f : b.Machine is null || b.Machine.IsWorking ? mana.Supply : 0f;
 
-    /// <summary>Consumidor: máquina só trabalhando ou prestes a começar (com gente no posto); sem receita, sempre.</summary>
+    /// <summary>
+    /// Consumidor: máquina só trabalhando ou prestes a começar (com gente no posto); mariposa, a mana de voo voando e a de
+    /// espera parada; sem receita, sempre.
+    /// </summary>
     private static float DemandOf(Building b)
     {
+        if (b.Moth is MothState moth && b.Type.Mana is ManaType mothMana)
+            return moth.Flying ? mothMana.Use : mothMana.IdleUse;
         if (b.Type.Mana is not { Use: > 0f } mana)
             return 0f;
         if (b.Machine is not MachineState m)
@@ -243,6 +250,95 @@ public sealed class SimWorld
         float reach = MathF.Min(a.Type.Tower!.Wire, b.Type.Tower!.Wire);
         float dx = a.Cell.X - b.Cell.X, dz = a.Cell.Z - b.Cell.Z;
         return dx * dx + dz * dz <= reach * reach + 1e-4f;
+    }
+
+    /// <summary>
+    /// Mariposas (docs/linha_energia.md): parada, pega o primeiro item leve da célula de trás (saída de máquina, baú ou a
+    /// ponta de uma esteira) que a célula da frente aceita (entrada de máquina, baú ou esteira), e voa na fração de mana da
+    /// rede; chegando, entrega se ainda couber (senão espera parada no ar). Sem mana, pousa.
+    /// </summary>
+    private void TickMoths()
+    {
+        foreach (Building building in _moths)
+        {
+            MothState moth = building.Moth!;
+            float speed = building.ManaSatisfaction;
+            moth.Landed = speed <= 0f;
+            if (moth.Landed)
+                continue;
+            GridPos from = building.Cell.Step(building.Direction.Opposite(), moth.Type.Reach);
+            GridPos to = building.Cell.Step(building.Direction, moth.Type.Reach);
+            if (moth.Carrying is null)
+            {
+                if (TakeForMoth(from, to) is not string kind)
+                    continue;
+                moth.Carrying = kind;
+                moth.FlightTicks = 0f;
+            }
+            if (moth.FlightTicks < moth.Type.Ticks)
+                moth.FlightTicks += speed;
+            if (moth.FlightTicks >= moth.Type.Ticks - 0.0001f && TryPut(to, moth.Carrying!))
+            {
+                moth.Carrying = null;
+                moth.FlightTicks = 0f;
+            }
+        }
+    }
+
+    /// <summary>Tira da célula de origem o primeiro item leve que o destino aceita agora, ou null.</summary>
+    private string? TakeForMoth(GridPos from, GridPos to)
+    {
+        if (BuildingAt(from) is not Building source)
+            return null;
+        if (source.Machine is MachineState machine)
+        {
+            foreach (string kind in machine.Recipe.Outputs.Keys)
+                if (machine.Output.Count(kind) > 0 && !IsHeavy(kind) && Accepts(to, kind))
+                    return machine.Output.TryRemoveOne(kind) ? kind : null;
+            return null;
+        }
+        if (source.Storage is Inventory storage)
+        {
+            foreach (ItemType item in Data.Items)
+                if (storage.Count(item.Kind) > 0 && !item.IsHeavy && Accepts(to, item.Kind))
+                    return storage.TryRemoveOne(item.Kind) ? item.Kind : null;
+            return null;
+        }
+        if (source.Belt is BeltLane lane && lane.Items.Count > 0 && lane.Items[0].Progress >= 0.5f)
+        {
+            string kind = lane.Items[0].Kind;
+            if (!IsHeavy(kind) && Accepts(to, kind))
+                return lane.RemoveFront().Kind;
+        }
+        return null;
+    }
+
+    /// <summary>Se a célula aceita 1 desse item agora: entrada de máquina, baú, ou a entrada de uma esteira (só leve).</summary>
+    private bool Accepts(GridPos cell, string kind) => BuildingAt(cell) switch
+    {
+        { Machine: MachineState m } => m.Accepts(kind),
+        { Storage: not null } => true,
+        { Belt: BeltLane lane } => lane.HasRoomAtEntry && !IsHeavy(kind),
+        _ => false,
+    };
+
+    private bool TryPut(GridPos cell, string kind)
+    {
+        if (!Accepts(cell, kind))
+            return false;
+        Building target = BuildingAt(cell)!;
+        if (target.Machine is MachineState m)
+            m.Input.Add(kind);
+        else if (target.Storage is Inventory storage)
+            storage.Add(kind);
+        else
+        {
+            var item = new BeltItem(_nextItemId++, kind);
+            target.Belt!.AddAtEntry(item);
+            item.Position = PositionOnBelt(target, 0f);
+            item.PreviousPosition = item.Position;
+        }
+        return true;
     }
 
     /// <summary>Cabana com algo guardado solta 1 item por tick na esteira ou baú à sua frente, como uma máquina.</summary>
@@ -512,6 +608,7 @@ public sealed class SimWorld
         _belts.Remove(building);
         _machines.Remove(building);
         _workplaces.Remove(building);
+        _moths.Remove(building);
         _staffed.Remove(building);
         BuildingsVersion++;
         Castellan.Inventory.Add(building.Type.Cost);
@@ -524,6 +621,8 @@ public sealed class SimWorld
         }
         building.Storage?.MoveAllTo(Castellan.Inventory);
         building.Machine?.EmptyInto(Castellan.Inventory);
+        if (building.Moth?.Carrying is string carried)
+            Castellan.Inventory.Add(carried);
         if (building.Workplace is Workplace work)
         {
             work.Stored.MoveAllTo(Castellan.Inventory);
@@ -578,6 +677,8 @@ public sealed class SimWorld
             _machines.Add(building);
         if (building.Workplace is not null)
             _workplaces.Add(building);
+        if (building.Moth is not null)
+            _moths.Add(building);
         BuildingsVersion++;
         if (building.Workplace is not null || building.Crew.Length > 0)
         {

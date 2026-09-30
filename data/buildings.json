@@ -16,6 +16,9 @@
   //   (mariposa); supply: gera (Relicário, enquanto queima); capacity: guarda a sobra da rede (Cristal-mãe).
   // onResource: só se constrói sobre esse recurso e tira dele 1 a cada ciclo (a mina sobre o veio; esgotado, para).
   // nextToWater: só se constrói encostada de lado na água (o poço). fixed: já vem no mapa e não se desmonta.
+  // moth: mariposa de cristal: pega um item LEVE da célula a "reach" células atrás e põe na célula à mesma distância na
+  //   frente (R gira ao construir), "seconds" por item, na fração de mana da rede; sem mana, pousa. Nível 1: reach 1.
+  //   O nível 2 (alcance 2) está "a definir" na especificação e não existe ainda.
   // hotbar: false tira da barra de construção (o código e os dados ficam; mapas e testes ainda podem usar).
   //   Fora da barra desde a mudança de rumo de 30/09 (linha da energia, docs/linha_energia.md): as cabanas.
   "belt":       { "name": "Esteira",  "cost": { "wood": 1 },                         "solid": false, "beltSpeed": 1.5 },
@@ -31,6 +34,8 @@
                   "mana": { "use": 3 }, "posts": { "count": 1, "name": "Purificador", "tool": "purify" } },
   "mother_crystal": { "name": "Cristal-mãe", "cost": {},                             "solid": true, "hotbar": false,
                       "fixed": true, "mana": { "capacity": 1000 } },
+  "moth":       { "name": "Mariposa de Cristal", "cost": { "pure_shard": 1 },       "solid": true,
+                  "mana": { "use": 0.5, "idleUse": 0.1 }, "moth": { "seconds": 1.2, "reach": 1 } },
   "chest":      { "name": "Baú",      "cost": { "wood": 5 },                         "solid": true,  "storage": true },
   "carrier_post": { "name": "Posto de Carregadores", "cost": { "wood": 4 },            "solid": true,
                     "carriers": { "count": 2, "radius": 12 } },
