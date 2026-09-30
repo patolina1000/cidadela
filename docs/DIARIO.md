@@ -3139,3 +3139,24 @@ onde errou, correções manuais e quanto tempo levou.
 - A reserva (3ª geração) **não foi usada**: nenhuma das duas falhou tecnicamente no download (a conferência
   visual vem na folha de contato).
 - **Créditos:** 20 (acumulado nesta parte: 40/60). **Correções manuais:** nenhuma. **Tempo:** ~5 min.
+
+## 2026-09-29 — Protagonista v2, passo 2C: folha de contato dos corpos brutos
+
+- **Pedido:** uma fileira por geração (frente, lado, 3/4, câmera do jogo nos três zooms), aldeão v2 ao lado,
+  protagonista a 0,80 m, material fosco chapado, luz baixa e fria de cima, versão crepúsculo; altura em px, triângulos,
+  cabeça contra a folha (0,935), mãos, pés, simetria e anatomia marcada.
+- **Feito:** `render_meshy.py` (Blender; toon do `prot_lib`, luz do diagnóstico aprovado da v1; câmera do jogo em
+  3024×1890 e altura por projeção de vértices) e `folha_meshy.py` (recortes 1:1 da câmera do jogo; cabeça pelo
+  mesmo `head_profile` do `conferir_recortes.py`). Saída: `assets/previews/protagonista_v2/meshy_corpo.png`,
+  `meshy_corpo_crepusculo.png` e `meshy_corpo.json`; notas em `tools/arte/protagonista_v2/notas_meshy_corpo.json`.
+- **Medidas (A / B):** triângulos 2.602 / 2.620; câmera do jogo 32 / 81 / 215 e 32 / 80 / 212 px (alvo 28 / 68 / 179);
+  cabeça L÷A 0,915 / 0,901 (folha 0,935); cabeça 14,0% / 14,1% da altura (folha 14,4%); simetria: espelho a 4,3 mm
+  em média nas duas (p95 ~10,7 mm). O aldeão ao lado mede 17 / 43 / 111 px (nota 01: 19 / 44 / 112): a medida está
+  calibrada.
+- **Observação para o Diretor:** a 0,80 m do contrato a protagonista sai ~19% acima do alvo em px nos três zooms
+  (215 contra 179). O alvo pede 1,6× a altura do aldeão; o contrato dá 2×. Um dos dois precisa mudar (0,80 m → ~0,67 m
+  bate o alvo); não mudei nada.
+- **O que deu errado e foi corrigido:** a projeção e a "direita da câmera" usavam a `matrix_world` da câmera antes de o
+  Blender atualizar a cena (px absurdos e aldeão atrás da protagonista no perfil); passou a atualizar a cena ao criar a
+  câmera. A troca de ponto por vírgula nos números não mexe mais nas vírgulas do texto.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
