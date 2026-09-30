@@ -87,6 +87,14 @@ public static class BuildingModels
                 Add(model, new BoxMesh { Size = new Vector3(0.1f, 0.03f, 0.12f) }, Palette.Bone, new Vector3(-0.22f, 0.47f, -0.1f));
                 AddOutputArrow(model);
                 break;
+            case "carrier_post":
+                // Tablado com sacos e uma vara de carregar.
+                Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.1f, 0.8f) }, Palette.Wood, new Vector3(0f, 0.05f, 0f));
+                Add(model, new SphereMesh { Radius = 0.18f, Height = 0.3f }, Palette.Wheat, new Vector3(-0.18f, 0.24f, 0.12f));
+                Add(model, new SphereMesh { Radius = 0.15f, Height = 0.26f }, Palette.Wheat.Darkened(0.2f), new Vector3(0.16f, 0.22f, -0.1f));
+                var pole = Add(model, new CylinderMesh { TopRadius = 0.025f, BottomRadius = 0.025f, Height = 0.9f }, Palette.Wood.Darkened(0.3f), new Vector3(0.28f, 0.5f, 0.24f));
+                pole.Rotation = new Vector3(0.3f, 0f, 0.2f);
+                break;
             case "arsenal":
                 Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.55f, 0.7f) }, Palette.PurpleEarth, new Vector3(0f, 0.275f, 0f));
                 var arsenalRoof = Add(model, new PrismMesh { Size = new Vector3(0.9f, 0.3f, 0.8f) }, Palette.Midnight, new Vector3(0f, 0.7f, 0f));

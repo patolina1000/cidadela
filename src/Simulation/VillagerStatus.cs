@@ -28,6 +28,12 @@ public enum VillagerStatus
     GoingToPost,
     /// <summary>No posto, encostado na máquina.</summary>
     AtPost,
+    /// <summary>Carregador indo buscar bruto.</summary>
+    Fetching,
+    /// <summary>Carregador levando bruto para a máquina.</summary>
+    Hauling,
+    /// <summary>Carregador sem o que levar: nenhuma máquina no raio pede bruto que exista num baú ou cabana.</summary>
+    NothingToHaul,
 }
 
 public static class VillagerStatuses
@@ -45,6 +51,9 @@ public static class VillagerStatuses
         VillagerStatus.GoingToResource => "indo_ao_recurso",
         VillagerStatus.GoingToPost => "indo_ao_posto",
         VillagerStatus.AtPost => "no_posto",
+        VillagerStatus.Fetching => "buscando_carga",
+        VillagerStatus.Hauling => "levando_para_maquina",
+        VillagerStatus.NothingToHaul => "sem_o_que_carregar",
         _ => "esperando",
     };
 
@@ -53,5 +62,6 @@ public static class VillagerStatuses
         VillagerStatus.Unemployed, VillagerStatus.HutFull, VillagerStatus.NoPath, VillagerStatus.NoResource,
         VillagerStatus.Resting, VillagerStatus.Gathering, VillagerStatus.Carrying, VillagerStatus.GoingToResource,
         VillagerStatus.Waiting, VillagerStatus.GoingToPost, VillagerStatus.AtPost,
+        VillagerStatus.Fetching, VillagerStatus.Hauling, VillagerStatus.NothingToHaul,
     };
 }

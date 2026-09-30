@@ -147,7 +147,14 @@ public sealed class GameData
                     throw new FormatException($"\"{kind}\": cabana (job) não tem postos.");
                 posts = new PostType(p.Count, p.Name, p.Tool);
             }
-            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus, posts));
+            CarrierType? carriers = null;
+            if (b.Carriers is CarrierData cd)
+            {
+                if (cd.Count <= 0 || cd.Radius <= 0f || job is not null || posts is not null)
+                    throw new FormatException($"Carregadores inválidos em \"{kind}\": count e radius positivos, sem job nem posts.");
+                carriers = new CarrierType(cd.Count, cd.Radius);
+            }
+            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus, posts, carriers));
         }
 
         var recipes = new List<RecipeType>();
@@ -247,6 +254,13 @@ public sealed class GameData
         public JobData? Job { get; set; }
         public float SpeedBonus { get; set; } = 1f;
         public PostData? Posts { get; set; }
+        public CarrierData? Carriers { get; set; }
+    }
+
+    private sealed class CarrierData
+    {
+        public int Count { get; set; }
+        public float Radius { get; set; }
     }
 
     private sealed class PostData

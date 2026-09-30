@@ -18,6 +18,10 @@ public enum VillagerTask
     GoingToPost,
     /// <summary>Encostado na máquina, no posto: conta para a equipe dela.</summary>
     AtPost,
+    /// <summary>Carregador indo buscar bruto num baú ou cabana.</summary>
+    Fetching,
+    /// <summary>Carregador levando bruto até a máquina.</summary>
+    Hauling,
 }
 
 /// <summary>
@@ -78,7 +82,10 @@ public sealed class Villager
         Resting ? VillagerStatus.Resting
         : Home is null ? VillagerStatus.Unemployed
         : Task == VillagerTask.AtPost ? VillagerStatus.AtPost
+        : Task == VillagerTask.Fetching ? VillagerStatus.Fetching
+        : Task == VillagerTask.Hauling ? VillagerStatus.Hauling
         : Home.Workplace is null && _noPath ? VillagerStatus.NoPath
+        : Home.Type.Carriers is not null ? VillagerStatus.NothingToHaul
         : Task == VillagerTask.GoingToPost || Home.Workplace is null ? VillagerStatus.GoingToPost
         : _hutFull ? VillagerStatus.HutFull
         : _noPath ? VillagerStatus.NoPath
@@ -104,6 +111,16 @@ public sealed class Villager
 
     /// <summary>Célula onde fica encostado no posto (escolhida ao ir), ou null.</summary>
     public GridPos? PostCell { get; private set; }
+
+    /// <summary>Carregador: de onde está buscando (baú ou cabana), ou null.</summary>
+    public Building? HaulFrom { get; private set; }
+
+    /// <summary>Carregador: a máquina para onde leva, ou null.</summary>
+    public Building? HaulTo { get; private set; }
+
+    /// <summary>Carregador: o item e quantos ele leva (ou vai buscar) para <see cref="HaulTo"/>; conta como já a caminho.</summary>
+    public string? HaulKind { get; private set; }
+    public int HaulAmount { get; private set; }
 
     private readonly Queue<GridPos> _path = new();
     private int _gatherTicks;
@@ -146,6 +163,9 @@ public sealed class Villager
         _noResource = false;
         _idleTicks = 0;
         PostCell = null;
+        HaulFrom = HaulTo = null;
+        HaulKind = null;
+        HaulAmount = 0;
         Task = home is null ? VillagerTask.Unemployed : VillagerTask.Waiting;
     }
 
@@ -167,6 +187,12 @@ public sealed class Villager
         if (Home is null)
         {
             _idleTicks++;
+            UpdateExpression();
+            return;
+        }
+        if (Home.Type.Carriers is not null)
+        {
+            TickCarrier(world);
             UpdateExpression();
             return;
         }
@@ -226,8 +252,161 @@ public sealed class Villager
     {
         if (Home?.Workplace is Workplace work)
             Plan(world, work);
+        else if (Home?.Type.Carriers is not null)
+            PlanHaul(world);
         else
             PlanPost(world);
+    }
+
+    /// <summary>
+    /// Carregador (docs/cadeia_flecha.md): busca bruto num baú ou cabana dentro do raio do posto e leva até a máquina, no
+    /// raio, que ainda aceita esse item (descontando o que outros carregadores já levam para ela). Sobra na mão vai para a
+    /// próxima máquina que aceitar.
+    /// </summary>
+    private void TickCarrier(SimWorld world)
+    {
+        switch (Task)
+        {
+            case VillagerTask.Waiting:
+                if (--_retryIn <= 0)
+                    PlanHaul(world);
+                break;
+            case VillagerTask.Fetching:
+                if (HaulFrom is null || world.BuildingAt(HaulFrom.Cell) != HaulFrom)
+                    PlanHaul(world);
+                else if (FollowPath(world))
+                    PickUp(world);
+                break;
+            case VillagerTask.Hauling:
+                if (HaulTo is null || world.BuildingAt(HaulTo.Cell) != HaulTo)
+                    PlanHaul(world);
+                else if (FollowPath(world))
+                    DropOff(world);
+                break;
+        }
+    }
+
+    private void PlanHaul(SimWorld world)
+    {
+        _retryIn = RetryTicks;
+        HaulFrom = HaulTo = null;
+        HaulKind = null;
+        HaulAmount = 0;
+        Building post = Home!;
+        float radius = post.Type.Carriers!.Radius;
+        bool InRange(Building b) => Vector2.Distance(new Vector2(post.Cell.X, post.Cell.Z), new Vector2(b.Cell.X, b.Cell.Z)) <= radius;
+
+        var machines = new List<Building>();
+        var sources = new List<Building>();
+        foreach (Building b in world.Buildings)
+        {
+            if (!InRange(b))
+                continue;
+            if (b.Machine is not null)
+                machines.Add(b);
+            else if (b.Storage is not null || b.Workplace is not null)
+                sources.Add(b);
+        }
+        machines.Sort((a, b) => Distance(a.Cell).CompareTo(Distance(b.Cell)));
+
+        // Já com carga: leva para a máquina mais perto que aceita.
+        if (CarryingKind is string carried && CarryingCount > 0)
+        {
+            foreach (Building m in machines)
+            {
+                int need = Need(world, m, carried);
+                if (need > 0 && TrySetPath(world, FreeNeighbors(world, m.Cell)))
+                {
+                    HaulTo = m;
+                    HaulKind = carried;
+                    HaulAmount = Math.Min(CarryingCount, need);
+                    Task = VillagerTask.Hauling;
+                    _noPath = false;
+                    return;
+                }
+            }
+            Task = VillagerTask.Waiting;
+            return;
+        }
+
+        foreach (Building m in machines)
+        {
+            foreach (string kind in m.Machine!.Recipe.Inputs.Keys)
+            {
+                int need = world.IsRaw(kind) ? Need(world, m, kind) : 0;
+                if (need <= 0)
+                    continue;
+                Building? best = null;
+                foreach (Building src in sources)
+                    if (Stock(src, kind) > 0 && (best is null || Distance(src.Cell) < Distance(best.Cell)))
+                        best = src;
+                if (best is null || !TrySetPath(world, FreeNeighbors(world, best.Cell)))
+                    continue;
+                HaulFrom = best;
+                HaulTo = m;
+                HaulKind = kind;
+                HaulAmount = Math.Min(Stats.Carry, need);
+                Task = VillagerTask.Fetching;
+                _noPath = false;
+                return;
+            }
+        }
+        Task = VillagerTask.Waiting;
+    }
+
+    /// <summary>Quanto de <paramref name="kind"/> ainda cabe na máquina, descontando o que outros carregadores já levam.</summary>
+    private int Need(SimWorld world, Building machine, string kind)
+    {
+        int need = machine.Machine!.Room(kind);
+        foreach (Villager other in world.Villagers)
+            if (other != this && other.HaulTo == machine && other.HaulKind == kind)
+                need -= other.HaulAmount;
+        return need;
+    }
+
+    private static int Stock(Building source, string kind) =>
+        source.Storage?.Count(kind) ?? source.Workplace?.Stored.Count(kind) ?? 0;
+
+    private void PickUp(SimWorld world)
+    {
+        Building src = HaulFrom!;
+        Inventory? stock = src.Storage ?? src.Workplace?.Stored;
+        int taken = 0;
+        while (stock is not null && taken < HaulAmount && stock.TryRemoveOne(HaulKind!))
+            taken++;
+        if (taken == 0)
+        {
+            PlanHaul(world); // alguém levou antes
+            return;
+        }
+        CarryingKind = HaulKind;
+        CarryingCount = taken;
+        HaulAmount = taken;
+        HaulFrom = null;
+        if (TrySetPath(world, FreeNeighbors(world, HaulTo!.Cell)))
+            Task = VillagerTask.Hauling;
+        else
+            PlanHaul(world);
+    }
+
+    private void DropOff(SimWorld world)
+    {
+        MachineState machine = HaulTo!.Machine!;
+        int given = 0;
+        while (CarryingCount > 0 && machine.Accepts(CarryingKind!))
+        {
+            machine.Input.Add(CarryingKind!);
+            CarryingCount--;
+            given++;
+        }
+        if (CarryingCount == 0)
+            CarryingKind = null;
+        if (given > 0)
+            _happyTicks = HappyTicks;
+        Vector2 toMachine = new Vector2(HaulTo.Cell.X, HaulTo.Cell.Z) - Position;
+        if (toMachine != Vector2.Zero)
+            Facing = Vector2.Normalize(toMachine);
+        PlanHaul(world);
     }
 
     /// <summary>

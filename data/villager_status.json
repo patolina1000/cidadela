@@ -14,5 +14,8 @@
   "indo_ao_recurso": { "text": "Indo ao recurso",                         "problem": false, "icon": "arrow" },
   "esperando":       { "text": "Esperando",                               "problem": false, "icon": "pause" },
   "indo_ao_posto":   { "text": "Indo ao posto da máquina",                "problem": false, "icon": "arrow" },
-  "no_posto":        { "text": "Trabalhando no posto da máquina",         "problem": false, "icon": "diamond" }
+  "no_posto":        { "text": "Trabalhando no posto da máquina",         "problem": false, "icon": "diamond" },
+  "buscando_carga":  { "text": "Carregador: indo buscar bruto",           "problem": false, "icon": "arrow" },
+  "levando_para_maquina": { "text": "Carregador: levando bruto para a máquina", "problem": false, "icon": "box" },
+  "sem_o_que_carregar":   { "text": "Carregador: nada para levar no raio",      "problem": false, "icon": "pause" }
 }

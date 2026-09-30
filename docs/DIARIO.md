@@ -5640,3 +5640,20 @@ onde errou, correções manuais e quanto tempo levou.
   `dotnet test` 193 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 03:03–03:06 de relógio.
+
+## 2026-09-30 — Linha da flecha, passo 4: carregadores
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 4 de `docs/cadeia_flecha.md` (escolher o jeito mais simples e documentar).
+- **Escolha:** construção nova **Posto de Carregadores** (`carrier_post`, 4 toras) com `"carriers": { "count": 2,
+  "radius": 12 }`. As vagas são chamadas como os postos (aldeão livre mais perto). Cada carregador: acha, no raio do
+  posto, a máquina mais perto dele que ainda aceita um item **bruto** da receita (descontando o que os outros
+  carregadores já levam para ela), busca no baú ou cabana mais perto que tenha o item, até a carga dele (5), e entrega;
+  sobra na mão vai para a próxima máquina que aceitar. Processado não é carregado (vai de esteira).
+- **Feito:** `CarrierType`, `BuildingType.Carriers`, tarefas `Fetching`/`Hauling`, `HaulFrom`/`HaulTo`/`HaulKind`/
+  `HaulAmount` (a reserva), `MachineState.Room`; estados `buscando_carga`, `levando_para_maquina`,
+  `sem_o_que_carregar`. Desmontar o posto devolve a carga das mãos ao Castelão. Modelo provisório: tablado com sacos.
+- **Testes:** `CarrierTests` (5). Um deles falhou na primeira vez por erro do teste (o Castelão andava 20 ticks antes de
+  desmontar e nesse tempo um carregador entregava); corrigido no teste. `dotnet build` 0/0; `dotnet test` 198.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 03:06–03:09 de relógio.

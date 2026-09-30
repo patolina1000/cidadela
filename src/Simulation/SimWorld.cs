@@ -391,6 +391,7 @@ public sealed class SimWorld
         {
             for (int i = 0; i < building.Crew.Length; i++)
             {
+                building.Crew[i]?.DropCarryInto(Castellan.Inventory); // carregador com carga na mão
                 building.Crew[i]?.AssignHome(null);
                 building.Crew[i] = null;
             }

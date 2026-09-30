@@ -9,9 +9,13 @@
   //   células em volta da cabana, guardando até "capacity" itens (que ela solta na esteira ou baú à frente).
   // posts: postos de trabalho (docs/cadeia_flecha.md). Ao construir, o aldeão livre mais perto ocupa cada posto; a máquina
   //   só anda com todos ocupados por quem já chegou. name: ofício; tool: ícone da ferramenta sobre a cabeça dele.
+  // carriers: Posto de Carregadores: "count" vagas; cada carregador busca bruto (tora, pedra, minério) num baú ou cabana a
+  //   até "radius" células do posto e leva até a máquina, no mesmo raio, que ainda aceita o item.
   "belt":       { "name": "Esteira",  "cost": { "wood": 1 },                         "solid": false, "beltSpeed": 1.5 },
   "chest":      { "name": "Baú",      "cost": { "wood": 4 },                         "solid": true,  "storage": true },
   "arsenal":    { "name": "Arsenal",  "cost": { "wood": 6, "stone": 4 },             "solid": true,  "storage": true },
+  "carrier_post": { "name": "Posto de Carregadores", "cost": { "wood": 4 },            "solid": true,
+                    "carriers": { "count": 2, "radius": 12 } },
   "lumber_hut": { "name": "Cabana do Lenhador", "cost": { "wood": 6 },             "solid": true,
                   "job": { "name": "Lenhador", "resource": "wood",  "radius": 12, "capacity": 50 } },
   "iron_hut":   { "name": "Cabana do Mineiro",  "cost": { "wood": 6, "stone": 4 }, "solid": true,
