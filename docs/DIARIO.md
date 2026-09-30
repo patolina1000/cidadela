@@ -4242,3 +4242,35 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 22:01–22:04 de relógio.
+
+---
+
+## 2026-09-29 — Borda de luz fria no Toon.gdshaderinc (parâmetro), ligada nos recursos provisórios
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** tarefa 4, passo 1: borda de luz fria no `Toon.gdshaderinc` como parâmetro (aprovada pelo Arthur para o
+  cenário, opção (b) do CENÁRIO; o contrato da protagonista v2 também pede), desligada por padrão (o aldeão fica
+  como está); ligar nos recursos atuais para testar e comparar com `cenario:assets/previews/cenario/mapa_antes_depois.png`.
+- **O que foi feito:**
+  - `Toon.gdshaderinc`: `toon_rim(NORMAL, VIEW)` e os uniforms `rim_enabled` (padrão false), `rim_color`,
+    `rim_strength`, `rim_width`: fresnel em faixa dura, somado como emissão onde |N·V| < largura, igual à aproximação
+    do CENÁRIO no Blender (emissão, não luz). `Toon.gdshader` passou a somar a borda (zero no aldeão, que não liga).
+  - `data/visual.json` (novo) com a cor, a intensidade e a largura; `VisualSettings` lê e põe no material.
+    Valores da aproximação do CENÁRIO: cor do sol frio (#B8C7E6), intensidade 0,1 e largura 0,144 (o Layer Weight
+    "Facing" com blend 0,25 dá 1 − |N·V|^0,5, e o corte da rampa em 0,62 vira |N·V| < 0,38² = 0,144).
+  - `ResourceModels` (novo): os recursos deixam de ser cubos de 0,8 m e viram formas provisórias nas medidas da
+    proposta do CENÁRIO, até os modelos dele entrarem: árvore de 2,4 m (tronco até 1,2 m, copa redonda de 1 a 2,4 m,
+    musgo acinzentado), pedra de 0,45 m e veio de 0,4 m (esferas achatadas na cor do item). Material toon com a borda,
+    um por cor, compartilhado (pronto para MultiMesh). Num cubo a borda acenderia a face inteira, porque cada face tem
+    uma normal só; nas formas redondas ela fica na silhueta. Os efeitos de coleta nascem no topo de cada forma.
+  - `scenes/tests/CenarioTeste.tscn` (herda o `Main.tscn`) com `data/maps/teste_cenario.json`: 16×16, recursos perto de
+    onde a protagonista nasce, uma árvore entre ela e a câmera (também para o passo 2).
+- **Conferido no jogo:** a borda aparece como um filete claro e frio na silhueta das copas, pedras e veios; o aldeão
+  não mudou; log sem erros. Prints: `docs/prints/borda_fria_jogo.png` e `borda_fria_comparacao.png` (lado a lado com
+  a aproximação). No jogo a borda sai um pouco mais fina e mais fraca que na prévia do Blender (outro tonemap); se o
+  Arthur quiser mais forte, é só a intensidade em `data/visual.json`.
+- **O que deu errado:** na primeira tentativa usei largura 0,62 (li o corte da rampa como se fosse |N·V|) e a borda
+  virou um anel grosso; refiz a conta do Layer Weight e ficou 0,144.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 117 aprovados. Sem mudança na simulação.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:03–22:10 de relógio.

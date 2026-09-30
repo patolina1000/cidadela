@@ -1,0 +1,8 @@
+{
+  // Parâmetros de desenho que não são da simulação (lidos por src/View/VisualSettings.cs).
+  // rim: borda de luz fria do Toon.gdshaderinc nos objetos de cenário (aprovada pelo Arthur, opção (b) do CENÁRIO).
+  //   color: cor da borda (o sol frio do Main.tscn); strength: intensidade (emissão); width: acende onde
+  //   |N·V| < width. 0,144 = a faixa da aproximação do CENÁRIO no Blender (Layer Weight "Facing" com blend 0,25
+  //   dá 1 − |N·V|^0,5; o corte da rampa em 0,62 acende onde |N·V| < 0,38² = 0,144).
+  "rim": { "color": "#B8C7E6", "strength": 0.1, "width": 0.144 }
+}

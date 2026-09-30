@@ -46,7 +46,7 @@ public partial class WorldView : Node3D
     /// <summary>Nó desenhado do Castelão, para a câmera seguir.</summary>
     public Node3D CastellanNode => _castellan;
 
-    /// <summary>Recurso desenhado: raiz no chão (escalar não tira o cubo do chão) e último restante visto.</summary>
+    /// <summary>Recurso desenhado: raiz no chão (escalar não tira o modelo do chão) e último restante visto.</summary>
     private sealed class ResourceVisual
     {
         public required Node3D Root { get; init; }
@@ -67,9 +67,7 @@ public partial class WorldView : Node3D
         {
             var root = new Node3D { Name = $"Resource_{resource.Kind}_{resource.Id}", Position = CellCenter(resource.Cell, 0f) };
             AddChild(root);
-            var mesh = new BoxMesh { Size = new Vector3(0.8f, 0.8f, 0.8f) };
-            mesh.Material = new StandardMaterial3D { AlbedoColor = Palette.ForItem(_world.Data, resource.Kind), Roughness = 0.9f };
-            root.AddChild(new MeshInstance3D { Name = "Mesh", Mesh = mesh, Position = new Vector3(0f, 0.4f, 0f) });
+            root.AddChild(ResourceModels.Create(resource.Kind, _world.Data));
             _resourceVisuals[resource] = new ResourceVisual { Root = root, LastRemaining = resource.Remaining };
         }
 
@@ -517,7 +515,7 @@ public partial class WorldView : Node3D
             return;
 
         Color color = Palette.ForItem(_world.Data, resource.Kind);
-        Vector3 top = visual.Root.Position + new Vector3(0f, 0.8f, 0f);
+        Vector3 top = visual.Root.Position + new Vector3(0f, ResourceModels.HeightOf(resource.Kind), 0f);
         if (resource.Remaining < visual.LastRemaining)
         {
             int taken = visual.LastRemaining - resource.Remaining;

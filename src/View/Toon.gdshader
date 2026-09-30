@@ -1,5 +1,6 @@
-// Corpo e cabelo do aldeão: cor chapada com luz em faixas (Toon.gdshaderinc). Um material por cor; a cor
-// pode variar por instância pelo "tint" (os tons de cabelo de data/villager_looks.json), sem duplicar material.
+// Cor chapada com luz em faixas (Toon.gdshaderinc): corpo e cabelo do aldeão e os recursos do mapa. Um material por
+// cor; a cor pode variar por instância pelo "tint" (os tons de cabelo de data/villager_looks.json), sem duplicar
+// material. A borda de luz fria só acende onde o material liga "rim_enabled" (os recursos).
 shader_type spatial;
 render_mode cull_back, depth_draw_opaque, specular_disabled;
 
@@ -13,6 +14,7 @@ void fragment() {
 	ROUGHNESS = 0.95;
 	METALLIC = 0.0;
 	SPECULAR = 0.0;
+	EMISSION = toon_rim(NORMAL, VIEW);
 }
 
 void light() {

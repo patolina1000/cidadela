@@ -1,0 +1,31 @@
+{
+  // Mapa de teste do cenário (scenes/tests/CenarioTeste.tscn): recursos provisórios perto de onde o Castelão nasce,
+  // para ver a borda de luz fria e o esmaecimento do que tapa personagem. A câmera fica ao sul (z maior): quem está
+  // ao norte de uma árvore fica atrás dela.
+  "width": 16,
+  "height": 16,
+  "castellan": { "x": 8, "z": 7 },
+  "resources": [
+    { "kind": "wood",  "x": 8,  "z": 8 },
+    { "kind": "wood",  "x": 6,  "z": 9 },
+    { "kind": "wood",  "x": 10, "z": 9 },
+    { "kind": "wood",  "x": 5,  "z": 6 },
+    { "kind": "stone", "x": 11, "z": 6 },
+    { "kind": "stone", "x": 12, "z": 7 },
+    { "kind": "iron",  "x": 4,  "z": 8 },
+    { "kind": "iron",  "x": 11, "z": 8 }
+  ],
+  "buildings": [
+    { "kind": "smelter", "x": 7, "z": 11 }
+  ],
+  "terrain": {
+    "default": "grass",
+    "patches": [
+      { "kind": "dirt",  "x": 8,  "z": 7, "radius": 2.5 }
+    ]
+  },
+  "villagers": [
+    { "x": 9, "z": 6 },
+    { "x": 6, "z": 7 }
+  ]
+}
