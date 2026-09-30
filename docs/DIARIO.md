@@ -3054,3 +3054,17 @@ onde errou, correções manuais e quanto tempo levou.
   1024) e a calota é fina; a folha sozinha não prova isso. Para a extração: chifres com escala por eixo (~5% mais largo
   que alto); cabelo com âncoras medidas à mão, como no aldeão (`PRIOR` do `extrair_peruca.py`).
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Visor de arte, passo 1: servidor local
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** servidor só com biblioteca padrão, em 127.0.0.1:8765, entregando só `tools/arte/visor/` e `assets/`;
+  recusar a raiz, o `.env` e `..`; testar.
+- **Feito:** `tools/arte/visor/servir.py` (lista de pastas permitidas; recusa com 403 arquivos ocultos, `..` mesmo
+  codificado uma ou duas vezes, barra invertida, pastas e o que um link simbólico levar para fora; `/` redireciona
+  para o visor; sem cache; só aceita `Host` 127.0.0.1/localhost, contra DNS rebinding). `testar_servidor.py` sobe o
+  servidor, faz 27 pedidos crus por socket (para o cliente não limpar o `..`) e derruba no fim: 0 falhas, e nada fica
+  escutando na 8765.
+- **O que deu errado:** `/assets/` dava 404 (é pasta, não arquivo); passou a 403 explícito. O teste da porta pela
+  rede não rodava (o nome da máquina resolvia para 127.0.0.1); passou a descobrir o IP da interface de saída.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
