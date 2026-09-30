@@ -138,7 +138,16 @@ public sealed class GameData
                     throw new FormatException($"Ofício inválido em \"{kind}\": precisa de um recurso, radius e capacity positivos.");
                 job = new JobType(j.Name, j.Resource, j.Radius, j.Capacity);
             }
-            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus));
+            PostType? posts = null;
+            if (b.Posts is PostData p)
+            {
+                if (p.Count <= 0 || string.IsNullOrWhiteSpace(p.Name) || string.IsNullOrWhiteSpace(p.Tool))
+                    throw new FormatException($"Postos inválidos em \"{kind}\": precisa de count positivo, name e tool.");
+                if (job is not null)
+                    throw new FormatException($"\"{kind}\": cabana (job) não tem postos.");
+                posts = new PostType(p.Count, p.Name, p.Tool);
+            }
+            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus, posts));
         }
 
         var recipes = new List<RecipeType>();
@@ -237,6 +246,14 @@ public sealed class GameData
         public bool Storage { get; set; }
         public JobData? Job { get; set; }
         public float SpeedBonus { get; set; } = 1f;
+        public PostData? Posts { get; set; }
+    }
+
+    private sealed class PostData
+    {
+        public int Count { get; set; }
+        public string Name { get; set; } = "";
+        public string Tool { get; set; } = "";
     }
 
     private sealed class JobData

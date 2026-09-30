@@ -12,5 +12,7 @@
   "coletando":       { "text": "Coletando",                               "problem": false, "icon": "diamond" },
   "levando_carga":   { "text": "Levando a carga para a cabana",           "problem": false, "icon": "box" },
   "indo_ao_recurso": { "text": "Indo ao recurso",                         "problem": false, "icon": "arrow" },
-  "esperando":       { "text": "Esperando",                               "problem": false, "icon": "pause" }
+  "esperando":       { "text": "Esperando",                               "problem": false, "icon": "pause" },
+  "indo_ao_posto":   { "text": "Indo ao posto da máquina",                "problem": false, "icon": "arrow" },
+  "no_posto":        { "text": "Trabalhando no posto da máquina",         "problem": false, "icon": "diamond" }
 }

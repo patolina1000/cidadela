@@ -23,6 +23,25 @@ public sealed class Building
     /// <summary>Estado da cabana de trabalho, ou null se não é cabana.</summary>
     public Workplace? Workplace { get; }
 
+    /// <summary>Quem ocupa cada posto (null = vago); vazio se a construção não tem postos.</summary>
+    public Villager?[] Crew { get; }
+
+    /// <summary>Quantos da equipe já chegaram e estão encostados trabalhando.</summary>
+    public int CrewPresent
+    {
+        get
+        {
+            int n = 0;
+            foreach (Villager? v in Crew)
+                if (v is { Task: VillagerTask.AtPost } && v.Home == this)
+                    n++;
+            return n;
+        }
+    }
+
+    /// <summary>Se todos os postos estão ocupados por quem já chegou (sem postos: sempre).</summary>
+    public bool CrewReady => CrewPresent == Crew.Length;
+
     public string Kind => Type.Kind;
 
     public Building(int id, BuildingType type, GridPos cell, Direction direction, RecipeType? recipe = null)
@@ -39,5 +58,6 @@ public sealed class Building
             Machine = new MachineState(recipe);
         if (type.Job is not null)
             Workplace = new Workplace(type.Job);
+        Crew = new Villager?[type.Posts?.Count ?? 0];
     }
 }

@@ -14,6 +14,10 @@ public enum VillagerTask
     GoingToResource,
     Gathering,
     ReturningHome,
+    /// <summary>Chamado para um posto de máquina: andando até encostar nela.</summary>
+    GoingToPost,
+    /// <summary>Encostado na máquina, no posto: conta para a equipe dela.</summary>
+    AtPost,
 }
 
 /// <summary>
@@ -73,6 +77,9 @@ public sealed class Villager
     public VillagerStatus Status =>
         Resting ? VillagerStatus.Resting
         : Home is null ? VillagerStatus.Unemployed
+        : Task == VillagerTask.AtPost ? VillagerStatus.AtPost
+        : Home.Workplace is null && _noPath ? VillagerStatus.NoPath
+        : Task == VillagerTask.GoingToPost || Home.Workplace is null ? VillagerStatus.GoingToPost
         : _hutFull ? VillagerStatus.HutFull
         : _noPath ? VillagerStatus.NoPath
         : _noResource ? VillagerStatus.NoResource
@@ -91,6 +98,12 @@ public sealed class Villager
     public float GatherProgress => Target is null || Task != VillagerTask.Gathering ? 0f : (float)_gatherTicks / GatherTicksFor(Target);
 
     public GridPos Cell => new((int)MathF.Round(Position.X), (int)MathF.Round(Position.Y));
+
+    /// <summary>Ferramenta do posto em que está trabalhando (para o ícone sobre a cabeça), ou null fora do posto.</summary>
+    public string? PostTool => Task == VillagerTask.AtPost ? Home?.Type.Posts?.Tool : null;
+
+    /// <summary>Célula onde fica encostado no posto (escolhida ao ir), ou null.</summary>
+    public GridPos? PostCell { get; private set; }
 
     private readonly Queue<GridPos> _path = new();
     private int _gatherTicks;
@@ -132,6 +145,7 @@ public sealed class Villager
         _noPath = false;
         _noResource = false;
         _idleTicks = 0;
+        PostCell = null;
         Task = home is null ? VillagerTask.Unemployed : VillagerTask.Waiting;
     }
 
@@ -150,9 +164,15 @@ public sealed class Villager
         Speed = Stats.FinalSpeed(SpeedTier, world.FloorBonusAt(Cell), Penalized);
         if (_happyTicks > 0)
             _happyTicks--;
-        if (Home?.Workplace is not Workplace work)
+        if (Home is null)
         {
             _idleTicks++;
+            UpdateExpression();
+            return;
+        }
+        if (Home.Workplace is not Workplace work)
+        {
+            TickPost(world);
             UpdateExpression();
             return;
         }
@@ -195,10 +215,86 @@ public sealed class Villager
     {
         Expression = Resting ? VillagerExpression.Sleeping
             : _happyTicks > 0 ? VillagerExpression.Happy
-            : Task == VillagerTask.Gathering || (CarryingCount > 0 && Task != VillagerTask.Waiting) ? VillagerExpression.Effort
+            : Task == VillagerTask.Gathering || Task == VillagerTask.AtPost || (CarryingCount > 0 && Task != VillagerTask.Waiting)
+                ? VillagerExpression.Effort
             : _hutFull ? VillagerExpression.Worried
             : _idleTicks >= SleepyAfterTicks ? VillagerExpression.Sleepy
             : VillagerExpression.Distracted;
+    }
+
+    private void Replan(SimWorld world)
+    {
+        if (Home?.Workplace is Workplace work)
+            Plan(world, work);
+        else
+            PlanPost(world);
+    }
+
+    /// <summary>
+    /// Posto de máquina: vai até uma célula livre encostada nela (de preferência de lado, não na diagonal, e não a de um
+    /// colega de posto) e fica lá. Se a célula fechar (alguém construiu em cima), escolhe outra.
+    /// </summary>
+    private void TickPost(SimWorld world)
+    {
+        switch (Task)
+        {
+            case VillagerTask.Waiting:
+                if (--_retryIn <= 0)
+                    PlanPost(world);
+                break;
+            case VillagerTask.GoingToPost:
+                if (FollowPath(world))
+                    ArriveAtPost();
+                break;
+            case VillagerTask.AtPost:
+                if (PostCell is GridPos cell && world.BlocksVillager(cell))
+                    PlanPost(world);
+                break;
+        }
+    }
+
+    private void PlanPost(SimWorld world)
+    {
+        _retryIn = RetryTicks;
+        Building home = Home!;
+        var taken = new HashSet<GridPos>();
+        foreach (Villager? mate in home.Crew)
+            if (mate is not null && mate != this && mate.PostCell is GridPos c)
+                taken.Add(c);
+        List<GridPos> goals = FreeNeighbors(world, home.Cell);
+        goals.RemoveAll(taken.Contains);
+        // De lado primeiro (encostado de verdade), depois as diagonais.
+        List<GridPos> sides = goals.FindAll(g => g.X == home.Cell.X || g.Z == home.Cell.Z);
+        foreach (List<GridPos> choice in new[] { sides, goals })
+        {
+            if (choice.Count == 0 || !TrySetPath(world, choice))
+                continue;
+            PostCell = _path.Count > 0 ? LastOf(_path) : Cell;
+            _noPath = false;
+            Task = VillagerTask.GoingToPost;
+            if (_path.Count == 0)
+                ArriveAtPost();
+            return;
+        }
+        _noPath = true;
+        PostCell = null;
+        Task = VillagerTask.Waiting;
+    }
+
+    private void ArriveAtPost()
+    {
+        Task = VillagerTask.AtPost;
+        Vector2 toMachine = new Vector2(Home!.Cell.X, Home.Cell.Z) - Position;
+        if (toMachine != Vector2.Zero)
+            Facing = Vector2.Normalize(toMachine);
+    }
+
+    private static GridPos LastOf(Queue<GridPos> queue)
+    {
+        GridPos last = default;
+        foreach (GridPos g in queue)
+            last = g;
+        return last;
     }
 
     /// <summary>Decide o próximo passo: entregar a carga, ou buscar o recurso mais perto dentro do raio.</summary>
@@ -327,7 +423,7 @@ public sealed class Villager
             if (world.BlocksVillager(next))
             {
                 _path.Clear();
-                Plan(world, Home!.Workplace!);
+                Replan(world);
                 return false;
             }
             var target = new Vector2(next.X, next.Z);

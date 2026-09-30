@@ -24,6 +24,10 @@ public enum VillagerStatus
     GoingToResource,
     /// <summary>Esperando o próximo passo (um instante entre uma tarefa e outra).</summary>
     Waiting,
+    /// <summary>Chamado para o posto de uma máquina, indo até ela.</summary>
+    GoingToPost,
+    /// <summary>No posto, encostado na máquina.</summary>
+    AtPost,
 }
 
 public static class VillagerStatuses
@@ -39,6 +43,8 @@ public static class VillagerStatuses
         VillagerStatus.Gathering => "coletando",
         VillagerStatus.Carrying => "levando_carga",
         VillagerStatus.GoingToResource => "indo_ao_recurso",
+        VillagerStatus.GoingToPost => "indo_ao_posto",
+        VillagerStatus.AtPost => "no_posto",
         _ => "esperando",
     };
 
@@ -46,6 +52,6 @@ public static class VillagerStatuses
     {
         VillagerStatus.Unemployed, VillagerStatus.HutFull, VillagerStatus.NoPath, VillagerStatus.NoResource,
         VillagerStatus.Resting, VillagerStatus.Gathering, VillagerStatus.Carrying, VillagerStatus.GoingToResource,
-        VillagerStatus.Waiting,
+        VillagerStatus.Waiting, VillagerStatus.GoingToPost, VillagerStatus.AtPost,
     };
 }

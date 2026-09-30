@@ -5620,3 +5620,23 @@ onde errou, correções manuais e quanto tempo levou.
 - **Testes:** `ArrowChainRecipeTests` (7) com os números reais. `dotnet build` 0/0; `dotnet test` 188 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 03:02–03:03 de relógio.
+
+## 2026-09-30 — Linha da flecha, passo 3: postos de máquina
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 3 de `docs/cadeia_flecha.md`.
+- **Feito:**
+  - `"posts": { count, name, tool }` em `data/buildings.json`: serraria 2 (Serrador, serra), fundição 1 (Fundidor,
+    fole), bigorna 1 (Ferreiro, martelo), galinheiro 1 (Cuidador, cesto), mesa 1 (Emplumador, pena). Carvoaria e forja
+    sem posto. `PostType`, `BuildingType.Posts`, `Building.Crew`/`CrewPresent`/`CrewReady`.
+  - `AssignIdleWorkers` agora atende cabanas e postos na ordem em que foram construídos (aldeão livre mais perto).
+    Desmontar solta a equipe, que vai para outro posto vago.
+  - Aldeão operador: `GoingToPost` → `AtPost`; vai para uma célula livre **de lado** da máquina (diagonal só se não
+    houver), diferente da do colega; se a célula fechar, escolhe outra. No posto: expressão de esforço, `PostTool` para o
+    ícone. Estados novos `indo_ao_posto` e `no_posto` em `data/villager_status.json`.
+  - `MachineState`: só avança com `CrewReady` (posto vazio = parada, estado `PostsEmpty`, prioridade sobre saída
+    cheia e falta de insumo), `MissingItem`, `Room(kind)` e progresso fracionário (`Tick(speed)`, para o fole).
+- **Testes:** `PostTests` (5); `ArrowChainRecipeTests` agora põe dois aldeões encostados. `dotnet build` 0/0;
+  `dotnet test` 193 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 03:03–03:06 de relógio.

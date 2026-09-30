@@ -7,10 +7,13 @@ public class ArrowChainRecipeTests
 {
     private static int Ticks(float seconds) => (int)(seconds * SimClock.TicksPerSecond);
 
+    /// <summary>A máquina em (8, 8) com dois aldeões já encostados (8, 7) e (8, 9): os postos se ocupam no 1º tick.</summary>
     private static (SimWorld World, Building Machine) Machine(string kind)
     {
         SimWorld world = TestWorlds.Open(x: 1, z: 1, data: TestWorlds.RealData(),
-            buildings: $$"""[{ "kind": "{{kind}}", "x": 8, "z": 8, "direction": "east" }]""");
+            buildings: $$"""[{ "kind": "{{kind}}", "x": 8, "z": 8, "direction": "east" }]""",
+            villagers: """[{ "x": 8, "z": 7 }, { "x": 8, "z": 9 }]""");
+        TestWorlds.Run(world, 2);
         return (world, world.BuildingAt(new GridPos(8, 8))!);
     }
 

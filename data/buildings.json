@@ -7,6 +7,8 @@
   //   em construção não sólida; 1 = nenhum). Nenhum piso existe ainda.
   // job: cabana de trabalho; um aldeão livre vira o trabalhador e coleta "resource" num raio de "radius"
   //   células em volta da cabana, guardando até "capacity" itens (que ela solta na esteira ou baú à frente).
+  // posts: postos de trabalho (docs/cadeia_flecha.md). Ao construir, o aldeão livre mais perto ocupa cada posto; a máquina
+  //   só anda com todos ocupados por quem já chegou. name: ofício; tool: ícone da ferramenta sobre a cabeça dele.
   "belt":       { "name": "Esteira",  "cost": { "wood": 1 },                         "solid": false, "beltSpeed": 1.5 },
   "chest":      { "name": "Baú",      "cost": { "wood": 4 },                         "solid": true,  "storage": true },
   "arsenal":    { "name": "Arsenal",  "cost": { "wood": 6, "stone": 4 },             "solid": true,  "storage": true },
@@ -16,11 +18,16 @@
                   "job": { "name": "Mineiro",  "resource": "iron",  "radius": 12, "capacity": 50 } },
   "stone_hut":  { "name": "Cabana do Pedreiro", "cost": { "wood": 6, "stone": 2 }, "solid": true,
                   "job": { "name": "Pedreiro", "resource": "stone", "radius": 12, "capacity": 50 } },
-  "sawmill":         { "name": "Serraria",         "cost": { "wood": 8, "stone": 4 },            "solid": true },
+  "sawmill":         { "name": "Serraria",         "cost": { "wood": 8, "stone": 4 },            "solid": true,
+                       "posts": { "count": 2, "name": "Serrador",   "tool": "saw" } },
   "charcoal_kiln":   { "name": "Carvoaria",        "cost": { "stone": 8 },                       "solid": true },
-  "smelter":         { "name": "Fundição",         "cost": { "stone": 10 },                      "solid": true },
-  "anvil":           { "name": "Bigorna",          "cost": { "wood": 2, "stone": 4, "iron": 2 }, "solid": true },
-  "coop":            { "name": "Galinheiro",       "cost": { "wood": 6 },                        "solid": true },
-  "fletching_table": { "name": "Mesa de Emplumar", "cost": { "wood": 4 },                        "solid": true },
+  "smelter":         { "name": "Fundição",         "cost": { "stone": 10 },                      "solid": true,
+                       "posts": { "count": 1, "name": "Fundidor",   "tool": "bellows" } },
+  "anvil":           { "name": "Bigorna",          "cost": { "wood": 2, "stone": 4, "iron": 2 }, "solid": true,
+                       "posts": { "count": 1, "name": "Ferreiro",   "tool": "hammer" } },
+  "coop":            { "name": "Galinheiro",       "cost": { "wood": 6 },                        "solid": true,
+                       "posts": { "count": 1, "name": "Cuidador",   "tool": "basket" } },
+  "fletching_table": { "name": "Mesa de Emplumar", "cost": { "wood": 4 },                        "solid": true,
+                       "posts": { "count": 1, "name": "Emplumador", "tool": "feather" } },
   "forge":           { "name": "Forja",            "cost": { "wood": 6, "stone": 6, "iron": 4 }, "solid": true }
 }

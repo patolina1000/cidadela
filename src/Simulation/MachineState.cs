@@ -3,8 +3,9 @@ using System.Collections.Generic;
 namespace Cidadela.Simulation;
 
 /// <summary>
-/// Uma máquina trabalhando uma receita. Guarda entradas até 2 ciclos, trabalha quando tem tudo,
-/// e acumula saídas até <see cref="OutputCycles"/> ciclos (depois para, esperando alguém tirar).
+/// Uma máquina trabalhando uma receita. Guarda entradas até 2 ciclos, trabalha quando tem tudo e a equipe completa
+/// (<see cref="CrewReady"/>), e acumula saídas até <see cref="OutputCycles"/> ciclos (depois para, esperando alguém
+/// tirar). O progresso anda <c>speed</c> ticks por tick (1 normal; 1,5 com o fole da fundição girando).
 /// </summary>
 public sealed class MachineState
 {
@@ -15,9 +16,16 @@ public sealed class MachineState
     public Inventory Input { get; } = new();
     public Inventory Output { get; } = new();
     public bool IsWorking { get; private set; }
-    public int ProgressTicks { get; private set; }
 
-    public float Progress => IsWorking ? (float)ProgressTicks / Recipe.Ticks : 0f;
+    /// <summary>Se os postos da máquina estão todos ocupados por quem já chegou (a simulação atualiza a cada tick).</summary>
+    public bool CrewReady { get; internal set; } = true;
+
+    /// <summary>Velocidade do último tick (1 = normal; o fole girando acelera a fundição).</summary>
+    public float Speed { get; internal set; } = 1f;
+
+    public float Progress => IsWorking ? _progress / Recipe.Ticks : 0f;
+
+    private float _progress;
 
     public MachineState(RecipeType recipe)
     {
@@ -25,12 +33,33 @@ public sealed class MachineState
     }
 
     /// <summary>Se aceita mais 1 desse item na entrada.</summary>
-    public bool Accepts(string kind) =>
-        Recipe.Inputs.TryGetValue(kind, out int perCycle) && Input.Count(kind) < perCycle * InputCycles;
+    public bool Accepts(string kind) => Room(kind) > 0;
 
-    /// <summary>Por que está parada: falta de entrada, saída cheia, ou null se está trabalhando.</summary>
+    /// <summary>Quantos desse item ainda cabem na entrada (até 2 ciclos).</summary>
+    public int Room(string kind) =>
+        Recipe.Inputs.TryGetValue(kind, out int perCycle) ? System.Math.Max(0, perCycle * InputCycles - Input.Count(kind)) : 0;
+
+    /// <summary>
+    /// Por que está parada, do mais forte ao mais fraco: posto vazio, saída cheia, falta de entrada; null se está
+    /// trabalhando.
+    /// </summary>
     public MachineWait? Waiting =>
-        IsWorking ? null : OutputFull ? MachineWait.OutputFull : MachineWait.MissingInput;
+        !CrewReady ? MachineWait.PostsEmpty
+        : IsWorking ? null
+        : OutputFull ? MachineWait.OutputFull
+        : MachineWait.MissingInput;
+
+    /// <summary>O primeiro item da receita que falta para o próximo ciclo, ou null.</summary>
+    public string? MissingItem
+    {
+        get
+        {
+            foreach ((string kind, int perCycle) in Recipe.Inputs)
+                if (Input.Count(kind) < perCycle)
+                    return kind;
+            return null;
+        }
+    }
 
     private bool OutputFull
     {
@@ -43,23 +72,26 @@ public sealed class MachineState
         }
     }
 
-    internal void Tick()
+    internal void Tick(float speed = 1f)
     {
+        Speed = speed;
+        if (!CrewReady)
+            return;
         if (!IsWorking)
         {
             if (OutputFull || !Input.TryRemove(Recipe.Inputs))
                 return;
             IsWorking = true;
-            ProgressTicks = 0;
+            _progress = 0f;
         }
 
-        ProgressTicks++;
-        if (ProgressTicks < Recipe.Ticks)
+        _progress += speed;
+        if (_progress < Recipe.Ticks - 0.0001f)
             return;
 
         Output.Add(Recipe.Outputs);
         IsWorking = false;
-        ProgressTicks = 0;
+        _progress = 0f;
     }
 
     /// <summary>Um item de saída para empurrar para fora (na ordem da receita), ou null.</summary>
@@ -79,7 +111,7 @@ public sealed class MachineState
         if (IsWorking)
             target.Add(Recipe.Inputs);
         IsWorking = false;
-        ProgressTicks = 0;
+        _progress = 0f;
     }
 }
 
@@ -87,4 +119,6 @@ public enum MachineWait
 {
     MissingInput,
     OutputFull,
+    /// <summary>Falta gente nos postos (ou quem foi chamado ainda não chegou).</summary>
+    PostsEmpty,
 }

@@ -29,6 +29,8 @@ public sealed class SimWorld
     private readonly List<Building> _belts = new();
     private readonly List<Building> _machines = new();
     private readonly List<Building> _workplaces = new();
+    /// <summary>Construções que chamam aldeões (cabanas e postos), na ordem em que foram construídas.</summary>
+    private readonly List<Building> _staffed = new();
     private int _nextItemId = 1;
     private readonly Queue<ISimCommand> _commands = new();
     private int _nextId = 1;
@@ -109,6 +111,7 @@ public sealed class SimWorld
         foreach (Building building in _machines)
         {
             MachineState machine = building.Machine!;
+            machine.CrewReady = building.CrewReady;
             machine.Tick();
 
             if (machine.NextOutput() is string kind && PushForward(building, kind))
@@ -151,27 +154,47 @@ public sealed class SimWorld
         return false;
     }
 
-    /// <summary>Cada cabana sem trabalhador chama o aldeão livre mais perto dela.</summary>
+    /// <summary>
+    /// Cada cabana sem trabalhador e cada posto vago chama o aldeão livre mais perto, na ordem em que as construções
+    /// foram feitas (quem construiu primeiro é atendido primeiro).
+    /// </summary>
     internal void AssignIdleWorkers()
     {
-        foreach (Building building in _workplaces)
+        foreach (Building building in _staffed)
         {
-            Workplace work = building.Workplace!;
-            if (work.Worker is not null)
-                continue;
-            var home = new System.Numerics.Vector2(building.Cell.X, building.Cell.Z);
-            Villager? nearest = null;
-            foreach (Villager v in _villagers)
+            if (building.Workplace is Workplace work)
             {
-                if (v.Home is null && (nearest is null ||
-                    System.Numerics.Vector2.Distance(v.Position, home) < System.Numerics.Vector2.Distance(nearest.Position, home)))
-                    nearest = v;
+                if (work.Worker is not null)
+                    continue;
+                if (NearestIdle(building) is not Villager worker)
+                    return;
+                work.Worker = worker;
+                worker.AssignHome(building);
+                continue;
             }
-            if (nearest is null)
-                return;
-            work.Worker = nearest;
-            nearest.AssignHome(building);
+            for (int i = 0; i < building.Crew.Length; i++)
+            {
+                if (building.Crew[i] is not null)
+                    continue;
+                if (NearestIdle(building) is not Villager crew)
+                    return;
+                building.Crew[i] = crew;
+                crew.AssignHome(building);
+            }
         }
+    }
+
+    private Villager? NearestIdle(Building building)
+    {
+        var home = new System.Numerics.Vector2(building.Cell.X, building.Cell.Z);
+        Villager? nearest = null;
+        foreach (Villager v in _villagers)
+        {
+            if (v.Home is null && (nearest is null ||
+                System.Numerics.Vector2.Distance(v.Position, home) < System.Numerics.Vector2.Distance(nearest.Position, home)))
+                nearest = v;
+        }
+        return nearest;
     }
 
     private static System.Numerics.Vector2 PositionOnBelt(Building belt, float progress) =>
@@ -344,6 +367,7 @@ public sealed class SimWorld
         _belts.Remove(building);
         _machines.Remove(building);
         _workplaces.Remove(building);
+        _staffed.Remove(building);
         BuildingsVersion++;
         Castellan.Inventory.Add(building.Type.Cost);
         // O que estava em cima ou dentro volta junto.
@@ -362,6 +386,15 @@ public sealed class SimWorld
             work.Worker?.AssignHome(null);
             work.Worker = null;
             AssignIdleWorkers(); // o aldeão liberado pode ir para outra cabana vazia
+        }
+        if (building.Crew.Length > 0)
+        {
+            for (int i = 0; i < building.Crew.Length; i++)
+            {
+                building.Crew[i]?.AssignHome(null);
+                building.Crew[i] = null;
+            }
+            AssignIdleWorkers(); // quem saiu do posto pode ir para outro vago
         }
     }
 
@@ -387,8 +420,10 @@ public sealed class SimWorld
         if (building.Machine is not null)
             _machines.Add(building);
         if (building.Workplace is not null)
-        {
             _workplaces.Add(building);
+        if (building.Workplace is not null || building.Crew.Length > 0)
+        {
+            _staffed.Add(building);
             AssignIdleWorkers();
         }
         BuildingsVersion++;
