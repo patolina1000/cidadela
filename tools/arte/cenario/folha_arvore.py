@@ -2,11 +2,12 @@
 
 Importa os GLBs exportados por arvore.py (como o jogo faria) e renderiza, com material fosco e a luz de crepúsculo
 da ARTE (fria, de cima; corpo_lib.twilight_lights), no chão terra arroxeada:
-  - cada variação sozinha, de frente e em 3/4 (ortográfica), com o aldeão v2 ao lado;
+  - cada variação sozinha, de frente e em 3/4 (ortográfica), com o aldeão v2 e a protagonista ao lado;
   - a fila das 4 com aldeão v2 (só corpo) e protagonista (bruto v2, 0,80 m) na câmera do jogo (CameraRig.cs: 55°, FOV 45°,
     16 m ÷ zoom, 3024×1890) nos zooms 0,4 / 1 / 2,5;
-  - um bosque de 8 árvores misturadas (giro e escala sorteados, uma por célula) no zoom 1;
-  - personagem atrás da árvore (0,5 m e 1 m, a célula de trás) no zoom 1, com a fração visível medida.
+  - um bosque de 8 árvores misturadas (giro e escala sorteados, uma por célula) nos zooms 0,4 / 1 / 2,5;
+  - personagem atrás da árvore (0,5, 1 e 2 m) no zoom 1, com a fração visível medida.
+A copa leva a borda de luz fria (b), aprovada pelo Arthur em 29/09/2026 (aproximação; o Toon do jogo ainda não tem).
 Recortes (caixa em pixels) e medidas vão em medidas.json na pasta de saída.
 
 Uso: /Applications/Blender.app/Contents/MacOS/Blender -b --python tools/arte/cenario/folha_arvore.py -- <saida>
@@ -35,8 +36,6 @@ ALTURA_PROTAGONISTA = 0.80
 W, H, FOV, PITCH, DIST = 3024, 1890, 45.0, 55.0, 16.0
 CHAO = "#3F3342"  # terra arroxeada (GDD, seção 17)
 PELE_ALDEAO = "#AEBFD3"
-COPA_ATUAL = "#4E5544"   # musgo acinzentado
-COPA_CLARA = "#5A5847"   # grama morta: o extremo claro da faixa pedida (o meio, #545645, quase não muda nada)
 RIM_COR = tuple(c * 0.10 for c in (0.72, 0.78, 0.9))  # a cor do sol frio do Main.tscn, fraca
 RIM_LARGURA = 0.25
 PELE_PROTAGONISTA = "#91ADB7"  # cor provisória do visor
@@ -101,6 +100,11 @@ def place(path, location, yaw_deg=0.0, scale=1.0, color=None):
             for p in o.data.polygons:
                 if color:
                     p.use_smooth = True
+    if path in ARVORES:  # borda fria (b), aprovada pelo Arthur: só na copa
+        for m in {sl.material for o in objs if o.type == "MESH" for sl in o.material_slots}:
+            if m and m.name.startswith("copa") and "rim" not in m:
+                add_rim(m)
+                m["rim"] = True
     for o in [o for o in objs if o.parent is None]:
         o.location = Vector(location)
         o.rotation_mode = "XYZ"
@@ -217,8 +221,9 @@ def main():
         for vista, az, el in (("frente", 0, 8), ("tres_quartos", 45, 25)):
             scene = new_scene((720, 720))
             place(glb, (0, 0, 0))
-            place(ALDEAO, (0.72, -0.1, 0), color=PELE_ALDEAO)
-            ortho_camera(scene, (0.2, 0, 0.88), az, el, 2.2)
+            place(ALDEAO, (0.85, -0.1, 0), color=PELE_ALDEAO)
+            place(PROTAGONISTA, (1.3, -0.1, 0), color=PELE_PROTAGONISTA)
+            ortho_camera(scene, (0.35, 0, 1.35), az, el, 3.2)
             render(scene, OUT / f"arvore_{i}_{vista}.png")
 
     # 2. Fila na câmera do jogo.
@@ -249,33 +254,22 @@ def main():
         bosque += place(ARVORES[v], (cx - 1.5, cy - 1.0, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1))
     bosque += place(ALDEAO, (1.6, -1.35, 0), color=PELE_ALDEAO)
     bosque += place(PROTAGONISTA, (-2.2, -1.1, 0), color=PELE_PROTAGONISTA)
-    cam = game_camera(scene, (0.0, 0.0, 0), 1.0)
-    medidas["recortes"]["bosque_1.0"] = pixel_box(scene, cam, bosque, margin=40)
-    render(scene, OUT / "bosque_zoom_1.0.png")
-    # Saídas para a copa musgo sumir no crepúsculo: (a) copa mais clara dentro da paleta; (b) borda de luz fria.
-    musgo = [m for m in bpy.data.materials if m.name.startswith("copa") and m.use_nodes
-             and abs(m.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value[1]
-                     - linear(COPA_ATUAL)[1]) < 0.01]
-    for m in musgo:
-        m.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = linear(COPA_CLARA)
-    render(scene, OUT / "bosque_a_zoom_1.0.png")
-    for m in musgo:
-        m.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = linear(COPA_ATUAL)
-    for m in {s.material for o in bosque if o.type == "MESH" for s in o.material_slots
-              if s.material and s.material.name.startswith("copa")}:
-        add_rim(m)
-    render(scene, OUT / "bosque_b_zoom_1.0.png")
+    for zoom in (0.4, 1.0, 2.5):
+        cam = game_camera(scene, (0.0, 0.3, 0), zoom)
+        medidas["recortes"][f"bosque_{zoom}"] = pixel_box(scene, cam, bosque, margin=int(40 * zoom))
+        render(scene, OUT / f"bosque_zoom_{zoom}.png")
+        bpy.data.objects.remove(cam)
 
-    # 4. Personagem atrás da árvore (mais longe da câmera = +Y no Blender): 0,5 m e 1 m.
-    casos = [("aldeao", ALDEAO, PELE_ALDEAO, 0, 0.5), ("aldeao", ALDEAO, PELE_ALDEAO, 0, 1.0),
-             ("protagonista", PROTAGONISTA, PELE_PROTAGONISTA, 3, 0.5),
-             ("protagonista", PROTAGONISTA, PELE_PROTAGONISTA, 3, 1.0)]
+    # 4. Personagem atrás da árvore (mais longe da câmera = +Y no Blender): 0,5, 1 e 2 m.
+    casos = [(n, g, c, arv, d) for n, g, c, arv in (("aldeao", ALDEAO, PELE_ALDEAO, 0),
+                                                    ("protagonista", PROTAGONISTA, PELE_PROTAGONISTA, 3))
+             for d in (0.5, 1.0, 2.0)]
     for nome, glb, cor, arv, dist in casos:
         chave = f"{nome}_atras_arvore_{arv + 1}_{dist}m"
         scene = new_scene()
         tree = place(ARVORES[arv], (0, 0, 0))
         char = place(glb, (0.05, dist, 0), color=cor)
-        cam = game_camera(scene, (0, 0.3, 0), 1.0)
+        cam = game_camera(scene, (0, 0.6, 0), 1.0)
         medidas["recortes"][chave] = pixel_box(scene, cam, tree + char, margin=40)
         render(scene, OUT / f"{chave}.png")
         # Fração visível: só o personagem com alfa, chão e árvore recortando (holdout).

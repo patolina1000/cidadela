@@ -3208,3 +3208,21 @@ onde errou, correções manuais e quanto tempo levou.
 - **Deu errado:** a primeira borda (× 0,22, largura 0,35, também no tronco) virou contorno de desenho animado e
   listras brancas no tronco; afinei e deixei só na copa.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Cenário, tarefa 3A: árvore revisão 3 (copa fora do alcance)
+
+- **Pedido (Arthur, via Diretor):** árvore pequena demais; os aldeões não podem alcançar as folhas. A parte de
+  baixo da copa tem de ficar a ≥ 1,0 m (acima da protagonista, 0,80 m), com tronco visível embaixo, mesma família,
+  torção e teto; manter a borda fria (b), aprovada, e o sorteio 30/30/30/10; medir o personagem atrás a 0,5, 1 e
+  2 m; bosque nos 3 zooms com crepúsculo.
+- **Feito:** `arvore.py` ganhou `lift()`: as massas da revisão 2 sobem para começar em 1,10 m e crescem ×1,35;
+  o tronco se alonga até a copa e engrossa ×1,35. Uma trava confere que nenhum vértice da copa fica abaixo de
+  1,0 m depois da inclinação. Resultado: gota 2,48 m (copa de 1,09 m), dupla 2,63 m (1,09), tufos 2,10 m
+  (1,06), alta 2,46 m (1,08); triângulos iguais (192 / 240 / 328 / 176). A proporção é de uma árvore de 2,1 a
+  2,6 m: tronco livre de ~1 m, copa de 1,0 a 1,5 m.
+- **Folha:** borda fria em todas as vistas (só na copa), frente e 3/4 com aldeão e protagonista, bosque nos zooms
+  0,4 / 1 / 2,5 com crepúsculo, personagem atrás a 0,5 / 1 / 2 m. Saiu a comparação (a) × (b), já decidida.
+- **Medido (zoom 1, quanto do corpo aparece):** aldeão atrás da gota: 60 % a 0,5 m (aparece embaixo da copa,
+  ao lado do tronco), 0 % a 1 m, 58 % a 2 m; protagonista atrás da alta: 44 % / 3 % / 82 %. A faixa ruim agora é
+  a de ~1 m atrás.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.

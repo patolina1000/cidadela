@@ -9,14 +9,15 @@
       "semente": 11,
       "triangulos": 192,
       "inclinacao_graus": 8,
-      "altura_m": 1.448,
+      "altura_m": 2.483,
+      "copa_baixo_m": 1.089,
       "pegada_x_m": [
-        -0.454,
-        0.401
+        -0.613,
+        0.542
       ],
       "pegada_z_m": [
-        -0.575,
-        0.387
+        -0.851,
+        0.448
       ],
       "cores": {
         "tronco": "#4A3B3A",
@@ -29,14 +30,15 @@
       "semente": 23,
       "triangulos": 240,
       "inclinacao_graus": 6,
-      "altura_m": 1.553,
+      "altura_m": 2.626,
+      "copa_baixo_m": 1.094,
       "pegada_x_m": [
-        -0.402,
-        0.45
+        -0.488,
+        0.663
       ],
       "pegada_z_m": [
-        -0.459,
-        0.452
+        -0.631,
+        0.6
       ],
       "cores": {
         "tronco": "#2E2931",
@@ -49,14 +51,15 @@
       "semente": 37,
       "triangulos": 328,
       "inclinacao_graus": 5,
-      "altura_m": 1.338,
+      "altura_m": 2.095,
+      "copa_baixo_m": 1.063,
       "pegada_x_m": [
-        -0.655,
-        0.413
+        -0.909,
+        0.532
       ],
       "pegada_z_m": [
-        -0.364,
-        0.424
+        -0.493,
+        0.571
       ],
       "cores": {
         "tronco": "#3F3342",
@@ -69,14 +72,15 @@
       "semente": 53,
       "triangulos": 176,
       "inclinacao_graus": 12,
-      "altura_m": 1.534,
+      "altura_m": 2.46,
+      "copa_baixo_m": 1.076,
       "pegada_x_m": [
-        -0.168,
-        0.599
+        -0.182,
+        0.854
       ],
       "pegada_z_m": [
-        -0.92,
-        0.096
+        -1.312,
+        0.101
       ],
       "cores": {
         "tronco": "#2E2931",

@@ -21,6 +21,12 @@ from mathutils import Vector
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / "assets/cenario/arvore"
 MAX_TRIS = 400
+# Revisão 3 (pedido do Arthur): a copa fica fora do alcance dos personagens (protagonista 0,80 m, aldeão 0,40 m).
+# As massas abaixo são desenhadas na escala da revisão 2; build() sobe a copa para começar em COPA_BAIXO e a
+# aumenta por ESCALA_COPA, e o tronco se alonga até ela (fica visível embaixo). Forma e torção não mudam.
+COPA_BAIXO = 1.10
+ESCALA_COPA = 1.35
+COPA_MIN = 1.0  # nenhum vértice da copa abaixo disto, já com a inclinação
 
 PALETA = {  # GDD, seção 17
     "terra": "#4A3B3A",
@@ -218,7 +224,20 @@ def triangles(obj) -> int:
     return len(obj.data.loop_triangles)
 
 
+def lift(spec):
+    """Revisão 3: copa mais alta e maior, tronco mais comprido e grosso, mantendo o desenho da revisão 2."""
+    zc = min(m["base"][2] for m in spec["massas"])
+    up = lambda p: (p[0] * ESCALA_COPA, p[1] * ESCALA_COPA, COPA_BAIXO + (p[2] - zc) * ESCALA_COPA)
+    out = dict(spec)
+    out["massas"] = [dict(m, base=up(m["base"]), comp=m["comp"] * ESCALA_COPA, r=m["r"] * ESCALA_COPA)
+                     for m in spec["massas"]]
+    out["troncos"] = [dict(t, de=t["de"] if t["de"][2] < 0 else up(t["de"]), ate=up(t["ate"]),
+                           r=t["r"] * ESCALA_COPA, entorta=t["entorta"] * ESCALA_COPA) for t in spec["troncos"]]
+    return out
+
+
 def build(spec, index):
+    spec = lift(spec)
     rng = random.Random(spec["semente"])
     mat_t = material(f"tronco_{spec['tronco']}", PALETA[spec["tronco"]])
     mat_c = material(f"copa_{spec['copa']}", PALETA[spec["copa"]])
@@ -254,6 +273,10 @@ def main():
         obj = build(spec, index)
         tris = triangles(obj)
         assert tris <= MAX_TRIS, f"{obj.name}: {tris} triângulos > {MAX_TRIS}"
+        copa_idx = [i for i, m in enumerate(obj.data.materials) if m.name == "copa"][0]
+        copa_z = min(obj.data.vertices[v].co.z for p in obj.data.polygons if p.material_index == copa_idx
+                     for v in p.vertices)
+        assert copa_z >= COPA_MIN, f"{obj.name}: copa desce a {copa_z:.2f} m"
         xs = [v.co.x for v in obj.data.vertices]
         ys = [v.co.y for v in obj.data.vertices]
         zs = [v.co.z for v in obj.data.vertices]
@@ -265,12 +288,12 @@ def main():
         # Blender -Y é a frente +Z do glTF: a pegada vai em metros no chão, x e z do jogo.
         report["variacoes"].append({
             "arquivo": path.name, "nome": spec["nome"], "semente": spec["semente"], "triangulos": tris, "inclinacao_graus": spec["inclina"],
-            "altura_m": round(max(zs), 3),
+            "altura_m": round(max(zs), 3), "copa_baixo_m": round(copa_z, 3),
             "pegada_x_m": [round(min(xs), 3), round(max(xs), 3)],
             "pegada_z_m": [round(-max(ys), 3), round(-min(ys), 3)],
             "cores": {"tronco": PALETA[spec["tronco"]], "copa": PALETA[spec["copa"]]},
         })
-        print(f"{path.name}: {spec['nome']}, {tris} triângulos, {max(zs):.2f} m", flush=True)
+        print(f"{path.name}: {spec['nome']}, {tris} triângulos, {max(zs):.2f} m, copa de {copa_z:.2f} m", flush=True)
     (OUT / "arvore_relatorio.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
 
 
