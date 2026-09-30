@@ -5764,4 +5764,15 @@ onde errou, correções manuais e quanto tempo levou.
 - **Testes:** `dotnet build` 0/0; `dotnet test` 191 passaram. Godot estava fechado: Main e Biography rodados em
   `--headless` (200 e 120 quadros), sem erro nem aviso.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 15:46–15:54 de relógio.
+- **Tempo:** 15:46–15:53 de relógio.
+
+## 2026-09-30 — Mudança de rumo, passo 2: design da linha da energia
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** gravar no master a especificação da linha da energia escrita pelo Diretor.
+- **Feito:** `docs/linha_energia.md`, cópia fiel de `~/Projetos/cidadela-diretor/especificacoes/linha_energia.md`; só
+  mudaram o título (em caixa alta, como os outros docs) e a linha de origem (aponta para a fonte e para a tag
+  `linha-flecha-arquivada`). Corrigido o fim do "Tempo" da entrada do passo 1 (15:53, pelo `date`).
+- **Testes:** nada de código mudou.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 15:54–15:54 de relógio.
