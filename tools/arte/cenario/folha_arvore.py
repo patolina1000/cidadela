@@ -38,6 +38,7 @@ CHAO = "#3F3342"  # terra arroxeada (GDD, seção 17)
 PELE_ALDEAO = "#AEBFD3"
 RIM_COR = tuple(c * 0.10 for c in (0.72, 0.78, 0.9))  # a cor do sol frio do Main.tscn, fraca
 RIM_LARGURA = 0.25
+COPA_RIM = True  # as folhas antigas foram feitas com borda na copa; copa_estudo.py desliga (tarefa 8: o Arthur não gostou)
 PELE_PROTAGONISTA = "#91ADB7"  # cor provisória do visor
 
 
@@ -100,7 +101,7 @@ def place(path, location, yaw_deg=0.0, scale=1.0, color=None):
             for p in o.data.polygons:
                 if color:
                     p.use_smooth = True
-    if path in ARVORES:  # borda fria (b), aprovada pelo Arthur: só na copa
+    if path in ARVORES and COPA_RIM:  # borda fria (b) só na copa; desligada no jogo desde a tarefa 8
         for m in {sl.material for o in objs if o.type == "MESH" for sl in o.material_slots}:
             if m and m.name.startswith("copa") and "rim" not in m:
                 add_rim(m)

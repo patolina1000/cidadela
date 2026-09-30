@@ -3334,3 +3334,18 @@ onde errou, correções manuais e quanto tempo levou.
   borda; alternativa em aberto). Nenhum GLB nem cor mudou. As folhas publicadas ainda mostram a copa com borda.
 - **Alternativas sem borda registradas na nota 11** para o Diretor levar ao Arthur (nenhuma aplicada).
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~10 min.
+
+## 2026-09-29 — Cenário, tarefa 9: estudo da copa sem borda no crepúsculo
+
+- **Pedido (Diretor):** só estudo, sem mudar os arquivos que o jogo usa: no pedaço de mapa, zooms 1 e 2,5 e
+  crepúsculo, lado a lado: (0) atual sem borda; (A) tronco terra #4A3B3A em todas; (B) A + massa de cima da copa
+  #5A5847; (C) B + contorno fino escuro aproximado.
+- **Feito:** `tools/arte/cenario/copa_estudo.py` monta as versões só na hora do render: troca a cor do tronco,
+  pinta a massa de cima (grupos de faces ligadas; na alta, que tem uma massa só, a metade de cima; os tufos de
+  líquen ficam iguais) e, em C, junta uma casca invertida de 1,2 cm em #1B1620 (o traço do GDD) com só a face de
+  trás visível. `folha_arvore.py` ganhou `COPA_RIM` para desligar a borda da copa. `montar_copa_estudo.py` →
+  `assets/previews/cenario/copa_sem_borda.png`. Nenhum GLB nem `cenario.json` mudou.
+- **O que se vê:** A quase não muda de cima (o tronco aparece pouco na câmera de 55°); B separa as massas umas das
+  outras e dá leitura de volume sem brilho, mas no crepúsculo o ganho ainda é pequeno; C é a que mais separa copa
+  de copa e de chão, em luz e em crepúsculo. Na alta, a divisão de cor de B fica serrilhada nos triângulos.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
