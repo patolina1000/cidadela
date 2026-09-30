@@ -4,7 +4,11 @@
   //   color: cor da borda (o sol frio do Main.tscn); strength: intensidade (emissão); width: acende onde
   //   |N·V| < width. 0,144 = a faixa da aproximação do CENÁRIO no Blender (Layer Weight "Facing" com blend 0,25
   //   dá 1 − |N·V|^0,5; o corte da rampa em 0,62 acende onde |N·V| < 0,38² = 0,144).
-  "rim": { "color": "#B8C7E6", "strength": 0.1, "width": 0.144 },
+  //   scenery: se os objetos de cenário (árvores, pedras, veios) levam a borda. false (decisão do Arthur, 30/09/2026: os
+  //   filetes claros nas pedras e veios incomodavam) desliga em todos, por cima do coldRim de assets/cenario/cenario.json
+  //   (território do CENÁRIO, que continua listando os materiais de pedra e veio). Na protagonista, quem decide é
+  //   looks.rim em data/castellan.json.
+  "rim": { "color": "#B8C7E6", "strength": 0.1, "width": 0.144, "scenery": false },
   // occlusion: o que fica entre a câmera e a protagonista, num círculo em volta do peito dela, é recortado em
   //   pontilhado. radius: raio em metros; keep: fração dos pixels que ficam no miolo (a "opacidade");
   //   softness: fração do raio em que o recorte some aos poucos; chestHeight: altura do centro acima dos pés.

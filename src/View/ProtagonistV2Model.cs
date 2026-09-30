@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Godot;
 
@@ -36,7 +37,7 @@ public static class ProtagonistV2Model
             skeletonInModel = n3.Transform * skeletonInModel;
 
         MeshInstance3D? eyes = null, mouth = null;
-        ShaderMaterial skin = Toon(looks.Skin, looks.ShadowFloor), cloth = Toon(looks.Cloth, looks.ShadowFloor);
+        ShaderMaterial skin = Toon(looks.Skin, looks, "skin"), cloth = Toon(looks.Cloth, looks, "cloth");
         foreach (MeshInstance3D mesh in VillagerLooks.Descendants<MeshInstance3D>(model))
         {
             if (mesh.Name == "Olhos") { eyes = mesh; continue; }
@@ -54,7 +55,7 @@ public static class ProtagonistV2Model
             skeleton.AddChild(hair);
             hair.Transform = Transform3D.Identity;
             hair.Skeleton = hair.GetPathTo(skeleton);
-            hair.MaterialOverride = Toon(looks.Hair, looks.ShadowFloor);
+            hair.MaterialOverride = Toon(looks.Hair, looks, "hair");
         }
         hairScene.QueueFree();
 
@@ -69,7 +70,7 @@ public static class ProtagonistV2Model
         if (head is not null && First<MeshInstance3D>(GD.Load<PackedScene>(Dir + "chifres.glb").Instantiate<Node3D>()) is MeshInstance3D horns)
         {
             Reparent(horns, head);
-            horns.MaterialOverride = Toon(looks.Horn, looks.ShadowFloor);
+            horns.MaterialOverride = Toon(looks.Horn, looks, "horn");
         }
         if (chest is not null && First<MeshInstance3D>(GD.Load<PackedScene>(Dir + "cristal.glb").Instantiate<Node3D>()) is MeshInstance3D crystal)
         {
@@ -110,12 +111,13 @@ public static class ProtagonistV2Model
         };
     }
 
-    private static ShaderMaterial Toon(Color color, float shadowFloor)
+    private static ShaderMaterial Toon(Color color, Looks looks, string part)
     {
         var material = new ShaderMaterial { Shader = GD.Load<Shader>(VillagerLooks.ToonShaderPath) };
         material.SetShaderParameter("albedo", color);
-        material.SetShaderParameter("shadow_floor", shadowFloor);
-        VisualSettings.Current.ApplyRim(material); // contrato: borda fria ligada só nela (o aldeão não)
+        material.SetShaderParameter("shadow_floor", looks.ShadowFloor);
+        if (looks.Rim.Contains(part))
+            VisualSettings.Current.ApplyRim(material); // borda fria só nela (o aldeão não), nas partes de looks.rim
         Outline.Attach(material);
         return material;
     }
@@ -166,13 +168,14 @@ public static class ProtagonistV2Model
         return doc.RootElement.GetProperty(RunClipInJson).GetProperty("passada_m_s").GetSingle();
     }
 
-    private sealed record Looks(Color Skin, Color Hair, Color Horn, Color Cloth, float ShadowFloor);
+    private sealed record Looks(Color Skin, Color Hair, Color Horn, Color Cloth, float ShadowFloor, string[] Rim);
 
     private static Looks ReadLooks()
     {
         using JsonDocument doc = JsonDocument.Parse(FileAccess.GetFileAsString(GameFiles.Castellan), VillagerLooks.JsonOptions);
         JsonElement l = doc.RootElement.GetProperty("looks");
         Color C(string name) => new(l.GetProperty(name).GetString() ?? "#FF00FF");
-        return new Looks(C("skin"), C("hair"), C("horn"), C("cloth"), l.GetProperty("shadowFloor").GetSingle());
+        string[] rim = l.TryGetProperty("rim", out JsonElement r) ? r.EnumerateArray().Select(e => e.GetString() ?? "").ToArray() : [];
+        return new Looks(C("skin"), C("hair"), C("horn"), C("cloth"), l.GetProperty("shadowFloor").GetSingle(), rim);
     }
 }

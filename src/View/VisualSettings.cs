@@ -79,5 +79,7 @@ public sealed class VisualSettings
         public string Color { get; set; } = "#B8C7E6";
         public float Strength { get; set; } = 0.1f;
         public float Width { get; set; } = 0.144f;
+        /// <summary>Se os objetos de cenário levam a borda (por cima do coldRim de assets/cenario/cenario.json).</summary>
+        public bool Scenery { get; set; } = true;
     }
 }

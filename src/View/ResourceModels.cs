@@ -191,7 +191,7 @@ public partial class ResourceModels : Node3D
             return material;
         material = new ShaderMaterial { Shader = GD.Load<Shader>(VillagerLooks.ToonShaderPath) };
         material.SetShaderParameter("albedo", color);
-        if (rim)
+        if (rim && VisualSettings.Current.Rim.Scenery)
             VisualSettings.Current.ApplyRim(material);
         if (occlusion)
             VisualSettings.Current.ApplyOcclusion(material);

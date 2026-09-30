@@ -5514,3 +5514,31 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:16 de relógio (fim).
+
+## 2026-09-30 — Borda de luz fria fora do cabelo, das pedras e dos veios
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (decisão do Arthur, 30/09):** tirar a borda de luz fria (os filetes claros) do cabelo da protagonista e das
+  pedras e veios; nenhum objeto de cenário fica com borda; na protagonista, só no corpo (se o corpo também mostrar filetes
+  parecidos, mostrar print e avisar antes de mexer). Pelos dados em `data/`, sem editar `assets/cenario/cenario.json`.
+- **Feito (pelos dados):**
+  - `data/visual.json` → `rim.scenery: false`. É a **sobreposição** pedida: o `coldRim` de `assets/cenario/cenario.json`
+    (território do CENÁRIO) continua listando `pedra`, `musgo` e `minerio`, mas o jogo só liga a borda nos recursos se
+    `rim.scenery` for `true` (`ResourceModels.MaterialFor`). Vale também para a esfera provisória de recurso sem modelo.
+  - `data/castellan.json` → `looks.rim: ["skin", "cloth"]`: as partes da protagonista que levam a borda
+    (`ProtagonistV2Model.Toon` recebe a parte). Cabelo e **chifres** ficaram sem ela ("só no corpo"); para devolver aos
+    chifres basta pôr `"horn"` na lista.
+- **Conferido:** prints com uma câmera temporária na geometria do jogo (55°, FOV 45°, 16/zoom m), mesmo ponto e mesma
+  posição da protagonista antes e depois (ela a 2 cm, olhando para −z, ao lado das pedras e do veio em 12–13 × 8–11).
+  Cabelo sem as manchas claras nas costas e sem os filetes nas dobras; pedras e veio sem os filetes claros, só com o
+  contorno escuro. Prints: `docs/prints/borda_cabelo_antes_depois.png`, `borda_pedras_veio_antes_depois.png`,
+  `borda_zoom1_zoom2.5_antes_depois.png`. Log sem erros.
+- **Corpo (não mexi):** de perto, a pele mostra faixas claras finas na silhueta (lado do rosto, bordas dos braços e das
+  pernas). É a mesma borda, mais discreta porque a pele é clara. Print: `docs/prints/borda_corpo_depois.png`. Para tirar,
+  é deixar `looks.rim` vazio; espera o Arthur.
+- **O que deu errado:** a primeira leva de prints numa só avaliação passou de 8 s (PNGs de 3840×2160), foi cortada e o jogo
+  parou num break do depurador; parei o jogo (só o jogo, o editor seguiu aberto) e refiz em levas menores.
+- `dotnet build`: 0 erros, 0 avisos (só `src/View` mudou; `dotnet test` não se aplica).
+- **Jogo para o Arthur:** `Main` rodando no editor, protagonista parada ao lado das pedras e do veio.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 01:49 de relógio (fim).
