@@ -5571,3 +5571,20 @@ onde errou, correções manuais e quanto tempo levou.
   teclas dele.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 02:00 de relógio (fim).
+
+## 2026-09-30 — Linha da flecha de ferro, passo 0: design (docs/cadeia_flecha.md)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (ordem do Arthur, 30/09):** implementar a primeira linha complexa, "Flecha de ferro" (era do torque), inteira e
+  jogável, sem animação nem arte nova, com feedback visual claro; passo 0 = design curto e a divisão em passos.
+- **Feito:** `docs/cadeia_flecha.md`: linha, tabela das máquinas com os números da especificação, regras (bruto x
+  processado, postos, carregadores, torque, manivela e linhas de esteira, estados), feedback visual, barra em 2 páginas
+  (Tab), cena de teste e os 8 passos.
+- **Decisões que a especificação não cobria (as mais simples, registradas no documento):** tora = item `wood` (nome
+  "Tora"), minério = `iron` ("Minério de ferro"); todos os postos precisam estar ocupados; carregadores por um **Posto de
+  Carregadores** com vagas e raio (busca em baú ou cabana, entrega na máquina que aceita o bruto); rede de torque
+  sobrecarregada para inteira; eixo sem orientação e não sólido; a manivela move a linha da esteira à frente dela;
+  `beltsNeedPower` em `data/power.json` liga a regra (mapas e testes antigos e o palco da Biografia seguem com esteira
+  livre).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 03:00–03:01 de relógio.
