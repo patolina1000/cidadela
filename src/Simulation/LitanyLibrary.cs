@@ -8,7 +8,8 @@ namespace Cidadela.Simulation;
 /// Ladainhas nomeadas, vindas de data/ladainhas.json (docs/ladainhas.md, Q10). Cada comando é um objeto com "do" e os
 /// alvos: { "do": "take", "item": "water_jar", "building": [2, 12] }, { "do": "gather", "resource": "wood",
 /// "near": [5, 5], "radius": 8 }, { "do": "goto", "cell": [4, 4] }, { "do": "operate", "building": [7, 8] },
-/// { "do": "wait", "seconds": 2 }. Sem "radius" no colher, vale o raio padrão (data/villagers.json).
+/// { "do": "wait", "seconds": 2 }. Sem "radius" no colher, vale o raio padrão (data/villagers.json). Colher "perto de uma
+/// cabana ou Posto de Carregadores": { "do": "gather", "resource": "wood", "building": [4, 4] } (a área é a dela).
 /// </summary>
 public sealed class LitanyLibrary
 {
@@ -56,10 +57,13 @@ public sealed class LitanyLibrary
                     throw new FormatException($"{where}: \"{c.Do}\" precisa de \"item\".");
                 return new LitanyCommand(c.Do == "take" ? LitanyVerb.Take : LitanyVerb.Put, PlaceOf(c, where, allowCell: false), item);
             case "gather":
-                if (c.Resource is null || c.Near is not { Length: 2 })
-                    throw new FormatException($"{where}: \"gather\" precisa de \"resource\" e \"near\": [x, z].");
+                if (c.Resource is null || (c.Near is not { Length: 2 } && c.Building is not { Length: 2 }))
+                    throw new FormatException($"{where}: \"gather\" precisa de \"resource\" e \"near\": [x, z] (ou \"building\": [x, z]).");
                 if (c.Resource != data.Castellan.Dig?.Item)
                     data.Resource(c.Resource); // recurso desconhecido: erro com o nome
+                if (c.Near is not { Length: 2 })
+                    return new LitanyCommand(LitanyVerb.Gather,
+                        new LitanyTarget(LitanyTargetKind.Resource, new GridPos(c.Building![0], c.Building[1]), c.Resource, 0f, Anchored: true));
                 float radius = c.Radius ?? data.Villagers.LitanyRadius;
                 if (radius <= 0f)
                     throw new FormatException($"{where}: \"radius\" precisa ser positivo.");

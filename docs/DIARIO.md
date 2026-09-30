@@ -6317,3 +6317,24 @@ onde errou, correções manuais e quanto tempo levou.
   recusa a ladainha de 7 comandos; copiar de quem não tem ladainha não faz nada). `dotnet build` 0/0; `dotnet test` 263.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 20:24–20:24 de relógio.
+
+## 2026-09-30 — Ladainhas, passo 10: cabanas e Posto de Carregadores como lugares
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo novo (ajuste 2 do Arthur): cabanas e Posto de Carregadores ficam como LUGARES que a ladainha cita,
+  definindo a área de busca e o estoque; nunca dão ordem; sem cabana citada, raio 8.
+- **Feito:**
+  - `LitanyTarget.Anchored`: "colher [recurso] perto de [cabana/posto]" busca na área dela (raio do ofício da cabana, ou
+    o raio do Posto de Carregadores); se ela sumir, trava com "o lugar sumiu". JSON: `{ "do": "gather", "resource":
+    "wood", "building": [x, z] }`.
+  - Estoque: pegar e pôr na cabana (capacidade conta qualquer item) e no Posto de Carregadores, que agora guarda itens
+    como um baú (`"storage": true`).
+  - Ensinar: colher dentro da área de uma cabana do mesmo recurso (ou de um Posto de Carregadores) grava "perto da cabana".
+  - Texto do bloco: "colher tora perto de Cabana do Lenhador (14, 14)".
+- **Escolha do mais simples (registrada):** as cabanas continuam fora da barra de construção (como desde a linha da
+  energia); o Posto de Carregadores continua na barra.
+- **Testes:** `LitanyPlaceTests` (colher perto da cabana busca na área dela, não perto do aldeão; pegar do estoque da
+  cabana; cabana cheia trava; Posto de Carregadores como lugar e estoque; cabana desmontada trava; ensinar perto da cabana
+  grava a cabana; JSON). `dotnet build` 0/0; `dotnet test` 270 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 20:25–20:25 de relógio.

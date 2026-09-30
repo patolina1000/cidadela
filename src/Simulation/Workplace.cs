@@ -9,7 +9,17 @@ public sealed class Workplace
     public JobType Job { get; }
     public Inventory Stored { get; } = new();
 
-    public int Free => Job.Capacity - Stored.Count(Job.Resource);
+    /// <summary>Quanto ainda cabe no estoque (qualquer item conta).</summary>
+    public int Free
+    {
+        get
+        {
+            int total = 0;
+            foreach (int n in Stored.Counts.Values)
+                total += n;
+            return Job.Capacity - total;
+        }
+    }
 
     public Workplace(JobType job)
     {

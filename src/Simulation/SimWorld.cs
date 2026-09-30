@@ -340,6 +340,29 @@ public sealed class SimWorld
         Teaching?.Record(new LitanyCommand(LitanyVerb.GoTo, new LitanyTarget(LitanyTargetKind.Cell, cell)));
     }
 
+    /// <summary>
+    /// A cabana (do mesmo recurso) ou o Posto de Carregadores mais perto cuja área contém a célula, ou null: é o lugar
+    /// que a ladainha cita quando a protagonista colhe ali (ajuste 2 do Arthur).
+    /// </summary>
+    public Building? PlaceAround(GridPos cell, string kind)
+    {
+        Building? best = null;
+        float bestDistance = float.MaxValue;
+        foreach (Building b in _buildingByCell.Values)
+        {
+            float radius = b.Type.Job is JobType job && job.Resource == kind ? job.Radius
+                : b.Type.Carriers is CarrierType carriers ? carriers.Radius
+                : 0f;
+            float d = Vector2.Distance(new Vector2(b.Cell.X, b.Cell.Z), new Vector2(cell.X, cell.Z));
+            if (radius > 0f && d <= radius && d < bestDistance)
+            {
+                best = b;
+                bestDistance = d;
+            }
+        }
+        return best;
+    }
+
     /// <summary>Grava o que a protagonista acabou de fazer, se há gravação em andamento.</summary>
     internal void Record(LitanyCommand command) => Teaching?.Record(command);
 

@@ -12,8 +12,8 @@
   // posts: postos de trabalho: onde o operador encosta. Só ocupa um posto o aldeão cuja ladainha manda "operar" a
   //   máquina (ou a protagonista, com E); a máquina só anda com todos os postos ocupados por quem já chegou.
   //   name: ofício; tool: ícone da ferramenta sobre a cabeça dele.
-  // carriers: Posto de Carregadores: um LUGAR que a ladainha pode citar ("count" e "radius" ficam para a área);
-  //   não tem mais carregadores automáticos.
+  // carriers: Posto de Carregadores: um LUGAR que a ladainha pode citar: "radius" é a área de busca do "colher perto
+  //   do posto" e ele guarda itens como um baú ("storage"); não tem mais carregadores automáticos ("count" sobrou).
   // tower: torre de mana (docs/linha_energia.md, regra 6): o fio liga outras torres a até "wire" células (centro a centro)
   //   e a área de abastecimento "area"×"area" em volta dela liga à rede o que gasta, gera ou guarda mana.
   // mana: mana por segundo. use: gasta trabalhando (máquina só gasta trabalhando: D1 do Arthur); idleUse: gasta parada
@@ -42,7 +42,7 @@
   "mother_crystal": { "name": "Cristal-mãe", "cost": {},                             "solid": true, "hotbar": false,
                       "fixed": true, "mana": { "use": 4 }, "spawnsVillager": true },
   "chest":      { "name": "Baú",      "cost": { "wood": 5 },                         "solid": true,  "storage": true },
-  "carrier_post": { "name": "Posto de Carregadores", "cost": { "wood": 4 },            "solid": true,
+  "carrier_post": { "name": "Posto de Carregadores", "cost": { "wood": 4 },            "solid": true, "storage": true,
                     "carriers": { "count": 2, "radius": 12 } },
   "lumber_hut": { "name": "Cabana do Lenhador", "cost": { "wood": 6 },             "solid": true, "hotbar": false,
                   "job": { "name": "Lenhador", "resource": "wood",  "radius": 12, "capacity": 50 } },

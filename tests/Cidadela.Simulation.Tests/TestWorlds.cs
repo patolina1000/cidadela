@@ -51,7 +51,7 @@ internal static class TestWorlds
                            "posts": { "count": 2, "name": "Serrador", "tool": "saw" } },
           "press": { "name": "Prensa", "cost": { "wood": 2 }, "solid": true,
                      "posts": { "count": 1, "name": "Prenseiro", "tool": "press" } },
-          "carrier_post": { "name": "Posto de Carregadores", "cost": { "wood": 4 }, "solid": true,
+          "carrier_post": { "name": "Posto de Carregadores", "cost": { "wood": 4 }, "solid": true, "storage": true,
                             "carriers": { "count": 2, "radius": 12 } },
           "tower": { "name": "Torre", "cost": { "wood": 1 }, "solid": true, "tower": { "wire": 7, "area": 5 } },
           "generator": { "name": "Gerador", "cost": { "wood": 1 }, "solid": true, "mana": { "supply": 10 } },

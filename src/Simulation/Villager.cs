@@ -605,7 +605,12 @@ public sealed class Villager
         bool digging = world.Data.Castellan.Dig is DigType dig && dig.Item == kind;
         if (!_commandStarted)
         {
-            if (digging ? !PickBank(world, target) : !PickResource(world, target))
+            if (AreaOf(world, target) is not (GridPos, float) area)
+            {
+                Fail(LitanyStuck.NoPlace);
+                return false;
+            }
+            if (digging ? !PickBank(world, target.Resource!, area.Center, area.Radius) : !PickResource(world, target.Resource!, area.Center, area.Radius))
             {
                 Fail(LitanyStuck.NoResource);
                 return false;
@@ -655,15 +660,28 @@ public sealed class Villager
         return false;
     }
 
-    /// <summary>O recurso livre mais perto dele no raio em volta do ponto gravado (sem construção em cima, sem reserva).</summary>
-    private bool PickResource(SimWorld world, LitanyTarget target)
+    /// <summary>
+    /// A área de busca do colher: em volta do ponto gravado com o raio dele, ou a área da cabana/Posto de Carregadores
+    /// citado (o raio dela; sem raio próprio, o padrão). null se o lugar citado sumiu.
+    /// </summary>
+    private (GridPos Center, float Radius)? AreaOf(SimWorld world, LitanyTarget target)
     {
-        var center = new Vector2(target.Cell.X, target.Cell.Z);
+        if (!target.Anchored)
+            return (target.Cell, target.Radius);
+        if (world.BuildingAt(target.Cell) is not Building place)
+            return null;
+        return (target.Cell, place.Type.Job?.Radius ?? place.Type.Carriers?.Radius ?? Stats.LitanyRadius);
+    }
+
+    /// <summary>O recurso livre mais perto dele na área (sem construção em cima, sem reserva).</summary>
+    private bool PickResource(SimWorld world, string kind, GridPos centerCell, float radius)
+    {
+        var center = new Vector2(centerCell.X, centerCell.Z);
         ResourceNode? best = null;
         foreach (ResourceNode node in world.Resources)
         {
-            if (node.IsDepleted || node.Kind != target.Resource || world.BuildingAt(node.Cell) is not null ||
-                Vector2.Distance(center, new Vector2(node.Cell.X, node.Cell.Z)) > target.Radius)
+            if (node.IsDepleted || node.Kind != kind || world.BuildingAt(node.Cell) is not null ||
+                Vector2.Distance(center, new Vector2(node.Cell.X, node.Cell.Z)) > radius)
                 continue;
             bool reserved = false;
             foreach (Villager other in world.Villagers)
@@ -676,17 +694,17 @@ public sealed class Villager
         return best is not null;
     }
 
-    /// <summary>A célula de margem livre mais perto dele no raio em volta do ponto gravado (sem construção, sem reserva).</summary>
-    private bool PickBank(SimWorld world, LitanyTarget target)
+    /// <summary>A célula de margem livre mais perto dele na área (sem construção, sem reserva).</summary>
+    private bool PickBank(SimWorld world, string kind, GridPos centerCell, float radius)
     {
-        int r = (int)MathF.Ceiling(target.Radius);
-        var center = new Vector2(target.Cell.X, target.Cell.Z);
+        int r = (int)MathF.Ceiling(radius);
+        var center = new Vector2(centerCell.X, centerCell.Z);
         GridPos? best = null;
         for (int dx = -r; dx <= r; dx++)
         for (int dz = -r; dz <= r; dz++)
         {
-            var cell = new GridPos(target.Cell.X + dx, target.Cell.Z + dz);
-            if (!world.IsBank(cell) || world.BuildingAt(cell) is not null || Vector2.Distance(center, new Vector2(cell.X, cell.Z)) > target.Radius)
+            var cell = new GridPos(centerCell.X + dx, centerCell.Z + dz);
+            if (!world.IsBank(cell) || world.BuildingAt(cell) is not null || Vector2.Distance(center, new Vector2(cell.X, cell.Z)) > radius)
                 continue;
             bool reserved = false;
             foreach (Villager other in world.Villagers)

@@ -35,7 +35,9 @@ public static class LitanyText
             LitanyVerb.GoTo => $"ir até {Place(c.Target!, world)}",
             LitanyVerb.Take => $"pegar {item} de {Place(c.Target!, world)}",
             LitanyVerb.Put => $"pôr {item} em {Place(c.Target!, world)}",
-            LitanyVerb.Gather => $"{Verb(c, data)} {ResourceName(c.Target!.Resource!, data)} perto de ({c.Target.Cell.X}, {c.Target.Cell.Z}), raio {c.Target.Radius:0}",
+            LitanyVerb.Gather => c.Target!.Anchored
+                ? $"{Verb(c, data)} {ResourceName(c.Target.Resource!, data)} perto de {Place(new LitanyTarget(LitanyTargetKind.Building, c.Target.Cell), world)}"
+                : $"{Verb(c, data)} {ResourceName(c.Target.Resource!, data)} perto de ({c.Target.Cell.X}, {c.Target.Cell.Z}), raio {c.Target.Radius:0}",
             LitanyVerb.Operate => $"operar {Place(c.Target!, world)}",
             _ => $"esperar {c.Ticks / (float)SimClock.TicksPerSecond:0.#} s",
         };
