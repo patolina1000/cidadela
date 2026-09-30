@@ -1,0 +1,112 @@
+{
+  "bruto": "assets/modelos/protagonista_v2/meshy/cabelo/cabelo_1.glb",
+  "encaixe": {
+    "pontos_rosto": 416,
+    "escala": 5.3528,
+    "centro_modelo": [
+      -0.0016,
+      -0.0868,
+      0.4493
+    ],
+    "rms": 0.0584,
+    "queixo_modelo_z": 0.0924
+  },
+  "faces_pele_do_busto": 786,
+  "faces_do_rosto_do_busto_restantes": 22,
+  "faces_na_frente_abaixo_do_queixo": 230,
+  "abas_horizontais_removidas": 90,
+  "ilhas": {
+    "total": 6,
+    "maior": 6809,
+    "removidas_faces": 67
+  },
+  "triangulos_antes": 6745,
+  "vertices_empurrados_para_a_folga": 409,
+  "faces_cortadas_pelos_chifres_depois": 22,
+  "triangulos": 937,
+  "pesos": {
+    "degraus_z_m": {
+      "Head": 0.6261,
+      "neck": 0.5725,
+      "Spine": 0.5488,
+      "Spine01": 0.5055
+    }
+  },
+  "folga_nos_clipes": {
+    "run-loop@0": {
+      "min_mm": -10.0,
+      "vertices_dentro": 5
+    },
+    "run-loop@2": {
+      "min_mm": -27.8,
+      "vertices_dentro": 4
+    },
+    "run-loop@5": {
+      "min_mm": -10.3,
+      "vertices_dentro": 15
+    },
+    "run-loop@8": {
+      "min_mm": -11.0,
+      "vertices_dentro": 17
+    },
+    "run-loop@10": {
+      "min_mm": -19.7,
+      "vertices_dentro": 8
+    },
+    "run-loop@13": {
+      "min_mm": -6.4,
+      "vertices_dentro": 4
+    },
+    "run-loop@16": {
+      "min_mm": -14.7,
+      "vertices_dentro": 16
+    },
+    "run-loop@19": {
+      "min_mm": -10.0,
+      "vertices_dentro": 5
+    },
+    "idle-loop@0": {
+      "min_mm": 15.5,
+      "vertices_dentro": 0
+    },
+    "idle-loop@38": {
+      "min_mm": 11.3,
+      "vertices_dentro": 0
+    },
+    "idle-loop@77": {
+      "min_mm": 16.4,
+      "vertices_dentro": 0
+    },
+    "idle-loop@115": {
+      "min_mm": 15.7,
+      "vertices_dentro": 0
+    },
+    "idle-loop@154": {
+      "min_mm": 15.4,
+      "vertices_dentro": 0
+    },
+    "idle-loop@192": {
+      "min_mm": 16.2,
+      "vertices_dentro": 0
+    },
+    "idle-loop@231": {
+      "min_mm": 15.8,
+      "vertices_dentro": 0
+    },
+    "idle-loop@270": {
+      "min_mm": 15.5,
+      "vertices_dentro": 0
+    }
+  },
+  "pior_mm": -27.8,
+  "pior_quadro": "run-loop@2",
+  "vertices_dentro_max": 17,
+  "exportacao": {
+    "normalizacao": {
+      "escala": 1.0,
+      "curvas_de_posicao_escaladas": 0
+    },
+    "deslocamento_quadros": {},
+    "fps": 24
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "teto_protagonista": 300,
+  "tarefas": [
+    {
+      "tentativa": 1,
+      "task_id": "01a0f03d-1257-7643-bd33-39a0cd5ae8ff",
+      "status": "SUCCEEDED",
+      "saldo_antes": 2197,
+      "imagens": [
+        "cabelo_frente.png",
+        "cabelo_lado.png",
+        "cabelo_costas.png"
+      ],
+      "parametros": {
+        "ai_model": "latest",
+        "should_texture": false,
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 8000,
+        "symmetry_mode": "auto"
+      },
+      "saldo_depois": 2177,
+      "creditos": 20,
+      "erro": null,
+      "glb": "assets/modelos/protagonista_v2/meshy/cabelo/cabelo_1.glb"
+    }
+  ]
+}

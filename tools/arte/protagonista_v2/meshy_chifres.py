@@ -7,9 +7,13 @@ Teto (manda do Arthur, 29/09/2026): 300 créditos para a protagonista inteira, s
 rig e clipes (meshy/rig_meshy.json) e estas gerações (meshy/chifres_meshy.json, público, sem chave). Saldo e custo
 conferidos antes de cada pedido. Brutos em assets/modelos/protagonista_v2/meshy/chifres/chifres_<n>.glb.
 
+Com --peca cabelo: a folha do cabelo (busto careca + cabelo longo), mesma regra (frente, perfil e costas, sem o topo),
+remesh a 8.000 (mechas com detalhe antes de fundir e decimar a ≤ 1.000), simetria automática; teto de 3 gerações
+(2 do plano + 1 se a qualidade pedir). Registro em meshy/cabelo_meshy.json; brutos em meshy/cabelo/cabelo_<n>.glb.
+
 Uso (em tools/arte):
-  uv run protagonista_v2/meshy_chifres.py          # saldo e gasto (não gasta)
-  uv run protagonista_v2/meshy_chifres.py --run    # uma geração
+  uv run protagonista_v2/meshy_chifres.py [--peca cabelo]          # saldo e gasto (não gasta)
+  uv run protagonista_v2/meshy_chifres.py [--peca cabelo] --run    # uma geração
 """
 
 import argparse
@@ -26,18 +30,19 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parents[3]
 VIEWS = ROOT / "assets/conceitos/protagonista_v2/vistas"
 MESHY_DIR = ROOT / "assets/modelos/protagonista_v2/meshy"
-OUT = MESHY_DIR / "chifres"
-RECORD = MESHY_DIR / "chifres_meshy.json"
+PIECES = {
+    "chifres": {"imagens": ["chifres_frente.png", "chifres_lado.png", "chifres_costas.png"], "poligonos": 6000, "simetria": "off"},
+    "cabelo": {"imagens": ["cabelo_frente.png", "cabelo_lado.png", "cabelo_costas.png"], "poligonos": 8000, "simetria": "auto"},
+}
 API = "https://api.meshy.ai/openapi"
 COST, CAP, MAX_GENERATIONS = 20, 300, 3
-IMAGES = ["chifres_frente.png", "chifres_lado.png", "chifres_costas.png"]
-PAYLOAD = {"ai_model": "latest", "should_texture": False, "should_remesh": True, "topology": "triangle",
-           "target_polycount": 6000, "symmetry_mode": "off"}
+BASE_PAYLOAD = {"ai_model": "latest", "should_texture": False, "should_remesh": True, "topology": "triangle"}
 
 
 def spent_total() -> int:
     total = 0
-    for name, key in (("corpo_meshy.json", "tarefas"), ("rig_meshy.json", "pedidos"), ("chifres_meshy.json", "tarefas")):
+    for name, key in (("corpo_meshy.json", "tarefas"), ("rig_meshy.json", "pedidos"), ("chifres_meshy.json", "tarefas"),
+                      ("cabelo_meshy.json", "tarefas")):
         path = MESHY_DIR / name
         if path.exists():
             total += sum(t.get("creditos") or 0 for t in json.loads(path.read_text())[key])
@@ -47,7 +52,12 @@ def spent_total() -> int:
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--run", action="store_true")
+    p.add_argument("--peca", choices=list(PIECES), default="chifres")
     args = p.parse_args()
+    piece = PIECES[args.peca]
+    OUT, RECORD = MESHY_DIR / args.peca, MESHY_DIR / f"{args.peca}_meshy.json"
+    IMAGES = piece["imagens"]
+    PAYLOAD = dict(BASE_PAYLOAD, target_polycount=piece["poligonos"], symmetry_mode=piece["simetria"])
     for env in (ROOT / ".env", Path(__file__).resolve().parents[1] / ".env"):
         if env.exists():
             load_dotenv(env)
@@ -57,7 +67,7 @@ def main():
     balance = lambda: s.get(f"{API}/v1/balance", timeout=30).json()["balance"]  # noqa: E731
     record = json.loads(RECORD.read_text()) if RECORD.exists() else {"teto_protagonista": CAP, "tarefas": []}
     before = balance()
-    print(f"saldo {before}; gasto na protagonista {spent_total()}/{CAP}; gerações de chifres {len(record['tarefas'])}/{MAX_GENERATIONS}; "
+    print(f"saldo {before}; gasto na protagonista {spent_total()}/{CAP}; gerações de {args.peca} {len(record['tarefas'])}/{MAX_GENERATIONS}; "
           f"este pedido ~{COST}")
     if not args.run:
         return
@@ -89,7 +99,7 @@ def main():
     rec["erro"] = (task.get("task_error") or {}).get("message") or None
     if task["status"] == "SUCCEEDED":
         OUT.mkdir(parents=True, exist_ok=True)
-        glb = OUT / f"chifres_{n}.glb"
+        glb = OUT / f"{args.peca}_{n}.glb"
         glb.write_bytes(requests.get(task["model_urls"]["glb"], timeout=300).content)
         rec["glb"] = str(glb.relative_to(ROOT))
         print(f"  baixado: {rec['glb']}, créditos {rec['creditos']}, id {task_id}")

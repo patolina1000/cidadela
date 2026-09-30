@@ -3481,3 +3481,36 @@ onde errou, correções manuais e quanto tempo levou.
   `--inclinacao=20 --escala=1.3`: **291 triângulos**, assimetria mantida (direito 57 mm de altura, esquerdo 39 mm; a
   inclinação baixa a ponta, o comprimento cresce 30%); na câmera do jogo 9 / 22 / 59 px de largura.
 - **Créditos:** 0 (na protagonista: 101 de 300). **Correções manuais:** nenhuma. **Tempo:** ~20 min.
+
+## 2026-09-30 — Protagonista v2, passo 9: cabelo longo com pesos (piloto), 20 créditos
+
+- **Pedido:** cabelo pela Meshy (multi-imagem frente/perfil/costas, sem o topo, só malha; teto 2 gerações + 1 se a qualidade
+  pedir): longo, atrás dos ombros, ≤ 1.000 tri, pesos Head/neck/Spine/Spine01 (calota 100% Head), janela dos olhos aberta com
+  2 mm dos retalhos, chifres atravessando; mechas fundidas e decimadas, folga DEPOIS da decimação; folha com o aldeão e a v1,
+  crepúsculo, GIFs da Run 3 e do Long Breathe; orelha de gato de novo.
+- **Meshy:** `meshy_chifres.py --peca cabelo` (o script passou a servir às duas peças; o teto de 300 soma
+  `meshy/cabelo_meshy.json`), remesh 8.000, simetria automática — tarefa `01a0f03d-1257-7643-bd33-39a0cd5ae8ff`, **20
+  créditos** (saldo 2.197 → 2.177). Busto careca + cabelo, 7.989 triângulos, malha quase fechada. Só 1 geração.
+- **Extração (`extrair_cabelo.py` → `assets/modelos/protagonista_v2/cabelo.glb` + `.json`):**
+  - encaixe: o elipsoide da cabeça do corpo (só centro e escala) ajustado ao rosto do busto (416 pontos virados para a frente);
+  - pele do busto crescida a partir do rosto e do peito por arestas suaves (30°), a até 25 mm da pele do corpo, sem passar da
+    linha do cabelo (20% acima da janela dos olhos), da metade de trás da cabeça nem de ±60° da frente; sobras viradas para a
+    frente no rosto, tudo à frente do pescoço abaixo do queixo e as abas horizontais dos ombros do busto saem;
+  - janela dos olhos aberta; chifres: sai só o cabelo DENTRO do volume deles e fora da pele;
+  - mechas fundidas (1 mm), decimação a **937 triângulos**; DEPOIS, folga de 2 mm do corpo e dos retalhos e 3 mm na calota,
+    medida nos vértices e no meio das faces (rodadas até assentar);
+  - pesos pela altura: 100% Head acima do começo da malha da cabeça, depois neck, Spine e Spine01 em gradiente, 100% Spine01
+    abaixo; material "cabelo" #4B5A69; exportado com o armature pelo contrato (sem clipes).
+- **Conferência nos clipes:** idle sem nada dentro do corpo (folga mínima 11 mm); na corrida o braço passa pela borda lateral do
+  cabelo quando balança para trás (pior −28 mm no quadro 2, até 17 vértices de ~500).
+- **Folha:** `prova_cabelo.py` e `folha_cabelo.py` → `assets/previews/protagonista_v2/cabelo_prova.png` (+ crepúsculo) e
+  `cabelo_gifs/` (run-loop e idle-loop de lado, de costas e na câmera do jogo), no visor.
+- **Orelha de gato com o cabelo:** de frente, os chifres (20°, 1,3×) saem dos cantos de cima da cabeça por cima do cabelo escuro
+  e ainda leem como orelhas; de perfil, 3/4 e de cima (a câmera do jogo) leem como chifres correndo para trás.
+- **Defeitos conhecidos:** linha do cabelo serrilhada na testa; uma falha pequena de cabelo na têmpora, na frente do chifre; o
+  braço atravessando a borda lateral na corrida.
+- **O que deu errado e foi corrigido:** a pele do busto não saía no queixo (virava "barba") e vazava pela risca (buracos na
+  calota); o corte por distância dos chifres (que correm rentes ao crânio) abria rasgos na têmpora; a folga só nos vértices
+  deixava o crânio furar o meio dos triângulos grandes; na prova, chifres e cristal eram presos ao osso com o esqueleto fora do
+  repouso e escorregavam 4 a 5 cm (corrigido; os GIFs foram refeitos).
+- **Créditos:** 20 (na protagonista: 121 de 300; saldo 2.177). **Correções manuais:** nenhuma. **Tempo:** ~3 h.

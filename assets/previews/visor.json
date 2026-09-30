@@ -508,5 +508,61 @@
     "tipo": "imagem",
     "caminho": "assets/previews/protagonista_v2/chifres_prova.png",
     "nota": "Geração 1 (20 créditos) veio com quatro chifres; usado o par da frente. 290 tri. Orelha de gato: risco real de frente a 0°; 20° para trás mitiga."
+  },
+  {
+    "quando": "2026-09-30T00:11:25",
+    "titulo": "Protagonista v2 — idle-loop com cabelo (costas)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_costas.gif",
+    "nota": "Cabelo com pesos seguindo o esqueleto; chifres no Head e cristal no Spine."
+  },
+  {
+    "quando": "2026-09-30T00:11:26",
+    "titulo": "Protagonista v2 — idle-loop com cabelo (lado)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_lado.gif",
+    "nota": "Cabelo com pesos seguindo o esqueleto; chifres no Head e cristal no Spine."
+  },
+  {
+    "quando": "2026-09-30T00:11:27",
+    "titulo": "Protagonista v2 — idle-loop com cabelo (jogo)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_jogo.gif",
+    "nota": "Cabelo com pesos seguindo o esqueleto; chifres no Head e cristal no Spine."
+  },
+  {
+    "quando": "2026-09-30T00:11:28",
+    "titulo": "Protagonista v2 — run-loop com cabelo (costas)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_costas.gif",
+    "nota": "Cabelo com pesos seguindo o esqueleto; chifres no Head e cristal no Spine."
+  },
+  {
+    "quando": "2026-09-30T00:11:29",
+    "titulo": "Protagonista v2 — run-loop com cabelo (lado)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_lado.gif",
+    "nota": "Cabelo com pesos seguindo o esqueleto; chifres no Head e cristal no Spine."
+  },
+  {
+    "quando": "2026-09-30T00:11:30",
+    "titulo": "Protagonista v2 — run-loop com cabelo (jogo)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_jogo.gif",
+    "nota": "Cabelo com pesos seguindo o esqueleto; chifres no Head e cristal no Spine."
+  },
+  {
+    "quando": "2026-09-30T00:11:31",
+    "titulo": "Protagonista v2 — cabelo (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_prova_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-30T00:11:32",
+    "titulo": "Protagonista v2 — cabelo longo com pesos (piloto)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_prova.png",
+    "nota": "937 tri, pesos Head/neck/Spine/Spine01, janela dos olhos aberta, chifres atravessando. Orelha de gato: com o cabelo escuro, de frente os chifres ainda leem como orelhas; de cima, como chifres."
   }
 ]
