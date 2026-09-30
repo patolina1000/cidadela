@@ -1,0 +1,104 @@
+:root {
+  --fundo: #1d1a22;
+  --painel: #28242f;
+  --borda: #3a3543;
+  --texto: #ede6d6;
+  --apagado: #a39cae;
+  --destaque: #8fb3d9;
+  --palco: #4e4a58;
+  --crepusculo: #6a5b7c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+button {
+  background: var(--painel);
+  color: var(--texto);
+  border: 1px solid var(--borda);
+  border-radius: 4px;
+  padding: 3px 9px;
+  font: inherit;
+  cursor: pointer;
+}
+button:hover { border-color: var(--destaque); }
+button.ativo { background: var(--destaque); color: #1b1620; border-color: var(--destaque); }
+
+#topo { padding: 10px 16px 6px; border-bottom: 1px solid var(--borda); }
+#cabecalho { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+h1 { font-size: 18px; margin: 0; }
+#meta { color: var(--apagado); font-size: 12px; }
+#nota { margin: 4px 0 0; color: var(--apagado); white-space: pre-wrap; }
+
+main { flex: 1; display: flex; min-height: 0; }
+#palco { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+#barra {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 6px 10px; border-bottom: 1px solid var(--borda);
+}
+.grupo { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.grupo[hidden] { display: none; }
+.direita { margin-left: auto; }
+.sep { width: 1px; height: 18px; background: var(--borda); margin: 0 4px; }
+.rotulo, .info { color: var(--apagado); font-size: 12px; }
+.info { margin-left: 6px; font-variant-numeric: tabular-nums; }
+
+#vista { position: relative; flex: 1; min-height: 0; background: var(--palco); overflow: hidden; }
+#vista-imagem, #vista-3d, #vista-texto { position: absolute; inset: 0; overflow: auto; }
+#vista-imagem { cursor: grab; }
+#vista-imagem.arrastando { cursor: grabbing; }
+#vista-imagem img { display: block; margin: auto; }
+#vista-imagem img.pixelado { image-rendering: pixelated; }
+#vista-3d canvas { display: block; }
+#vista-3d.um-para-um canvas { margin: 0; }
+#vazio {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: var(--apagado);
+}
+#vazio[hidden], #vista-imagem[hidden], #vista-texto[hidden], #vista-3d[hidden], #clipes[hidden], #filtro-crepusculo[hidden] { display: none; }
+#filtro-crepusculo {
+  position: absolute; inset: 0; pointer-events: none;
+  background: var(--crepusculo); mix-blend-mode: multiply;
+}
+
+#clipes {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 6px 10px; border-top: 1px solid var(--borda);
+}
+
+#lista-lado {
+  width: 300px; flex-shrink: 0; border-left: 1px solid var(--borda);
+  overflow-y: auto; padding: 8px 10px;
+}
+h2 { font-size: 13px; margin: 2px 0 8px; color: var(--apagado); font-weight: 600; }
+#estado { font-weight: normal; }
+#lista { list-style: none; margin: 0; padding: 0; }
+#lista li {
+  padding: 6px 8px; border: 1px solid transparent; border-radius: 4px; cursor: pointer;
+  margin-bottom: 4px; background: var(--painel);
+}
+#lista li:hover { border-color: var(--borda); }
+#lista li.atual { border-color: var(--destaque); }
+#lista li .t { display: block; }
+#lista li .q { display: block; color: var(--apagado); font-size: 11px; }
+#lista li.novo .t::after { content: " · mais novo"; color: var(--destaque); font-size: 11px; }
+
+@media (max-width: 760px) {
+  main { flex-direction: column; }
+  #lista-lado { width: auto; max-height: 30vh; border-left: 0; border-top: 1px solid var(--borda); }
+  #palco { min-height: 60vh; }
+}
+
+#vista-texto { background: var(--fundo); }
+#texto { max-width: 1000px; margin: 0 auto; padding: 16px 20px 40px; line-height: 1.5; }
+#texto h1 { font-size: 22px; } #texto h2 { font-size: 18px; margin-top: 22px; } #texto h3 { font-size: 15px; }
+#texto table { border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+#texto th, #texto td { border: 1px solid var(--borda); padding: 4px 8px; vertical-align: top; text-align: left; }
+#texto th { background: var(--painel); }
+#texto code { background: var(--painel); padding: 0 4px; border-radius: 3px; }
+#texto td.num, #texto th.num { text-align: right; font-variant-numeric: tabular-nums; }

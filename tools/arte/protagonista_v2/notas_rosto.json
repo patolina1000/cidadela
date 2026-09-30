@@ -1,0 +1,14 @@
+{
+  "leitura": [
+    "Leitura na câmera do jogo (55°, 3024×1890; de cima a frente do rosto encurta e a boca some sob a cabeça):",
+    "  zoom 2,5 (cabeça ~51 px): olhos nítidos (fendas claras com a pálpebra escura); olheira lê como anel escuro (mais em b e c); cílios só como 1–2 px escuros no canto externo; fissura e boca NÃO leem.",
+    "  zoom 1 (cabeça ~19 px): só os olhos, como dois pares de pixels claros (b lê melhor, c quase some); olheira, cílios, fissura e boca não leem.",
+    "  zoom 0,4 (cabeça ~8 px): no máximo um pixel claro por olho; nenhum traço do rosto lê.",
+    "Fissura e cílios são traços de close (retrato, diálogo, cinematográfica); no jogo, o que carrega o rosto é o tamanho do olho claro e a olheira."
+  ],
+  "variacoes": {
+    "a": "equilíbrio; no zoom 1 os olhos ainda leem, a olheira pouco",
+    "b": "olhos claros maiores: melhor leitura nos zooms 1 e 2,5; o mais 'felino'",
+    "c": "a mais cansada de perto; de cima os olhos pequenos quase somem no zoom 1"
+  }
+}

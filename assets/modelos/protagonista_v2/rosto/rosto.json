@@ -1,0 +1,57 @@
+{
+  "olhos": {
+    "colunas": 3,
+    "linhas": 2,
+    "celulaPx": [
+      512,
+      320
+    ],
+    "margemPx": 16,
+    "quadros": {
+      "aberto_cansado": 0,
+      "meio_fechado": 1,
+      "fechado": 2,
+      "apertado": 3,
+      "dor": 4,
+      "olhar_baixo": 5
+    }
+  },
+  "boca": {
+    "colunas": 2,
+    "linhas": 2,
+    "celulaPx": [
+      256,
+      128
+    ],
+    "margemPx": 16,
+    "quadros": {
+      "reta": 0,
+      "tensa": 1,
+      "dor": 2
+    }
+  },
+  "expressoes": {
+    "neutra_cansada": {
+      "olhos": "aberto_cansado",
+      "boca": "reta"
+    },
+    "esforco": {
+      "olhos": "apertado",
+      "boca": "tensa"
+    },
+    "dor": {
+      "olhos": "dor",
+      "boca": "dor"
+    },
+    "piscar": {
+      "olhos": "fechado",
+      "boca": "reta"
+    },
+    "olhar_cristal": {
+      "olhos": "olhar_baixo",
+      "boca": "reta"
+    }
+  },
+  "ossoCabeca": "Head",
+  "ossoPeito": "Spine"
+}

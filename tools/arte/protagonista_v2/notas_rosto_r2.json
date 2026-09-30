@@ -1,0 +1,17 @@
+{
+  "titulo": "Protagonista v2 — rosto, rodada 2 (a partir da b): b1 e b2, com a v1 de referência; corpo com a cabeça redistribuída",
+  "leitura": [
+    "Olhos abertos (b1 e b2): mais branco-osso, pálpebra pesada só no terço de cima, amendoados, contorno de baixo escuro como na v1.",
+    "b2: boca 12% da cabeça mais alta (perto dos olhos) e queixo encurtado (a parte de baixo do rosto × 0,72); para manter a cabeça em 18%, a cabeça",
+    "   inteira cresceu × 1,19 a partir da base do pescoço — ficou 19% mais larga: largura ÷ altura 1,03 (b1 0,90; a folha dava 0,935).",
+    "Corpo: cabeça com 810 triângulos (short 458 → 318), vértices da cabeça relaxados e normais de uma cópia alisada (Taubin 60): faixas da toon redondas.",
+    "Leitura no jogo: zoom 2,5 — olhos como amêndoas brancas nítidas nas duas, olheira lê; cílios 1–2 px; fissura e boca não. Zoom 1 — os olhos",
+    "   leem como dois traços claros (antes, pares de pixels); b2 um pouco mais (cabeça 22 px contra 19). Zoom 0,4 — um pixel claro por olho.",
+    "   A v1, no zoom 1, é só cabelo e o brilho do cristal: o rosto dela também não lia de cima."
+  ],
+  "variacoes": {
+    "b1": "só os olhos abertos; boca e queixo como na b",
+    "b2": "olhos abertos + boca mais alta + queixo curto; cabeça 19% mais larga",
+    "v1": "olhos grandes, claros, sem pupila; boca perto do nariz; queixo curto"
+  }
+}

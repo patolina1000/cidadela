@@ -1,0 +1,14 @@
+{
+  "titulo": "Protagonista v2 — rosto, rodada 3: b3 (b1 com a boca subida só no retalho), com a b1 e a v1 ao lado",
+  "leitura": [
+    "b3 = b1 com a janela do retalho da boca 12% da cabeça mais alta (2 cm); geometria e largura da cabeça iguais às da b1 (largura ÷ altura 0,90).",
+    "O vão entre os olhos e a boca fica parecido com o da v1; abaixo da boca sobra o queixo do corpo, que o cabelo longo e a sombra vão emoldurar.",
+    "Leitura no jogo igual à da b1 (a boca não lê de cima em nenhum zoom): zoom 2,5 olhos como amêndoas brancas e olheira; zoom 1 dois traços claros;",
+    "   zoom 0,4 um pixel por olho. A diferença entre b1 e b3 é só de perto (retrato, diálogo, cinematográfica)."
+  ],
+  "variacoes": {
+    "b1": "olhos abertos; boca na janela padrão",
+    "b3": "olhos abertos; boca 2 cm mais alta, só no retalho",
+    "v1": "olhos grandes, claros, sem pupila; boca perto do nariz; queixo curto"
+  }
+}

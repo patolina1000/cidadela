@@ -4751,3 +4751,606 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 23:37–23:38 de relógio.
+
+## 2026-09-29 — Protagonista v2: recorte das vistas das folhas do corpo e dos chifres
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** começar a protagonista v2 pelo processo do aldeão v2 (contrato `docs/protagonista_v2_contrato.md`, lido
+  na `master`): recortar as vistas das folhas aprovadas `corpo.png` (frente, perfil esquerdo, costas, pose A) e
+  `chifres.png` (frente, perfil esquerdo, costas, topo, sobre busto careca), fundo uniforme, mesma escala por folha.
+- **Feito:** `tools/arte/aldeao_v2/preparar_vistas.py` sem cópia, com `--folha`, `--saida` e **`--limiar 8`**. Saída
+  em `assets/conceitos/protagonista_v2/vistas/`: `corpo_{frente,lado,costas}.png`,
+  `chifres_{frente,lado,costas,topo}.png` e as prévias `_previa_corpo.png`, `_previa_chifres.png` (quadros de 1024 px,
+  fundo #EBEBEB).
+- **O que deu errado:** com o limiar padrão (28) a pele pálida iluminada (só 15 a 23 níveis acima do fundo #DCDCDC)
+  virava fundo: 6 figuras no corpo (cabeças separadas no pescoço) e 5 nos chifres (o chifre do perfil solto da cabeça).
+  O fundo das folhas é liso (±1,5 nível), então o limiar 8 separa bem: 3 e 4 figuras, pescoço, mãos e pontas dos
+  chifres inteiros (conferido nas prévias).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Protagonista v2: folha de conferência dos recortes
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** folha com cada vista e a altura em px; dizer se as três vistas do corpo batem (altura, ombros, pés), se a
+  frente da cabeça está lisa e se as quatro vistas dos chifres são coerentes.
+- **Feito:** `tools/arte/protagonista_v2/conferir_recortes.py` → `assets/previews/protagonista_v2/recortes.png` e
+  `recortes.json` (as vistas de cada folha já estão na mesma escala; as medidas são no quadro de 1024 px).
+- **Corpo:** altura 857 / 860 / 858 px (frente/perfil/costas), **0,3%**; cabeça (topo ao pescoço) 132 / 137 / 131 px;
+  ombros (maior largura da faixa central de 3% a 8% da altura abaixo do pescoço) 174 / 171 px frente/costas, **1,7%**;
+  pés: distância entre os centros 203 / 199 px, **2,1%** (23,7% e 23,1% da altura), largura 69–72 / 67–69 px; no perfil
+  o pé tem 125 px (14,5% da altura), calcanhar 8,1% atrás do eixo da cabeça e ponta 6,4% à frente. As três batem.
+- **Rosto:** liso. Na elipse do rosto, depois de tirar o sombreado suave (ajuste quadrático), o tom varia 1,96 níveis
+  (desvio padrão), máximo 7,3; passa-alta (tom − desfoque de 5 px) no máximo 4,3 níveis, sem nenhuma marca de olho,
+  nariz ou boca (esses dariam dezenas de níveis). O busto dos chifres, em escala maior, dá 1,74 / 2,8. Cabeça do corpo
+  e do busto com a mesma proporção (largura/altura 0,87 e 0,86).
+- **Chifres:** frente, perfil e costas coerentes; o **topo não**. Os chifres são assimétricos de propósito na folha (o
+  direito dela é 32% mais alto que o esquerdo na frente), e as costas repetem isso espelhado. Altura do esquerdo:
+  131 px na frente, 153 nas costas, 147 no perfil (11% a 15% de diferença; nas costas os dois chifres saem ~12% maiores,
+  provavelmente perspectiva da imagem, com as pontas inclinadas para trás, mais perto da câmera). Distância entre os
+  chifres: 370 / 381 / 346 px (frente/costas/topo, 6,5%). **Frente para trás: 182 px no perfil contra 304 e 241 px no
+  topo (50%)**: no topo os chifres correm ao longo da cabeça por quase todo o comprimento dela, e no perfil ocupam cerca
+  de um terço. Recomendação: gerar na Meshy com frente, perfil e costas e deixar o topo de fora (como no plano dos
+  cabelos do aldeão: o topo só entra se o resultado vier errado).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.
+
+## 2026-09-29 — Protagonista v2: recortes do cabelo e proporção da cabeça nas três folhas
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** preparador na folha refeita e aprovada do cabelo (frente, perfil esquerdo, costas, topo, sobre busto
+  careca); cabelo na folha de conferência; coerência das quatro vistas; largura ÷ altura da cabeça nas três folhas.
+- **Feito:** `preparar_vistas.py --limiar 8` → `vistas/cabelo_{frente,lado,costas,topo}.png` (4 figuras inteiras);
+  `conferir_recortes.py` com a fileira do cabelo e as medidas novas; folha `cabelo.png` versionada.
+- **O que deu errado e foi corrigido no caminho:**
+  - o preparador centraliza cada vista no seu quadro, então posição (y) não se compara entre vistas de alturas
+    diferentes; as posições do cabelo passaram a ser medidas na folha original (mesma escala e chão), e os tamanhos no
+    quadro de 1024;
+  - a borda da silhueta, onde o escuro (cabelo, chifre) se mistura com o fundo, contava como pele e puxava o "topo"
+    da cabeça para a ponta dos chifres e para o alto do cabelo: o topo passou a vir da pele estrita (clara e azulada),
+    e as larguras e o queixo, da pele normal (a estrita cortaria o sombreado da borda das cabeças carecas);
+  - dois métodos descartados: elipse nas bordas laterais (errava 0,08 a 0,10 nas carecas: a cabeça em ovo é mais larga
+    em cima) e o ajuste do perfil da cabeça do corpo às bordas visíveis (errava 9% na altura dos chifres e punha o topo
+    do cabelo abaixo da linha do cabelo).
+  - A proporção que dei na entrada anterior (0,87 e 0,86, com o "pescoço" como fim da cabeça) fica substituída: o
+    pescoço é comprido e a linha mais estreita escorrega nele; o marco agora é o queixo.
+- **Cabelo:** frente, perfil e costas coerentes. Na folha original, topo do cabelo em 38,7 / 29,8 / 31,7 px (dif. 2,8%
+  da altura da cabeça); fundo no perfil e nas costas 730 / 757 px (comprimento 3,6%; nas costas a ponta do meio desce
+  mais); na frente o cabelo some atrás do busto (fica todo atrás dos ombros, como pede o contrato); largura 363 / 369 px
+  frente/costas (1,6%). O **topo não bate**: 22% mais estreito que as costas e 39% mais longo de frente para trás que o
+  perfil, a mesma incoerência do topo dos chifres; nas duas folhas o "topo" parece uma vista oblíqua de cima e de trás
+  (alonga o que vai para trás). Recomendação igual: Meshy com frente, perfil e costas.
+- **Cabeça, largura máxima ÷ (topo ao queixo), vista de frente:** corpo **0,935**; chifres **0,889** (a cabeça do busto
+  é ~5% mais estreita em relação à altura que a do corpo); cabelo: o alto do crânio está coberto, então só dá a faixa
+  **0,694** (topo da cabeça no topo do cabelo) a **0,782** (na linha do cabelo), com a largura do rosto visível. Se o
+  busto do cabelo tem mesmo a cabeça do corpo, o cabelo cobre cerca de 25 a 45 px de cada lado da testa (no quadro de
+  1024) e a calota é fina; a folha sozinha não prova isso. Para a extração: chifres com escala por eixo (~5% mais largo
+  que alto); cabelo com âncoras medidas à mão, como no aldeão (`PRIOR` do `extrair_peruca.py`).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Visor de arte, passo 1: servidor local
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** servidor só com biblioteca padrão, em 127.0.0.1:8765, entregando só `tools/arte/visor/` e `assets/`;
+  recusar a raiz, o `.env` e `..`; testar.
+- **Feito:** `tools/arte/visor/servir.py` (lista de pastas permitidas; recusa com 403 arquivos ocultos, `..` mesmo
+  codificado uma ou duas vezes, barra invertida, pastas e o que um link simbólico levar para fora; `/` redireciona
+  para o visor; sem cache; só aceita `Host` 127.0.0.1/localhost, contra DNS rebinding). `testar_servidor.py` sobe o
+  servidor, faz 27 pedidos crus por socket (para o cliente não limpar o `..`) e derruba no fim: 0 falhas, e nada fica
+  escutando na 8765.
+- **O que deu errado:** `/assets/` dava 404 (é pasta, não arquivo); passou a 403 explícito. O teste da porta pela
+  rede não rodava (o nome da máquina resolvia para 127.0.0.1); passou a descobrir o IP da interface de saída.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
+
+## 2026-09-29 — Visor de arte, passo 2: página com imagem, GIF e GLB em 3D
+
+- **Pedido:** `index.html` com three.js em versão fixa; lê `assets/previews/visor.json` a cada 2 s; mais novo em
+  destaque e lista dos anteriores; imagem/GIF em tamanho real com zoom; GLB em 3D com câmera orbital, vistas, câmera
+  do jogo, toon de 3 faixas, luz fria de cima, fundo #4E4A58, crepúsculo, clipes e GLBs "junto".
+- **Feito:** `tools/arte/visor/index.html`, `visor.js`, `visor.css`, `personagens.json` e three.js **r169** copiado em
+  `vendor/` (módulo, GLTFLoader, OrbitControls, BufferGeometryUtils, licença MIT): funciona sem internet.
+  - Toon: `ShaderMaterial` com a conta do `Toon.gdshaderinc` (meio-Lambert, `floor(ndl·3)/2`, piso 0,35 por
+    personagem no `personagens.json`), com pele (skinning). Cores pelo nome do material, dos contratos: aldeão pele
+    #AEBFD3 e cabelo #6F7F96; protagonista pele #91ADB7, cabelo #4B5A69, chifre #2B2140, tecido #3F3342, cristal
+    emissivo. Retalhos do rosto como o `VillagerFace.gdshader`: UV cru + célula da grade do `rosto.json`, quadro 0.
+  - Luz: cores do sol e do ambiente do `scenes/Main.tscn`, sol vindo de cima (65°). Aproximação, sem calibrar.
+  - "Junto": peça rígida vai para o osso do encaixe (cabelo/chifre → Head, cristal → Spine) compensando o repouso no
+    espaço do Armature, como o jogo faz com `GetBoneGlobalRest`; corpo com esqueleto vai ao lado; GLB só de clipes
+    empresta as animações ao principal.
+  - Câmera do jogo: `CameraRig.cs` (55°, FOV 45°, 16 m ÷ zoom, olhando o chão sob o personagem pela frente),
+    desenhada em 3024×1890 e encaixada na caixa, ou 1:1 com rolagem; mostra a altura do personagem em px.
+  - Crepúsculo: camada `multiply` de #6A5B7C sobre imagem ou 3D; lembrado por visitante.
+- **Conferido no portal "Visor"** (servidor subido só para o teste): cabelo 4 preso na cabeça durante idle e run,
+  rosto no lugar, faixas visíveis, clipes tocam/pausam/repouso, imagem em tamanho real. Aldeão com cabelo, em
+  repouso: **19 / 48 / 123 px** nos zooms 0,4 / 1 / 2,5 (a nota 01 dá 19 / 44 / 112 px, só o corpo).
+- **O que deu errado:** a altura em px pela caixa envolvente saía 24 / 61 / 153 px (a profundidade da caixa entra na
+  projeção inclinada); passou a projetar vértice a vértice, já com a pose do clipe.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Visor de arte, passo 3: publicar.py
+
+- **Pedido:** `publicar.py <caminho> <tipo> "<titulo>" "<nota>" [--junto a.glb b.glb]` acrescentando ao `visor.json`.
+- **Feito:** `tools/arte/visor/publicar.py` (só biblioteca padrão). Valida que o arquivo existe, fica em `assets/`
+  (o que o servidor entrega), não passa por pasta oculta e tem extensão do tipo (imagem: png/jpg/webp; gif; glb);
+  `--junto` só com glb. Grava `quando` local em segundos (desempata se dois caírem no mesmo segundo) e troca o
+  arquivo de uma vez, para o visor nunca ler JSON pela metade. Conferido: recusa `.env`, `docs/GDD.md`,
+  `assets/../.env`, PNG como glb e `--junto` em imagem, sem criar o `visor.json`.
+- **Daqui em diante toda prévia vai para o visor por este script.**
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~10 min.
+
+## 2026-09-29 — Visor de arte, passo 4: primeiro conteúdo
+
+- **Pedido:** publicar a folha de conferência dos recortes e o `aldeao_corpo.glb` com o `cabelo_4` junto, como prova
+  do 3D, dos clipes e da câmera do jogo.
+- **Feito:** dois itens em `assets/previews/visor.json` pelo `publicar.py`. No portal "Visor" do Maestri: o visor
+  trocou sozinho para o item novo na sondagem; conferência em tamanho real; aldeão com cabelo 4 no osso Head, idle e
+  run tocando, câmera do jogo nos três zooms, 1:1 desenhando 3024×1890 pixels de tela (1512×945 CSS com dpr 2).
+  Servidor derrubado no fim; o portal fica aberto no canvas apontando para http://127.0.0.1:8765/.
+- **Pendente:** calibrar a luz do visor contra uma captura do jogo (hoje é aproximação com as cores do
+  `Main.tscn` e o sol de cima); o piso 0,5 e a borda fria da protagonista ainda não existem no shader do jogo, então
+  o visor usa 0,35 para os dois.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Protagonista v2, passo 2A: corpo na Meshy, só a frente
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** corpo na Meshy, teto de 3 gerações e 60 créditos (aval do Arthur em 29/09/2026); geração A com
+  `corpo_frente.png`, sem textura, pose A; brutos em `assets/modelos/protagonista_v2/meshy/` com id e custo.
+- **Feito:** `tools/arte/protagonista_v2/meshy_corpo.py`, com os parâmetros do corpo aprovado do aldeão
+  (`ai_model` latest, sem textura, `a-pose`, remesh em triângulos, alvo 2.500, simetria automática). Travas: 3
+  gerações, 60 créditos contados no estado, saldo e custo previsto conferidos antes de cada geração; a 3ª só sai com
+  `--reserva`. O registro público (ids, créditos, parâmetros; sem chave) vai em `meshy/corpo_meshy.json`.
+- **Geração A:** tarefa `01a0efa8-beea-71aa-806a-73567944494f` (image-to-3d), **20 créditos** (saldo 2.298 → 2.278).
+  `corpo_a_frente_1.glb`, 124 KB, 2.602 triângulos brutos, uma malha sem material, 1,90 m de altura bruta.
+- **Créditos:** 20 (acumulado nesta parte: 20/60). **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Protagonista v2, passo 2B: corpo na Meshy, frente + perfil + costas
+
+- **Geração B:** tarefa `01a0efaa-2e6e-72fb-a1a6-8d343e404f45` (multi-image-to-3d, `corpo_frente`, `corpo_lado`,
+  `corpo_costas`, sem o topo), mesmos parâmetros da A, **20 créditos** (saldo 2.278 → 2.258).
+  `corpo_b_multi_1.glb`, 124 KB, 2.620 triângulos brutos, uma malha sem material, 1,90 m de altura bruta.
+- A reserva (3ª geração) **não foi usada**: nenhuma das duas falhou tecnicamente no download (a conferência
+  visual vem na folha de contato).
+- **Créditos:** 20 (acumulado nesta parte: 40/60). **Correções manuais:** nenhuma. **Tempo:** ~5 min.
+
+## 2026-09-29 — Protagonista v2, passo 2C: folha de contato dos corpos brutos
+
+- **Pedido:** uma fileira por geração (frente, lado, 3/4, câmera do jogo nos três zooms), aldeão v2 ao lado,
+  protagonista a 0,80 m, material fosco chapado, luz baixa e fria de cima, versão crepúsculo; altura em px, triângulos,
+  cabeça contra a folha (0,935), mãos, pés, simetria e anatomia marcada.
+- **Feito:** `render_meshy.py` (Blender; toon do `prot_lib`, luz do diagnóstico aprovado da v1; câmera do jogo em
+  3024×1890 e altura por projeção de vértices) e `folha_meshy.py` (recortes 1:1 da câmera do jogo; cabeça pelo
+  mesmo `head_profile` do `conferir_recortes.py`). Saída: `assets/previews/protagonista_v2/meshy_corpo.png`,
+  `meshy_corpo_crepusculo.png` e `meshy_corpo.json`; notas em `tools/arte/protagonista_v2/notas_meshy_corpo.json`.
+- **Medidas (A / B):** triângulos 2.602 / 2.620; câmera do jogo 32 / 81 / 215 e 32 / 80 / 212 px (alvo 28 / 68 / 179);
+  cabeça L÷A 0,915 / 0,901 (folha 0,935); cabeça 14,0% / 14,1% da altura (folha 14,4%); simetria: espelho a 4,3 mm
+  em média nas duas (p95 ~10,7 mm). O aldeão ao lado mede 17 / 43 / 111 px (nota 01: 19 / 44 / 112): a medida está
+  calibrada.
+- **Observação para o Diretor:** a 0,80 m do contrato a protagonista sai ~19% acima do alvo em px nos três zooms
+  (215 contra 179). O alvo pede 1,6× a altura do aldeão; o contrato dá 2×. Um dos dois precisa mudar (0,80 m → ~0,67 m
+  bate o alvo); não mudei nada.
+- **O que deu errado e foi corrigido:** a projeção e a "direita da câmera" usavam a `matrix_world` da câmera antes de o
+  Blender atualizar a cena (px absurdos e aldeão atrás da protagonista no perfil); passou a atualizar a cena ao criar a
+  câmera. A troca de ponto por vírgula nos números não mexe mais nas vírgulas do texto.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Protagonista v2, passo 2D: folha e corpos brutos no visor
+
+- **Feito:** publicados no visor os dois GLBs brutos (com o aldeão v2 junto), a folha de contato e a versão
+  crepúsculo; o portal "Visor" ficou na folha. Para o GLB bruto (1,90 m, sem material) aparecer em escala, o
+  `publicar.py` ganhou `--altura` (o visor normaliza o principal a essa altura, pés no chão, como o
+  `render_meshy.py`) e o visor pinta material sem nome com a pele do personagem.
+- **Nota:** o servidor do visor já estava no ar pelo terminal "Visor" (processo `servir.py` desta worktree); não mexi
+  nele.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Protagonista v2: estudo de proporção da cabeça (só prévia)
+
+- **Pedido:** medir cabeça ÷ altura da v1 nas referências; sobre o bruto B, sem salvar GLB, cabeça escalada a partir
+  da base do pescoço para 14% (atual), 18% e a proporção da v1, em 0,80 m e 0,67 m; folha com frente e câmera do jogo
+  (0,4 / 1 / 2,5), aldeão v2 ao lado, px medidos, crepúsculo e a v1 renderizada como referência.
+- **Feito:** `medir_cabeca_v1.py` (Blender: topo = ponto mais alto; queixo = vértice mais baixo do rosto, osso Head, metade
+  da frente, perto da linha do meio; linhas conferidas sobre `v1_frente.png` e `v1_lado.png`), `estudo_cabeca.py`
+  (marcos do B na máscara de frente e montagem da folha) e `render_estudo_cabeca.py` (Blender: deforma só na memória;
+  cabeça escalada acima da base do pescoço com uma faixa de 1,5 cm que só alarga, depois a figura inteira à altura
+  pedida). Saída: `assets/previews/protagonista_v2/estudo_cabeca.png`, `_crepusculo.png` e `.json`. O `render_meshy.py`
+  ganhou a guarda `if __name__ == "__main__"` (é importado pelo estudo).
+- **Medidas (topo ao queixo ÷ altura):** v1 **18,8%** (0,80 m, cabeça 15,0 cm, com o cabelo do topo), aldeão v2 **44,4%**,
+  bruto B **14,1%**. Como 18% e 18,8% quase coincidem, acrescentei **22%** (a estimativa do Diretor). Fatores da cabeça:
+  1,35× (18%), 1,43× (v1), 1,77× (22%). Câmera do jogo: todas as variações a 0,80 m dão ~31 / 80 / 212 px; a 0,67 m,
+  ~26 / 67 / 175 px; a v1 dá **26 / 67 / 178 px**.
+- **Correção do que eu disse no passo 2C:** o alvo de 179 px não pede ~0,67 m. A v1 tem os mesmos 0,80 m do contrato e
+  dá 178 px; o B a 0,80 m dá 212 px porque a câmera a 55° soma a profundidade: na projeção a v1 ocupa 0,451 m (cabeça
+  pendendo para a frente, pés que não avançam) e o B 0,544 m (ereto, nuca atrás, dedos dos pés 6,5 cm à frente); a razão
+  1,21 é a dos px. Os px na câmera dependem da pose e ficam para depois do rig.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 15 min.
+
+## 2026-09-29 — Prova de operação: gif_roda.py com um clipe por posto (pendência do aldeão)
+
+- **Pedido:** o `gif_roda.py` ainda tocava o clipe A ao contrário no posto B (atalho proibido pelo contrato); usar um
+  clipe por posto (`girar_roda-loop` e `girar_roda_b-loop`), posicionado pela fase da peça, como o jogo; refazer os GIFs
+  e comparar com os antigos. Sem mexer no corpo aprovado (sha256 3138cbf6… conferido) nem nos clipes.
+- **Feito:** a cena sai do `clipes.json`: cada aldeão na posição e no giro do seu posto no espaço da roda
+  (glTF → Blender), cada um com a sua ação importada do seu GLB de clipe; os dois pela mesma fase, quadro = fase × 48;
+  a roda gira −360° × fase em volta do +Z do glTF. A cena inteira é girada −90° em Z para o enquadramento ficar o dos
+  GIFs anteriores. Refeitos os GIFs de `assets/previews/prova_operacao/` e de `variante_r06/`, com as medidas.
+- **O que deu errado e foi corrigido:** o script já não rodava com o `clipes.json` atual (o raio mudou de `roda` para
+  `peca`); e a segunda metade da pendência: o clipe importado começa no quadro 0 (t = 0), então `frame_set(1 + t)`
+  deixava os aldeões 1 quadro (7,5°) atrás da roda — as faltas palma-manopla subiam de 34/35 para 36/37 mm. Com
+  quadro = fase × 48 voltaram exatamente às antigas.
+- **Comparação com os antigos:** **nada mudou visualmente.** Diferença máxima de 1 pixel por quadro (limiar 24 níveis)
+  nas quatro animações (jogo e lado, raio 0,10 e 0,06), sem defasagem de fase; faltas palma-manopla iguais
+  (0,10 m: 34,3 / 35,4 mm; 0,06 m: 1,5 / 2,4 mm, antes 2,5). O clipe próprio do B reproduz a pose que o atalho dava.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Protagonista v2, passo 3A: limpeza do corpo (B, cabeça 18%, 0,80 m)
+
+- **Pedido:** limpar o bruto B com o aval do Arthur (cabeça 18%, 0,80 m): escala, simetria, cabeça escalada a partir da
+  base do pescoço, Taubin com passe extra nas pernas, tirar clavícula/esterno/joelhos marcados e a borda do short
+  gravada, um pouco de glúteo e costas no perfil, 8 regiões + roupa_intima, materiais pele e tecido, mãos meio fechadas,
+  ≤ 2.500 triângulos, frente da cabeça lisa. Sem rosto e sem rig.
+- **Feito:** `tools/arte/protagonista_v2/limpar_corpo.py` → `assets/modelos/protagonista_v2/protagonista_corpo_limpo.glb`
+  (sem rig) e `protagonista_corpo_limpeza.json`. Fundidos 2.141 vértices duplicados da Meshy; simetria pelo lado +x
+  (frente da cabeça mais lisa); cabeça × 1,355 a partir da base do pescoço (marcos do estudo ebb6705) e o corpo inteiro
+  × 0,940 de volta a 0,80 m → **cabeça 18,05%**; glúteo até 6 mm para trás e lombar 3 mm para dentro (só deslocando
+  vértices); Taubin 6 passes no corpo, +10 nas pernas, +25 na clavícula/esterno, joelhos, cotovelos, bordas do short e
+  base do pescoço; mãos fora do alisamento; cabeça subdividida e 90 passes; decimação com simetria segurando juntas e
+  mãos; cortes retos no cós e na bainha (a borda pele/tecido). Normais suaves da malha inteira copiadas para as peças.
+- **Resultado:** 0,80 m, **2.474 triângulos**: cabeca 386, tronco 394, bracos 284, maos 442, quadril 32, roupa_intima
+  462, coxas 232, canelas 136, pes 106. Materiais "pele" #91ADB7 e "tecido" #3F3342, 9 malhas com os nomes do contrato.
+- **Frente da cabeça:** a medida do aldeão (desvio contra elipsoide) não serve para a cabeça em ovo com queixo (dá 3 mm
+  de RMS só pelo formato); criei uma que só pega calombos: resíduo de uma superfície cúbica na janela do rosto (±45°, do
+  queixo a 70% da cabeça): **RMS 0,76 mm, máx 1,64 mm** depois de decimar (antes de decimar, com a cabeça densa, 0,93 /
+  4,49 mm no canto do queixo; a meta de 0,5 / 1,5 mm não chegou em 90 passes). A olho, lisa.
+- **Escolhas (não estavam no pedido):** `roupa_intima` é o próprio short (material tecido) e `quadril` é a faixa de
+  pele da bacia acima do cós, sem casca duplicada (a calça esconde as duas juntas no `equipment.json`); as outras
+  bordas de região seguem as faces (só aparecem com a roupa que esconde a região; cortá-las retas custava ~700
+  triângulos). As mãos ficaram com 18% do orçamento para manter o meio fechado.
+- **O que deu errado e foi corrigido:** cortes retos em todas as bordas somavam 896 triângulos (e o do ombro pegava a
+  cabeça); ficaram só os do short. A primeira medida da cabeça (a do aldeão) não convergia por causa do formato.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 30 min.
+
+## 2026-09-29 — Protagonista v2, passo 3B: folha de contato do corpo limpo
+
+- **Feito:** `render_limpo.py` (Blender: frente, lado, costas, 3/4 com o aldeão ao lado; câmera do jogo nos três zooms;
+  regiões pintadas; máscara) e `folha_limpo.py` → `assets/previews/protagonista_v2/corpo_limpo.png`, `_crepusculo.png` e
+  `.json`. Publicados no visor a folha, a versão crepúsculo e o GLB limpo com o aldeão junto; portal "Visor" na folha.
+- **Medidas:** 0,800 m; 2.474 triângulos; cabeça 18,05% pela conta e **18,3% pela silhueta** (head_profile das folhas);
+  câmera do jogo 31 / 80 / 211 px (aldeão 17 / 43 / 111). Como no estudo, a diferença para o alvo de 179 px é a pose
+  (A, ereta) e não a altura; volta a medir depois do rig.
+- **Pendente:** `ergonomia.json` — o `medir_ergonomia.py` precisa do rig (ossos Hips, Spine, braços e IK); sai logo
+  depois do rig, que não fazia parte desta tarefa.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Protagonista v2, passo 3C: triângulos das mãos para a cabeça
+
+- **Pedido:** mãos (442, 18%, quase somem de cima) para ~200 mantendo o meio fechado; a sobra para a cabeça, que domina
+  na câmera do jogo e estava facetada (386); sem mudar os 18%; total ≤ 2.500.
+- **Feito:** a decimação do `limpar_corpo.py` passou a ser por orçamento, em três etapas (mãos 200, cabeça 620, resto do
+  corpo 1.350 com as juntas seguras), cada uma com as outras partes travadas (peso 0 no grupo de vértices trava de
+  verdade). Depois, 4 passes de Taubin só nas mãos, para tirar as pontas da decimação.
+- **Resultado:** cabeca **652**, maos **226**, tronco 382, bracos 264, quadril 36, roupa_intima 458, coxas 228, canelas 136,
+  pes 98 = **2.480**; cabeça 18,05%, 0,80 m. Frente da cabeça (calombos na janela ±45°): RMS 0,98 mm, máx 2,75 mm — a
+  janela agora tem 51 vértices (antes 17), então a medida enxerga mais; a olho, crânio e frente mais redondos.
+- **O que deu errado e foi corrigido:** pesos diferentes para mãos e cabeça numa decimação só davam resultado caótico
+  (cabeça 1.236 e mãos 16; quadril sumindo; pesos diferentes com o mesmo resultado) — daí as etapas. Um Taubin extra na
+  cabeça depois de decimar piorou a medida (1,14 / 3,78 mm) sem ganho visível; ficou de fora.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.
+
+## 2026-09-29 — Protagonista v2, passo 4: estudo do rosto e prova na câmera do jogo (antes do rig)
+
+- **Pedido:** 3 variações do rosto pelo contrato (olhos amendoados sem pupila, 3 cílios longos no canto externo,
+  olheira mais funda que a do aldeão, fissura fina sob o olho esquerdo, boca reta e curta; neutra_cansada), variando
+  tamanho dos olhos, inclinação dos cantos e força da olheira; retalhos como no aldeão; prova na câmera do jogo com o
+  aldeão ao lado e crepúsculo; dizer em que zoom cada traço lê.
+- **Feito:** `estudo_rosto.py` (PIL, primitivas de traço do `aldeao_v2/desenhar_rosto.py`, mesmo rosto de 256 px e as
+  mesmas janelas → células 512×320 e 256×128; olhos e boca em camadas separadas) → `rosto_estudo/{a,b,c}_{olhos,boca}.png`
+  e `estudo_rosto_2d.png`; `prova_rosto.py` (Blender: `face_patch` do aldeão na malha "cabeca", 2 mm, olhos até ±45° e
+  janela 10% mais alta, boca na janela padrão; toon com alfa misturado) e `folha_rosto.py` → `rosto_prova.png`,
+  `_crepusculo.png` e `.json`; notas de leitura em `tools/arte/protagonista_v2/notas_rosto.json`. O peso 100% Head fica
+  para o rig.
+- **Variações:** a médios, canto externo caído 6 px, olheira 125; b grandes, cantos retos, olheira 150; c menores, canto
+  caído 12 px, olheira 180 (força de 0 a 255; o aldeão usa 110).
+- **Leitura na câmera do jogo:** zoom 2,5 (cabeça ~51 px): olhos nítidos, olheira lê como anel escuro (mais em b e c),
+  cílios só 1–2 px no canto, fissura e boca não leem; zoom 1 (~19 px): só os olhos, como pares de pixels claros (b
+  melhor, c quase some); zoom 0,4 (~8 px): nada do rosto. A 55° a frente do rosto encurta e a boca some sob a cabeça.
+- **O que deu errado e foi corrigido:** no primeiro rascunho a pálpebra e a sombra fechavam o olho num risco e as
+  olheiras pareciam óculos (reduzidas e suavizadas); na primeira prova cada rosto tinha duas bocas, porque a janela dos
+  olhos também cobre a altura da boca (camadas separadas).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 15 min.
+
+## 2026-09-29 — Protagonista v2: rosto, rodada 2 (b1, b2) e cabeça sem facetas
+
+- **Pedido (crítica do Diretor):** olhos fechados demais (lê sono, não a tristeza da v1): abrir, mais branco-osso,
+  pálpebra só no terço de cima; rosto baixo e queixo longo = alienígena: subir a boca e encurtar o queixo sem mudar os
+  18%; cabeça ainda facetada na testa e no crânio: conferir o sombreamento; b1 (só olhos) e b2 (olhos + boca + queixo),
+  com a v1 ao lado.
+- **Cabeça (limpar_corpo.py):** o serrilhado não era aresta dura (normais já suaves): era a triangulação irregular da
+  decimação, que a toon de 3 faixas mostra nas bordas das faixas (o aldeão também tem, menos). Três mudanças:
+  (1) a junta do quadril segurava o short inteiro; agora só a virilha → short 458 → 318 e cabeça 652 → **810**
+  (orçamento 780); (2) relaxamento tangencial dos vértices da cabeça (6 iterações, reprojetando na superfície original,
+  com troca de diagonais), sem mudar formato nem contagem; (3) normais da cabeça tiradas de uma cópia alisada por Taubin
+  (60 passes), gravadas como normais do GLB. Total 2.482, cabeça 18,05%.
+- **Rosto:** `estudo_rosto.py 2` → `rosto_estudo/rodada2/` (b1 e b2: olhos da b maiores na altura, pálpebra 20–30%, sombra
+  leve, contorno de baixo escuro). `prova_rosto.py` ganhou boca_sobe, queixo e `--v1`; b2 só na memória: parte de baixo
+  do rosto × 0,72 e a cabeça de volta a 18% (× 1,19 a partir da base do pescoço) — **fica 19% mais larga** (largura ÷
+  altura 1,03; b1 0,90; folha 0,935). Folha `rosto_prova_r2.png` (+ crepúsculo, .json), notas em `notas_rosto_r2.json`.
+- **Leitura no jogo:** zoom 2,5 — olhos como amêndoas brancas nítidas nas duas, olheira lê, cílios 1–2 px, fissura e boca
+  não; zoom 1 — olhos como dois traços claros (antes, pares de pixels), b2 um pouco mais (cabeça 22 px contra 19); zoom
+  0,4 — um pixel por olho. A v1 no zoom 1: só cabelo e o brilho do cristal.
+- **O que deu errado e foi corrigido:** normais de uma cópia alisada por Laplaciano puro deformavam a cópia e viravam as
+  faixas (trocado por Taubin); o relaxamento com troca de diagonais rodava depois da classificação das regiões e
+  embaralhou os índices (cacos de tecido no tronco) — passou para antes; a caixa da cabeça da v1 pegava os braços em pose T.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~2 h.
+
+## 2026-09-29 — Protagonista v2: rosto, rodada 3 (b3)
+
+- **Pedido:** b3 = b1 com a boca subida só no retalho, sem mexer na geometria nem na largura da cabeça; mesma prova, com
+  a b1 e a v1 ao lado.
+- **Feito:** `estudo_rosto.py 3` → `rosto_estudo/rodada3/` (b1 e b3, mesmo desenho; b3 com `boca_sobe` 0,12, `queixo`
+  1,0); `prova_rosto.py … rodada3 --v1`; `folha_rosto.py` → `rosto_prova_r3.png` (+ crepúsculo, .json); notas em
+  `notas_rosto_r3.json`.
+- **Resultado:** janela da boca 2 cm mais alta (0,668–0,690 → 0,688–0,710 m); cabeça igual à da b1 (largura ÷ altura
+  0,898; 51 / 19 / 8 px nos zooms 2,5 / 1 / 0,4). Na câmera do jogo b3 lê igual à b1 (a boca não lê de cima): a diferença
+  é só de perto, onde o vão olhos–boca fica parecido com o da v1.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Protagonista v2, passo 6: atlas do rosto (b3 aprovada)
+
+- **Pedido:** Arthur aprovou o corpo limpo e o rosto b3. Subir a fissura para perto do canto do olho esquerdo (na b3 ela
+  ficava na altura da boca e as duas pareciam um bigode torto); atlas por código como no aldeão, com as 5 expressões do
+  contrato (emoção pelas pálpebras e pela olheira, sem sobrancelha); rosto.json no padrão do aldeão (ossoPeito "Spine";
+  passada depois do rig); prova em close (frente e 3/4) e no zoom 2,5 com o aldeão; GIF do piscar.
+- **Feito:** `tools/arte/protagonista_v2/atlas_rosto.py` → `assets/modelos/protagonista_v2/rosto/olhos.png` (3×2 de
+  512×320: aberto_cansado, meio_fechado, fechado, apertado, dor, olhar_baixo), `boca.png` (2×2 de 256×128: reta, tensa,
+  dor, uma vazia) e `rosto.json` (expressões neutra_cansada, esforco, dor, piscar, olhar_cristal; ossoCabeca "Head",
+  ossoPeito "Spine"; sem passadaRun até o rig); margem de 16 px conferida por código; prévia `rosto_atlas.png`.
+  `prova_atlas.py` (Blender, retalhos nas janelas da b3) e `folha_atlas.py` → `rosto_atlas_prova.png` (+ crepúsculo),
+  `piscar_close.gif` e `piscar_jogo.gif` (aberto 1,2 s, meio 80 ms, fechado 120 ms, meio 80 ms).
+- **Expressões:** esforço = pálpebras apertando numa fenda (a de baixo sobe 38%) + boca tensa mais larga; dor = pálpebra
+  de cima inclinada (canto interno quase aberto, externo 66% coberto), a de baixo sobe 30%, olheira mais forte + boca
+  entreaberta caída; olhar_cristal = pálpebras baixas (50–56%), sobra o crescente de baixo (a cabeça vai inclinar no
+  clipe); piscar = linha fechada curvada com os cílios.
+- **Leitura no zoom 2,5:** as cinco se separam pela quantidade de branco do olho (neutra > olhar_cristal > dor >
+  esforço > piscar, sem branco); o piscar lê no GIF.
+- **O que deu errado e foi corrigido:** o aldeão tem arquivos com os mesmos nomes (`estudo_rosto.py`,
+  `desenhar_rosto.py`) e o Python importava o errado; o script da protagonista virou `atlas_rosto.py` e carrega os dois
+  módulos pelo caminho. A primeira dor quase não se diferenciava da neutra (inclinação reforçada).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Protagonista v2: plano de créditos para o "manda" (0 créditos)
+
+- **Pedido:** plano com custo, sem gastar, para rig e clipes, chifres (piloto rígido) e cabelo com pesos; tabela com
+  mínimo/máximo e as paradas para o Arthur; em `assets/previews/protagonista_v2/plano_creditos.md`, no visor. Nota do
+  Diretor para depois: no zoom 2,5, dor e esforço ficaram quase iguais; na próxima volta, a dor ganha assimetria.
+- **Levantado (grátis):** saldo **2.258**; tabela de preços da API (docs.meshy.ai, hoje): modelo só malha 20, rig 5 por
+  pedido (recusa não cobra), animação 3 por ação (até 10 por pedido), remesh 5; biblioteca de animações (678 ações):
+  corridas Run 2 (14), Run 3 (15), Run Fast (16), Lean Forward Sprint (509) e idles calmos Idle 3 (243), Idle 12 (252),
+  Catching Breath (31), Long Breathe and Look Around (336). Custos do aldeão no diário: rig + clipes 20, cabelos 100.
+  Uthana: sem conta nem chave; o GDD dá "preço a confirmar" e é dinheiro, não crédito.
+- **Plano:** rig 5–10 (direto no corpo limpo; se recusar, pela tarefa original do B até ~02/10, quando o bruto expira,
+  com transferência de pesos e os ossos da cabeça acompanhando a limpeza); corridas 3–12; idles 3–12; reserva de
+  clipes 0–12; chifres 20–60; cabelo 20–40; ergonomia, retalhos no GLB, cristal e `clipes.json` sem crédito.
+  **Total 51–146**; sugestão de teto de 150 para a protagonista inteira, com paradas.
+- **Visor:** novo tipo "texto" (.md): o `publicar.py` aceita, e o visor desenha títulos, listas, tabelas, negrito e
+  código com um conversor pequeno (sem biblioteca nova).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Protagonista v2: cristal do peito por código
+
+- **Pedido:** o cristal pelo contrato (≤ 60 triângulos, material "Cristal", único emissivo, encaixe Peito no Spine, luz
+  azul e camada da v1), peça própria posicionada no peito do corpo limpo em repouso; prova de frente, 3/4 e câmera do jogo
+  nos 3 zooms, com crepúsculo, ao lado da v1; tem de ler no zoom 0,4.
+- **v1 medida (`protagonista.glb`, repouso):** losango chato de 4 triângulos, 27 × 52 mm, 4 cm abaixo do Spine, um pouco
+  fora do centro; material "Cristal" com textura de emissão ciano (média #4C9DB7, pico #8DF1FC), força 3.
+- **Feito:** `tools/arte/protagonista_v2/cristal.py` → `assets/modelos/protagonista_v2/cristal.glb` + `cristal.json`:
+  prisma hexagonal alongado com pontas, **24 triângulos**, 30 × 58 × 16 mm, na linha do meio na altura da axila do corpo
+  limpo (0,559 m), meio encaixado (avança 8,1 mm do esterno), inclinado 15° para cima (a câmera vem de cima); cor #8FE3FF,
+  emissão #4CC3FF força 3 (o jogo multiplica por 3); no espaço do corpo em repouso. O `cristal.json` leva a luz da v1 para o
+  jogo (OmniLight cor 0,35/0,55/1, energia 0,85, alcance 2,3, atenuação 1,4, camada própria 20). `prova_cristal.py` e
+  `folha_cristal.py` → `assets/previews/protagonista_v2/cristal_prova.png`.
+- **Leitura:** câmera do jogo 1,7 × 2,6 / 4,4 × 6,6 / 11,8 × 17,8 px nos zooms 0,4 / 1 / 2,5 (v1: 1,6 × 1,9 / 3,9 × 4,9 /
+  10,2 × 13,4). No zoom 0,4 lê como um ponto ciano forte, como o da v1, de dia e no crepúsculo (no crepúsculo a luz cai e
+  a emissão não, como no jogo). Com força 3 × 3 a cor satura para ciano quase branco, como na v1.
+- **O que deu errado:** a emissão por uma imagem de 1 pixel no material toon não entrava no render (gema apagada no
+  crepúsculo); a prova passou a usar um material de emissão direto.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.
+
+## 2026-09-29 — Protagonista v2, passo 7A: rig da Meshy e clipes candidatos (41 créditos)
+
+- **Manda do Arthur (29/09/2026):** teto de 300 créditos da Meshy para a protagonista inteira (corpo, rig, clipes,
+  chifres, cabelo), qualidade antes de economia, saldo e custo conferidos antes de cada pedido, paradas do
+  `plano_creditos.md`. Uthana à parte.
+- **Feito:** `tools/arte/protagonista_v2/preparar_rig.py` (corpo limpo juntado numa malha, sem o cristal, vértices das
+  bordas fundidos → `meshy/corpo_para_rig.glb`, 2.482 triângulos) e `meshy_rig.py` (teto de 300 contando os 40 do corpo;
+  saldo e custo antes de cada pedido; registro público `meshy/rig_meshy.json`, sem chave).
+- **Rig direto no corpo limpo:** passou de primeira (no aldeão, esse pedido foi recusado) — **5 créditos**, saldo
+  2.258 → 2.253. 24 ossos, armature a 0,01 (a exportação pelo contrato leva a 1), malha remontada pela Meshy com 2.426
+  triângulos a 0,80 m; Spine a 0,549 m (o cristal fica a 0,559), Head a 0,604. Vieram grátis a caminhada e a corrida
+  básicas. A tarefa original do B não foi usada.
+- **Clipes candidatos (2 pedidos, 36 créditos, saldo 2.253 → 2.217):** corridas Run 2 (14), Run 3 (15), Run Fast (16),
+  Lean Forward Sprint (509), Run Fast 2 (539), Run Fast 3 (530); idles Idle (0), Idle 1 (11), Idle 3 (243), Idle 12
+  (252), Catching Breath (31), Long Breathe and Look Around (336). Brutos em `assets/modelos/protagonista_v2/meshy/rig/`.
+- **Créditos:** 41 (na protagonista: 81 de 300). **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Protagonista v2, parada 1: corpo com rig, retalhos e GIFs dos clipes candidatos
+
+- **Feito:** `montar_rig.py` (rig.glb da Meshy → armature; pesos transferidos da malha da Meshy para as 9 malhas do
+  corpo limpo, 0 vértices sem peso; pele da frente da cabeça 100% Head em 115 vértices; retalhos "Olhos" e "Boca" nas
+  janelas da b3 com o atlas, 100% Head; conferência em 6 quadros de cada clipe; exportação pelo contrato) →
+  `assets/modelos/protagonista_v2/protagonista_corpo_prova.glb` + `.json`. Clipes PROVISÓRIOS nesse GLB (Idle e a corrida
+  básica), só para a conferência. `gif_clipes.py` e `gif_montar.py` (versões da protagonista dos do aldeão: 0,80 m, GIF
+  do jogo a 80 px ampliado 2×, lado 320 px, grade do chão na passada) → `assets/previews/protagonista_v2/clipes/` (13
+  opções × jogo e lado, `_opcoes.png`, `_tira_corridas.png`, `_tira_idles.png`); `folha_rig.py` → `rig_parada1.png`.
+- **Conferência:** retalhos a 2 mm, folga entre 1,9 e 2,35 mm nos quadros conferidos (nunca atravessam); Armature escala
+  1, 2.482 triângulos no corpo, materiais pele, tecido, rosto_olhos, rosto_boca.
+- **Defeito visto, a corrigir na montagem final:** na corrida, uma ponta do short sai atrás da coxa (peso de um vértice
+  da bainha perto da virilha vindo da perna errada).
+- **Clipes (medidas do `_opcoes.png`):** corridas — corrida básica 16 q, 1,86 m/s, laço 4,0 cm; Run 2 17 q, 1,19 m/s,
+  13,1 cm; **Run 3 19 q, 1,19 m/s, 3,5 cm**; Run Fast 11 q, 2,58 m/s, 6,1 cm; Run Fast 2 e 3 e Lean Forward Sprint com
+  avanço de raiz (3,0 / 1,5 / 2,3 m/s), laços de 13 a 37 cm. Idles — Idle 96 q (pernas abertas, balanço pesado); Idle_02
+  56 q (mãos na frente); Idle 3 239 q, laço 10,3 cm; Idle 12 144 q, 1,7 cm; **Long Breathe and Look Around 270 q (11 s),
+  1,4 cm**; Catching Breath anda (raiz 0,44 m/s, sai de quadro): não serve de idle.
+- **Recomendação:** run = **Run 3** (leve, ereta, o laço mais limpo; segunda: Run Fast 3, mais delicada); idle = **Long
+  Breathe and Look Around** (cabeça baixa, olha em volta, melancólica, combina com a neutra_cansada; segunda: Idle 12).
+- **Créditos:** 0 nesta parte (na protagonista: 81 de 300; saldo 2.217). **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.
+
+## 2026-09-29 — Protagonista v2, passo 7B: corpo final (Run 3 e Long Breathe), .import, ergonomia e sha256
+
+- **Escolha do Arthur (29/09):** corrida Run 3 e idle Long Breathe and Look Around.
+- **Feito (`montar_rig.py --final`):** idle-loop = Long Breathe and Look Around, run-loop = Run 3; os clipes da Meshy
+  terminam em quadro fracionário (270,4 e 19,2) e a exportação amostra em inteiros, o que reabria o laço: agora cada clipe
+  é reamostrado em quadros inteiros a partir de 0 (270 e 19; a corrida fica 1% mais rápida), a run perde o avanço de
+  raiz (0,003 m/s) e os laços são fechados (misturados 68 e 5 quadros). No GLB exportado o primeiro e o último quadro são
+  **idênticos em todos os ossos** nos dois clipes. Passada pelos pés **1,267 m/s** → `assets/modelos/protagonista_v2/
+  clipes/clipes.json` (`passada_m_s`). Short corrigido: abaixo do quadril, cada lado perde o peso dos ossos da perna do
+  outro lado (297 vértices); conferido em 5 quadros da corrida, de frente e de costas: sem a ponta atrás da coxa.
+  Retalhos: folga 1,9–2,0 mm. Exportação pelo contrato (Armature escala 1, metros, t = 0, 24 fps).
+- **Entregas:** `assets/modelos/protagonista_v2/protagonista_corpo.glb` (sha256
+  `383bda5f36dc2be26dd6035e968195f55b8b190d297106b2c2205bc268ca7e64`, 2.482 triângulos, 9 regiões + Olhos + Boca,
+  materiais pele, tecido, rosto_olhos, rosto_boca) e `protagonista_corpo.json` (medidas e o sha256);
+  `.import` gerado pelo `godot-mono --headless --import` e corrigido por `godot_import.py` (fps 24, pose inteira,
+  otimizador desligado), reimportado e conferido (data nova em `.godot/imported`); os demais `.import` e as texturas
+  extraídas dos retalhos (`protagonista_corpo_{olhos,boca}.png`) que o import criou na protagonista entram também.
+- **Ergonomia (`medir_ergonomia.py` → `ergonomia.json`):** quadril 0,419 m, peito 0,527 m, ombros 0,586 m, alcance
+  ombro–palma 0,279 m (o menor lado), barriga 4,2 cm à frente dos ombros, manivela no peito até raio 0,20 m. O
+  `operacao_lib.body_mesh` passou a juntar as regiões quando o corpo vem dividido (com uma malha, como o aldeão, nada muda).
+- **GIFs finais:** `assets/previews/protagonista_v2/clipes_finais/` (jogo e lado), no visor. O `gif_clipes.py` mede o laço
+  depois de tirar a deriva da raiz, o que dá 0,8 / 2,4 cm nesses clipes; no GLB o laço é 0 (conferido osso a osso).
+- **Créditos:** 0 (na protagonista: 81 de 300). **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.
+
+## 2026-09-29 — Protagonista v2, passo 8: chifres (piloto), 20 créditos
+
+- **Pedido:** chifres rígidos pela Meshy (multi-imagem frente/perfil/costas, sem o topo); folha de contato com o bruto e a
+  peça extraída sobre a cabeça, frente, perfil, 3/4, câmera do jogo e crepúsculo, com o risco de "orelha de gato" avaliado.
+- **Meshy (`meshy_chifres.py`):** 1 geração, só malha, remesh 6.000, simetria desligada (os chifres são assimétricos) —
+  tarefa `01a0f02a-2ecf-778e-9ac7-ca836cf33a48`, **20 créditos** (saldo 2.217 → 2.197). O teto de 300 é conferido
+  somando corpo, rig, clipes e chifres (`meshy/chifres_meshy.json`, público, sem chave).
+- **Problema do bruto:** veio com **quatro chifres** — a Meshy pôs os da vista de frente e os da vista de costas em
+  profundidades diferentes. Salvo sem gastar a reserva: `chifres_lib.py` separa as ilhas que saltam do elipsoide ajustado
+  à cabeça careca do busto (com os chifres descartados em rodadas); fica o par da frente (y normalizado < 0,3), que bate
+  com o perfil da folha; a duplicata de trás e o queixo (fora do elipsoide) saem.
+- **Encaixe (`extrair_chifres.py` → `assets/modelos/protagonista_v2/chifres.glb` + `.json`):** o mesmo ajuste de
+  elipsoide nas duas cabeças (do pescoço para cima; uma calota sozinha dava elipsoide degenerado), escala por eixo
+  0,125 / 0,126 / 0,130 (o busto é ~4% mais estreito que alto em relação ao corpo); base com 2 anéis de faces do crânio,
+  afundada a 97% do raio (29 vértices; sem fresta); decimação a **290 triângulos** o par, facetados, material "chifre"
+  #2B2140, rígidos, no espaço do corpo em repouso. Direito 56 mm (a ponta chega ao topo da cabeça, 0,80 m), esquerdo 41 mm.
+  Inclinação ajustável por `--inclinacao=N` (graus para trás, pela base de cada chifre).
+- **Orelha de gato (`prova_chifres.py`):** de frente, a 0° os dois sobem quase na vertical (8,7° e 5,2°) dos cantos de cima
+  da cabeça — o risco é real no close de frente. Variações só de prévia: 20° para trás tira boa parte da leitura sem perder
+  o chifre; 35° vira toco. Na câmera do jogo (de cima) eles correm ao longo do crânio: 8 / 21 / 55 px de largura nos zooms
+  0,4 / 1 / 2,5. O cabelo longo, que ainda vem, vai mudar essa leitura.
+- **Folha:** `assets/previews/protagonista_v2/chifres_prova.png` (+ crepúsculo), `folha_chifres.py`; no visor, com o
+  corpo final + chifres + cristal em 3D.
+- **O que deu errado e foi corrigido:** crescimento da base por raio engolia o crânio inteiro (virou 2 anéis); o sinal da
+  inclinação estava invertido (positivo inclinava para a frente).
+- **Créditos:** 20 (na protagonista: 101 de 300; saldo 2.197). **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.
+
+## 2026-09-29 — Protagonista v2: chifres a 20° para trás e 1,3× (decisão do Arthur)
+
+- **Decisão (29/09):** chifres 20° para trás e 30% maiores, sem gerar de novo; decisão final junto com o cabelo.
+- **Feito:** `extrair_chifres.py` ganhou `--escala=S` (cada chifre cresce em volta do centro da própria base; depois o que
+  ficou até 1,03 do raio do crânio volta para 97%, a base reassentada: 47 vértices). `chifres.glb` refeito com
+  `--inclinacao=20 --escala=1.3`: **291 triângulos**, assimetria mantida (direito 57 mm de altura, esquerdo 39 mm; a
+  inclinação baixa a ponta, o comprimento cresce 30%); na câmera do jogo 9 / 22 / 59 px de largura.
+- **Créditos:** 0 (na protagonista: 101 de 300). **Correções manuais:** nenhuma. **Tempo:** ~20 min.
+
+## 2026-09-30 — Protagonista v2, passo 9: cabelo longo com pesos (piloto), 20 créditos
+
+- **Pedido:** cabelo pela Meshy (multi-imagem frente/perfil/costas, sem o topo, só malha; teto 2 gerações + 1 se a qualidade
+  pedir): longo, atrás dos ombros, ≤ 1.000 tri, pesos Head/neck/Spine/Spine01 (calota 100% Head), janela dos olhos aberta com
+  2 mm dos retalhos, chifres atravessando; mechas fundidas e decimadas, folga DEPOIS da decimação; folha com o aldeão e a v1,
+  crepúsculo, GIFs da Run 3 e do Long Breathe; orelha de gato de novo.
+- **Meshy:** `meshy_chifres.py --peca cabelo` (o script passou a servir às duas peças; o teto de 300 soma
+  `meshy/cabelo_meshy.json`), remesh 8.000, simetria automática — tarefa `01a0f03d-1257-7643-bd33-39a0cd5ae8ff`, **20
+  créditos** (saldo 2.197 → 2.177). Busto careca + cabelo, 7.989 triângulos, malha quase fechada. Só 1 geração.
+- **Extração (`extrair_cabelo.py` → `assets/modelos/protagonista_v2/cabelo.glb` + `.json`):**
+  - encaixe: o elipsoide da cabeça do corpo (só centro e escala) ajustado ao rosto do busto (416 pontos virados para a frente);
+  - pele do busto crescida a partir do rosto e do peito por arestas suaves (30°), a até 25 mm da pele do corpo, sem passar da
+    linha do cabelo (20% acima da janela dos olhos), da metade de trás da cabeça nem de ±60° da frente; sobras viradas para a
+    frente no rosto, tudo à frente do pescoço abaixo do queixo e as abas horizontais dos ombros do busto saem;
+  - janela dos olhos aberta; chifres: sai só o cabelo DENTRO do volume deles e fora da pele;
+  - mechas fundidas (1 mm), decimação a **937 triângulos**; DEPOIS, folga de 2 mm do corpo e dos retalhos e 3 mm na calota,
+    medida nos vértices e no meio das faces (rodadas até assentar);
+  - pesos pela altura: 100% Head acima do começo da malha da cabeça, depois neck, Spine e Spine01 em gradiente, 100% Spine01
+    abaixo; material "cabelo" #4B5A69; exportado com o armature pelo contrato (sem clipes).
+- **Conferência nos clipes:** idle sem nada dentro do corpo (folga mínima 11 mm); na corrida o braço passa pela borda lateral do
+  cabelo quando balança para trás (pior −28 mm no quadro 2, até 17 vértices de ~500).
+- **Folha:** `prova_cabelo.py` e `folha_cabelo.py` → `assets/previews/protagonista_v2/cabelo_prova.png` (+ crepúsculo) e
+  `cabelo_gifs/` (run-loop e idle-loop de lado, de costas e na câmera do jogo), no visor.
+- **Orelha de gato com o cabelo:** de frente, os chifres (20°, 1,3×) saem dos cantos de cima da cabeça por cima do cabelo escuro
+  e ainda leem como orelhas; de perfil, 3/4 e de cima (a câmera do jogo) leem como chifres correndo para trás.
+- **Defeitos conhecidos:** linha do cabelo serrilhada na testa; uma falha pequena de cabelo na têmpora, na frente do chifre; o
+  braço atravessando a borda lateral na corrida.
+- **O que deu errado e foi corrigido:** a pele do busto não saía no queixo (virava "barba") e vazava pela risca (buracos na
+  calota); o corte por distância dos chifres (que correm rentes ao crânio) abria rasgos na têmpora; a folga só nos vértices
+  deixava o crânio furar o meio dos triângulos grandes; na prova, chifres e cristal eram presos ao osso com o esqueleto fora do
+  repouso e escorregavam 4 a 5 cm (corrigido; os GIFs foram refeitos).
+- **Créditos:** 20 (na protagonista: 121 de 300; saldo 2.177). **Correções manuais:** nenhuma. **Tempo:** ~3 h.
+
+## 2026-09-30 — Protagonista v2: limpeza do cabelo (braço, linha do cabelo, têmpora)
+
+- **Pedido:** 0 crédito. O braço atravessava a borda lateral do cabelo na corrida (até 27,8 mm); linha do cabelo serrilhada na
+  testa; falha na têmpora na frente do chifre.
+- **Achado:** o cabelo exportado tinha ~480 laços de borda, quase todos criados pelo exportador glTF, que divide os vértices nas
+  costuras de UV da Meshy (antes da exportação eram 46). Isso abria a malha e quebrava o sombreamento: era boa parte do
+  "serrilhado" e da falha na têmpora.
+- **Feito (`extrair_cabelo.py`):** os furos pequenos (até 24 arestas) são fechados antes da decimação (46 → 25 laços); o UV
+  sai antes de exportar (o cabelo é chapado); a borda aberta (linha do cabelo, janela dos olhos) é suavizada ao longo de si mesma
+  (6 passes) antes da folga; a folga virou uma função e é refeita depois de cada correção. Braços: em todos os 20 quadros da
+  corrida e no idle a cada 10 quadros, os vértices do cabelo a menos de 2 mm do corpo (sem a cabeça) são achados e, no repouso,
+  a região em volta (3 cm, com queda suave) é puxada para o meio das costas e 4 mm para trás; 12 rodadas. Resultado: **nenhum
+  vértice dentro do corpo em nenhum quadro, folga mínima de 3,5 mm** (antes −28 mm). 926 triângulos.
+- **Resta:** um ponto pequeno de pele na têmpora, na frente do chifre, no perfil.
+- **Créditos:** 0 (na protagonista: 121 de 300). **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-30 — Protagonista v2: chifres com a base recuada (teste) e folha da limpeza
+
+- **Pedido:** testar, contra a orelha de gato de frente, mover a base dos chifres 1,5–2 cm para trás no crânio (atrás da linha
+  do cabelo); mostrar 20° atual × base recuada de frente e na câmera do jogo; folha com antes e depois; GIFs novos.
+- **Feito:** `extrair_chifres.py --recuo=M` (a peça gira em volta do eixo X que passa pelo centro da cabeça, então a base
+  desliza pelo crânio e continua assentada): 18 mm = 13,7°, 291 triângulos. `extrair_cabelo.py` e `prova_cabelo.py` ganharam
+  `--chifres=`, `--saida=`, `--cabelo=` para gerar a variante sem tocar nos arquivos aprovados; o cabelo recortado para os chifres
+  recuados também fica sem nada dentro do corpo (folga mínima 3,5 mm). Variante guardada em
+  `assets/modelos/protagonista_v2/variantes/` (`chifres_recuados.glb`, `cabelo_recuados.glb`, com os `.json`).
+- **Resultado:** de frente, com a base recuada, os chifres saem de dentro do cabelo, mais baixos e menores na silhueta: bem menos
+  orelha de gato. De perfil, 3/4 e de cima continuam lendo como chifres correndo para trás; a falha de pele na têmpora some (o
+  chifre recuado deixa o cabelo inteiro na frente dele).
+- **Folha:** `folha_limpeza.py` → `assets/previews/protagonista_v2/cabelo_limpeza.png` (+ crepúsculo); `cabelo_prova.png` e
+  `cabelo_gifs/` refeitos com o cabelo limpo (chifres atuais), no visor.
+- **Créditos:** 0 (na protagonista: 121 de 300). **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-30 — Protagonista v2: couro cabeludo coberto (chifres recuados, calota, anel, volume, teste automático)
+
+- **Pedido (Arthur):** o cabelo em volta dos chifres estava escasso, dava para ver a careca. Usar a variante com a base recuada;
+  nenhuma pele do couro cabeludo à mostra em nenhuma vista, zoom ou quadro; anel de cabelo em volta da base dos chifres; volume
+  na calota (≤ 1.000 tri, folga de 2 mm, janela dos olhos); teste automático com meta zero; crédito só se a limpeza não bastar.
+- **Chifres:** a variante recuada virou a principal (`chifres.glb`: 20°, 1,3×, base 18 mm para trás, 291 tri).
+- **Cabelo (`extrair_cabelo.py`, 0 crédito):** calota por código sob as mechas da Meshy — as faces do couro cabeludo da
+  cabeça (`cabelo_lib.scalp_mask`) afastadas 4 mm pela normal (borda encostando na pele, subindo em 1 cm), decimadas a ~170 tri
+  com a borda travada, com a folga conferida no meio das faces e os pesos copiados da pele de baixo (atrás da orelha a pele
+  tem peso do pescoço); ela entra depois do corte dos chifres, então fica inteira sob eles; anel: a pele a até 12 mm de cada
+  chifre também entra na calota; nas laterais e na nuca a calota desce 8 mm além da borda do teste (o idle vira e inclina a
+  cabeça). Volume: as mechas de cima vão até 3 mm para fora (0 na altura dos olhos). Total **932 triângulos**; braços sem
+  nada dentro do cabelo em nenhum quadro (folga mínima 2,6 mm).
+- **Teste (`teste_couro.py`):** a pele do couro cabeludo (da linha do cabelo para trás; nas laterais só acima do meio dos
+  olhos) em vermelho puro, o resto em preto; 10 vistas + câmera do jogo nos 3 zooms, em repouso, 4 quadros da corrida e 3 do
+  idle (104 imagens). **Antes (variante recuada sem a calota): 668 px; depois: 0 px.** Resultado em
+  `assets/previews/protagonista_v2/teste_couro.json`.
+- **Folha:** `folha_couro.py` → `cabelo_couro.png` (+ crepúsculo): closes em volta dos chifres (3/4 e de cima), imagens do
+  teste antes e depois, câmera do jogo; `cabelo_prova.png` e `cabelo_gifs/` refeitos; no visor.
+- **O que deu errado e foi corrigido:** a primeira máscara do teste incluía as laterais do rosto até a mandíbula (não é couro
+  cabeludo: 8.515 px com ela); o corte dos chifres furava a calota; a decimação comia a borda da calota; um erro de sinal meu na
+  borda de trás da máscara; pontos de pele na nuca quando o idle inclina a cabeça (calota descendo 8 mm).
+- **Créditos:** 0 (na protagonista: 121 de 300). **Correções manuais:** nenhuma. **Tempo:** ~2 h 30.
+
+## 2026-09-30 — Protagonista v2 APROVADA (fechamento)
+
+- **Aprovado pelo Arthur (30/09):** corpo (82edb7d), rosto b3 + atlas, Run 3 + Long Breathe, cristal, chifres com a base
+  recuada e cabelo com calota (423d5a9). Conferido que os arquivos principais são a versão aprovada (`chifres.glb` idêntico à
+  variante recuada; `cabelo.glb` é o com calota).
+- **sha256 dos GLBs aprovados** (também em `assets/modelos/protagonista_v2/aprovado.json`):
+  - `protagonista_corpo.glb`: `383bda5f36dc2be26dd6035e968195f55b8b190d297106b2c2205bc268ca7e64`
+  - `cabelo.glb`: `60af4a19c98e0e7303d41fce08958d96caae4f57af86117492b08361cae5ede4`
+  - `chifres.glb`: `0b9eb13c4cea7d201b090ccd1691bd552f2e23561dac25428d2a2255c0be5ba3`
+  - `cristal.glb`: `24d50792ff19b36e0bcca3c13a1be1125f75bcbb4a4b2e856d602d75831e893c`
+- **Créditos da Meshy na protagonista v2:** 121 de 300 (corpo 40, rig 5, clipes 36, chifres 20, cabelo 20).
+- **ARTE travada** por decisão do Arthur até nova ordem.

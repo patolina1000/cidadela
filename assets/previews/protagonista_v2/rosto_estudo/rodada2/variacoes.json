@@ -1,0 +1,54 @@
+{
+  "b1": {
+    "nome": "b1: olhos abertos",
+    "rx": 35,
+    "top": 25,
+    "bot": 18,
+    "queda": 1,
+    "olheira": [
+      150,
+      0.95
+    ],
+    "cobre": [
+      0.2,
+      0.3
+    ],
+    "sombra": [
+      0.3,
+      0.38,
+      110
+    ],
+    "contorno": [
+      1.9,
+      210
+    ],
+    "boca_sobe": 0.0,
+    "queixo": 1.0
+  },
+  "b2": {
+    "nome": "b2: abertos, boca alta, queixo curto",
+    "rx": 35,
+    "top": 25,
+    "bot": 18,
+    "queda": 1,
+    "olheira": [
+      150,
+      0.95
+    ],
+    "cobre": [
+      0.2,
+      0.3
+    ],
+    "sombra": [
+      0.3,
+      0.38,
+      110
+    ],
+    "contorno": [
+      1.9,
+      210
+    ],
+    "boca_sobe": 0.12,
+    "queixo": 0.72
+  }
+}

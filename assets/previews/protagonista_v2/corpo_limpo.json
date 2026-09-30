@@ -1,0 +1,242 @@
+{
+  "render": {
+    "corpo": "assets/modelos/protagonista_v2/protagonista_corpo_limpo.glb",
+    "altura_m": 0.8,
+    "triangulos": {
+      "bracos": 264,
+      "cabeca": 810,
+      "canelas": 132,
+      "coxas": 220,
+      "maos": 226,
+      "pes": 94,
+      "quadril": 36,
+      "roupa_intima": 318,
+      "tronco": 382
+    },
+    "jogo": {
+      "0.4": {
+        "protagonista_px": 31.3,
+        "aldeao_px": 17.2,
+        "caixa_px": [
+          1500.1336069107056,
+          915.8153825998306,
+          1545.5451135635376,
+          947.1132534742355
+        ],
+        "tela": [
+          3024,
+          1890
+        ]
+      },
+      "1.0": {
+        "protagonista_px": 79.9,
+        "aldeao_px": 43.4,
+        "caixa_px": [
+          1482.0205721855164,
+          870.3470313549042,
+          1596.1534280776978,
+          950.2902871370316
+        ],
+        "tela": [
+          3024,
+          1890
+        ]
+      },
+      "2.5": {
+        "protagonista_px": 211.4,
+        "aldeao_px": 111.1,
+        "caixa_px": [
+          1434.932792186737,
+          746.8863451480865,
+          1724.2234153747559,
+          958.2695397734642
+        ],
+        "tela": [
+          3024,
+          1890
+        ]
+      }
+    },
+    "triangulos_total": 2482,
+    "cores_regioes": {
+      "cabeca": "#D86161",
+      "tronco": "#D8B161",
+      "bracos": "#B1D861",
+      "maos": "#61D861",
+      "quadril": "#61D8B1",
+      "roupa_intima": "#61B1D8",
+      "coxas": "#6161D8",
+      "canelas": "#B161D8",
+      "pes": "#D861B1"
+    }
+  },
+  "cabeca_silhueta_sobre_altura": 0.1828,
+  "limpeza": {
+    "entrada": "assets/modelos/protagonista_v2/meshy/corpo_b_multi_1.glb",
+    "triangulos_entrada": 2620,
+    "vertices_fundidos": 2141,
+    "simetria": {
+      "lado_mantido": "+x",
+      "rms_frente_da_cabeca_mm": {
+        "+x": 1.95,
+        "-x": 2.14
+      }
+    },
+    "cabeca": {
+      "fator": 1.3551,
+      "escala_do_corpo_k": 0.9398,
+      "pescoco_z": 0.6304,
+      "queixo_z": 0.6556
+    },
+    "alisamento": {
+      "marcados": {
+        "clavicula_esterno": 52,
+        "joelhos": 68,
+        "bordas_do_short": 140,
+        "cotovelos": 62,
+        "base_do_pescoco": 42,
+        "maos_fora": 228
+      },
+      "passos_cabeca": 90,
+      "rosto_calombos_antes_de_decimar": {
+        "pontos": 136,
+        "rms_mm": 0.93,
+        "max_mm": 4.49
+      },
+      "depois_de_decimar": {
+        "passos_cabeca": 0,
+        "passos_maos": 4
+      }
+    },
+    "decimacao": [
+      {
+        "parte": "maos",
+        "antes": {
+          "maos": 430,
+          "cabeca": 1850,
+          "corpo": 2124
+        },
+        "depois": {
+          "maos": 204,
+          "cabeca": 1850,
+          "corpo": 2124
+        },
+        "total": 4272
+      },
+      {
+        "parte": "cabeca",
+        "antes": {
+          "maos": 204,
+          "cabeca": 1850,
+          "corpo": 2124
+        },
+        "depois": {
+          "maos": 204,
+          "cabeca": 786,
+          "corpo": 2124
+        },
+        "total": 3200
+      },
+      {
+        "parte": "corpo",
+        "antes": {
+          "maos": 204,
+          "cabeca": 786,
+          "corpo": 2124
+        },
+        "depois": {
+          "maos": 204,
+          "cabeca": 786,
+          "corpo": 1190
+        },
+        "total": 2266
+      }
+    ],
+    "cortes_do_short_triangulos": [
+      52,
+      164
+    ],
+    "punhos": [
+      {
+        "ponto": [
+          0.1853,
+          0.0198,
+          0.38
+        ],
+        "normal": [
+          0.514,
+          -0.138,
+          -0.847
+        ]
+      },
+      {
+        "ponto": [
+          -0.1853,
+          0.0198,
+          0.38
+        ],
+        "normal": [
+          -0.514,
+          -0.138,
+          -0.847
+        ]
+      }
+    ],
+    "rosto_calombos": {
+      "pontos": 59,
+      "rms_mm": 1.19,
+      "max_mm": 3.91
+    },
+    "rosto_medida_do_aldeao_elipsoide": {
+      "pontos": 81,
+      "rms_mm": 3.85,
+      "max_mm": 9.19,
+      "esfera_raio_mm": 62.3,
+      "esfera_rms_mm": 4.02,
+      "esfera_max_mm": 10.02
+    },
+    "altura_m": 0.8,
+    "cabeca_sobre_altura": 0.1805,
+    "cabeca_relaxada_iteracoes": 6,
+    "normais_suaves_cabeca_passes": 60,
+    "regioes": {
+      "cabeca": {
+        "triangulos": 810,
+        "vertices": 419
+      },
+      "tronco": {
+        "triangulos": 382,
+        "vertices": 237
+      },
+      "bracos": {
+        "triangulos": 264,
+        "vertices": 170
+      },
+      "maos": {
+        "triangulos": 226,
+        "vertices": 128
+      },
+      "quadril": {
+        "triangulos": 36,
+        "vertices": 39
+      },
+      "roupa_intima": {
+        "triangulos": 318,
+        "vertices": 212
+      },
+      "coxas": {
+        "triangulos": 220,
+        "vertices": 166
+      },
+      "canelas": {
+        "triangulos": 132,
+        "vertices": 94
+      },
+      "pes": {
+        "triangulos": 94,
+        "vertices": 62
+      }
+    },
+    "triangulos_total": 2482
+  }
+}

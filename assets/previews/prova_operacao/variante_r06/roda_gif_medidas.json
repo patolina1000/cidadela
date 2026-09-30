@@ -1,21 +1,27 @@
 {
   "clipe_importado": {
-    "objetos": [
-      "ARMATURE"
-    ],
-    "acoes": [
-      "girar_roda-loop",
-      "idle-loop",
-      "idle-loop.001",
-      "run-loop",
-      "run-loop.001"
-    ]
+    "girar_roda-loop": {
+      "objetos": [
+        "ARMATURE"
+      ],
+      "acao": "girar_roda-loop",
+      "posto": "A",
+      "quadros": 48
+    },
+    "girar_roda_b-loop": {
+      "objetos": [
+        "ARMATURE"
+      ],
+      "acao": "girar_roda_b-loop",
+      "posto": "B",
+      "quadros": 48
+    }
   },
   "falta_max_mm": {
     "A_esq": 1.5,
-    "A_dir": 2.5,
+    "A_dir": 2.4,
     "B_esq": 1.5,
-    "B_dir": 2.5
+    "B_dir": 2.4
   },
   "por_quadro": [
     {
@@ -176,7 +182,7 @@
     },
     {
       "A_esq": 0.0,
-      "A_dir": 2.0,
+      "A_dir": 1.9,
       "B_esq": 0.0,
       "B_dir": 0.0
     },
@@ -188,7 +194,7 @@
     },
     {
       "A_esq": 0.0,
-      "A_dir": 2.5,
+      "A_dir": 2.4,
       "B_esq": 0.0,
       "B_dir": 0.0
     },
@@ -286,7 +292,7 @@
       "A_esq": 0.0,
       "A_dir": 0.0,
       "B_esq": 0.0,
-      "B_dir": 2.5
+      "B_dir": 2.4
     },
     {
       "A_esq": 0.0,
@@ -298,7 +304,7 @@
       "A_esq": 0.0,
       "A_dir": 0.0,
       "B_esq": 0.0,
-      "B_dir": 2.0
+      "B_dir": 1.9
     },
     {
       "A_esq": 0.0,

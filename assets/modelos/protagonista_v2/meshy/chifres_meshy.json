@@ -1,0 +1,28 @@
+{
+  "teto_protagonista": 300,
+  "tarefas": [
+    {
+      "tentativa": 1,
+      "task_id": "01a0f02a-2ecf-778e-9ac7-ca836cf33a48",
+      "status": "SUCCEEDED",
+      "saldo_antes": 2217,
+      "imagens": [
+        "chifres_frente.png",
+        "chifres_lado.png",
+        "chifres_costas.png"
+      ],
+      "parametros": {
+        "ai_model": "latest",
+        "should_texture": false,
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 6000,
+        "symmetry_mode": "off"
+      },
+      "saldo_depois": 2197,
+      "creditos": 20,
+      "erro": null,
+      "glb": "assets/modelos/protagonista_v2/meshy/chifres/chifres_1.glb"
+    }
+  ]
+}

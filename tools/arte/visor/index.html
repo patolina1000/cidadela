@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visor de arte</title>
+<link rel="stylesheet" href="visor.css">
+<script type="importmap">
+{ "imports": {
+  "three": "./vendor/three.module.min.js",
+  "three/addons/": "./vendor/addons/"
+} }
+</script>
+</head>
+<body>
+<header id="topo">
+  <div id="cabecalho">
+    <h1 id="titulo">Visor de arte</h1>
+    <span id="meta"></span>
+  </div>
+  <p id="nota"></p>
+</header>
+
+<main>
+  <section id="palco">
+    <div id="barra">
+      <span id="barra-imagem" class="grupo" hidden>
+        <button data-zoom="-">−</button>
+        <button data-zoom="real" title="1 pixel da imagem = 1 pixel da tela">tamanho real</button>
+        <button data-zoom="ajustar">ajustar</button>
+        <button data-zoom="+">+</button>
+        <span id="zoom-imagem" class="info"></span>
+      </span>
+      <span id="barra-3d" class="grupo" hidden>
+        <button data-vista="frente">frente</button>
+        <button data-vista="lado">lado</button>
+        <button data-vista="costas">costas</button>
+        <button data-vista="tres_quartos">3/4</button>
+        <span class="sep"></span>
+        <span class="rotulo">câmera do jogo</span>
+        <span id="zooms-jogo"></span>
+        <button id="um-para-um" title="Mostra os 3024×1890 pixels um a um (rolar para ver)">1:1</button>
+        <span id="info-3d" class="info"></span>
+      </span>
+      <span class="grupo direita">
+        <button id="crepusculo" title="Tudo multiplicado por #6A5B7C">crepúsculo</button>
+      </span>
+    </div>
+    <div id="vista">
+      <div id="vista-imagem" hidden><img id="imagem" alt=""></div>
+      <div id="vista-texto" hidden><article id="texto"></article></div>
+      <div id="vista-3d" hidden><canvas id="tela"></canvas></div>
+      <div id="vazio">Esperando o visor.json…</div>
+      <div id="filtro-crepusculo" hidden></div>
+    </div>
+    <div id="clipes" hidden></div>
+  </section>
+
+  <aside id="lista-lado">
+    <h2>Prévias <span id="estado"></span></h2>
+    <ol id="lista"></ol>
+  </aside>
+</main>
+
+<script type="module" src="visor.js"></script>
+</body>
+</html>

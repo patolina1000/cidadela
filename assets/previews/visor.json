@@ -1,0 +1,694 @@
+[
+  {
+    "quando": "2026-09-29T21:08:30",
+    "titulo": "Protagonista v2 — conferência dos recortes",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/recortes.png",
+    "nota": "Corpo coerente e rosto liso. Chifres e cabelo: frente, perfil e costas coerentes; topo incoerente (vista oblíqua) → Meshy com frente, perfil e costas, sem o topo. Cabeça L÷A: corpo 0,935; chifres 0,889; cabelo 0,694–0,782."
+  },
+  {
+    "quando": "2026-09-29T21:08:31",
+    "titulo": "Aldeão v2 com cabelo 4 — prova do visor 3D",
+    "tipo": "glb",
+    "caminho": "assets/modelos/aldeao_v2/aldeao_corpo.glb",
+    "nota": "Prova do 3D, dos clipes (idle-loop e run-loop) e da câmera do jogo. Cabelo 4 preso no osso Head compensando o repouso, como no jogo. Aldeão com cabelo em repouso: 19 / 48 / 123 px nos zooms 0,4 / 1 / 2,5 (nota 01: 19 / 44 / 112 px, só o corpo). Luz aproximada, sem calibrar contra o jogo.",
+    "junto": [
+      "assets/modelos/aldeao_v2/cabelos/cabelo_4.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:23:02",
+    "titulo": "Protagonista v2 — corpo A (só a frente), bruto",
+    "tipo": "glb",
+    "caminho": "assets/modelos/protagonista_v2/meshy/corpo_a_frente_1.glb",
+    "nota": "Meshy 01a0efa8, 20 créditos, 2.602 triângulos, sem limpeza. Normalizado a 0,80 m no visor, pele #91ADB7; aldeão v2 ao lado para a escala. Mãos abertas; perfil com glúteo e panturrilha.",
+    "altura": 0.8,
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:23:03",
+    "titulo": "Protagonista v2 — corpo B (frente + perfil + costas), bruto",
+    "tipo": "glb",
+    "caminho": "assets/modelos/protagonista_v2/meshy/corpo_b_multi_1.glb",
+    "nota": "Meshy 01a0efaa, 20 créditos, 2.620 triângulos, sem limpeza. Normalizado a 0,80 m no visor, pele #91ADB7; aldeão v2 ao lado para a escala. Mãos meio fechadas; perfil reto.",
+    "altura": 0.8,
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:23:04",
+    "titulo": "Protagonista v2 — folha de contato do corpo (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/meshy_corpo_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T21:23:05",
+    "titulo": "Protagonista v2 — folha de contato do corpo (A e B)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/meshy_corpo.png",
+    "nota": "A: só a frente. B: frente + perfil + costas. Câmera do jogo 32/81/215 e 32/80/212 px (alvo 28/68/179: a 0,80 m sai ~19% acima). Cabeça L÷A 0,915 / 0,901 (folha 0,935). Recomendação: B (mãos meio fechadas; o perfil reto se corrige na limpeza, as mãos abertas não)."
+  },
+  {
+    "quando": "2026-09-29T21:34:09",
+    "titulo": "Protagonista v2 — estudo da cabeça (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/estudo_cabeca_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T21:34:10",
+    "titulo": "Protagonista v2 — estudo de proporção da cabeça",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/estudo_cabeca.png",
+    "nota": "Cabeça (topo ao queixo ÷ altura): v1 18,8%, aldeão 44,4%, bruto B 14,1%. Variações 14,1 / 18 / 18,8 (v1) / 22% em 0,80 e 0,67 m. A v1 a 0,80 m dá 178 px no zoom 2,5 (o alvo): a diferença para o B (212 px) é de pose, não de altura. Recomendação: 18% a 0,80 m."
+  },
+  {
+    "quando": "2026-09-29T21:44:41",
+    "titulo": "Prova de operação — roda, vista de lado (um clipe por posto)",
+    "tipo": "gif",
+    "caminho": "assets/previews/prova_operacao/roda_lado.gif",
+    "nota": "gif_roda.py refeito como o jogo: A toca girar_roda-loop e B girar_roda_b-loop, cada um no seu posto, pela fase da roda (quadro = fase × 48), sem tocar ao contrário. Idêntico ao GIF anterior (≤ 1 px por quadro)."
+  },
+  {
+    "quando": "2026-09-29T21:44:42",
+    "titulo": "Prova de operação — roda na câmera do jogo, zoom 2,5 (um clipe por posto)",
+    "tipo": "gif",
+    "caminho": "assets/previews/prova_operacao/roda_jogo.gif",
+    "nota": "Mesmo refazimento; idêntico ao anterior (≤ 1 px por quadro), sem defasagem. Faltas palma-manopla iguais às antigas."
+  },
+  {
+    "quando": "2026-09-29T21:54:16",
+    "titulo": "Protagonista v2 — corpo limpo (sem rig)",
+    "tipo": "glb",
+    "caminho": "assets/modelos/protagonista_v2/protagonista_corpo_limpo.glb",
+    "nota": "B limpo: 0,80 m, cabeça 18%, 2.474 triângulos em 9 malhas (cabeca, tronco, bracos, maos, quadril, roupa_intima, coxas, canelas, pes), pele e tecido. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:54:17",
+    "titulo": "Protagonista v2 — folha do corpo limpo (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/corpo_limpo_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T21:54:18",
+    "titulo": "Protagonista v2 — folha do corpo limpo",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/corpo_limpo.png",
+    "nota": "0,80 m, cabeça 18,05% (silhueta 18,3%), 2.474 triângulos; mãos meio fechadas; clavícula, esterno, joelhos e borda do short alisados; um pouco de glúteo. Câmera do jogo 31 / 80 / 211 px (a pose A ereta; o alvo é a v1 na pose dela). Sem rig: ergonomia.json depois do rig."
+  },
+  {
+    "quando": "2026-09-29T21:59:39",
+    "titulo": "Protagonista v2 — corpo limpo, triângulos redistribuídos",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/corpo_limpo.png",
+    "nota": "Mãos 442 → 226 (meio fechadas), cabeça 386 → 652 (crânio e frente mais redondos), total 2.480; cabeça 18,05%, 0,80 m. Decimação por orçamento em etapas (mãos, cabeça, corpo)."
+  },
+  {
+    "quando": "2026-09-29T22:04:51",
+    "titulo": "Protagonista v2 — estudo do rosto em 2D (3 variações)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_estudo/estudo_rosto_2d.png",
+    "nota": "neutra_cansada: olhos amendoados sem pupila, 3 cílios no canto externo, olheira funda, fissura sob o olho esquerdo dela, boca reta e curta. a médios/caído, b grandes/retos, c menores/bem caído."
+  },
+  {
+    "quando": "2026-09-29T22:04:52",
+    "titulo": "Protagonista v2 — prova do rosto (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_prova_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T22:04:53",
+    "titulo": "Protagonista v2 — prova do rosto antes do rig (a, b, c)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_prova.png",
+    "nota": "Zoom 2,5: olhos nítidos, olheira lê, cílios 1–2 px, fissura e boca não. Zoom 1: só os olhos (b melhor). Zoom 0,4: nada do rosto. Recomendação: b."
+  },
+  {
+    "quando": "2026-09-29T22:16:24",
+    "titulo": "Protagonista v2 — corpo limpo, cabeça com 810 triângulos",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/corpo_limpo.png",
+    "nota": "Short 458 → 318, cabeça 652 → 810; cabeça relaxada e normais de uma cópia alisada (faixas da toon redondas); total 2.482, cabeça 18%."
+  },
+  {
+    "quando": "2026-09-29T22:16:25",
+    "titulo": "Protagonista v2 — rosto rodada 2 em 2D (b1, b2)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_estudo/rodada2/estudo_rosto_2d.png",
+    "nota": "Olhos abertos como a v1: mais branco-osso, pálpebra só no terço de cima."
+  },
+  {
+    "quando": "2026-09-29T22:16:26",
+    "titulo": "Protagonista v2 — rosto rodada 2 (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_prova_r2_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T22:16:27",
+    "titulo": "Protagonista v2 — rosto rodada 2: b1, b2 e a v1",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_prova_r2.png",
+    "nota": "b1 olhos abertos; b2 + boca alta e queixo curto (cabeça 19% mais larga para manter 18%). Zoom 1: os olhos agora leem como dois traços claros."
+  },
+  {
+    "quando": "2026-09-29T22:18:10",
+    "titulo": "Protagonista v2 — rosto rodada 3 (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_prova_r3_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T22:18:11",
+    "titulo": "Protagonista v2 — rosto rodada 3: b3, b1 e a v1",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_prova_r3.png",
+    "nota": "b3 = b1 com a boca 2 cm mais alta só no retalho; cabeça igual (L/A 0,90). No jogo lê igual à b1: a diferença é só de perto."
+  },
+  {
+    "quando": "2026-09-29T22:48:03",
+    "titulo": "Protagonista v2 — atlas do rosto em 2D (5 expressões)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_atlas.png",
+    "nota": "neutra_cansada (b3), esforço, dor, piscar, olhar_cristal; fissura subida para o canto externo do olho esquerdo dela."
+  },
+  {
+    "quando": "2026-09-29T22:48:04",
+    "titulo": "Protagonista v2 — piscar no zoom 2,5 (cabeça ampliada 6×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/piscar_jogo.gif",
+    "nota": "aberto 1,2 s → meio_fechado → fechado → meio_fechado; pixels do jogo."
+  },
+  {
+    "quando": "2026-09-29T22:48:05",
+    "titulo": "Protagonista v2 — piscar em close",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/piscar_close.gif",
+    "nota": "aberto 1,2 s → meio_fechado 80 ms → fechado 120 ms → meio_fechado 80 ms."
+  },
+  {
+    "quando": "2026-09-29T22:48:06",
+    "titulo": "Protagonista v2 — prova do atlas (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_atlas_prova_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T22:48:07",
+    "titulo": "Protagonista v2 — prova do atlas do rosto (5 expressões)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_atlas_prova.png",
+    "nota": "Close de frente e 3/4, zoom 2,5 com o aldeão e a cabeça ampliada 6×. No zoom 2,5 as expressões se separam pela quantidade de branco do olho."
+  },
+  {
+    "quando": "2026-09-29T22:50:56",
+    "titulo": "Protagonista v2 — plano de créditos (rig, clipes, chifres, cabelo)",
+    "tipo": "texto",
+    "caminho": "assets/previews/protagonista_v2/plano_creditos.md",
+    "nota": "Mínimo 51, máximo 146 créditos; sugestão de teto 150 com paradas. Saldo 2.258. Uthana é dinheiro, não crédito."
+  },
+  {
+    "quando": "2026-09-29T22:56:23",
+    "titulo": "Protagonista v2 — cristal do peito ao lado da v1",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cristal_prova.png",
+    "nota": "24 triângulos, 30×58×16 mm, material Cristal (emissão #4CC3FF força 3, ×3 no jogo). No zoom 0,4 lê como um ponto ciano forte, como o da v1, de dia e no crepúsculo."
+  },
+  {
+    "quando": "2026-09-29T22:56:24",
+    "titulo": "Protagonista v2 — corpo limpo com o cristal",
+    "tipo": "glb",
+    "caminho": "assets/modelos/protagonista_v2/protagonista_corpo_limpo.glb",
+    "nota": "Corpo limpo + cristal.glb no peito (espaço do corpo em repouso).",
+    "altura": 0.8,
+    "junto": [
+      "assets/modelos/protagonista_v2/cristal.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T23:15:33",
+    "titulo": "Protagonista v2 — catching_breath, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/catching_breath_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:34",
+    "titulo": "Protagonista v2 — catching_breath, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/catching_breath_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:35",
+    "titulo": "Protagonista v2 — long_breathe, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/long_breathe_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:36",
+    "titulo": "Protagonista v2 — long_breathe, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/long_breathe_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:37",
+    "titulo": "Protagonista v2 — idle_12, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_12_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:38",
+    "titulo": "Protagonista v2 — idle_12, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_12_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:39",
+    "titulo": "Protagonista v2 — idle_3, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_3_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:40",
+    "titulo": "Protagonista v2 — idle_3, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_3_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:41",
+    "titulo": "Protagonista v2 — idle_02, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_02_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:42",
+    "titulo": "Protagonista v2 — idle_02, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_02_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:43",
+    "titulo": "Protagonista v2 — idle, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:44",
+    "titulo": "Protagonista v2 — idle, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:45",
+    "titulo": "Protagonista v2 — lean_forward_sprint, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/lean_forward_sprint_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:46",
+    "titulo": "Protagonista v2 — lean_forward_sprint, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/lean_forward_sprint_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:47",
+    "titulo": "Protagonista v2 — run_fast_3, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_fast_3_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:48",
+    "titulo": "Protagonista v2 — run_fast_3, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_fast_3_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:49",
+    "titulo": "Protagonista v2 — run_fast_2, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_fast_2_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:50",
+    "titulo": "Protagonista v2 — run_fast_2, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_fast_2_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:51",
+    "titulo": "Protagonista v2 — run_fast, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_fast_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:52",
+    "titulo": "Protagonista v2 — run_fast, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_fast_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:53",
+    "titulo": "Protagonista v2 — run_02, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_02_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:54",
+    "titulo": "Protagonista v2 — run_02, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_02_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:55",
+    "titulo": "Protagonista v2 — corrida_basica, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/corrida_basica_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:56",
+    "titulo": "Protagonista v2 — corrida_basica, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/corrida_basica_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:57",
+    "titulo": "Protagonista v2 — run_03, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_03_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:58",
+    "titulo": "Protagonista v2 — run_03, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_03_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:59",
+    "titulo": "Protagonista v2 — clipes candidatos: medidas",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/clipes/_opcoes.png",
+    "nota": "Quadros, duração, passada e laço de cada opção. Catching Breath anda (sai de quadro): não serve de idle."
+  },
+  {
+    "quando": "2026-09-29T23:16:00",
+    "titulo": "Protagonista v2 — idles, 8 quadros de lado",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/clipes/_tira_idles.png",
+    "nota": "Recomendação: Long Breathe and Look Around (cabeça baixa, olha em volta, 11 s, laço 1,4 cm); segunda: Idle 12."
+  },
+  {
+    "quando": "2026-09-29T23:16:01",
+    "titulo": "Protagonista v2 — corridas, 8 quadros de lado",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/clipes/_tira_corridas.png",
+    "nota": "Recomendação: Run 3 (leve, ereta, laço 3,5 cm, 1,19 m/s); segunda: Run Fast 3."
+  },
+  {
+    "quando": "2026-09-29T23:16:02",
+    "titulo": "Protagonista v2 — parada 1: rig, pesos e retalhos",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rig_parada1.png",
+    "nota": "Rig direto no corpo limpo (5 créditos), 0 vértices sem peso, retalhos com folga 1,9–2,35 mm. Créditos na protagonista: 81/300."
+  },
+  {
+    "quando": "2026-09-29T23:33:50",
+    "titulo": "Protagonista v2 — idle-loop final (Long Breathe), de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes_finais/idle_long_breathe_lado.gif",
+    "nota": "No protagonista_corpo.glb: 270 quadros a 24 fps, laço fechado (primeiro = último quadro)."
+  },
+  {
+    "quando": "2026-09-29T23:33:51",
+    "titulo": "Protagonista v2 — idle-loop final, câmera do jogo",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes_finais/idle_long_breathe_jogo.gif",
+    "nota": "80 px ampliado 2×."
+  },
+  {
+    "quando": "2026-09-29T23:33:52",
+    "titulo": "Protagonista v2 — run-loop final (Run 3), de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes_finais/run_run_03_lado.gif",
+    "nota": "19 quadros, sem avanço de raiz, laço fechado; passada pelos pés 1,267 m/s; grade do chão na passada."
+  },
+  {
+    "quando": "2026-09-29T23:33:53",
+    "titulo": "Protagonista v2 — run-loop final, câmera do jogo",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes_finais/run_run_03_jogo.gif",
+    "nota": "80 px ampliado 2×."
+  },
+  {
+    "quando": "2026-09-29T23:33:54",
+    "titulo": "Protagonista v2 — protagonista_corpo.glb (final)",
+    "tipo": "glb",
+    "caminho": "assets/modelos/protagonista_v2/protagonista_corpo.glb",
+    "nota": "Rig + 9 regiões + retalhos b3 + idle-loop e run-loop; sha256 383bda5f…",
+    "junto": [
+      "assets/modelos/protagonista_v2/cristal.glb",
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T23:41:08",
+    "titulo": "Protagonista v2 — corpo final com chifres e cristal",
+    "tipo": "glb",
+    "caminho": "assets/modelos/protagonista_v2/protagonista_corpo.glb",
+    "nota": "protagonista_corpo.glb + chifres.glb (0°) + cristal.glb, no espaço do corpo em repouso; clipes idle-loop e run-loop.",
+    "junto": [
+      "assets/modelos/protagonista_v2/chifres.glb",
+      "assets/modelos/protagonista_v2/cristal.glb",
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T23:41:09",
+    "titulo": "Protagonista v2 — chifres (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/chifres_prova_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T23:41:10",
+    "titulo": "Protagonista v2 — chifres (piloto): folha de contato",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/chifres_prova.png",
+    "nota": "Geração 1 (20 créditos) veio com quatro chifres; usado o par da frente. 290 tri. Orelha de gato: risco real de frente a 0°; 20° para trás mitiga."
+  },
+  {
+    "quando": "2026-09-30T00:11:25",
+    "titulo": "Protagonista v2 — idle-loop com cabelo (costas)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_costas.gif",
+    "nota": "Cabelo com pesos seguindo o esqueleto; chifres no Head e cristal no Spine."
+  },
+  {
+    "quando": "2026-09-30T00:11:26",
+    "titulo": "Protagonista v2 — idle-loop com cabelo (lado)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_lado.gif",
+    "nota": "Cabelo com pesos seguindo o esqueleto; chifres no Head e cristal no Spine."
+  },
+  {
+    "quando": "2026-09-30T00:11:27",
+    "titulo": "Protagonista v2 — idle-loop com cabelo (jogo)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_jogo.gif",
+    "nota": "Cabelo com pesos seguindo o esqueleto; chifres no Head e cristal no Spine."
+  },
+  {
+    "quando": "2026-09-30T00:11:28",
+    "titulo": "Protagonista v2 — run-loop com cabelo (costas)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_costas.gif",
+    "nota": "Cabelo com pesos seguindo o esqueleto; chifres no Head e cristal no Spine."
+  },
+  {
+    "quando": "2026-09-30T00:11:29",
+    "titulo": "Protagonista v2 — run-loop com cabelo (lado)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_lado.gif",
+    "nota": "Cabelo com pesos seguindo o esqueleto; chifres no Head e cristal no Spine."
+  },
+  {
+    "quando": "2026-09-30T00:11:30",
+    "titulo": "Protagonista v2 — run-loop com cabelo (jogo)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_jogo.gif",
+    "nota": "Cabelo com pesos seguindo o esqueleto; chifres no Head e cristal no Spine."
+  },
+  {
+    "quando": "2026-09-30T00:11:31",
+    "titulo": "Protagonista v2 — cabelo (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_prova_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-30T00:11:32",
+    "titulo": "Protagonista v2 — cabelo longo com pesos (piloto)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_prova.png",
+    "nota": "937 tri, pesos Head/neck/Spine/Spine01, janela dos olhos aberta, chifres atravessando. Orelha de gato: com o cabelo escuro, de frente os chifres ainda leem como orelhas; de cima, como chifres."
+  },
+  {
+    "quando": "2026-09-30T00:18:06",
+    "titulo": "Protagonista v2 — idle-loop com cabelo limpo (costas)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_costas.gif",
+    "nota": "Depois da limpeza: nenhum vértice do cabelo dentro do corpo em nenhum quadro."
+  },
+  {
+    "quando": "2026-09-30T00:18:07",
+    "titulo": "Protagonista v2 — idle-loop com cabelo limpo (lado)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_lado.gif",
+    "nota": "Depois da limpeza: nenhum vértice do cabelo dentro do corpo em nenhum quadro."
+  },
+  {
+    "quando": "2026-09-30T00:18:08",
+    "titulo": "Protagonista v2 — idle-loop com cabelo limpo (jogo)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_jogo.gif",
+    "nota": "Depois da limpeza: nenhum vértice do cabelo dentro do corpo em nenhum quadro."
+  },
+  {
+    "quando": "2026-09-30T00:18:09",
+    "titulo": "Protagonista v2 — run-loop com cabelo limpo (costas)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_costas.gif",
+    "nota": "Depois da limpeza: nenhum vértice do cabelo dentro do corpo em nenhum quadro."
+  },
+  {
+    "quando": "2026-09-30T00:18:10",
+    "titulo": "Protagonista v2 — run-loop com cabelo limpo (lado)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_lado.gif",
+    "nota": "Depois da limpeza: nenhum vértice do cabelo dentro do corpo em nenhum quadro."
+  },
+  {
+    "quando": "2026-09-30T00:18:11",
+    "titulo": "Protagonista v2 — run-loop com cabelo limpo (jogo)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_jogo.gif",
+    "nota": "Depois da limpeza: nenhum vértice do cabelo dentro do corpo em nenhum quadro."
+  },
+  {
+    "quando": "2026-09-30T00:18:12",
+    "titulo": "Protagonista v2 — cabelo limpo (folha)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_prova.png",
+    "nota": "926 tri; folga mínima 3,5 mm nos clipes."
+  },
+  {
+    "quando": "2026-09-30T00:18:13",
+    "titulo": "Protagonista v2 — limpeza e chifres recuados (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_limpeza_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-30T00:18:14",
+    "titulo": "Protagonista v2 — limpeza do cabelo e chifres com a base recuada",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_limpeza.png",
+    "nota": "Antes/depois da limpeza; chifres 20° atuais × base recuada 18 mm (de frente saem de dentro do cabelo). Recomendação: recuada."
+  },
+  {
+    "quando": "2026-09-30T00:47:35",
+    "titulo": "Protagonista v2 — idle-loop, couro cabeludo coberto (costas)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_costas.gif",
+    "nota": "Calota + anel dos chifres; teste: 0 px de pele."
+  },
+  {
+    "quando": "2026-09-30T00:47:36",
+    "titulo": "Protagonista v2 — idle-loop, couro cabeludo coberto (lado)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_lado.gif",
+    "nota": "Calota + anel dos chifres; teste: 0 px de pele."
+  },
+  {
+    "quando": "2026-09-30T00:47:37",
+    "titulo": "Protagonista v2 — idle-loop, couro cabeludo coberto (jogo)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_jogo.gif",
+    "nota": "Calota + anel dos chifres; teste: 0 px de pele."
+  },
+  {
+    "quando": "2026-09-30T00:47:38",
+    "titulo": "Protagonista v2 — run-loop, couro cabeludo coberto (costas)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_costas.gif",
+    "nota": "Calota + anel dos chifres; teste: 0 px de pele."
+  },
+  {
+    "quando": "2026-09-30T00:47:39",
+    "titulo": "Protagonista v2 — run-loop, couro cabeludo coberto (lado)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_lado.gif",
+    "nota": "Calota + anel dos chifres; teste: 0 px de pele."
+  },
+  {
+    "quando": "2026-09-30T00:47:40",
+    "titulo": "Protagonista v2 — run-loop, couro cabeludo coberto (jogo)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_jogo.gif",
+    "nota": "Calota + anel dos chifres; teste: 0 px de pele."
+  },
+  {
+    "quando": "2026-09-30T00:47:41",
+    "titulo": "Protagonista v2 — cabelo com a calota (folha)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_prova.png",
+    "nota": "932 tri; chifres recuados."
+  },
+  {
+    "quando": "2026-09-30T00:47:42",
+    "titulo": "Protagonista v2 — couro cabeludo coberto (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_couro_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-30T00:47:43",
+    "titulo": "Protagonista v2 — couro cabeludo coberto (antes/depois)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_couro.png",
+    "nota": "Teste automático em 104 imagens: 668 px de pele antes, 0 depois. Chifres recuados, anel de cabelo em volta da base."
+  }
+]

@@ -1,0 +1,146 @@
+{
+  "corpo_a_frente_1": {
+    "medidas": {
+      "glb": "assets/modelos/protagonista_v2/meshy/corpo_a_frente_1.glb",
+      "triangulos": 2602,
+      "altura_m": 0.8,
+      "largura_m": 0.456,
+      "profundidade_m": 0.143,
+      "simetria": {
+        "media_mm": 4.33,
+        "p95_mm": 10.6,
+        "max_mm": 22.62
+      },
+      "jogo": {
+        "0.4": {
+          "protagonista_px": 31.9,
+          "aldeao_px": 17.2,
+          "caixa_px": [
+            1498.8829808235168,
+            916.2352395057678,
+            1545.5451135635376,
+            948.1363096833229
+          ],
+          "tela": [
+            3024,
+            1890
+          ]
+        },
+        "1.0": {
+          "protagonista_px": 81.4,
+          "aldeao_px": 43.4,
+          "caixa_px": [
+            1478.8160963058472,
+            871.4162188768387,
+            1596.1534280776978,
+            952.8536447882652
+          ],
+          "tela": [
+            3024,
+            1890
+          ]
+        },
+        "2.5": {
+          "protagonista_px": 215.0,
+          "aldeao_px": 111.1,
+          "caixa_px": [
+            1426.485996723175,
+            749.6883577108383,
+            1724.2234153747559,
+            964.7144052386284
+          ],
+          "tela": [
+            3024,
+            1890
+          ]
+        }
+      }
+    },
+    "cabeca": {
+      "largura_sobre_altura": 0.915,
+      "largura_px": 119,
+      "altura_px": 130,
+      "cabeca_sobre_figura": 0.14
+    },
+    "notas": {
+      "rotulo": "A — só a frente (tarefa 01a0efa8, 20 créditos)",
+      "notas": [
+        "mãos: ABERTAS, dedos longos e separados (a folha e o contrato pedem meio fechadas) · pés: bons, dedos leves, arco e calcanhar coerentes",
+        "perfil (inventado, só a frente entrou): o mais parecido com a folha — glúteo redondo, panturrilha, costas curvas, queixo um pouco à frente",
+        "anatomia marcada: clavícula e esterno leves; joelhos e panturrilhas FORTES; borda do short gravada na malha (sai na limpeza)"
+      ]
+    }
+  },
+  "corpo_b_multi_1": {
+    "medidas": {
+      "glb": "assets/modelos/protagonista_v2/meshy/corpo_b_multi_1.glb",
+      "triangulos": 2620,
+      "altura_m": 0.8,
+      "largura_m": 0.443,
+      "profundidade_m": 0.13,
+      "simetria": {
+        "media_mm": 4.36,
+        "p95_mm": 10.71,
+        "max_mm": 22.91
+      },
+      "jogo": {
+        "0.4": {
+          "protagonista_px": 31.5,
+          "aldeao_px": 17.2,
+          "caixa_px": [
+            1499.2612237930298,
+            916.4023035764694,
+            1545.5451135635376,
+            947.8630140423775
+          ],
+          "tela": [
+            3024,
+            1890
+          ]
+        },
+        "1.0": {
+          "protagonista_px": 80.3,
+          "aldeao_px": 43.4,
+          "caixa_px": [
+            1479.79248046875,
+            871.8226701021194,
+            1596.1534280776978,
+            952.1687722206116
+          ],
+          "tela": [
+            3024,
+            1890
+          ]
+        },
+        "2.5": {
+          "protagonista_px": 212.4,
+          "aldeao_px": 111.1,
+          "caixa_px": [
+            1429.0497937202454,
+            750.615828037262,
+            1724.2234153747559,
+            962.9923385381699
+          ],
+          "tela": [
+            3024,
+            1890
+          ]
+        }
+      }
+    },
+    "cabeca": {
+      "largura_sobre_altura": 0.901,
+      "largura_px": 118,
+      "altura_px": 131,
+      "cabeca_sobre_figura": 0.141
+    },
+    "notas": {
+      "rotulo": "B — frente + perfil + costas (tarefa 01a0efaa, 20 créditos)",
+      "notas": [
+        "mãos: MEIO FECHADAS, como na folha e no contrato · pés: um pouco mais longos e lisos, dedos menos marcados",
+        "perfil: mais reto e rígido que a folha — glúteo quase plano, pernas quase cilíndricas, tronco em tábua (0,130 m de fundo)",
+        "anatomia marcada: clavícula e esterno leves; panturrilhas FRACAS, joelhos suaves; borda do short gravada na malha (sai na limpeza)"
+      ]
+    }
+  }
+}

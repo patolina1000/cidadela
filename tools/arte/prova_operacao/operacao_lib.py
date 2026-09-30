@@ -24,9 +24,19 @@ def world_scale(arm) -> float:
 
 
 def body_mesh(objects):
-    """A malha do corpo: a com mais vértices entre as que têm grupos de vértices (fora Olhos e Boca)."""
+    """A malha do corpo: a com mais vértices entre as que têm grupos de vértices (fora Olhos e Boca). Corpo dividido
+    em regiões (protagonista v2: 9 malhas no mesmo esqueleto): junta as regiões numa malha só para medir (os grupos de
+    vértices se juntam pelo nome); com uma malha só (aldeão), nada muda."""
     meshes = [o for o in objects if o.type == "MESH" and o.vertex_groups and o.name.split(".")[0] not in ("Olhos", "Boca")]
-    return max(meshes, key=lambda o: len(o.data.vertices))
+    body = max(meshes, key=lambda o: len(o.data.vertices))
+    if len(meshes) > 1:
+        bpy.ops.object.select_all(action="DESELECT")
+        for o in meshes:
+            o.select_set(True)
+        bpy.context.view_layer.objects.active = body
+        bpy.ops.object.join()
+        body = bpy.context.view_layer.objects.active
+    return body
 
 
 def dominant(body):

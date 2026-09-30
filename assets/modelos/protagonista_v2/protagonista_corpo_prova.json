@@ -1,0 +1,216 @@
+{
+  "clipes_provisorios": {
+    "idle-loop": "idles.glb:Idle",
+    "run-loop": "corrida_basica.glb:Armature|running|baselayer"
+  },
+  "pesos": {
+    "bracos": {
+      "sem_peso_corrigidos": 0
+    },
+    "cabeca": {
+      "sem_peso_corrigidos": 0
+    },
+    "canelas": {
+      "sem_peso_corrigidos": 0
+    },
+    "coxas": {
+      "sem_peso_corrigidos": 0
+    },
+    "maos": {
+      "sem_peso_corrigidos": 0
+    },
+    "pes": {
+      "sem_peso_corrigidos": 0
+    },
+    "quadril": {
+      "sem_peso_corrigidos": 0
+    },
+    "roupa_intima": {
+      "sem_peso_corrigidos": 0
+    },
+    "tronco": {
+      "sem_peso_corrigidos": 0
+    }
+  },
+  "pele_do_rosto_no_head_vertices": 115,
+  "janela_olhos_m": [
+    -0.04533793333188846,
+    0.7587703807680699,
+    0.04533826115743471,
+    0.6919617341272535
+  ],
+  "janela_boca_m": [
+    -0.010610558634454557,
+    0.7098833462961448,
+    0.02711645486679945,
+    0.6876460591844509
+  ],
+  "offset_mm": 2.0,
+  "folga_mm": {
+    "idle-loop@0": {
+      "Olhos": [
+        2.3,
+        2.35
+      ],
+      "Boca": [
+        2.24,
+        2.35
+      ]
+    },
+    "idle-loop@19": {
+      "Olhos": [
+        2.3,
+        2.35
+      ],
+      "Boca": [
+        2.24,
+        2.35
+      ]
+    },
+    "idle-loop@38": {
+      "Olhos": [
+        2.3,
+        2.35
+      ],
+      "Boca": [
+        2.24,
+        2.35
+      ]
+    },
+    "idle-loop@57": {
+      "Olhos": [
+        2.3,
+        2.35
+      ],
+      "Boca": [
+        2.24,
+        2.35
+      ]
+    },
+    "idle-loop@76": {
+      "Olhos": [
+        2.3,
+        2.35
+      ],
+      "Boca": [
+        2.24,
+        2.35
+      ]
+    },
+    "idle-loop@96": {
+      "Olhos": [
+        2.3,
+        2.35
+      ],
+      "Boca": [
+        2.24,
+        2.35
+      ]
+    },
+    "run-loop@0": {
+      "Olhos": [
+        1.96,
+        2.0
+      ],
+      "Boca": [
+        1.9,
+        2.0
+      ]
+    },
+    "run-loop@3": {
+      "Olhos": [
+        1.96,
+        2.0
+      ],
+      "Boca": [
+        1.9,
+        2.0
+      ]
+    },
+    "run-loop@6": {
+      "Olhos": [
+        1.96,
+        2.0
+      ],
+      "Boca": [
+        1.9,
+        2.0
+      ]
+    },
+    "run-loop@9": {
+      "Olhos": [
+        1.96,
+        2.0
+      ],
+      "Boca": [
+        1.9,
+        2.0
+      ]
+    },
+    "run-loop@12": {
+      "Olhos": [
+        1.96,
+        2.0
+      ],
+      "Boca": [
+        1.9,
+        2.0
+      ]
+    },
+    "run-loop@16": {
+      "Olhos": [
+        1.96,
+        2.0
+      ],
+      "Boca": [
+        1.9,
+        2.0
+      ]
+    }
+  },
+  "folga_minima_mm": 1.9,
+  "folga_maxima_mm": 2.35,
+  "exportacao": {
+    "normalizacao": {
+      "escala": 0.009999999776482582,
+      "curvas_de_posicao_escaladas": 144
+    },
+    "deslocamento_quadros": {
+      "idle-loop": -0.0,
+      "run-loop": -0.8000000715255737
+    },
+    "fps": 24
+  },
+  "conferencia": {
+    "objetos": [
+      "Armature",
+      "Boca",
+      "Olhos",
+      "bracos",
+      "cabeca",
+      "canelas",
+      "coxas",
+      "maos",
+      "pes",
+      "quadril",
+      "roupa_intima",
+      "tronco"
+    ],
+    "animacoes": [
+      "idle-loop",
+      "run-loop"
+    ],
+    "materiais": [
+      "pele",
+      "rosto_boca",
+      "rosto_olhos",
+      "tecido"
+    ],
+    "triangulos_corpo": 2482,
+    "escala_armature": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "arquivo": "assets/modelos/protagonista_v2/cristal.glb",
+  "triangulos": 24,
+  "material": "Cristal",
+  "tamanho_mm": {
+    "largura": 30.0,
+    "altura": 58.0,
+    "fundo": 16.0
+  },
+  "centro_blender_m": [
+    0.0,
+    -0.013,
+    0.5592
+  ],
+  "centro_gltf_m": [
+    0.0,
+    0.5592,
+    0.013
+  ],
+  "frente_do_peito_gltf_z_m": 0.0146,
+  "avanca_da_pele_mm": 8.1,
+  "inclinacao_graus": 15,
+  "cor_base": "#8FE3FF",
+  "emissao": "#4CC3FF",
+  "forca_emissao": 3.0,
+  "espaco": "corpo limpo em repouso (protagonista_corpo_limpo.glb), metros, frente +Z do glTF; o jogo prende no encaixe Peito (osso Spine) compensando o repouso",
+  "luz_da_v1_para_o_jogo": {
+    "cor": [
+      0.35,
+      0.55,
+      1.0
+    ],
+    "energia": 0.85,
+    "alcance_m": 2.3,
+    "atenuacao": 1.4,
+    "sombra": false,
+    "especular": 0.1,
+    "camada_propria": 20
+  },
+  "caixa_blender_m": [
+    [
+      -0.015,
+      -0.0227,
+      0.5312
+    ],
+    [
+      0.015,
+      -0.0033,
+      0.5872
+    ]
+  ]
+}
