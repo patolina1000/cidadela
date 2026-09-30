@@ -330,5 +330,79 @@
     "tipo": "imagem",
     "caminho": "assets/previews/cenario/mapa_antes_depois.png",
     "nota": "Pedra #66636B → #57535F: brilho 68 → 58 (aldeão 128, protagonista 112). Lascas do veio 40 % mais largas; veio 3 com 0,34 m. Zooms 0,4/1/2,5 e crepúsculo."
+  },
+  {
+    "quando": "2026-09-29T22:09:56",
+    "titulo": "Toco 1 (opção)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/arvore/toco_1.glb",
+    "nota": "Toco da árvore 1, 42 triângulos. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:09:57",
+    "titulo": "Toco 2 (opção)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/arvore/toco_2.glb",
+    "nota": "Toco da árvore 2, 42 triângulos. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:09:58",
+    "titulo": "Toco 3 (opção)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/arvore/toco_3.glb",
+    "nota": "Toco da árvore 3, 42 triângulos. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:09:59",
+    "titulo": "Toco 4 (opção)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/arvore/toco_4.glb",
+    "nota": "Toco da árvore 4, 42 triângulos. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:10:00",
+    "titulo": "Mancha do veio 1 (opção)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/veio/mancha_1.glb",
+    "nota": "Veio esgotado, opção 1. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:10:01",
+    "titulo": "Mancha do veio 2 (opção)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/veio/mancha_2.glb",
+    "nota": "Veio esgotado, opção 2. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:10:02",
+    "titulo": "Cenário — três famílias para aprovação (final)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/cenario/cenario_contato.png",
+    "nota": "Árvore revisão 3, pedra escurecida #57535F, veio com lascas engordadas; borda fria (b); fila e mapa nos zooms 0,4/1/2,5 com crepúsculo."
+  },
+  {
+    "quando": "2026-09-29T22:10:03",
+    "titulo": "Quando o recurso esgota — opções",
+    "tipo": "imagem",
+    "caminho": "assets/previews/cenario/esgotado_contato.png",
+    "nota": "(a) tocos das 4 árvores (42 tri, 0,15–0,19 m); (b) manchas do veio: placa (36 tri) ou lascas (30 tri). Mapa depois da coleta: some tudo × tocos e manchas, zooms 0,4/1/2,5 e crepúsculo."
   }
 ]
