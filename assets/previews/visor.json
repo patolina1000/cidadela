@@ -443,5 +443,44 @@
     "tipo": "imagem",
     "caminho": "assets/previews/protagonista_v2/rig_parada1.png",
     "nota": "Rig direto no corpo limpo (5 créditos), 0 vértices sem peso, retalhos com folga 1,9–2,35 mm. Créditos na protagonista: 81/300."
+  },
+  {
+    "quando": "2026-09-29T23:33:50",
+    "titulo": "Protagonista v2 — idle-loop final (Long Breathe), de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes_finais/idle_long_breathe_lado.gif",
+    "nota": "No protagonista_corpo.glb: 270 quadros a 24 fps, laço fechado (primeiro = último quadro)."
+  },
+  {
+    "quando": "2026-09-29T23:33:51",
+    "titulo": "Protagonista v2 — idle-loop final, câmera do jogo",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes_finais/idle_long_breathe_jogo.gif",
+    "nota": "80 px ampliado 2×."
+  },
+  {
+    "quando": "2026-09-29T23:33:52",
+    "titulo": "Protagonista v2 — run-loop final (Run 3), de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes_finais/run_run_03_lado.gif",
+    "nota": "19 quadros, sem avanço de raiz, laço fechado; passada pelos pés 1,267 m/s; grade do chão na passada."
+  },
+  {
+    "quando": "2026-09-29T23:33:53",
+    "titulo": "Protagonista v2 — run-loop final, câmera do jogo",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes_finais/run_run_03_jogo.gif",
+    "nota": "80 px ampliado 2×."
+  },
+  {
+    "quando": "2026-09-29T23:33:54",
+    "titulo": "Protagonista v2 — protagonista_corpo.glb (final)",
+    "tipo": "glb",
+    "caminho": "assets/modelos/protagonista_v2/protagonista_corpo.glb",
+    "nota": "Rig + 9 regiões + retalhos b3 + idle-loop e run-loop; sha256 383bda5f…",
+    "junto": [
+      "assets/modelos/protagonista_v2/cristal.glb",
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
   }
 ]

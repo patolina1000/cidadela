@@ -9,14 +9,19 @@
 3. Conferência da folga dos retalhos em 6 quadros de cada clipe; prévias da pose de repouso e de quadros dos clipes.
 4. Exporta pelo contrato (rig_lib.export_contract_glb: metros, Armature escala 1, t = 0, 24 fps).
 
-Clipes PROVISÓRIOS, só para a conferência desta parada (a escolha sai dos GIFs): idle-loop = Idle (0) e run-loop = a
-corrida básica que veio grátis com o rig.
+Parada 1 (sem --final): clipes PROVISÓRIOS, só para a conferência (idle-loop = Idle, run-loop = corrida básica).
+Com --final (escolha do Arthur em 29/09/2026): idle-loop = Long Breathe and Look Around, run-loop = Run 3, sem avanço
+de raiz, laços fechados (< 1 cm), passada pelos pés em clipes/clipes.json (passada_m_s, contrato de animação); e o
+short corrigido: abaixo do quadril, cada lado do corpo perde o peso dos ossos da perna do outro lado (na parada 1 um
+vértice da bainha perto da virilha seguia a perna errada e a ponta do short saía atrás da coxa na corrida).
 
 Uso:
-  /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/arte/protagonista_v2/montar_rig.py -- <pasta_previa>
-Saída: assets/modelos/protagonista_v2/protagonista_corpo_prova.glb e protagonista_corpo_prova.json
+  /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/arte/protagonista_v2/montar_rig.py -- <pasta_previa> [--final]
+Saída: assets/modelos/protagonista_v2/protagonista_corpo_prova.glb (+ .json); com --final, protagonista_corpo.glb,
+protagonista_corpo.json (com o sha256) e clipes/clipes.json
 """
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -28,14 +33,23 @@ from mathutils import Vector
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[0] / "aldeao_v2"))
 from corpo_lib import EYES_FRAC, MOUTH_FRAC, face_patch, game_camera_offset, head_box, import_glb, set_cell, setup_scene, shoot, twilight_lights, window_rect  # noqa: E402,E501
-from rig_lib import clearance, evaluated_points, export_contract_glb, play, transfer_weights  # noqa: E402
+from rig_lib import (clearance, close_loop, evaluated_points, export_contract_glb, loop_gap, measure_stride, play,  # noqa: E402
+                     remove_root_motion, transfer_weights)
 
 ROOT = HERE.parents[2]
 RIG_DIR = ROOT / "assets/modelos/protagonista_v2/meshy/rig"
 CLEAN = ROOT / "assets/modelos/protagonista_v2/protagonista_corpo_limpo.glb"
 ROSTO = ROOT / "assets/modelos/protagonista_v2/rosto"
 OUT = ROOT / "assets/modelos/protagonista_v2/protagonista_corpo_prova.glb"
+FINAL = "--final" in sys.argv
 PROVISIONAL = {"idles.glb": ("Idle", "idle-loop"), "corrida_basica.glb": ("Armature|running|baselayer", "run-loop")}
+CHOSEN = {"idles.glb": ("Long_Breathe_and_Look_Around", "idle-loop"), "corridas.glb": ("Run_03", "run-loop")}
+CLIPS = CHOSEN if FINAL else PROVISIONAL
+if FINAL:
+    OUT = ROOT / "assets/modelos/protagonista_v2/protagonista_corpo.glb"
+CLIPS_JSON = ROOT / "assets/modelos/protagonista_v2/clipes/clipes.json"
+LEG_BONES = ("UpLeg", "Leg", "Foot", "ToeBase")
+LOOP_TARGET_M = 0.01
 PHI_MAX, EYES_RAISE, MOUTH_RAISE, OFFSET = 45, 0.10, 0.12, 0.002  # b3
 RIGID_MARGIN = 0.015
 HEAD_BONE = "Head"
@@ -93,12 +107,98 @@ def rigid_face(head, windows):
     return changed
 
 
+def split_legs(mesh):
+    """Abaixo do quadril, um vértice do lado esquerdo (+X) perde o peso dos ossos da perna direita e vice-versa
+    (renormaliza); a linha do meio (|x| < 5 mm) fica como está."""
+    names = {g.index: g.name for g in mesh.vertex_groups}
+    changed = 0
+    for v in mesh.data.vertices:
+        w = mesh.matrix_world @ v.co
+        if abs(w.x) < 0.005 or w.z > 0.45:
+            continue
+        wrong = "Right" if w.x > 0 else "Left"
+        bad = [g for g in v.groups if names[g.group].startswith(wrong) and names[g.group][len(wrong):] in LEG_BONES]
+        if not bad or all(g.weight < 1e-6 for g in bad):
+            continue
+        keep = [(g.group, g.weight) for g in v.groups if g not in bad and g.weight > 0]
+        total = sum(x for _, x in keep)
+        for g in bad:
+            mesh.vertex_groups[names[g.group]].remove([v.index])
+        if total > 0:
+            for gi, x in keep:
+                mesh.vertex_groups[names[gi]].add([v.index], x / total, "REPLACE")
+        changed += 1
+    return changed
+
+
+def resample_integer(action):
+    """Clipes da Meshy terminam em quadro fracionário (a Run 3 em 19,2): a exportação amostra em quadros inteiros e o
+    último quadro amostrado não cai no fim do ciclo, reabrindo o laço. Reamostra cada curva em N + 1 quadros inteiros,
+    0..N, com N = o comprimento arredondado (o ciclo fica no máximo 2,5% mais rápido ou lento)."""
+    from rig_lib import action_fcurves
+    start, end = action.frame_range
+    n = max(1, int(round(end - start)))
+    for c in action_fcurves(action):
+        values = [c.evaluate(start + k * (end - start) / n) for k in range(n + 1)]
+        c.keyframe_points.clear()
+        c.keyframe_points.add(n + 1)
+        for k, v in enumerate(values):
+            kp = c.keyframe_points[k]
+            kp.co = (k, v)
+            kp.interpolation = "LINEAR"
+        c.update()
+    action.frame_range = (0, n)
+    return {"quadros_originais": [round(start, 3), round(end, 3)], "quadros": n}
+
+
+def finish_clips(armature):
+    """Run sem avanço de raiz; laços fechados até < 1 cm (aumentando a mistura se preciso); passada pelos pés."""
+    scene = bpy.context.scene
+    fps = scene.render.fps / scene.render.fps_base
+    out = {}
+    for name in ("idle-loop", "run-loop"):
+        action = bpy.data.actions[name]
+        info = {"reamostrado": resample_integer(action)}
+        if name == "run-loop":
+            info["velocidade_raiz_m_s"] = round(remove_root_motion(armature, action), 3)
+        info["laco_antes_m"] = round(loop_gap(armature, action), 4)
+        fraction, mixed = 0.25, 0
+        while True:
+            mixed = close_loop(action, fraction=fraction)
+            gap = loop_gap(armature, action)
+            if gap < LOOP_TARGET_M or fraction >= 0.5:
+                break
+            fraction += 0.05
+        info.update({"laco_depois_m": round(gap, 4), "quadros_misturados": mixed,
+                     "quadros": [int(f) for f in action.frame_range],
+                     "duracao_s": round((action.frame_range[1] - action.frame_range[0]) / fps, 4)})
+        if name == "run-loop":
+            info["passada_m_s"] = round(measure_stride(armature, action), 3)
+        out[name] = info
+    return out
+
+
+def write_clips_json(measures):
+    CLIPS_JSON.parent.mkdir(parents=True, exist_ok=True)
+    body = "protagonista_corpo.glb"
+    data = {
+        "idle-loop": {"arquivo": body, "origem": "Meshy, biblioteca: Long Breathe and Look Around (336)",
+                      "duracao_s": measures["idle-loop"]["duracao_s"], "fps": 24,
+                      "laco_m": measures["idle-loop"]["laco_depois_m"]},
+        "run-loop": {"arquivo": body, "origem": "Meshy, biblioteca: Run 3 (15)",
+                     "duracao_s": measures["run-loop"]["duracao_s"], "fps": 24,
+                     "passada_m_s": measures["run-loop"]["passada_m_s"],
+                     "laco_m": measures["run-loop"]["laco_depois_m"]},
+    }
+    CLIPS_JSON.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+
+
 def main() -> None:
-    preview = Path(sys.argv[sys.argv.index("--") + 1:][0])
+    preview = Path([a for a in sys.argv[sys.argv.index("--") + 1:] if not a.startswith("--")][0])
     preview.mkdir(parents=True, exist_ok=True)
     scene = setup_scene(768, transparent=False)
     twilight_lights(scene)
-    report = {"clipes_provisorios": {v[1]: f"{k}:{v[0]}" for k, v in PROVISIONAL.items()}}
+    report = {("clipes" if FINAL else "clipes_provisorios"): {v[1]: f"{k}:{v[0]}" for k, v in CLIPS.items()}}
 
     objs = import_glb(RIG_DIR / "rig.glb")
     armature = next(o for o in objs if o.type == "ARMATURE")
@@ -116,9 +216,11 @@ def main() -> None:
         m.modifiers.clear()
         report["pesos"][m.name] = {"sem_peso_corrigidos": transfer_weights(raw, m, armature)}
     bpy.data.objects.remove(raw)
+    if FINAL:
+        report["pernas_separadas_vertices"] = sum(split_legs(m) for m in clean)
 
-    # clipes provisórios: só as ações (os ossos batem pelo nome)
-    for fname, (src, dst) in PROVISIONAL.items():
+    # clipes: só as ações (os ossos batem pelo nome)
+    for fname, (src, dst) in CLIPS.items():
         before = set(bpy.data.actions)
         tmp = import_glb(RIG_DIR / fname)
         for a in [a for a in bpy.data.actions if a not in before]:
@@ -130,6 +232,12 @@ def main() -> None:
         for o in tmp:
             bpy.data.objects.remove(o)
     armature.animation_data_create()
+    if FINAL:
+        report["clipes_medidas"] = finish_clips(armature)
+    armature.animation_data.action = None  # os retalhos são postos na pose de repouso
+    armature.data.pose_position = "REST"
+    bpy.context.scene.frame_set(0)
+    bpy.context.view_layer.update()
 
     head = next(o for o in clean if o.name.split(".")[0] == "cabeca")
     rosto = json.loads((ROSTO / "rosto.json").read_text())
@@ -197,6 +305,10 @@ def main() -> None:
     report["conferencia"] = {"objetos": sorted(o.name for o in objs), "animacoes": [a.name for a in bpy.data.actions],
                              "materiais": sorted(m.name for m in bpy.data.materials), "triangulos_corpo": tris,
                              "escala_armature": [round(x, 4) for x in next(o for o in objs if o.type == "ARMATURE").scale]}
+    report["sha256"] = hashlib.sha256(OUT.read_bytes()).hexdigest()
+    report["bytes"] = OUT.stat().st_size
+    if FINAL:
+        write_clips_json(report["clipes_medidas"])
     OUT.with_suffix(".json").write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
     print("RELATORIO " + json.dumps({k: v for k, v in report.items() if k != "folga_mm"}, ensure_ascii=False))
 

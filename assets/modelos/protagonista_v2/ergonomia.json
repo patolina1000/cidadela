@@ -1,0 +1,253 @@
+{
+  "corpo": "assets/modelos/protagonista_v2/protagonista_corpo.glb",
+  "unidade": "metros; pés em y = 0 (glTF), frente +Z do glTF",
+  "altura_m": 0.8,
+  "altura_quadril_m": 0.419,
+  "altura_peito_m": 0.5272,
+  "altura_ombros_m": 0.5858,
+  "alcance_ombro_palma_m": {
+    "esquerdo": 0.2788,
+    "direito": 0.2855,
+    "menor": 0.2788
+  },
+  "barriga_avanca_m": {
+    "a_frente_dos_ombros": 0.0423,
+    "a_frente_do_pivo": 0.0255,
+    "na_altura_m": 0.4196
+  },
+  "distancia_minima_alca_aos_ombros_m": {
+    "no_raio_recomendado": 0.1128,
+    "raio_0_10": 0.1005,
+    "regra": "manopla na frente dos ombros, livre do corpo em toda a altura do círculo; cresce com o raio (ver manivela_por_raio)"
+  },
+  "raio_max_manivela_no_peito_m": {
+    "recomendado": 0.2,
+    "encosta_ate_1mm": 0.2,
+    "fecha_ate_5mm": 0.205,
+    "regra": "usar o recomendado: no limite de 5 mm a mão já fica alguns mm fora da manopla"
+  },
+  "manivela_por_raio": {
+    "0.020": {
+      "distancia_manopla_aos_ombros_m": 0.0629,
+      "falta_max_mm": 0.0
+    },
+    "0.025": {
+      "distancia_manopla_aos_ombros_m": 0.0629,
+      "falta_max_mm": 0.0
+    },
+    "0.030": {
+      "distancia_manopla_aos_ombros_m": 0.0674,
+      "falta_max_mm": 0.0
+    },
+    "0.035": {
+      "distancia_manopla_aos_ombros_m": 0.0674,
+      "falta_max_mm": 0.0
+    },
+    "0.040": {
+      "distancia_manopla_aos_ombros_m": 0.0674,
+      "falta_max_mm": 0.0
+    },
+    "0.045": {
+      "distancia_manopla_aos_ombros_m": 0.0674,
+      "falta_max_mm": 0.0
+    },
+    "0.050": {
+      "distancia_manopla_aos_ombros_m": 0.0674,
+      "falta_max_mm": 0.0
+    },
+    "0.055": {
+      "distancia_manopla_aos_ombros_m": 0.0674,
+      "falta_max_mm": 0.0
+    },
+    "0.060": {
+      "distancia_manopla_aos_ombros_m": 0.0674,
+      "falta_max_mm": 0.0
+    },
+    "0.065": {
+      "distancia_manopla_aos_ombros_m": 0.0674,
+      "falta_max_mm": 0.0
+    },
+    "0.070": {
+      "distancia_manopla_aos_ombros_m": 0.0674,
+      "falta_max_mm": 0.0
+    },
+    "0.075": {
+      "distancia_manopla_aos_ombros_m": 0.0674,
+      "falta_max_mm": 0.0
+    },
+    "0.080": {
+      "distancia_manopla_aos_ombros_m": 0.0674,
+      "falta_max_mm": 0.0
+    },
+    "0.085": {
+      "distancia_manopla_aos_ombros_m": 0.0674,
+      "falta_max_mm": 0.0
+    },
+    "0.090": {
+      "distancia_manopla_aos_ombros_m": 0.0713,
+      "falta_max_mm": 0.0
+    },
+    "0.095": {
+      "distancia_manopla_aos_ombros_m": 0.1005,
+      "falta_max_mm": 0.0
+    },
+    "0.100": {
+      "distancia_manopla_aos_ombros_m": 0.1005,
+      "falta_max_mm": 0.0
+    },
+    "0.105": {
+      "distancia_manopla_aos_ombros_m": 0.1005,
+      "falta_max_mm": 0.0
+    },
+    "0.110": {
+      "distancia_manopla_aos_ombros_m": 0.1005,
+      "falta_max_mm": 0.0
+    },
+    "0.115": {
+      "distancia_manopla_aos_ombros_m": 0.1058,
+      "falta_max_mm": 0.1
+    },
+    "0.120": {
+      "distancia_manopla_aos_ombros_m": 0.1058,
+      "falta_max_mm": 0.0
+    },
+    "0.125": {
+      "distancia_manopla_aos_ombros_m": 0.1058,
+      "falta_max_mm": 0.0
+    },
+    "0.130": {
+      "distancia_manopla_aos_ombros_m": 0.1058,
+      "falta_max_mm": 0.0
+    },
+    "0.135": {
+      "distancia_manopla_aos_ombros_m": 0.1108,
+      "falta_max_mm": 0.0
+    },
+    "0.140": {
+      "distancia_manopla_aos_ombros_m": 0.1108,
+      "falta_max_mm": 0.0
+    },
+    "0.145": {
+      "distancia_manopla_aos_ombros_m": 0.1108,
+      "falta_max_mm": 0.0
+    },
+    "0.150": {
+      "distancia_manopla_aos_ombros_m": 0.1108,
+      "falta_max_mm": 0.0
+    },
+    "0.155": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 0.0
+    },
+    "0.160": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 0.0
+    },
+    "0.165": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 0.0
+    },
+    "0.170": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 0.0
+    },
+    "0.175": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 0.0
+    },
+    "0.180": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 0.0
+    },
+    "0.185": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 0.0
+    },
+    "0.190": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 0.0
+    },
+    "0.195": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 0.0
+    },
+    "0.200": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 0.0
+    },
+    "0.205": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 1.9
+    },
+    "0.210": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 6.7
+    },
+    "0.215": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 11.4
+    },
+    "0.220": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 16.2
+    },
+    "0.225": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 21.0
+    },
+    "0.230": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 25.7
+    },
+    "0.235": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 30.5
+    },
+    "0.240": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 35.3
+    },
+    "0.245": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 40.1
+    },
+    "0.250": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 44.9
+    },
+    "0.255": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 49.7
+    },
+    "0.260": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 54.5
+    },
+    "0.265": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 59.3
+    },
+    "0.270": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 64.1
+    },
+    "0.275": {
+      "distancia_manopla_aos_ombros_m": 0.1128,
+      "falta_max_mm": 69.0
+    }
+  },
+  "nota": "Medido em pose de repouso no Blender (tools/arte/prova_operacao/medir_ergonomia.py). Peito = meio entre os ossos Spine01 e Spine; ombros = articulação dos ossos LeftArm/RightArm; palma = centro dos vértices da mão. Manivela: eixo horizontal na altura do peito, círculo vertical na frente do corpo, as duas mãos na manopla (uma de cada lado, ±15 mm), pés fixos, tronco acompanhando pouco (inclinação 4° a 12°, giro ±8°, flexão ±4°); IK de 3 ossos sem esticar; manopla a 29 mm do corpo (raio da manopla + mão); 'fecha' = palma a ≤ 5 mm do alvo nas 16 fases; 'encosta' = ≤ 1 mm. A prova de operação (eixo a 0,19 m, passo de 1 cm) deu 0,06 m.",
+  "medicao": {
+    "escala_mundo_armature": 1.0,
+    "polo_graus": {
+      "Left": 45,
+      "Right": -180
+    },
+    "folga_mao_m": 0.029,
+    "meia_pegada_m": 0.0149,
+    "repouso_intacto": {
+      "repouso_dif_rotacao_graus": 0.0,
+      "repouso_dif_posicao_mm": 9e-05
+    }
+  }
+}

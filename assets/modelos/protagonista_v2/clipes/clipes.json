@@ -1,0 +1,17 @@
+{
+  "idle-loop": {
+    "arquivo": "protagonista_corpo.glb",
+    "origem": "Meshy, biblioteca: Long Breathe and Look Around (336)",
+    "duracao_s": 11.25,
+    "fps": 24,
+    "laco_m": 0.0
+  },
+  "run-loop": {
+    "arquivo": "protagonista_corpo.glb",
+    "origem": "Meshy, biblioteca: Run 3 (15)",
+    "duracao_s": 0.7917,
+    "fps": 24,
+    "passada_m_s": 1.267,
+    "laco_m": 0.0
+  }
+}

@@ -3421,3 +3421,27 @@ onde errou, correções manuais e quanto tempo levou.
 - **Recomendação:** run = **Run 3** (leve, ereta, o laço mais limpo; segunda: Run Fast 3, mais delicada); idle = **Long
   Breathe and Look Around** (cabeça baixa, olha em volta, melancólica, combina com a neutra_cansada; segunda: Idle 12).
 - **Créditos:** 0 nesta parte (na protagonista: 81 de 300; saldo 2.217). **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.
+
+## 2026-09-29 — Protagonista v2, passo 7B: corpo final (Run 3 e Long Breathe), .import, ergonomia e sha256
+
+- **Escolha do Arthur (29/09):** corrida Run 3 e idle Long Breathe and Look Around.
+- **Feito (`montar_rig.py --final`):** idle-loop = Long Breathe and Look Around, run-loop = Run 3; os clipes da Meshy
+  terminam em quadro fracionário (270,4 e 19,2) e a exportação amostra em inteiros, o que reabria o laço: agora cada clipe
+  é reamostrado em quadros inteiros a partir de 0 (270 e 19; a corrida fica 1% mais rápida), a run perde o avanço de
+  raiz (0,003 m/s) e os laços são fechados (misturados 68 e 5 quadros). No GLB exportado o primeiro e o último quadro são
+  **idênticos em todos os ossos** nos dois clipes. Passada pelos pés **1,267 m/s** → `assets/modelos/protagonista_v2/
+  clipes/clipes.json` (`passada_m_s`). Short corrigido: abaixo do quadril, cada lado perde o peso dos ossos da perna do
+  outro lado (297 vértices); conferido em 5 quadros da corrida, de frente e de costas: sem a ponta atrás da coxa.
+  Retalhos: folga 1,9–2,0 mm. Exportação pelo contrato (Armature escala 1, metros, t = 0, 24 fps).
+- **Entregas:** `assets/modelos/protagonista_v2/protagonista_corpo.glb` (sha256
+  `383bda5f36dc2be26dd6035e968195f55b8b190d297106b2c2205bc268ca7e64`, 2.482 triângulos, 9 regiões + Olhos + Boca,
+  materiais pele, tecido, rosto_olhos, rosto_boca) e `protagonista_corpo.json` (medidas e o sha256);
+  `.import` gerado pelo `godot-mono --headless --import` e corrigido por `godot_import.py` (fps 24, pose inteira,
+  otimizador desligado), reimportado e conferido (data nova em `.godot/imported`); os demais `.import` e as texturas
+  extraídas dos retalhos (`protagonista_corpo_{olhos,boca}.png`) que o import criou na protagonista entram também.
+- **Ergonomia (`medir_ergonomia.py` → `ergonomia.json`):** quadril 0,419 m, peito 0,527 m, ombros 0,586 m, alcance
+  ombro–palma 0,279 m (o menor lado), barriga 4,2 cm à frente dos ombros, manivela no peito até raio 0,20 m. O
+  `operacao_lib.body_mesh` passou a juntar as regiões quando o corpo vem dividido (com uma malha, como o aldeão, nada muda).
+- **GIFs finais:** `assets/previews/protagonista_v2/clipes_finais/` (jogo e lado), no visor. O `gif_clipes.py` mede o laço
+  depois de tirar a deriva da raiz, o que dá 0,8 / 2,4 cm nesses clipes; no GLB o laço é 0 (conferido osso a osso).
+- **Créditos:** 0 (na protagonista: 81 de 300). **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.

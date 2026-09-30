@@ -22,10 +22,13 @@ import numpy as np
 from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "aldeao_v2"))
-from corpo_lib import ROOT, flat_material, game_camera_offset, import_glb, set_smooth, setup_scene, shoot, twilight_lights  # noqa: E402
+from corpo_lib import ROOT, flat_material, patch_material, set_cell, game_camera_offset, import_glb, set_smooth, setup_scene, shoot, twilight_lights  # noqa: E402
 from rig_lib import loop_gap, measure_stride, play, remove_root_motion, rest_points  # noqa: E402
 
 SKIN = (0.283, 0.418, 0.474, 1.0)  # #91ADB7 em linear
+CLOTH = (0.05, 0.033, 0.054, 1.0)  # #3F3342
+ROSTO = ROOT / "assets/modelos/protagonista_v2/rosto"
+PATCHES = ("Olhos", "Boca")
 HEIGHT = 0.80
 
 RESOLUTION = 384
@@ -81,7 +84,8 @@ def main() -> None:
         objs = import_glb(ROOT / glb)
         armature = next(o for o in objs if o.type == "ARMATURE")
         meshes = [o for o in objs if o.type == "MESH"]
-        body = max(meshes, key=lambda o: len(o.data.vertices))
+        parts = [m for m in meshes if m.name.split(".")[0] not in PATCHES]
+        body = max(parts, key=lambda o: len(o.data.vertices))
         for a in list(bpy.data.actions):
             if a.name != action_name:
                 bpy.data.actions.remove(a)
@@ -89,12 +93,22 @@ def main() -> None:
         if armature.animation_data:
             for t in armature.animation_data.nla_tracks:
                 t.mute = True
-        rest_h = float(np.ptp(rest_points(body)[:, 2]))
+        rest_h = float(np.ptp(np.vstack([rest_points(m) for m in parts])[:, 2]))
         if abs(rest_h - HEIGHT) > 0.01:
             raise RuntimeError(f"{glb}: altura de repouso {rest_h:.3f} m, esperado {HEIGHT}")
+        rosto = json.loads((ROSTO / "rosto.json").read_text())
         for m in meshes:
-            if m is body:
-                flat_material([m], SKIN, matte=True)
+            name = m.name.split(".")[0]
+            if name in PATCHES:  # retalhos do rosto no quadro padrão do atlas
+                key = "olhos" if name == "Olhos" else "boca"
+                grid = rosto[key]
+                mat = patch_material(f"rosto_{key}", ROSTO / f"{key}.png", grid["colunas"], grid["linhas"], lit=True)
+                set_cell(mat, 0, grid["colunas"], grid["linhas"])
+                m.data.materials.clear()
+                m.data.materials.append(mat)
+                continue
+            cloth = any(mt and mt.name.startswith("tecido") for mt in m.data.materials)
+            flat_material([m], CLOTH if cloth else SKIN, matte=True)
             set_smooth([m], True)
         root_speed = remove_root_motion(armature, action)
         feet_speed = measure_stride(armature, action)
@@ -107,7 +121,7 @@ def main() -> None:
                 "velocidade_chao_m_s": round(speed, 3), "laco_m": round(gap, 4)}
         armature.data.pose_position = "REST"
         bpy.context.view_layer.update()
-        pts = rest_points(body)
+        pts = np.vstack([rest_points(m) for m in parts])
         low, high = pts.min(axis=0), pts.max(axis=0)
         center = Vector(((low[0] + high[0]) / 2, (low[1] + high[1]) / 2, (low[2] + high[2]) / 2))
         info["altura_repouso_m"] = float(high[2] - low[2])
