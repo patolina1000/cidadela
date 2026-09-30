@@ -5982,3 +5982,14 @@ onde errou, correções manuais e quanto tempo levou.
   para o Poço). `dotnet build` 0/0; `dotnet test` 238 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 17:02–17:06 de relógio.
+
+## 2026-09-30 — Linha 2 (formar aldeões), passo 1: design
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** ordem do Arthur (manda, 30/09): linha 2, formar aldeões (casca de barro = corpo, fragmento puro = cristal
+  do peito, mana = sopro). Gravar a especificação do Diretor no master e propor o plano, sem implementar.
+- **Feito:** `docs/linha_aldeoes.md`, cópia fiel de `~/Projetos/cidadela-diretor/especificacoes/linha_aldeoes.md`;
+  só mudaram o título (caixa alta) e a linha de origem. Plano e dúvidas na nota 08 ("PLANO LINHA DOS ALDEÕES (30/09)").
+- **Testes:** nada de código mudou.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:09–19:09 de relógio.
