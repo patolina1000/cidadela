@@ -19,7 +19,7 @@
       "semente": 11,
       "corte_m": 0.11,
       "cores": {
-        "tronco": null,
+        "tronco": "#4A3B3A",
         "madeira": "#6B5B4B"
       }
     },
@@ -39,7 +39,7 @@
       "semente": 23,
       "corte_m": 0.14,
       "cores": {
-        "tronco": null,
+        "tronco": "#4A3B3A",
         "madeira": "#6B5B4B"
       }
     },
@@ -59,7 +59,7 @@
       "semente": 37,
       "corte_m": 0.13,
       "cores": {
-        "tronco": null,
+        "tronco": "#4A3B3A",
         "madeira": "#6B5B4B"
       }
     },
@@ -79,7 +79,7 @@
       "semente": 53,
       "corte_m": 0.1,
       "cores": {
-        "tronco": null,
+        "tronco": "#4A3B3A",
         "madeira": "#6B5B4B"
       }
     }

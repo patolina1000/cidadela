@@ -4637,3 +4637,17 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 23:08–23:21 de relógio.
+
+---
+
+## 2026-09-29 — Cenário: árvores e tocos com o tronco em terra (branch cenario, 1140406)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (tarefa do contorno, item 3):** trazer os GLBs com o tronco em terra (#4A3B3A) quando o CENÁRIO desse o
+  hash. O commit 1140406 da `cenario` é "tronco terra #4A3B3A em todas as árvores e tocos".
+- **O que foi feito:** `git checkout origin/cenario -- assets/cenario`: mudaram `arvore_2/3/4.glb`, `toco_2/3/4.glb`
+  (o 1 já era terra), os relatórios, o rascunho de contrato e o `verificacao.json`; nada fora da pasta. Os `.import` do
+  master continuam (o checkout não apaga o que a branch não tem). Reimportados pelo scan do editor às 23:23:47–50,
+  depois dos GLBs (23:23:37), conferido em `.godot/imported`.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 23:23–23:25 de relógio.
