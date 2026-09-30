@@ -45,30 +45,32 @@
     0.13003
   ],
   "vertices_da_base_afundados": 29,
+  "vertices_reassentados": 47,
+  "escala": 1.3,
   "triangulos_antes": 865,
-  "triangulos": 290,
+  "triangulos": 291,
   "caixa_blender_m": [
     [
-      -0.0693,
-      -0.0322,
-      0.745
+      -0.0748,
+      -0.0347,
+      0.739
     ],
     [
-      0.0693,
-      0.026,
-      0.8005
+      0.0741,
+      0.0467,
+      0.7963
     ]
   ],
   "por_lado": {
     "direito": {
-      "altura_mm": 55.5,
-      "topo_z_m": 0.8005
+      "altura_mm": 57.3,
+      "topo_z_m": 0.7963
     },
     "esquerdo": {
-      "altura_mm": 41.0,
-      "topo_z_m": 0.7866
+      "altura_mm": 38.8,
+      "topo_z_m": 0.7797
     }
   },
   "topo_da_cabeca_z_m": 0.8,
-  "inclinacao_graus": 0.0
+  "inclinacao_graus": 20.0
 }

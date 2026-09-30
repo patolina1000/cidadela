@@ -7,11 +7,13 @@
 3. Cada chifre ganha BASE_RINGS anéis de faces do crânio em volta da base (entra no crânio) e é levado ao crânio
    do corpo: p' = c_corpo + (p - c_busto) * (r_corpo / r_busto), escala por eixo (o busto é ~5% mais estreito).
    Vértices da base que ficariam fora da pele do corpo são puxados para dentro até EMBED do raio (sem fresta).
-4. Inclinação ajustável (--inclinacao=N graus para trás, em volta do eixo X pela base de cada chifre; 0 = como na folha).
+4. Inclinação ajustável (--inclinacao=N graus para trás, em volta do eixo X pela base de cada chifre; 0 = como na folha)
+   e tamanho (--escala=S, cada chifre em volta do centro da própria base; a base volta a assentar no crânio).
+   Decisão do Arthur em 29/09/2026: 20° para trás e 1,3×.
 5. Decimação do par a ≤ MAX_TRIS, facetado, material "chifre" #2B2140, rígido, no espaço do corpo em repouso.
 
 Uso:
-  /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/arte/protagonista_v2/extrair_chifres.py -- <glb_meshy> [--inclinacao=N] [--saida=arquivo.glb]
+  /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/arte/protagonista_v2/extrair_chifres.py -- <glb_meshy> [--inclinacao=N] [--escala=S] [--saida=arquivo.glb]
 Saída: assets/modelos/protagonista_v2/chifres.glb e chifres.json
 """
 
@@ -38,6 +40,8 @@ COLOR = "#2B2140"
 MAX_TRIS = 300
 BASE_RINGS = 2  # anéis de faces do crânio em volta de cada chifre (a base entra no crânio)
 EMBED = 0.97  # base puxada para dentro até este raio normalizado do crânio do corpo
+SCALE = float(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--escala=")), 1.0))  # tamanho, pela base
+SEAT_R = 1.03  # depois de escalar: o que fica até este raio normalizado volta para EMBED (base assentada)
 TILT_DEG = float(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--inclinacao=")), 0.0))  # + = para trás
 FRONT_MAX_Y = 0.3  # ilhas com centro (y normalizado) atrás disto são a duplicata da vista de costas
 
@@ -117,6 +121,22 @@ def main() -> None:
                 rot = Matrix.Translation(pivot) @ Matrix.Rotation(math.radians(-TILT_DEG), 4, "X") @ Matrix.Translation(-pivot)
                 for v in vs:
                     v.co = rot @ v.co
+    if SCALE != 1.0:  # cada chifre cresce em volta do centro da própria base; a base é reassentada no crânio
+        seated = 0
+        for side in (1, -1):
+            vs = [v for v in bm.verts if v.co.x * side > 0]
+            base = [v for v in vs if np.linalg.norm((np.array(v.co[:]) - cb) / rb) < 1.0]
+            pivot = sum((v.co for v in base), Vector()) / max(1, len(base))
+            for v in vs:
+                v.co = pivot + (v.co - pivot) * SCALE
+            for v in vs:
+                n = (np.array(v.co[:]) - cb) / rb
+                r = np.linalg.norm(n)
+                if r < SEAT_R:
+                    v.co = Vector((cb + n / r * min(r, EMBED) * rb).tolist())
+                    seated += 1
+        report["vertices_reassentados"] = seated
+    report["escala"] = SCALE
     mesh = bpy.data.meshes.new("chifres")
     bm.to_mesh(mesh)
     bm.free()

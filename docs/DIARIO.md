@@ -3472,3 +3472,12 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado e foi corrigido:** crescimento da base por raio engolia o crânio inteiro (virou 2 anéis); o sinal da
   inclinação estava invertido (positivo inclinava para a frente).
 - **Créditos:** 20 (na protagonista: 101 de 300; saldo 2.197). **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.
+
+## 2026-09-29 — Protagonista v2: chifres a 20° para trás e 1,3× (decisão do Arthur)
+
+- **Decisão (29/09):** chifres 20° para trás e 30% maiores, sem gerar de novo; decisão final junto com o cabelo.
+- **Feito:** `extrair_chifres.py` ganhou `--escala=S` (cada chifre cresce em volta do centro da própria base; depois o que
+  ficou até 1,03 do raio do crânio volta para 97%, a base reassentada: 47 vértices). `chifres.glb` refeito com
+  `--inclinacao=20 --escala=1.3`: **291 triângulos**, assimetria mantida (direito 57 mm de altura, esquerdo 39 mm; a
+  inclinação baixa a ponta, o comprimento cresce 30%); na câmera do jogo 9 / 22 / 59 px de largura.
+- **Créditos:** 0 (na protagonista: 101 de 300). **Correções manuais:** nenhuma. **Tempo:** ~20 min.
