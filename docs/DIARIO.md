@@ -4577,4 +4577,6 @@ onde errou, correções manuais e quanto tempo levou.
   gravadas por um teste temporário, não commitado): `docs/prints/arvores_vizinhas_passagem.gif` (e `.png`).
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 145 aprovados.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 22:54–23:07 de relógio.
+- **Depois do commit:** `Main` reaberto no editor; a protagonista atravessou o bosque denso da borda sul até o meio
+  (de z 14,8 a 8,2), onde antes parava na primeira fileira. Print: `docs/prints/arvores_vizinhas_bosque_jogo.png`.
+- **Tempo:** 22:54–23:07 de relógio (commit às 23:05).
