@@ -79,7 +79,7 @@ public sealed class GameData
     {
         var items = new List<ItemType>();
         foreach ((string kind, ItemData i) in Ordered<ItemData>(itemsJson, "items.json"))
-            items.Add(new ItemType(kind, i.Name, i.Color));
+            items.Add(new ItemType(kind, i.Name, i.Color, i.Raw));
         var itemKinds = new HashSet<string>();
         foreach (ItemType i in items)
             itemKinds.Add(i.Kind);
@@ -217,6 +217,7 @@ public sealed class GameData
     {
         public string Name { get; set; } = "";
         public string Color { get; set; } = "FF00FF";
+        public bool Raw { get; set; }
     }
 
     private sealed class RecipeData

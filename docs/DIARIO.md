@@ -5588,3 +5588,18 @@ onde errou, correções manuais e quanto tempo levou.
   livre).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 03:00–03:01 de relógio.
+
+## 2026-09-30 — Linha da flecha, passo 1: itens novos e bruto x processado
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 1 de `docs/cadeia_flecha.md`.
+- **Feito:** `data/items.json` com `raw` (tora, pedra, minério) e os itens novos: carvão, ponta, pena, flecha (cores da
+  paleta; a espada passou ao azul da borda fria para não repetir o branco osso da pena). Nomes: "Tora" e "Minério de
+  ferro". `ItemType.Raw`; `SimWorld.IsRaw`. A esteira recusa bruto vindo de máquina ou cabana (`PushForward`) e da
+  mão do Castelão (`TryInsertItem`); a cabana continua soltando no baú à frente. O alimentador de palco
+  (`SpawnItemCommand`, usado na Biografia) ignora a regra de propósito.
+- **Testes:** `RawItemTests` (3) e `TestWorlds.RealData()`/`Open(data:)` para testar com os números de `data/`.
+  `dotnet build` 0/0; `dotnet test` 181 passaram.
+- **Efeito no Main de hoje:** cabana com esteira à frente para de soltar (esperado: agora o bruto vai por carregador).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 03:01–03:02 de relógio.

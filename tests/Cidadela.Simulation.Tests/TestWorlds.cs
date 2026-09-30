@@ -47,14 +47,20 @@ internal static class TestWorlds
 
     /// <summary>Mapa 20×20 com o Castelão em (x, z) e os recursos, construções e aldeões dados como JSON.</summary>
     public static SimWorld Open(int x = 3, int z = 3, string resources = "[]", string buildings = "[]",
-        string villagers = "[]") =>
+        string villagers = "[]", GameData? data = null, string terrain = "null") =>
         MapLoader.Parse($$"""
             { "width": 20, "height": 20,
               "castellan": { "x": {{x}}, "z": {{z}} },
               "resources": {{resources}},
               "buildings": {{buildings}},
-              "villagers": {{villagers}} }
-            """, Data());
+              "villagers": {{villagers}},
+              "terrain": {{terrain}} }
+            """, data ?? Data());
+
+    /// <summary>Os JSON de verdade de data/ (os números do jogo), para os testes da linha da flecha.</summary>
+    public static GameData RealData() => GameData.Parse(DataFile("items.json"), DataFile("resources.json"),
+        DataFile("castellan.json"), DataFile("villagers.json"), DataFile("buildings.json"), DataFile("recipes.json"),
+        DataFile("terrain.json"));
 
     public static void Move(SimWorld world, float x, float z, int ticks)
     {

@@ -1,10 +1,16 @@
 {
   // Todos os itens do jogo: nome mostrado e cor (hex) das formas simples do protótipo (paleta do GDD, seção 17).
   // A ordem aqui é a ordem dos botões do inventário.
-  "wood":  { "name": "Madeira", "color": "6B5B4B" },
-  "stone": { "name": "Pedra",   "color": "A89F91" },
-  "iron":  { "name": "Ferro",   "color": "1E2A3A" },
-  "shaft": { "name": "Haste",   "color": "C9B38A" },
-  "ingot": { "name": "Lingote", "color": "8C929C" },
-  "sword": { "name": "Espada",  "color": "EDE6D6" }
+  // raw: item BRUTO (docs/cadeia_flecha.md): não entra em esteira; só anda nas costas dos carregadores ou do Castelão.
+  //   O que sai da primeira etapa (serraria, carvoaria, fundição) cabe na esteira.
+  "wood":     { "name": "Tora",             "color": "6B5B4B", "raw": true },
+  "stone":    { "name": "Pedra",            "color": "A89F91", "raw": true },
+  "iron":     { "name": "Minério de ferro", "color": "1E2A3A", "raw": true },
+  "shaft":    { "name": "Haste",            "color": "C9B38A" },
+  "charcoal": { "name": "Carvão",           "color": "2E2931" },
+  "ingot":    { "name": "Lingote",          "color": "8C929C" },
+  "point":    { "name": "Ponta",            "color": "66636B" },
+  "feather":  { "name": "Pena",             "color": "EDE6D6" },
+  "arrow":    { "name": "Flecha",           "color": "E07B2E" },
+  "sword":    { "name": "Espada",           "color": "B8C7E6" }
 }
