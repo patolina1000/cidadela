@@ -9,9 +9,15 @@
   //   células em volta da cabana, guardando até "capacity" itens (que ela solta na esteira ou baú à frente).
   // posts: postos de trabalho (docs/cadeia_flecha.md). Ao construir, o aldeão livre mais perto ocupa cada posto; a máquina
   //   só anda com todos ocupados por quem já chegou. name: ofício; tool: ícone da ferramenta sobre a cabeça dele.
+  // torque: parte de uma rede de torque (liga às 4 vizinhas com torque): supply = força que dá (roda d'água), demand =
+  //   força que consome (fole, manivela), speedBonus = multiplicador da receita com a rede girando (fole da fundição).
+  //   Rede com força ≥ demanda gira inteira; menos, para inteira. needsWater: só se constrói na água.
   // carriers: Posto de Carregadores: "count" vagas; cada carregador busca bruto (tora, pedra, minério) num baú ou cabana a
   //   até "radius" células do posto e leva até a máquina, no mesmo raio, que ainda aceita o item.
   "belt":       { "name": "Esteira",  "cost": { "wood": 1 },                         "solid": false, "beltSpeed": 1.5 },
+  "axle":        { "name": "Eixo",        "cost": { "wood": 1 },            "solid": false, "torque": {} },
+  "water_wheel": { "name": "Roda d'Água", "cost": { "wood": 10, "stone": 2 }, "solid": true, "needsWater": true,
+                   "torque": { "supply": 16 } },
   "chest":      { "name": "Baú",      "cost": { "wood": 4 },                         "solid": true,  "storage": true },
   "arsenal":    { "name": "Arsenal",  "cost": { "wood": 6, "stone": 4 },             "solid": true,  "storage": true },
   "carrier_post": { "name": "Posto de Carregadores", "cost": { "wood": 4 },            "solid": true,
@@ -26,7 +32,8 @@
                        "posts": { "count": 2, "name": "Serrador",   "tool": "saw" } },
   "charcoal_kiln":   { "name": "Carvoaria",        "cost": { "stone": 8 },                       "solid": true },
   "smelter":         { "name": "Fundição",         "cost": { "stone": 10 },                      "solid": true,
-                       "posts": { "count": 1, "name": "Fundidor",   "tool": "bellows" } },
+                       "posts": { "count": 1, "name": "Fundidor",   "tool": "bellows" },
+                       "torque": { "demand": 4, "speedBonus": 1.5 } },
   "anvil":           { "name": "Bigorna",          "cost": { "wood": 2, "stone": 4, "iron": 2 }, "solid": true,
                        "posts": { "count": 1, "name": "Ferreiro",   "tool": "hammer" } },
   "coop":            { "name": "Galinheiro",       "cost": { "wood": 6 },                        "solid": true,

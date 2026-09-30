@@ -16,7 +16,7 @@ public static class MapLoader
         MapData data = JsonSerializer.Deserialize<MapData>(json, GameData.JsonOptions)
             ?? throw new FormatException("Mapa vazio.");
 
-        var world = new SimWorld(new WorldGrid(data.Width, data.Height), gameData);
+        var world = new SimWorld(new WorldGrid(data.Width, data.Height), gameData) { FreeMachines = data.FreeMachines };
         PaintTerrain(world.Grid, data.Terrain, gameData);
 
         if (data.Castellan is null)
@@ -86,6 +86,8 @@ public static class MapLoader
         public List<PlacedData> Buildings { get; set; } = new();
         public List<PlacedData> Villagers { get; set; } = new();
         public TerrainData? Terrain { get; set; }
+        /// <summary>Vitrine (palco da Biografia): máquinas sem postos e esteiras sem manivela.</summary>
+        public bool FreeMachines { get; set; }
     }
 
     private sealed class TerrainData

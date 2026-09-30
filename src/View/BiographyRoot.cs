@@ -252,7 +252,8 @@ public partial class BiographyRoot : Node3D
                 { "kind": "belt", "x": 7, "z": 3, "direction": "east" },
                 { "kind": "chest", "x": 8, "z": 3 }
               ],
-              "terrain": { "default": "dirt", "patches": [] }
+              "terrain": { "default": "dirt", "patches": [] },
+              "freeMachines": true
             }
             """;
         _machineWorld = MapLoader.Parse(map, _data);

@@ -704,7 +704,7 @@ public partial class WorldView : Node3D
 
     /// <summary>
     /// Textura de um terreno como camada da pilha: todas no mesmo tamanho e formato, com mipmaps.
-    /// Sem textura (ou arquivo faltando), vira uma cor lisa de musgo.
+    /// Sem textura (ou arquivo faltando), vira a cor lisa do terreno ("color"; a água) ou musgo.
     /// </summary>
     private static Image TerrainLayer(TerrainType terrain)
     {
@@ -713,9 +713,10 @@ public partial class WorldView : Node3D
             : null;
         if (image is null)
         {
-            GD.PushWarning($"Terreno \"{terrain.Kind}\" sem textura; usando cor lisa.");
+            if (string.IsNullOrEmpty(terrain.Color))
+                GD.PushWarning($"Terreno \"{terrain.Kind}\" sem textura nem cor; usando musgo liso.");
             image = Image.CreateEmpty(TerrainTextureSize, TerrainTextureSize, false, Image.Format.Rgba8);
-            image.Fill(Palette.Moss);
+            image.Fill(string.IsNullOrEmpty(terrain.Color) ? Palette.Moss : new Color(terrain.Color));
         }
         if (image.IsCompressed())
             image.Decompress();

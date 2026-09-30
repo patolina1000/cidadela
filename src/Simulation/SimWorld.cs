@@ -18,6 +18,14 @@ public sealed class SimWorld
     public IReadOnlyList<ResourceNode> Resources => _resources;
     public IReadOnlyCollection<Building> Buildings => _buildingByCell.Values;
 
+    /// <summary>
+    /// Vitrine (palco da Biografia): máquinas andam sem gente nos postos e esteiras sem manivela. O jogo nunca liga.
+    /// </summary>
+    public bool FreeMachines { get; internal set; }
+
+    /// <summary>As redes de torque atuais (recalculadas quando uma construção entra ou sai).</summary>
+    public IReadOnlyList<TorqueNetwork> Networks => _networks;
+
     /// <summary>Muda a cada construção colocada ou tirada; a cena usa para saber quando redesenhar.</summary>
     public int BuildingsVersion { get; private set; }
     public IReadOnlyList<Villager> Villagers => _villagers;
@@ -32,6 +40,8 @@ public sealed class SimWorld
     /// <summary>Construções que chamam aldeões (cabanas e postos), na ordem em que foram construídas.</summary>
     private readonly List<Building> _staffed = new();
     private int _nextItemId = 1;
+    private readonly List<TorqueNetwork> _networks = new();
+    private int _networksVersion = -1;
     private readonly Queue<ISimCommand> _commands = new();
     private int _nextId = 1;
 
@@ -48,6 +58,8 @@ public sealed class SimWorld
     {
         while (_commands.TryDequeue(out ISimCommand? command))
             command.Apply(this);
+        if (_networksVersion != BuildingsVersion)
+            RebuildNetworks();
 
         Castellan.Tick(this);
         TickBelts();
@@ -111,8 +123,9 @@ public sealed class SimWorld
         foreach (Building building in _machines)
         {
             MachineState machine = building.Machine!;
-            machine.CrewReady = building.CrewReady;
-            machine.Tick();
+            machine.CrewReady = FreeMachines || building.CrewReady;
+            // Fole da fundição: com a rede girando, a receita anda mais rápido.
+            machine.Tick(building.Turning && building.Type.Torque is TorqueType t ? t.SpeedBonus : 1f);
 
             if (machine.NextOutput() is string kind && PushForward(building, kind))
                 machine.Output.TryRemoveOne(kind);
@@ -333,7 +346,44 @@ public sealed class SimWorld
     }
 
     public bool IsSolid(GridPos cell) =>
-        !Grid.InBounds(cell) || ResourceAt(cell) is not null || BuildingAt(cell) is { Type.Solid: true };
+        !Grid.InBounds(cell) || IsWater(cell) || ResourceAt(cell) is not null || BuildingAt(cell) is { Type.Solid: true };
+
+    /// <summary>Se a célula é água (rio, lago): ninguém passa; só a roda d'água se constrói nela.</summary>
+    public bool IsWater(GridPos cell) => Grid.InBounds(cell) && Data.Terrains[Grid.TerrainAt(cell)].Water;
+
+    /// <summary>
+    /// Refaz as redes de torque: construções com torque ligadas pelas 4 vizinhas; cada rede soma força e demanda (grafo
+    /// com somas, sem simular peça por peça). Só roda quando uma construção entra ou sai.
+    /// </summary>
+    private void RebuildNetworks()
+    {
+        _networksVersion = BuildingsVersion;
+        _networks.Clear();
+        foreach (Building b in _buildingByCell.Values)
+            b.Network = null;
+        foreach (Building start in _buildingByCell.Values)
+        {
+            if (start.Type.Torque is null || start.Network is not null)
+                continue;
+            var network = new TorqueNetwork();
+            var queue = new Queue<Building>();
+            start.Network = network;
+            queue.Enqueue(start);
+            while (queue.TryDequeue(out Building? b))
+            {
+                network.Members.Add(b);
+                network.Supply += b.Type.Torque!.Supply;
+                network.Demand += b.Type.Torque.Demand;
+                foreach (Direction d in DirectionExtensions.All)
+                    if (BuildingAt(b.Cell.Step(d)) is { Type.Torque: not null, Network: null } next)
+                    {
+                        next.Network = network;
+                        queue.Enqueue(next);
+                    }
+            }
+            _networks.Add(network);
+        }
+    }
 
     /// <summary>Se o Castelão pode construir esse tipo nessa célula agora, e por que não.</summary>
     public BuildCheck CanBuild(BuildingType type, GridPos cell)
@@ -344,6 +394,8 @@ public sealed class SimWorld
             return BuildCheck.OutOfReach;
         if (ResourceAt(cell) is not null || BuildingAt(cell) is not null)
             return BuildCheck.Occupied;
+        if (IsWater(cell) != type.NeedsWater)
+            return BuildCheck.WrongGround;
         if (type.Solid && Castellan.BodyOverlaps(cell))
             return BuildCheck.Occupied;
         if (!Castellan.Inventory.Has(type.Cost))

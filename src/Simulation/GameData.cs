@@ -154,7 +154,17 @@ public sealed class GameData
                     throw new FormatException($"Carregadores inválidos em \"{kind}\": count e radius positivos, sem job nem posts.");
                 carriers = new CarrierType(cd.Count, cd.Radius);
             }
-            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus, posts, carriers));
+            TorqueType? torque = null;
+            if (b.Torque is TorqueData td)
+            {
+                if (td.Supply < 0f || td.Demand < 0f || td.SpeedBonus <= 0f)
+                    throw new FormatException($"Torque inválido em \"{kind}\": supply e demand não negativos, speedBonus positivo.");
+                torque = new TorqueType(td.Supply, td.Demand, td.SpeedBonus);
+            }
+            if (b.CrankCells < 0 || (b.CrankCells > 0 && posts is null))
+                throw new FormatException($"Manivela inválida em \"{kind}\": crankCells positivo e um posto.");
+            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus, posts, carriers,
+                torque, b.NeedsWater, b.Powered, b.CrankCells));
         }
 
         var recipes = new List<RecipeType>();
@@ -193,7 +203,7 @@ public sealed class GameData
             {
                 if (t.GrassDensity is < 0f or > 1f)
                     throw new FormatException($"terrain.json: grassDensity de \"{kind}\" precisa estar entre 0 e 1.");
-                terrains.Add(new TerrainType(kind, t.Name, t.Texture, terrains.Count, t.GrassDensity));
+                terrains.Add(new TerrainType(kind, t.Name, t.Texture, terrains.Count, t.GrassDensity, t.Water, t.Color));
             }
         if (terrains.Count is 0 or > byte.MaxValue + 1)
             throw new FormatException("terrain.json precisa de 1 a 256 terrenos.");
@@ -255,6 +265,17 @@ public sealed class GameData
         public float SpeedBonus { get; set; } = 1f;
         public PostData? Posts { get; set; }
         public CarrierData? Carriers { get; set; }
+        public TorqueData? Torque { get; set; }
+        public bool NeedsWater { get; set; }
+        public bool Powered { get; set; }
+        public int CrankCells { get; set; }
+    }
+
+    private sealed class TorqueData
+    {
+        public float Supply { get; set; }
+        public float Demand { get; set; }
+        public float SpeedBonus { get; set; } = 1f;
     }
 
     private sealed class CarrierData
@@ -283,6 +304,8 @@ public sealed class GameData
         public string Name { get; set; } = "";
         public string Texture { get; set; } = "";
         public float GrassDensity { get; set; }
+        public bool Water { get; set; }
+        public string Color { get; set; } = "";
     }
 
     private sealed class VillagerData

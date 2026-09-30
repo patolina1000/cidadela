@@ -44,6 +44,12 @@ public sealed class Building
 
     public string Kind => Type.Kind;
 
+    /// <summary>A rede de torque em que está, ou null se não tem torque (a simulação recalcula quando algo muda).</summary>
+    public TorqueNetwork? Network { get; internal set; }
+
+    /// <summary>Se está numa rede de torque girando.</summary>
+    public bool Turning => Network?.Turning == true;
+
     public Building(int id, BuildingType type, GridPos cell, Direction direction, RecipeType? recipe = null)
     {
         Id = id;

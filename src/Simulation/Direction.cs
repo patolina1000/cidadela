@@ -13,6 +13,9 @@ public enum Direction
 
 public static class DirectionExtensions
 {
+    /// <summary>As quatro direções, em ordem.</summary>
+    public static readonly Direction[] All = { Direction.North, Direction.East, Direction.South, Direction.West };
+
     public static Direction RotatedClockwise(this Direction d) => (Direction)(((int)d + 1) % 4);
 
     public static Direction Opposite(this Direction d) => (Direction)(((int)d + 2) % 4);

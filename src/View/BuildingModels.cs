@@ -87,6 +87,37 @@ public static class BuildingModels
                 Add(model, new BoxMesh { Size = new Vector3(0.1f, 0.03f, 0.12f) }, Palette.Bone, new Vector3(-0.22f, 0.47f, -0.1f));
                 AddOutputArrow(model);
                 break;
+            case "water_wheel":
+            {
+                // Roda de pás em pé, de eixo em X; gira no pivô "Spin" (em volta de X) quando a rede tem força.
+                var wheelSpin = new Node3D { Name = "Spin", Position = new Vector3(0f, 0.42f, 0f) };
+                model.AddChild(wheelSpin);
+                var rim = Add(wheelSpin, new CylinderMesh { TopRadius = 0.42f, BottomRadius = 0.42f, Height = 0.16f, RadialSegments = 12 },
+                    Palette.Wood, Vector3.Zero);
+                rim.Rotation = new Vector3(0f, 0f, Mathf.Pi / 2f);
+                for (int i = 0; i < 8; i++)
+                {
+                    float a = i * Mathf.Pi / 4f;
+                    var paddle = Add(wheelSpin, new BoxMesh { Size = new Vector3(0.2f, 0.06f, 0.16f) }, Palette.Wheat,
+                        new Vector3(0f, Mathf.Sin(a) * 0.48f, Mathf.Cos(a) * 0.48f));
+                    paddle.Rotation = new Vector3(-a, 0f, 0f);
+                }
+                Add(model, new BoxMesh { Size = new Vector3(0.12f, 0.5f, 0.12f) }, Palette.Wood.Darkened(0.35f), new Vector3(0.18f, 0.25f, 0f));
+                break;
+            }
+            case "axle":
+            {
+                // Barra baixa ao longo da frente (-Z local, R gira ao construir); gira no pivô "Spin" em volta de Z.
+                Add(model, new BoxMesh { Size = new Vector3(0.12f, 0.12f, 0.12f) }, Palette.Wood.Darkened(0.35f), new Vector3(0f, 0.06f, 0f));
+                var axleSpin = new Node3D { Name = "Spin", Position = new Vector3(0f, 0.2f, 0f) };
+                model.AddChild(axleSpin);
+                var bar = Add(axleSpin, new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.06f, Height = 1f, RadialSegments = 6 },
+                    Palette.Wheat.Darkened(0.2f), Vector3.Zero);
+                bar.Rotation = new Vector3(Mathf.Pi / 2f, 0f, 0f);
+                // Marca fora do centro: mostra o giro de longe.
+                Add(axleSpin, new BoxMesh { Size = new Vector3(0.05f, 0.14f, 0.3f) }, Palette.Pumpkin, new Vector3(0f, 0.06f, 0f));
+                break;
+            }
             case "carrier_post":
                 // Tablado com sacos e uma vara de carregar.
                 Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.1f, 0.8f) }, Palette.Wood, new Vector3(0f, 0.05f, 0f));

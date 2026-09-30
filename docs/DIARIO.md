@@ -5657,3 +5657,24 @@ onde errou, correções manuais e quanto tempo levou.
   desmontar e nesse tempo um carregador entregava); corrigido no teste. `dotnet build` 0/0; `dotnet test` 198.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 03:06–03:09 de relógio.
+
+## 2026-09-30 — Linha da flecha, passo 5: água, roda d'água, eixo e redes de torque
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 5 de `docs/cadeia_flecha.md`.
+- **Feito:**
+  - Terreno `water` em `data/terrain.json` (`"water": true`, cor lisa `#3B5E63` sem textura: não mexo em `assets/`;
+    o chão agora aceita `color` no lugar da textura). Água bloqueia o Castelão e os aldeões; só se constrói nela o que
+    tem `needsWater` (a roda), e nada com `needsWater` fora dela (`BuildCheck.WrongGround`).
+  - `"torque"` em `data/buildings.json`: Roda d'Água (`supply` 16, na água), Eixo (só conduz, não sólido, 1 tora) e o
+    fole da Fundição (`demand` 4, `speedBonus` 1,5). `TorqueType`, `TorqueNetwork`, `Building.Network`/`Turning`.
+  - Redes por vizinhança (4 lados), refeitas só quando uma construção entra ou sai; força ≥ demanda gira inteira, menos
+    para inteira. Fundição numa rede girando anda 1,5× (`MachineState.Tick(speed)`).
+  - **Mudança de plano registrada:** em vez de um `data/power.json`, a regra fica nas construções (`torque`,
+    `needsWater` e, no passo 6, `powered` na esteira e `crankCells` na manivela). O palco da Biografia (vitrine sem
+    aldeões) usa a opção de mapa `"freeMachines": true`: máquinas sem posto e esteiras sem manivela.
+  - Modelos provisórios: roda de pás em pé e eixo baixo com marca laranja, os dois com pivô de giro (o giro entra no
+    passo 7).
+- **Testes:** `TorqueTests` (6). `dotnet build` 0/0; `dotnet test` 204 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 03:09–03:11 de relógio.
