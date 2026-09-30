@@ -13,20 +13,21 @@ public class EnergyLineMapTests
 
     public EnergyLineMapTests(ITestOutputHelper output) => _output = output;
 
-    private static SimWorld Load() => MapLoader.Parse(TestWorlds.DataFile("maps/linha_energia.json"), TestWorlds.RealData());
+    private static SimWorld Load() => MapLoader.Parse(TestWorlds.DataFile("maps/linha_energia.json"), TestWorlds.RealData(), TestWorlds.RealLitanies());
 
     [Fact]
-    public void EverythingIsPoweredAndNobodyMovesWithoutALitany()
+    public void EverythingIsPoweredAndNobodyWithoutALitanyMoves()
     {
         // O mapa será refeito com ladainhas (passo 11). Por ora: tudo na rede, e sem ladainha ninguém sai do lugar.
         SimWorld world = Load();
-        var start = world.Villagers.Select(v => v.Cell).ToList();
+        var idle = world.Villagers.Where(v => v.Litany is null).ToList();
+        var start = idle.Select(v => v.Cell).ToList();
         TestWorlds.Run(world, 5 * SimClock.TicksPerSecond);
         Assert.Single(world.ManaNetworks);
         foreach (Building b in world.Buildings.Where(b => b.Type.Mana is not null))
             Assert.NotNull(b.Network);
-        Assert.Equal(start, world.Villagers.Select(v => v.Cell).ToList());
-        Assert.All(world.Villagers, v => Assert.Null(v.Home));
+        Assert.Equal(start, idle.Select(v => v.Cell).ToList());
+        Assert.All(idle, v => Assert.Null(v.Home));
     }
 
     [Fact]

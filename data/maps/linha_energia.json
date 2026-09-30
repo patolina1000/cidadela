@@ -47,14 +47,14 @@
   // Na ordem das construções que chamam gente (cada uma chama o livre mais perto): Minas, Poço, Purificadores,
   // Barreiro, Oleiro e os 2 carregadores.
   "villagers": [
-    { "x": 7, "z": 11 },
+    { "x": 7, "z": 11, "litany": "testeA_opera_mina_1" },
     { "x": 11, "z": 10 },
     { "x": 2, "z": 11 },
-    { "x": 5, "z": 10 },
+    { "x": 5, "z": 10, "litany": "testeA_opera_purificador_1" },
     { "x": 8, "z": 9 },
     { "x": 2, "z": 15 },
     { "x": 4, "z": 15 },
-    { "x": 12, "z": 14 },
+    { "x": 12, "z": 14, "litany": "testeA_podres_1" },
     { "x": 10, "z": 13 }
   ],
   "terrain": {

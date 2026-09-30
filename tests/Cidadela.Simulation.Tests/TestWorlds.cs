@@ -124,6 +124,9 @@ internal static class TestWorlds
         static float Dist(Villager v, Building b) => Vector2.Distance(v.Position, new Vector2(b.Cell.X, b.Cell.Z));
     }
 
+    /// <summary>As ladainhas de verdade de data/ladainhas.json.</summary>
+    public static LitanyLibrary RealLitanies() => LitanyLibrary.Parse(DataFile("ladainhas.json"), RealData());
+
     public static void Move(SimWorld world, float x, float z, int ticks)
     {
         world.Enqueue(new MoveCommand(new Vector2(x, z)));

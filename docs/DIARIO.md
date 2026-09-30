@@ -6260,3 +6260,27 @@ onde errou, correções manuais e quanto tempo levou.
   LinhaEnergia e Aldeoes200 em headless, sem erro.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 20:12–20:16 de relógio.
+
+## 2026-09-30 — Ladainhas, passo 7: estados visíveis e a ladainha em blocos
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 7 do plano + ajuste 3 do Arthur (clicar num aldeão mostra a ladainha em BLOCOS, estilo Scratch).
+- **Feito:**
+  - `LitanyText` (view): cada comando em palavras ("pegar fragmento podre de Mina de Cristal (7, 10)", "cavar argila perto
+    de (2, 10), raio 8"...), o verbo pelo recurso (colher, arrancar, cavar), a cor do bloco por tipo de comando e o motivo
+    de cada trava em palavras do jogo ("Mina de Cristal (7, 10): sem fragmento podre", "posto ocupado", "sem caminho"...).
+  - Sobre a cabeça: quem travou mostra o motivo em laranja, sempre; com Alt, todos com ladainha mostram o comando atual.
+    O ícone de estado continua (travado é o único "problema"). Mouse no aldeão: estado e comando/motivo.
+  - `LitanyBlocks` + `VillagerPanel`: clicar no aldeão (ou tecla N, que passa ao próximo aldeão) abre o painel com
+    atributos, estado e a ladainha em blocos encaixados (dente em cima, aba embaixo), cor por tipo, o comando atual aceso
+    e contornado (laranja se travou). Só para ver; Esc ou clicar no chão fecha.
+  - **Correção achada:** o motivo da trava ficava na tela enquanto o aldeão já tentava de novo; agora ele é limpo a cada
+    nova tentativa (e volta no mesmo tick se falhar de novo).
+  - Adiantadas 3 ladainhas do teste A em `data/ladainhas.json` (operar a Mina 1, operar o Purificador 1, levar podres),
+    para ver os blocos; o passo 11 completa as duas linhas. `TestWorlds.RealLitanies`.
+- **Escolha do mais simples (registrada):** tecla N para escolher o próximo aldeão sem mirar (o clique pelo godot-ai
+  mexia a câmera pela borda; e com muitos aldeões ajuda).
+- **Testes:** `LitanyTests` confere que a trava volta depois de tentar de novo. `dotnet build` 0/0; `dotnet test` 256
+  passaram. Teste A pelo godot-ai: etiqueta de trava, painel com o bloco aceso (print `docs/prints/ladainhas_passo7_blocos.png`).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 20:17–20:21 de relógio.

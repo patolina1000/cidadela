@@ -79,6 +79,8 @@ public class LitanyTests
         world.Tick();
         Assert.Equal(LitanyStuck.NoPath, v.Stuck);
         Assert.Equal(VillagerStatus.Stuck, v.Status);
+        TestWorlds.Run(world, SimClock.TicksPerSecond + 1);
+        Assert.Equal(LitanyStuck.NoPath, v.Stuck); // tentou de novo e travou de novo: o motivo continua
 
         // Abrindo um lado, ele tenta de novo (espera 1 s, 2 s, 4 s...) e chega.
         world.Castellan.PlaceAt(new Vector2(16f, 12f));

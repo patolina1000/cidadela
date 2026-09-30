@@ -62,6 +62,7 @@ public partial class WorldView : Node3D
     private CastellanVisual _castellan = null!;
     private Effects _effects = null!;
     private EnergyOverlay _energy = null!;
+    private readonly Dictionary<Villager, Label3D> _litanyLabels = new();
 
     /// <summary>Nó desenhado do Castelão, para a câmera seguir.</summary>
     public Node3D CastellanNode => _castellan;
@@ -168,6 +169,7 @@ public partial class WorldView : Node3D
             _iconSources.Add((villager, visual.Position));
         }
         _villagerIcons.UpdateFrom(_iconSources, InfoMode);
+        RenderLitanyLabels();
 
         _castellan.UpdateFrom(_world.Castellan, (float)alpha, dt);
         _grass.SetPusher(_castellan.GlobalPosition);
@@ -177,6 +179,59 @@ public partial class WorldView : Node3D
         ResourceModels.SetOcclusionCenter(_castellan.Visible
             ? _castellan.GlobalPosition + new Vector3(0f, VisualSettings.Current.Occlusion.ChestHeight, 0f)
             : null);
+    }
+
+    /// <summary>
+    /// Sobre a cabeça (docs/ladainhas.md, "Estados visíveis"): quem travou mostra o motivo em palavras, sempre; com Alt,
+    /// todos com ladainha mostram o comando atual. As etiquetas nascem só quando precisam.
+    /// </summary>
+    private void RenderLitanyLabels()
+    {
+        foreach ((Villager villager, VillagerVisual visual) in _villagerNodes)
+        {
+            bool stuck = villager.Stuck is not null && villager.Litany is not null;
+            bool show = IconsVisible && (stuck || (InfoMode && villager.Litany is not null));
+            if (!show)
+            {
+                if (_litanyLabels.TryGetValue(villager, out Label3D? hidden))
+                    hidden.Visible = false;
+                continue;
+            }
+            if (!_litanyLabels.TryGetValue(villager, out Label3D? label))
+            {
+                label = new Label3D
+                {
+                    Billboard = BaseMaterial3D.BillboardModeEnum.Enabled, NoDepthTest = true, FontSize = 30, PixelSize = 0.005f,
+                    OutlineSize = 8, OutlineModulate = new Color(0f, 0f, 0f, 0.85f),
+                };
+                AddChild(label);
+                _litanyLabels[villager] = label;
+            }
+            label.Visible = true;
+            label.Position = visual.Position + new Vector3(0f, 1.05f, 0f);
+            label.Modulate = stuck ? Palette.Pumpkin : Palette.Bone;
+            label.Text = stuck
+                ? LitanyText.Stuck(villager.Stuck!.Value, villager.CurrentCommand, _world)
+                : LitanyText.Command(villager.CurrentCommand!, _world);
+        }
+    }
+
+    /// <summary>O aldeão mais perto de um ponto do chão (a menos de 0,7 célula), para escolher com o clique.</summary>
+    public Villager? VillagerAt(Vector3 ground)
+    {
+        var flat = new Vector2(ground.X, ground.Z);
+        Villager? best = null;
+        float bestDistance = 0.7f;
+        foreach ((Villager villager, VillagerVisual visual) in _villagerNodes)
+        {
+            float d = new Vector2(visual.Position.X, visual.Position.Z).DistanceTo(flat);
+            if (d < bestDistance)
+            {
+                bestDistance = d;
+                best = villager;
+            }
+        }
+        return best;
     }
 
     /// <summary>Aldeão que nasceu no Cristal-mãe durante o jogo ganha o seu nó (com um brilho azul-frio ao nascer).</summary>
@@ -333,7 +388,10 @@ public partial class WorldView : Node3D
         {
             if (cell is GridPos c && villager.Cell == c)
             {
-                _chestLabel.Text = "Aldeão\n" + _statusTable[villager.Status].Text;
+                _chestLabel.Text = "Aldeão (clique para ver a ladainha)\n" + _statusTable[villager.Status].Text +
+                    (villager.Litany is not null && villager.CurrentCommand is LitanyCommand command
+                        ? ": " + (villager.Stuck is LitanyStuck r ? LitanyText.Stuck(r, command, _world) : LitanyText.Command(command, _world))
+                        : "");
                 _chestLabel.Position = visual.Position + new Vector3(0f, 1.15f, 0f);
                 _chestLabel.Visible = true;
                 return;

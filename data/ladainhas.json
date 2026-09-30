@@ -2,4 +2,12 @@
   // Ladainhas nomeadas (docs/ladainhas.md): o aldeão repete os comandos sempre do início. O mapa diz qual cada aldeão
   // carrega ("litany": "nome"). Comandos: goto (building ou cell), take/put (item + building), gather (resource + near
   // [x, z] + radius opcional; "clay" cava a margem), operate (building), wait (seconds). Alvos em células do mapa.
+  //
+  // Teste A (data/maps/linha_energia.json), em construção (passo 11 completa as duas linhas):
+  "testeA_opera_mina_1":       { "commands": [{ "do": "operate", "building": [7, 10] }] },
+  "testeA_opera_purificador_1": { "commands": [{ "do": "operate", "building": [6, 10] }] },
+  "testeA_podres_1": { "commands": [
+    { "do": "take", "item": "rotten_shard", "building": [7, 10] },
+    { "do": "put",  "item": "rotten_shard", "building": [6, 10] }
+  ] }
 }

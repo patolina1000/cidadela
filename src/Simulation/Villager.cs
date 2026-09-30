@@ -411,6 +411,7 @@ public sealed class Villager
             _stuckWait--;
             return;
         }
+        Stuck = null; // tenta de novo: se falhar outra vez, o motivo volta no mesmo tick
         if (_dropFirst)
         {
             DropFirst(world);

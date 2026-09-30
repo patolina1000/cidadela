@@ -37,6 +37,7 @@ public partial class GameRoot : Node3D
     private CameraRig _camera = null!;
     private Hotbar _hotbar = null!;
     private Label _manaLabel = null!;
+    private VillagerPanel _villagerPanel = null!;
     /// <summary>As construções da barra (as de data/buildings.json com "hotbar" ligado), na ordem das teclas.</summary>
     private readonly List<BuildingType> _hotbarTypes = new();
     private InventoryBar _inventoryBar = null!;
@@ -111,6 +112,10 @@ public partial class GameRoot : Node3D
         _manaLabel.AddThemeFontSizeOverride("font_size", 18);
         GetNode("DebugHud").AddChild(_manaLabel);
 
+        _villagerPanel = new VillagerPanel { Name = "VillagerPanel" };
+        GetNode("DebugHud").AddChild(_villagerPanel);
+        _villagerPanel.Build(_world);
+
         _inventoryBar = new InventoryBar { Name = "InventoryBar" };
         GetNode("DebugHud").AddChild(_inventoryBar);
         _inventoryBar.Build(data.Items);
@@ -152,6 +157,14 @@ public partial class GameRoot : Node3D
         {
             _leftHeld = click.Pressed;
             _lastBuildCell = null;
+            if (click.Pressed && _selected is null && _heldItem is null && _camera.GroundUnder(click.Position) is Vector3 ground
+                && _view.VillagerAt(ground) is Villager villager)
+            {
+                _villagerPanel.ShowVillager(villager); // clicar no aldeão mostra a ladainha dele em blocos
+                return;
+            }
+            if (click.Pressed)
+                _villagerPanel.ShowVillager(null);
             if (click.Pressed && !_clock.Paused && TargetUnder(click.Position) is GridPos cell)
                 ActAt(cell);
         }
@@ -167,6 +180,12 @@ public partial class GameRoot : Node3D
             int index = _hotbar.Page * Hotbar.PageSize + (int)(k - Key.Key1);
             if (index < _hotbarTypes.Count)
                 Select(_selected == _hotbarTypes[index] ? null : index); // mesma tecla desmarca
+        }
+        else if (k == Key.N && _world.Villagers.Count > 0)
+        {
+            // Próximo aldeão (na ordem em que nasceram): mostra a ladainha dele em blocos sem precisar mirar.
+            int next = _villagerPanel.Villager is Villager current ? (IndexOf(current) + 1) % _world.Villagers.Count : 0;
+            _villagerPanel.ShowVillager(_world.Villagers[next]);
         }
         else if (k == Key.Tab)
         {
@@ -229,6 +248,11 @@ public partial class GameRoot : Node3D
             if (_camera.IsCinematic)
             {
                 ToggleCinematic();
+                return;
+            }
+            if (_villagerPanel.Villager is not null)
+            {
+                _villagerPanel.ShowVillager(null); // Esc fecha o painel do aldeão antes de abrir o menu
                 return;
             }
             if (_selected is null && _heldItem is null)
@@ -373,6 +397,10 @@ public partial class GameRoot : Node3D
         _hotbar.Visible = !cinematic;
         _inventoryBar.Visible = !cinematic;
         _inventoryLabel.Visible = !cinematic;
+        if (cinematic)
+            _villagerPanel.Visible = false;
+        else if (_villagerPanel.Villager is not null)
+            _villagerPanel.Visible = true;
         _debugLabel.Visible = !cinematic;
         _view.InfoMode = Input.IsKeyPressed(Key.Alt);
         _view.IconsVisible = !cinematic;
@@ -457,6 +485,14 @@ public partial class GameRoot : Node3D
                 : string.Join("   ", HandLines(castellan));
     }
 
+    private int IndexOf(Villager villager)
+    {
+        for (int i = 0; i < _world.Villagers.Count; i++)
+            if (_world.Villagers[i] == villager)
+                return i;
+        return -1;
+    }
+
     /// <summary>Geração × consumo de cada rede de mana (a soma, se houver mais de uma) e a carga do Cristal-mãe.</summary>
     private string ManaText()
     {
@@ -494,7 +530,7 @@ public partial class GameRoot : Node3D
                 + (castellan.HandQueue > 0 ? $" (+{castellan.HandQueue} na fila)" : "");
         }
         if (castellan.GatherTarget is null && castellan.DigCell is null && castellan.Post is null && !castellan.HandBusy)
-            yield return "E opera a máquina encostada  ·  P purifica (2 podres → 1 puro)  ·  M molda casca perto da água (2 argilas)  ·  Tab: mais construções";
+            yield return "E opera a máquina encostada  ·  P purifica (2 podres → 1 puro)  ·  M molda casca perto da água (2 argilas)  ·  clique no aldeão ou N: a ladainha dele";
     }
 
     private static string DirectionName(Direction d) => d switch
