@@ -63,6 +63,11 @@ Veio de cristal podre (esgota), árvores, pedras, água, e o Cristal-mãe perto 
 
 ## Fluxo
 
+Layout estilo Factorio (orientação do Arthur, 30/09/2026): a esteira corre em paralelo, ao lado das máquinas, e nunca
+aponta para dentro delas (uma esteira que aponta para uma máquina não entrega nada); uma mariposa fica entre a esteira e
+cada máquina, como os inserters do Factorio, pegando da esteira e pondo na máquina ou tirando da máquina e pondo na
+esteira.
+
 - Mina → Purificador: podre nas costas (carregador ou protagonista).
 - Poço → mariposa → esteira → mariposa → Purificador.
 - Purificador → mariposa → esteira → mariposa → Relicário.

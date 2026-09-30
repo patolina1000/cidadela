@@ -5950,3 +5950,35 @@ onde errou, correções manuais e quanto tempo levou.
   `docs/prints/energia_passo9_feedback.png`. O Alt não foi testado por injeção (o jogo lê a tecla por polling).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 16:52–17:02 de relógio (com a interrupção da sessão do Diretor no meio).
+
+## 2026-09-30 — Linha da energia, passo 10: cenas de teste A e B (layout estilo Factorio), medidas
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 10 do plano + orientação nova do Arthur (30/09): layout estilo Factorio — a esteira corre em paralelo,
+  ao lado das máquinas, e uma mariposa fica entre a esteira e cada máquina; esteira apontando para máquina não entrega
+  nada (regra 4). Teste A montado, teste B pronto (só abrir depois do A). Medir sobra de mana e FPS em 3024×1890.
+- **Feito:**
+  - `data/maps/linha_energia.json` + `scenes/tests/LinhaEnergia.tscn` (teste A, 24×16): UMA esteira sai do Poço (junto
+    da água), passa ao lado do Purificador, sobe e passa ao lado do Relicário, e acaba num baú de sobras; mariposas entre
+    esteira e máquina (Poço → esteira; esteira → Purificador; Purificador → esteira; esteira → Relicário). Mina no veio
+    com carregador até o Purificador. 4 torres, Cristal-mãe, Relicário começando com 3 puros, 4 aldeões (Mina, Poço,
+    Purificador, carregador). **Escolha do mais simples:** o baú de sobras no fim da esteira — sem ele, jarros que passam
+    pelo Purificador cheio entopem a esteira e o puro não chega ao Relicário. A protagonista nasce ao lado da linha.
+  - `data/maps/linha_energia_zero.json` + `scenes/tests/LinhaEnergiaZero.tscn` (teste B, 30×24): zero aldeões, só o
+    Cristal-mãe construído; bosque, pedras, três veios, água a oeste (gerado por script de sorteio fixo).
+  - `docs/linha_energia.md`: frase do layout estilo Factorio na seção "Fluxo".
+  - A regra "esteira que aponta para máquina não entrega nada" já estava na simulação desde o passo 5
+    (`MachineTests.ABeltDoesNotFeedTheMachine`); ganhou um teste com os dados do jogo (esteira → Relicário).
+- **Medidas:**
+  - **Sobra real de mana (teste A, simulação de 10 min, `EnergyLineMapTests`):** gera 10,0/s; as máquinas consomem
+    5,7–5,4/s; o Cristal-mãe recebe **4,26 / 4,28 / 4,61 /s** nos minutos 1–3 (média ~4,4/s, a especificação esperava
+    ~4/s) e enche (1.000) no 4º minuto; depois disso a sobra se perde. O Relicário fica com 5 puros (cheio) e sobram
+    puros e jarros no baú de sobras (em 10 min: 21 jarros, 17 puros).
+  - **FPS fora do editor, 3024×1890, V-Sync desligado só durante a medida (`--print-fps --screen 0`, 35 s, Godot na
+    frente em 34 s, sem Blender):** teste A **94–97 FPS**; mapa principal 78–80 FPS (referência). Uma primeira medida
+    (45 FPS) foi descartada: o jogo ainda rodava dentro do editor ao mesmo tempo e o Godot não estava na frente em 13 s.
+- **Testes:** `EnergyLineMapTests` (postos ocupados e tudo na rede; nenhuma esteira aponta para máquina e toda máquina
+  tem mariposa; esteira real → Relicário não entrega; a linha anda 10 min e a sobra passa de 500; teste B vazio com lugar
+  para o Poço). `dotnet build` 0/0; `dotnet test` 238 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 17:02–17:06 de relógio.
