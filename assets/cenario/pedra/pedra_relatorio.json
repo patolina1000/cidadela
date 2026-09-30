@@ -18,7 +18,7 @@
       "nome": "bloco",
       "semente": 101,
       "cores": {
-        "pedra": "#66636B",
+        "pedra": "#57535F",
         "musgo": "#4E5544"
       }
     },
@@ -37,7 +37,7 @@
       "nome": "dupla",
       "semente": 113,
       "cores": {
-        "pedra": "#66636B"
+        "pedra": "#57535F"
       }
     },
     {
@@ -55,7 +55,7 @@
       "nome": "pilha",
       "semente": 127,
       "cores": {
-        "pedra": "#66636B"
+        "pedra": "#57535F"
       }
     },
     {
@@ -73,7 +73,7 @@
       "nome": "laje",
       "semente": 139,
       "cores": {
-        "pedra": "#66636B"
+        "pedra": "#57535F"
       }
     }
   ]

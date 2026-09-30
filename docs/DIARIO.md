@@ -3247,3 +3247,22 @@ onde errou, correções manuais e quanto tempo levou.
   pontos com normais suaves e lascas 45 % mais gordas, facetadas (cristal contra rocha lisa). No mapa, os
   personagens ficaram escondidos atrás das copas; passei os dois para a frente.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Cenário, tarefa 4: pedra mais escura, lascas do veio mais gordas
+
+- **Pedido (Diretor):** na câmera do jogo a pedra era a coisa mais clara do mapa e competia com os personagens;
+  escurecer (entre #4E4A58 e #66636B) até ficar claramente abaixo da pele do aldeão, com antes e depois. Veio:
+  lascas visíveis no zoom 0,4 e veio 3 com ≥ 0,30 m. Refazer só o pedaço de mapa da folha conjunta.
+- **Feito:** pedra do recurso em #57535F (meio da faixa; `pedra_escura` em `cenario_lib.py`). Lascas do veio
+  40 % mais largas e 15 % mais altas; coroa (veio 3) com as lascas mais altas: 0,34 m. Alturas do veio: 0,44 /
+  0,44 / 0,34 / 0,44 m (1 cm tirado da lasca principal da 1 e da 4, que passaram de 0,45). Triângulos iguais.
+- **Medição nova:** `folha_mapa.py` renderiza o mapa com os GLBs "antes" (guardados fora do git) e os atuais, e
+  mede no zoom 1 o brilho de cada grupo (luma do sRGB da tela, 0–255, só pixels visíveis, borda fria incluída).
+  Pedra: média 68 → 58, 5 % mais claros 78 → 71. Referências: aldeão 128/146, protagonista 112/129, copa 54/66.
+  Veio 30/58 → 29/54. Folha: `assets/previews/cenario/mapa_antes_depois.png` (zooms 0,4 / 1 / 2,5 e crepúsculo).
+  `build_mapa` saiu de `folha_cenario.py` para ser reusado (com `if __name__`), e os personagens foram um pouco
+  para trás, para caber mais do mapa.
+- **Deu errado:** a primeira medição dava a pedra com 140; eu convertia para sRGB um valor que o Blender já devolve
+  em sRGB (PNG de 8 bits). Conferi com PIL e corrigi. A primeira montagem do zoom 0,4 (×3) passava da largura da
+  folha; ficou ×2.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.

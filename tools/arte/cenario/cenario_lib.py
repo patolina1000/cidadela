@@ -16,6 +16,9 @@ ROOT = Path(__file__).resolve().parents[3]
 
 PALETA = {  # GDD, seção 17
     "pedra_fria": "#66636B",
+    # Tarefa 4: a pedra fria competia com os personagens (a coisa mais clara do mapa); a pedra do recurso usa este,
+    # o meio entre #66636B e #4E4A58 (o fundo do visor), autorizado pelo Diretor.
+    "pedra_escura": "#57535F",
     "terra_roxa": "#3F3342",
     "lama": "#2E2931",
     "musgo": "#4E5544",

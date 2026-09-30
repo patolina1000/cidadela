@@ -6,7 +6,7 @@
     {
       "arquivo": "veio_1.glb",
       "triangulos": 84,
-      "altura_m": 0.43,
+      "altura_m": 0.436,
       "pegada_x_m": [
         -0.299,
         0.315
@@ -25,7 +25,7 @@
     {
       "arquivo": "veio_2.glb",
       "triangulos": 104,
-      "altura_m": 0.406,
+      "altura_m": 0.436,
       "pegada_x_m": [
         -0.335,
         0.356
@@ -44,7 +44,7 @@
     {
       "arquivo": "veio_3.glb",
       "triangulos": 100,
-      "altura_m": 0.277,
+      "altura_m": 0.344,
       "pegada_x_m": [
         -0.291,
         0.355
@@ -63,14 +63,14 @@
     {
       "arquivo": "veio_4.glb",
       "triangulos": 68,
-      "altura_m": 0.42,
+      "altura_m": 0.439,
       "pegada_x_m": [
         -0.349,
-        0.279
+        0.3
       ],
       "pegada_z_m": [
         -0.274,
-        0.131
+        0.144
       ],
       "nome": "torre",
       "semente": 239,

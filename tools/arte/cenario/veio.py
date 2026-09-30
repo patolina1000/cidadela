@@ -1,7 +1,7 @@
 """Veio de ferro piloto do cenário: 4 variações da mesma família, por script, semente por variação.
 
 Família: rocha baixa, escura e macia (lama) com lascas de minério grandes e facetadas (azul meia-noite, a cor do ferro no
-jogo) saindo tortas para os lados; de cima, as lascas são o que distingue o veio da pedra. 0,30–0,45 m,
+jogo) saindo tortas para os lados, gordas o bastante para aparecer no zoom 0,4 (tarefa 4); de cima, as lascas são o que distingue o veio da pedra. 0,30–0,45 m,
 ≤ 200 triângulos, material chapado sem textura. Metros, frente +Z no GLB, pivô no centro da base.
 
 Uso, na raiz da worktree:
@@ -29,9 +29,9 @@ VARIACOES = [
         "nome": "leque", "semente": 201,
         "rochas": [{"size": (0.34, 0.28, 0.20), "center": (0, 0, 0.09), "tilt": 6, "yaw": 0}],
         "lascas": [
-            {"size": (0.10, 0.09, 0.13), "center": (0.02, 0.0, 0.22), "tilt": 8, "yaw": 0, "ponta": 0.63},
-            {"size": (0.09, 0.07, 0.11), "center": (0.13, 0.04, 0.18), "tilt": 38, "yaw": 20, "ponta": 0.56},
-            {"size": (0.09, 0.07, 0.10), "center": (-0.10, 0.07, 0.17), "tilt": 34, "yaw": 150, "ponta": 0.56},
+            {"size": (0.14, 0.13, 0.14), "center": (0.02, 0.0, 0.21), "tilt": 8, "yaw": 0, "ponta": 0.63},
+            {"size": (0.13, 0.10, 0.13), "center": (0.13, 0.04, 0.18), "tilt": 38, "yaw": 20, "ponta": 0.56},
+            {"size": (0.13, 0.10, 0.11), "center": (-0.10, 0.07, 0.17), "tilt": 34, "yaw": 150, "ponta": 0.56},
         ],
     },
     {
@@ -41,8 +41,8 @@ VARIACOES = [
             {"size": (0.20, 0.17, 0.15), "center": (0.16, 0.06, 0.07), "tilt": -8, "yaw": 50},
         ],
         "lascas": [
-            {"size": (0.12, 0.10, 0.14), "center": (-0.06, 0.0, 0.20), "tilt": 30, "yaw": 10, "ponta": 0.70},
-            {"size": (0.10, 0.09, 0.13), "center": (0.10, 0.03, 0.18), "tilt": 32, "yaw": 190, "ponta": 0.70},
+            {"size": (0.17, 0.14, 0.16), "center": (-0.06, 0.0, 0.20), "tilt": 30, "yaw": 10, "ponta": 0.70},
+            {"size": (0.14, 0.13, 0.15), "center": (0.10, 0.03, 0.18), "tilt": 32, "yaw": 190, "ponta": 0.70},
         ],
     },
     {
@@ -50,18 +50,18 @@ VARIACOES = [
         "nome": "coroa", "semente": 223,
         "rochas": [{"size": (0.36, 0.32, 0.14), "center": (0, 0, 0.06), "tilt": 3, "yaw": 0}],
         "lascas": [
-            {"size": (0.09, 0.07, 0.09), "center": (0.10, 0.02, 0.13), "tilt": 15, "yaw": 0, "ponta": 0.56},
-            {"size": (0.09, 0.07, 0.10), "center": (-0.02, 0.11, 0.13), "tilt": 25, "yaw": 90, "ponta": 0.56},
-            {"size": (0.09, 0.07, 0.11), "center": (-0.11, -0.02, 0.13), "tilt": 35, "yaw": 180, "ponta": 0.63},
-            {"size": (0.09, 0.07, 0.12), "center": (0.01, -0.11, 0.13), "tilt": 45, "yaw": 270, "ponta": 0.63},
+            {"size": (0.13, 0.10, 0.10), "center": (0.10, 0.02, 0.17), "tilt": 15, "yaw": 0, "ponta": 0.56},
+            {"size": (0.13, 0.10, 0.11), "center": (-0.02, 0.11, 0.17), "tilt": 25, "yaw": 90, "ponta": 0.56},
+            {"size": (0.13, 0.10, 0.13), "center": (-0.11, -0.02, 0.17), "tilt": 35, "yaw": 180, "ponta": 0.63},
+            {"size": (0.13, 0.10, 0.14), "center": (0.01, -0.11, 0.17), "tilt": 45, "yaw": 270, "ponta": 0.63},
         ],
     },
     {
         "nome": "torre", "semente": 239,
         "rochas": [{"size": (0.24, 0.22, 0.18), "center": (-0.08, 0.02, 0.08), "tilt": 8, "yaw": 20}],
         "lascas": [
-            {"size": (0.13, 0.12, 0.18), "center": (0.06, 0.0, 0.16), "tilt": 14, "yaw": 0, "ponta": 0.49},
-            {"size": (0.09, 0.07, 0.11), "center": (0.16, 0.08, 0.10), "tilt": 40, "yaw": 40, "ponta": 0.56},
+            {"size": (0.18, 0.17, 0.20), "center": (0.06, 0.0, 0.15), "tilt": 14, "yaw": 0, "ponta": 0.49},
+            {"size": (0.13, 0.10, 0.13), "center": (0.16, 0.08, 0.10), "tilt": 40, "yaw": 40, "ponta": 0.56},
         ],
     },
 ]

@@ -39,6 +39,29 @@ def put(path, location, yaw=0.0, scale=1.0):
     return objs
 
 
+MAPA_ALVO = (0.3, 0.3, 0)
+
+
+def build_mapa(pedras_glb, veios_glb):
+    """Pedaço de mapa de 7×5 células na cena atual; devolve os objetos por grupo (para medir o brilho de cada um)."""
+    rng = random.Random(17)
+    g = {"arvore": [], "pedra": [], "veio": [], "aldeao": [], "protagonista": []}
+    arvores = [(0, 0), (1, 0), (3, 0), (0, 1), (2, 1), (4, 1), (1, 2), (3, 3), (5, 0), (6, 2)]
+    pedras = [(2, 0), (4, 0), (5, 2), (0, 3)]
+    veios = [(4, 3), (5, 3), (5, 4), (6, 4)]
+    for cx, cy in arvores:
+        v = rng.choices(range(4), PESO_ARVORE)[0]
+        g["arvore"] += put(ARVORES[v], (cx - 3, cy - 1.5, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1))
+    for k, (cx, cy) in enumerate(pedras):
+        g["pedra"] += put(pedras_glb[k % 4], (cx - 3, cy - 1.5, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1))
+    for k, (cx, cy) in enumerate(veios):
+        g["veio"] += put(veios_glb[k % 4], (cx - 3, cy - 1.5, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1))
+    # personagens na frente (lado da câmera), para não sumirem atrás das copas
+    g["aldeao"] += place(ALDEAO, (-1.4, -2.1, 0), color=PELE_ALDEAO)
+    g["protagonista"] += place(PROTAGONISTA, (1.8, -2.0, 0), color=PELE_PROTAGONISTA)
+    return g
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     medidas = {"recortes": {}}
@@ -78,23 +101,9 @@ def main():
 
     # 4. Pedaço de mapa: bosque (sorteio 30/30/10/30), pedras soltas e uma mancha de 4 veios juntos.
     scene = new_scene()
-    rng = random.Random(17)
-    mapa = []
-    arvores = [(0, 0), (1, 0), (3, 0), (0, 1), (2, 1), (4, 1), (1, 2), (3, 3), (5, 0), (6, 2)]
-    pedras = [(2, 0), (4, 0), (5, 2), (0, 3)]
-    veios = [(4, 3), (5, 3), (5, 4), (6, 4)]
-    for cx, cy in arvores:
-        v = rng.choices(range(4), PESO_ARVORE)[0]
-        mapa += put(ARVORES[v], (cx - 3, cy - 1.5, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1))
-    for k, (cx, cy) in enumerate(pedras):
-        mapa += put(PEDRAS[k % 4], (cx - 3, cy - 1.5, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1))
-    for k, (cx, cy) in enumerate(veios):
-        mapa += put(VEIOS[k % 4], (cx - 3, cy - 1.5, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1))
-    # personagens na frente (lado da câmera), para não sumirem atrás das copas
-    mapa += place(ALDEAO, (-1.4, -2.4, 0), color=PELE_ALDEAO)
-    mapa += place(PROTAGONISTA, (1.8, -2.3, 0), color=PELE_PROTAGONISTA)
+    mapa = sum(build_mapa(PEDRAS, VEIOS).values(), [])
     for zoom in (0.4, 1.0, 2.5):
-        cam = game_camera(scene, (0.3, 0.6, 0), zoom)
+        cam = game_camera(scene, MAPA_ALVO, zoom)
         medidas["recortes"][f"mapa_{zoom}"] = pixel_box(scene, cam, mapa, margin=int(40 * zoom))
         render(scene, OUT / f"mapa_zoom_{zoom}.png")
         bpy.data.objects.remove(cam)
@@ -102,4 +111,5 @@ def main():
     (OUT / "medidas.json").write_text(json.dumps(medidas, ensure_ascii=False, indent=2) + "\n")
 
 
-main()
+if __name__ == "__main__":  # folha_mapa.py importa build_mapa daqui
+    main()

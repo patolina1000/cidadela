@@ -1,6 +1,6 @@
 """Pedra piloto do cenário (recurso pedra): 4 variações da mesma família, por script, semente por variação.
 
-Família: seixos grandes e macios de pedra fria, tortos (inclinados, camadas de cima giradas: espiral sutil),
+Família: seixos grandes e macios de pedra fria escurecida (#57535F), tortos (inclinados, camadas de cima giradas: espiral sutil),
 assentados no chão; uma variação com tampa de musgo. 0,35–0,55 m, ≤ 200 triângulos, material chapado sem textura.
 Metros, frente +Z no GLB, pivô no centro da base. Proposta em assets/cenario/PROPOSTA.md.
 
@@ -65,7 +65,7 @@ VARIACOES = [
 
 def build(spec, index):
     rng = random.Random(spec["semente"])
-    mats = {"pedra": material("pedra", PALETA["pedra_fria"]), "musgo": material("musgo", PALETA["musgo"])}
+    mats = {"pedra": material("pedra", PALETA["pedra_escura"]), "musgo": material("musgo", PALETA["musgo"])}
     parts = []
     for i, b in enumerate(spec["blocos"]):
         o = block(rng, b["size"], b["center"], b["pontos"], b["tilt"], b["yaw"], b["twist"], name=f"bloco_{i}")
@@ -85,7 +85,7 @@ def main():
         obj = build(spec, index)
         rows.append(export(obj, OUT / f"pedra_{index}.glb", MAX_TRIS, {
             "nome": spec["nome"], "semente": spec["semente"],
-            "cores": {m.name: PALETA["pedra_fria"] if m.name == "pedra" else PALETA["musgo"]
+            "cores": {m.name: PALETA["pedra_escura"] if m.name == "pedra" else PALETA["musgo"]
                       for m in obj.data.materials}}))
     write_report(OUT / "pedra_relatorio.json", "tools/arte/cenario/pedra.py", rows)
 
