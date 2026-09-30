@@ -103,5 +103,12 @@
     "tipo": "imagem",
     "caminho": "assets/previews/protagonista_v2/corpo_limpo.png",
     "nota": "0,80 m, cabeça 18,05% (silhueta 18,3%), 2.474 triângulos; mãos meio fechadas; clavícula, esterno, joelhos e borda do short alisados; um pouco de glúteo. Câmera do jogo 31 / 80 / 211 px (a pose A ereta; o alvo é a v1 na pose dela). Sem rig: ergonomia.json depois do rig."
+  },
+  {
+    "quando": "2026-09-29T21:59:39",
+    "titulo": "Protagonista v2 — corpo limpo, triângulos redistribuídos",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/corpo_limpo.png",
+    "nota": "Mãos 442 → 226 (meio fechadas), cabeça 386 → 652 (crânio e frente mais redondos), total 2.480; cabeça 18,05%, 0,80 m. Decimação por orçamento em etapas (mãos, cabeça, corpo)."
   }
 ]

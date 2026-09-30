@@ -41,7 +41,10 @@ HEIGHT = 0.80
 HEAD_RATIO = 0.18
 RAMP = 0.015
 MAX_TRIANGLES = 2500
-DECIMATE_TO = 2260  # os cortes do short somam ~220 triângulos depois
+# Orçamento da decimação por parte (antes dos cortes do short, que somam ~220 no corpo): as mãos quase somem de cima,
+# a cabeça domina na câmera do jogo e leva a sobra.
+POST_HEAD_PASSES, POST_HAND_PASSES = 0, 4  # na cabeça piorava a frente (medida e olho)
+BUDGETS = {"maos": 200, "cabeca": 620, "corpo": 1350}  # + ~85 na borda entre as partes
 TARGET_RMS_MM, TARGET_MAX_MM = 0.5, 1.5  # calombos na janela do rosto (face_roughness)
 LAMBDA, MU = 0.5, -0.53
 PELE, TECIDO = "#91ADB7", "#3F3342"
@@ -256,7 +259,7 @@ def smooth_head(obj, base_z, chin_z):
             return passes, rough
 
 
-def decimate(obj, k, neck_z, target):
+def region_masks(obj, k, neck_z):
     p = pts_of(obj)
     z, ax = p[:, 2], np.abs(p[:, 0])
     arm, hand = is_arm(p, k), is_hand(p, k)
@@ -268,30 +271,60 @@ def decimate(obj, k, neck_z, target):
     joints |= ~arm & (z > (Z["bainha"] - 0.02) * k) & (z < (Z["cos"] - 0.06) * k)  # quadris
     joints |= ~arm & (np.abs(z - Z["joelho"] * k) < 0.035 * k)  # joelhos
     joints |= ~arm & (np.abs(z - Z["tornozelo"] * k) < 0.02 * k)  # tornozelos
-    weight = np.where(hand, 0.5, np.where(joints, 0.12, 1.0))
+    head = z >= neck_z
+    return {"maos": hand, "cabeca": head & ~hand, "corpo": ~hand & ~head}, joints
+
+
+def tri_counts(obj, masks):
+    obj.data.calc_loop_triangles()
+    out = {name: 0 for name in masks}
+    for t in obj.data.loop_triangles:
+        for name, m in masks.items():
+            if all(m[i] for i in t.vertices):
+                out[name] += 1
+                break
+    return out, len(obj.data.loop_triangles)
+
+
+def decimate_part(obj, weight, remove):
+    """Uma etapa de decimação: só colapsa onde o peso > 0 (peso 0 trava o vértice), até tirar `remove` triângulos."""
+    obj.data.calc_loop_triangles()
+    tris = len(obj.data.loop_triangles)
+    if remove <= 0:
+        return
     g = obj.vertex_groups.new(name="decimar")
     for w in np.unique(weight):
         g.add([int(i) for i in np.nonzero(weight == w)[0]], float(w), "REPLACE")
-    obj.data.calc_loop_triangles()
-    tris = len(obj.data.loop_triangles)
-    if tris > target:
-        mod = obj.modifiers.new("decimar", "DECIMATE")
-        mod.decimate_type = "COLLAPSE"
-        mod.ratio = target / tris
-        mod.use_collapse_triangulate = True
-        mod.use_symmetry = True
-        mod.symmetry_axis = "X"
-        mod.vertex_group = "decimar"
-        mod.vertex_group_factor = 4.0
-        bpy.context.view_layer.objects.active = obj
-        bpy.ops.object.modifier_apply(modifier=mod.name)
+    mod = obj.modifiers.new("decimar", "DECIMATE")
+    mod.decimate_type = "COLLAPSE"
+    mod.ratio = (tris - remove) / tris
+    mod.use_collapse_triangulate = True
+    mod.use_symmetry = True
+    mod.symmetry_axis = "X"
+    mod.vertex_group = "decimar"
+    mod.vertex_group_factor = 4.0
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.modifier_apply(modifier=mod.name)
     obj.vertex_groups.clear()
     bm = bmesh.new()
     bm.from_mesh(obj.data)
     bmesh.ops.triangulate(bm, faces=bm.faces)
     bm.to_mesh(obj.data)
     bm.free()
-    return {"juntas": int(joints.sum()), "maos": int(hand.sum())}
+
+
+def decimate(obj, k, neck_z, budgets):
+    """Decimação por orçamento, em etapas: mãos, cabeça e o resto do corpo (com as juntas seguras), cada etapa com as
+    outras partes travadas. Assim a conta de triângulos de cada parte é a pedida, e não o que os pesos derem."""
+    steps = []
+    for part in ("maos", "cabeca", "corpo"):
+        masks, joints = region_masks(obj, k, neck_z)
+        counts, _ = tri_counts(obj, masks)
+        weight = np.where(masks[part], np.where(joints & (part == "corpo"), 0.12, 1.0), 0.0)
+        decimate_part(obj, weight, counts[part] - budgets[part])
+        after, total = tri_counts(obj, region_masks(obj, k, neck_z)[0])
+        steps.append({"parte": part, "antes": counts, "depois": after, "total": total})
+    return steps
 
 
 def cut_short(obj, k):
@@ -424,7 +457,14 @@ def main() -> None:
     passes, rough = smooth_head(obj, base_z, chin_z)
     report["alisamento"]["passos_cabeca"] = passes
     report["alisamento"]["rosto_calombos_antes_de_decimar"] = rough
-    report["decimacao"] = decimate(obj, k, neck_z, DECIMATE_TO)
+    report["decimacao"] = decimate(obj, k, neck_z, BUDGETS)
+    # Depois de decimar: a cabeça (que domina de cima) e as mãos passam por um Taubin leve, sem mudar a contagem:
+    # tira os entalhes que a decimação deixa na frente da cabeça e as pontas das mãos.
+    p = pts_of(obj)
+    head_w = np.clip((p[:, 2] - (base_z - 0.01)) / 0.02, 0, 1)
+    taubin(obj, head_w, POST_HEAD_PASSES)
+    taubin(obj, is_hand(pts_of(obj), k).astype(float), POST_HAND_PASSES)
+    report["alisamento"]["depois_de_decimar"] = {"passos_cabeca": POST_HEAD_PASSES, "passos_maos": POST_HAND_PASSES}
     report["cortes_do_short_triangulos"] = cut_short(obj, k)
     planes = wrist_planes(obj, k)
     report["punhos"] = [{"ponto": [round(float(x), 4) for x in w], "normal": [round(float(x), 3) for x in d]} for w, d in planes]

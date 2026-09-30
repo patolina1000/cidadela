@@ -3248,3 +3248,18 @@ onde errou, correções manuais e quanto tempo levou.
 - **Pendente:** `ergonomia.json` — o `medir_ergonomia.py` precisa do rig (ossos Hips, Spine, braços e IK); sai logo
   depois do rig, que não fazia parte desta tarefa.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Protagonista v2, passo 3C: triângulos das mãos para a cabeça
+
+- **Pedido:** mãos (442, 18%, quase somem de cima) para ~200 mantendo o meio fechado; a sobra para a cabeça, que domina
+  na câmera do jogo e estava facetada (386); sem mudar os 18%; total ≤ 2.500.
+- **Feito:** a decimação do `limpar_corpo.py` passou a ser por orçamento, em três etapas (mãos 200, cabeça 620, resto do
+  corpo 1.350 com as juntas seguras), cada uma com as outras partes travadas (peso 0 no grupo de vértices trava de
+  verdade). Depois, 4 passes de Taubin só nas mãos, para tirar as pontas da decimação.
+- **Resultado:** cabeca **652**, maos **226**, tronco 382, bracos 264, quadril 36, roupa_intima 458, coxas 228, canelas 136,
+  pes 98 = **2.480**; cabeça 18,05%, 0,80 m. Frente da cabeça (calombos na janela ±45°): RMS 0,98 mm, máx 2,75 mm — a
+  janela agora tem 51 vértices (antes 17), então a medida enxerga mais; a olho, crânio e frente mais redondos.
+- **O que deu errado e foi corrigido:** pesos diferentes para mãos e cabeça numa decimação só davam resultado caótico
+  (cabeça 1.236 e mãos 16; quadril sumindo; pesos diferentes com o mesmo resultado) — daí as etapas. Um Taubin extra na
+  cabeça depois de decimar piorou a medida (1,14 / 3,78 mm) sem ganho visível; ficou de fora.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.

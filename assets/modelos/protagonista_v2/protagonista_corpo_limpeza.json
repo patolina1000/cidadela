@@ -29,12 +29,56 @@
       "pontos": 136,
       "rms_mm": 0.93,
       "max_mm": 4.49
+    },
+    "depois_de_decimar": {
+      "passos_cabeca": 0,
+      "passos_maos": 4
     }
   },
-  "decimacao": {
-    "juntas": 648,
-    "maos": 230
-  },
+  "decimacao": [
+    {
+      "parte": "maos",
+      "antes": {
+        "maos": 430,
+        "cabeca": 1850,
+        "corpo": 2124
+      },
+      "depois": {
+        "maos": 204,
+        "cabeca": 1850,
+        "corpo": 2124
+      },
+      "total": 4272
+    },
+    {
+      "parte": "cabeca",
+      "antes": {
+        "maos": 204,
+        "cabeca": 1850,
+        "corpo": 2124
+      },
+      "depois": {
+        "maos": 204,
+        "cabeca": 628,
+        "corpo": 2124
+      },
+      "total": 3040
+    },
+    {
+      "parte": "corpo",
+      "antes": {
+        "maos": 204,
+        "cabeca": 628,
+        "corpo": 2124
+      },
+      "depois": {
+        "maos": 204,
+        "cabeca": 628,
+        "corpo": 1348
+      },
+      "total": 2264
+    }
+  ],
   "cortes_do_short_triangulos": [
     52,
     164
@@ -42,81 +86,81 @@
   "punhos": [
     {
       "ponto": [
-        0.185,
-        0.0103,
-        0.379
+        0.1853,
+        0.0198,
+        0.38
       ],
       "normal": [
-        0.498,
-        -0.233,
-        -0.835
+        0.514,
+        -0.138,
+        -0.847
       ]
     },
     {
       "ponto": [
-        -0.185,
-        0.0103,
-        0.379
+        -0.1853,
+        0.0198,
+        0.38
       ],
       "normal": [
-        -0.498,
-        -0.233,
-        -0.835
+        -0.514,
+        -0.138,
+        -0.847
       ]
     }
   ],
   "rosto_calombos": {
-    "pontos": 17,
-    "rms_mm": 0.76,
-    "max_mm": 1.64
+    "pontos": 51,
+    "rms_mm": 0.98,
+    "max_mm": 2.75
   },
   "rosto_medida_do_aldeao_elipsoide": {
-    "pontos": 25,
-    "rms_mm": 3.0,
-    "max_mm": 7.3,
-    "esfera_raio_mm": 64.9,
-    "esfera_rms_mm": 3.81,
-    "esfera_max_mm": 8.51
+    "pontos": 69,
+    "rms_mm": 4.08,
+    "max_mm": 9.12,
+    "esfera_raio_mm": 62.4,
+    "esfera_rms_mm": 4.0,
+    "esfera_max_mm": 9.65
   },
   "altura_m": 0.8,
   "cabeca_sobre_altura": 0.1805,
   "regioes": {
     "cabeca": {
-      "triangulos": 386,
-      "vertices": 209
+      "triangulos": 652,
+      "vertices": 341
     },
     "tronco": {
-      "triangulos": 394,
-      "vertices": 247
+      "triangulos": 382,
+      "vertices": 238
     },
     "bracos": {
-      "triangulos": 284,
-      "vertices": 180
+      "triangulos": 264,
+      "vertices": 170
     },
     "maos": {
-      "triangulos": 442,
-      "vertices": 236
+      "triangulos": 226,
+      "vertices": 128
     },
     "quadril": {
-      "triangulos": 32,
-      "vertices": 36
+      "triangulos": 36,
+      "vertices": 39
     },
     "roupa_intima": {
-      "triangulos": 462,
-      "vertices": 283
+      "triangulos": 458,
+      "vertices": 282
     },
     "coxas": {
-      "triangulos": 232,
-      "vertices": 172
+      "triangulos": 228,
+      "vertices": 170
     },
     "canelas": {
       "triangulos": 136,
       "vertices": 96
     },
     "pes": {
-      "triangulos": 106,
-      "vertices": 68
+      "triangulos": 98,
+      "vertices": 64
     }
   },
-  "triangulos_total": 2474
+  "triangulos_total": 2480
 }
