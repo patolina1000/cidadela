@@ -64,6 +64,24 @@ public sealed class Villager
     public Vector2 Facing { get; private set; } = new(0f, 1f);
     public Building? Home { get; private set; }
     public VillagerTask Task { get; private set; } = VillagerTask.Unemployed;
+
+    /// <summary>
+    /// Estado para o ícone, do mais forte para o mais fraco: descansando, sem trabalho, cabana cheia, sem caminho,
+    /// sem recurso no raio, e então o que está fazendo (coletando, levando a carga, indo, esperando).
+    /// </summary>
+    public VillagerStatus Status =>
+        Resting ? VillagerStatus.Resting
+        : Home is null ? VillagerStatus.Unemployed
+        : _hutFull ? VillagerStatus.HutFull
+        : _noPath ? VillagerStatus.NoPath
+        : _noResource ? VillagerStatus.NoResource
+        : Task switch
+        {
+            VillagerTask.Gathering => VillagerStatus.Gathering,
+            VillagerTask.ReturningHome => VillagerStatus.Carrying,
+            VillagerTask.GoingToResource => VillagerStatus.GoingToResource,
+            _ => VillagerStatus.Waiting,
+        };
     public ResourceNode? Target { get; private set; }
     public string? CarryingKind { get; private set; }
     public int CarryingCount { get; private set; }
@@ -79,6 +97,8 @@ public sealed class Villager
     private int _idleTicks;
     private int _happyTicks;
     private bool _hutFull;
+    private bool _noPath;
+    private bool _noResource;
 
     public Villager(int id, Vector2 position, VillagerStats stats)
     {
@@ -108,6 +128,8 @@ public sealed class Villager
         _gatherTicks = 0;
         _retryIn = 0;
         _hutFull = false;
+        _noPath = false;
+        _noResource = false;
         _idleTicks = 0;
         Task = home is null ? VillagerTask.Unemployed : VillagerTask.Waiting;
     }
@@ -204,6 +226,7 @@ public sealed class Villager
                 candidates.Add(node);
         }
         candidates.Sort((a, b) => Distance(a.Cell).CompareTo(Distance(b.Cell)));
+        _noResource = candidates.Count == 0;
 
         foreach (ResourceNode node in candidates)
         {
@@ -211,9 +234,11 @@ public sealed class Villager
             {
                 Target = node;
                 Task = VillagerTask.GoingToResource;
+                _noPath = false;
                 return;
             }
         }
+        _noPath = candidates.Count > 0;
         Target = null;
         Task = VillagerTask.Waiting;
     }
@@ -245,10 +270,8 @@ public sealed class Villager
 
     private void GoHome(SimWorld world)
     {
-        if (TrySetPath(world, FreeNeighbors(world, Home!.Cell)))
-            Task = VillagerTask.ReturningHome;
-        else
-            Task = VillagerTask.Waiting;
+        _noPath = !TrySetPath(world, FreeNeighbors(world, Home!.Cell));
+        Task = _noPath ? VillagerTask.Waiting : VillagerTask.ReturningHome;
     }
 
     private void Deliver(SimWorld world, Workplace work)

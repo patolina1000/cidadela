@@ -4340,3 +4340,32 @@ onde errou, correções manuais e quanto tempo levou.
   `MenuStyle`, `ResourceModels`, `VisualSettings`).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 22:12–22:19 de relógio.
+
+---
+
+## 2026-09-29 — Estado do aldeão para os ícones (simulação e data/villager_status.json)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** tarefa 5, passo 1: ícones de estado do aldeão v2. Ler o que o GDD e o diário já dizem; regra: por padrão,
+  ícone só em quem tem problema (sem trabalho, cabana cheia, sem caminho; fome e moral quando existirem); segurando
+  Alt, todos mostram o estado; estados e textos em data/.
+- **O que já existia:** o GDD só tem o modo de informação para as máquinas (seção 17: "tecla Alt mostra ícones sobre
+  as máquinas (o que produzem e o que falta), como em Factorio"); nada sobre ícones de aldeão no GDD nem no diário
+  (o `ESTADO_DO_PROJETO.md` sugeria "balão de ícone" para ler de cima). A regra deste pedido estende o modo de
+  informação aos aldeões.
+- **O que foi feito:**
+  - `VillagerStatus` (enum) e `Villager.Status`, do mais forte para o mais fraco: descansando, sem trabalho, cabana
+    cheia, sem caminho, sem recurso no raio, coletando, levando a carga, indo ao recurso, esperando. Dois sinais novos
+    no `Villager`: "sem caminho" (há recurso no raio, mas nenhum alcançável; ou não há caminho de volta para a cabana)
+    e "sem recurso" (nada do ofício no raio), recalculados a cada replanejamento; antes os dois viravam um "Waiting"
+    igual. Separei "sem recurso" de "sem caminho" porque a correção do jogador é outra (mudar a cabana × abrir passagem).
+  - `data/villager_status.json`: texto, `problem` e o nome do ícone de cada estado; `VillagerStatusTable.Parse` recusa
+    estado faltando. Fome e moral entram aqui quando existirem (a penalidade de hoje é só a tecla de depuração B).
+  - Testes: 8 novos (`VillagerStatusTests`): sem trabalho, sem recurso, sem caminho (árvore cercada de pedras), cabana
+    cheia, a sequência indo → coletando → levando sem falso "problema", descansando vence tudo, o JSON real e estado
+    faltando. `dotnet test`: 125 aprovados.
+- **Escolha minha, para o Arthur:** "sem recurso no raio" como problema (o pedido citava sem trabalho, cabana cheia e
+  sem caminho); os textos dos estados.
+- `dotnet build`: 0 erros, 0 avisos.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:22–22:27 de relógio.

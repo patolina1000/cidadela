@@ -1,0 +1,16 @@
+{
+  // Estado do aldeão para o ícone sobre a cabeça (VillagerStatus). Por padrão só quem tem problema
+  // ("problem": true) mostra o ícone; segurando Alt (modo de informação, GDD seção 17), todos mostram.
+  // text: o que aparece ao passar o mouse sobre o aldeão; icon: forma desenhada por código (VillagerIcons.cs):
+  //   dots, house, cross, empty, moon, diamond, box, arrow, pause.
+  // Fome e moral entram aqui quando existirem na simulação.
+  "sem_trabalho":    { "text": "Sem trabalho",                            "problem": true,  "icon": "dots" },
+  "cabana_cheia":    { "text": "Cabana cheia: recolha o que está guardado", "problem": true,  "icon": "house" },
+  "sem_caminho":     { "text": "Sem caminho até o recurso ou a cabana",   "problem": true,  "icon": "cross" },
+  "sem_recurso":     { "text": "Nada para coletar no raio da cabana",     "problem": true,  "icon": "empty" },
+  "descansando":     { "text": "Descansando",                             "problem": false, "icon": "moon" },
+  "coletando":       { "text": "Coletando",                               "problem": false, "icon": "diamond" },
+  "levando_carga":   { "text": "Levando a carga para a cabana",           "problem": false, "icon": "box" },
+  "indo_ao_recurso": { "text": "Indo ao recurso",                         "problem": false, "icon": "arrow" },
+  "esperando":       { "text": "Esperando",                               "problem": false, "icon": "pause" }
+}
