@@ -3093,3 +3093,14 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** a altura em px pela caixa envolvente saía 24 / 61 / 153 px (a profundidade da caixa entra na
   projeção inclinada); passou a projetar vértice a vértice, já com a pose do clipe.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Visor de arte, passo 3: publicar.py
+
+- **Pedido:** `publicar.py <caminho> <tipo> "<titulo>" "<nota>" [--junto a.glb b.glb]` acrescentando ao `visor.json`.
+- **Feito:** `tools/arte/visor/publicar.py` (só biblioteca padrão). Valida que o arquivo existe, fica em `assets/`
+  (o que o servidor entrega), não passa por pasta oculta e tem extensão do tipo (imagem: png/jpg/webp; gif; glb);
+  `--junto` só com glb. Grava `quando` local em segundos (desempata se dois caírem no mesmo segundo) e troca o
+  arquivo de uma vez, para o visor nunca ler JSON pela metade. Conferido: recusa `.env`, `docs/GDD.md`,
+  `assets/../.env`, PNG como glb e `--junto` em imagem, sem criar o `visor.json`.
+- **Daqui em diante toda prévia vai para o visor por este script.**
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~10 min.
