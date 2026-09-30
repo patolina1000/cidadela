@@ -4312,4 +4312,31 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** nada.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 22:10–22:15 de relógio.
+- **Tempo:** 22:10–22:12 de relógio.
+
+---
+
+## 2026-09-29 — FPS antes e depois da borda fria e do esmaecimento (3024×1890, fora do editor)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** tarefa 4, passo 3: medir o FPS antes e depois em 3024×1890, fora do editor.
+- **Método:** `Godot --path . --print-fps --screen 0 <cena>` (janela 3024×1890 na Retina), V-Sync desligado pelo
+  `settings.cfg` só durante a medida, app da frente e CPU do Blender registrados a cada segundo. "Antes" = os cubos
+  antigos com `StandardMaterial3D`, por uma chave temporária por variável de ambiente (não commitada, desfeita);
+  também sem a borda e sem o recorte, para separar os custos.
+- **Números (rodadas limpas: Godot na frente e nenhum Blender rodando):**
+
+  | Cena | Antes (cubos) | Formas toon sem borda nem recorte | Só sem o recorte | Depois (borda + recorte) |
+  | --- | --- | --- | --- | --- |
+  | `Main` (mapa de teste, 7 recursos longe) | 78–80 | — | 79–80 | 78–83 |
+  | `CenarioTeste` (8 recursos perto, protagonista atrás da árvore de 2,4 m, recorte ativo) | 102–105 | 103–104 | 102–103 | 103–104 |
+
+  **Custo: nenhum mensurável.** A borda é uma conta por pixel nos recursos e o recorte descarta pixels (até alivia);
+  a CPU gasta um `SetShaderParameter` por material por quadro (hoje 4 materiais).
+- **Armadilha nova de medição:** o Blender em segundo plano de outro agente (renders do CENÁRIO) derruba o jogo para
+  30–55 FPS mesmo com o Godot na frente; as primeiras rodadas (52 FPS no `Main`) foram assim. O script de medida agora
+  espera o Blender sumir e descarta a rodada se ele aparecer no meio.
+- **Arquivos:** só o diário e os `.uid` que o Godot gerou para as classes novas das tarefas anteriores (`GameSettings`,
+  `MenuStyle`, `ResourceModels`, `VisualSettings`).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:12–22:19 de relógio.
