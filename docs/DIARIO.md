@@ -6094,3 +6094,40 @@ onde errou, correções manuais e quanto tempo levou.
   `dotnet test` 264 passaram. Print `docs/prints/linha2_passo7_hud.png` (teste A novo, godot-ai, sem erro no log).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:23–19:26 de relógio.
+
+## 2026-09-30 — Linha 2, passo 8: cenas de teste das duas linhas e medidas
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 8 do plano da linha 2: teste A novo (as duas linhas, 2 Relicários, mínimo de aldeões; L3) e teste B
+  com margem; medir tempo entre aldeões, sobra ou falta de mana (2 e 1 Relicário) e FPS.
+- **Feito:**
+  - `data/maps/linha_energia.json` (mesma cena `scenes/tests/LinhaEnergia.tscn`, 22×18): UMA esteira sai do Poço, corre
+    a leste ao sul das máquinas, sobe e volta a oeste ao norte delas até o baú de sobras; mariposas levam o jarro aos 2
+    Purificadores e ao Oleiro, o puro dos Purificadores à esteira e dela ao Cristal-mãe e aos 2 Relicários. Cada Mina fica
+    colada no seu Purificador (o carregador quase não anda); Barreiro e Oleiro lado a lado na margem, perto do Poço.
+    2 Relicários começando com 5 puros cada, 4 torres, **9 aldeões**: operadores das 2 Minas, do Poço, dos 2 Purificadores,
+    do Barreiro e do Oleiro, e 2 carregadores.
+  - `data/maps/linha_energia_zero.json` (teste B): ganhou a margem (x 3, z 8–15), zero aldeões.
+  - Testes do mapa refeitos para as duas linhas.
+- **O que deu errado (e as escolhas):**
+  - 1ª versão do mapa (Oleiro longe do Barreiro, Relicários com 3 puros): os carregadores gastavam o tempo com a argila, um
+    Purificador ficava sem podres, os 6 puros iniciais acabavam em 1 min e a rede caía a zero para sempre (sem mana nada
+    produz puro). Correções no mapa: Oleiro ao lado do Barreiro e 5 puros por Relicário.
+  - Testei 7 e 8 aldeões (sem o 2º Purificador, com e sem a 2ª Mina): o Cristal-mãe nunca recebe puro nesse layout (só o
+    puro do 2º Purificador passa pela mariposa dele antes dos Relicários). Ficaram 9.
+  - O 2º Purificador passa a maior parte do tempo sem jarro (1 Poço dá 7,5 jarros/min); anda o bastante para o Cristal-mãe.
+- **Medidas (simulação, `EnergyLineMapTests`, 15 min):**
+  - **2 Relicários:** gera 20/s (média 19,2 com a partida), as máquinas consomem ~11–14/s, **sobram ~6–8/s**; 1º aldeão
+    aos 386 s e depois **um a cada 150 s** (536, 686, 836 s). No jogo (godot-ai): "gera 20,0/s · consome 13,9/s · sobra
+    6,1/s", formando 55%, último há 82 s.
+  - **1 Relicário:** gera 10/s e as máquinas pedem ~12,5/s: **falta ~2,5/s** (a rede anda a 80%); um aldeão a cada **~185 s**
+    (370, 555, 741 s). É a tensão pedida na especificação.
+  - **FPS fora do editor, 3024×1890, V-Sync desligado só durante a medida (`--print-fps --screen 0`, 40 s):** **105–109
+    FPS**, Godot na frente em 39 de 40 s. Uma primeira medida foi descartada (Safari na frente em 33 s: janela coberta não
+    desenha e o FPS sai inflado).
+- **Testes:** `EnergyLineMapTests` (9 postos ocupados e tudo na rede; nenhuma esteira aponta para máquina e toda máquina
+  de itens leves tem mariposa; as duas linhas andam 15 min e nasce um aldeão a cada 150–200 s sem faltar mana; com 1
+  Relicário falta mana e ainda forma; teste B vazio com margem e lugar para o Poço). `dotnet build` 0/0; `dotnet test`
+  264 passaram. Print `docs/prints/linha2_passo8_testeA.png`.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:26–19:36 de relógio.

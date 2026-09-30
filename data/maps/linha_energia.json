@@ -1,78 +1,123 @@
 {
-  // TESTE A da linha da energia (docs/linha_energia.md, "Testes com o Arthur"): a linha inteira já montada, o Relicário
-  // começando com 3 fragmentos puros e 4 aldeões (operadores da Mina, do Poço e do Purificador, e 1 carregador para os
-  // podres). Cena: scenes/tests/LinhaEnergia.tscn. A câmera fica ao sul (z maior).
-  // Layout estilo Factorio (orientação do Arthur, 30/09): UMA linha de esteira corre ao lado das máquinas, e uma
-  // mariposa fica entre a esteira e cada máquina (como os inserters). A esteira nunca aponta para dentro de máquina.
-  //   Poço (2, 8) → mariposa (2, 9) → esteira (z 10, de x 2 a 8, sobe em x 9 até z 7, segue a leste em z 7 até x 15)
-  //   esteira (7, 10) → mariposa (7, 9) → Purificador (7, 8)       [o jarro d'água entra]
-  //   Purificador (7, 8) → mariposa (8, 8) → esteira (9, 8)       [o fragmento puro sai, na subida]
-  //   esteira (13, 7) → mariposa (13, 6) → Relicário (13, 5)       [o puro entra]
-  //   Fim da esteira no baú de sobras (16, 7): jarro que passou pelo Purificador cheio, puro que passou pelo Relicário
-  //   cheio (sem ele, a esteira entope e o puro não passa).
-  //   Mina no veio (7, 5) → carregador (Posto em (11, 3)) → Purificador (7, 8)
-  //   Torres (4, 8), (6, 7), (12, 4), (18, 6) → máquinas, mariposas e Cristal-mãe (19, 8)
-  "width": 24,
-  "height": 16,
-  "castellan": { "x": 10, "z": 11 },
+  // TESTE A das duas linhas (docs/linha_energia.md e docs/linha_aldeoes.md, "Testes com o Arthur"): energia e aldeões
+  // montadas, 2 Relicários começando com 5 puros cada, e o mínimo de aldeões para tudo andar (L3 do Arthur): operadores
+  // das 2 Minas, do Poço, dos 2 Purificadores, do Barreiro e do Oleiro, e 2 carregadores = 9 aldeões.
+  // Cena: scenes/tests/LinhaEnergia.tscn. A câmera fica ao sul (z maior). Gerado por script e conferido à mão.
+  // Layout estilo Factorio: UMA esteira sai do Poço (2, 12), corre a leste em z 12 (ao sul das máquinas), sobe em x 19 e
+  // volta a oeste em z 8 (ao norte delas) até o baú de sobras (3, 8). Mariposas entre a esteira e cada máquina:
+  //   (4, 13), virada ao sul: o jarro entra no Oleiro (4, 14), ao lado do Barreiro;
+  //   z 11, viradas ao norte: o jarro entra nos Purificadores (6, 10) e (9, 10);
+  //   z 9, viradas ao norte: o puro sai dos Purificadores para a esteira de z 8;
+  //   z 7, viradas ao norte: o puro entra no Cristal-mãe (7, 6) e nos Relicários (5, 6) e (4, 6).
+  // Pesados nas costas (Posto de Carregadores em (11, 14), 2 carregadores): podres das Minas (7, 10) e (10, 10), coladas
+  // nos Purificadores; argila do Barreiro (2, 14, na margem) ao Oleiro; casca do Oleiro ao Cristal-mãe.
+  // Torres (3, 13), (8, 10), (6, 5). Margem em x 2, z 13–17, perto do Poço; o Barreiro (2, 14) e o Oleiro (4, 14) ficam
+  // lado a lado para a argila andar 1 célula.
+  "width": 22,
+  "height": 18,
+  "castellan": { "x": 12, "z": 6 },
   "resources": [
-    { "kind": "rotten_shard", "x": 7, "z": 5 },
-    { "kind": "rotten_shard", "x": 4, "z": 3 },
-    { "kind": "rotten_shard", "x": 9, "z": 2 },
-    { "kind": "wood", "x": 3, "z": 1 },  { "kind": "wood", "x": 5, "z": 13 }, { "kind": "wood", "x": 15, "z": 2 },
-    { "kind": "wood", "x": 17, "z": 3 }, { "kind": "wood", "x": 21, "z": 3 }, { "kind": "wood", "x": 22, "z": 12 },
-    { "kind": "wood", "x": 12, "z": 14 }, { "kind": "wood", "x": 9, "z": 13 },
-    { "kind": "stone", "x": 20, "z": 13 }, { "kind": "stone", "x": 21, "z": 14 }, { "kind": "stone", "x": 14, "z": 12 }
+    { "kind": "rotten_shard", "x": 7, "z": 10 },
+    { "kind": "rotten_shard", "x": 10, "z": 10 },
+    { "kind": "rotten_shard", "x": 15, "z": 16 },
+    { "kind": "rotten_shard", "x": 17, "z": 15 },
+    { "kind": "wood", "x": 12, "z": 2 },
+    { "kind": "wood", "x": 14, "z": 3 },
+    { "kind": "wood", "x": 16, "z": 2 },
+    { "kind": "wood", "x": 18, "z": 4 },
+    { "kind": "wood", "x": 20, "z": 3 },
+    { "kind": "wood", "x": 21, "z": 6 },
+    { "kind": "wood", "x": 20, "z": 15 },
+    { "kind": "wood", "x": 13, "z": 17 },
+    { "kind": "wood", "x": 6, "z": 17 },
+    { "kind": "wood", "x": 9, "z": 16 },
+    { "kind": "stone", "x": 15, "z": 5 },
+    { "kind": "stone", "x": 16, "z": 6 },
+    { "kind": "stone", "x": 17, "z": 13 },
+    { "kind": "stone", "x": 18, "z": 13 },
+    { "kind": "stone", "x": 5, "z": 16 }
   ],
   "buildings": [
-    { "kind": "crystal_mine", "x": 7,  "z": 5 },
-    { "kind": "well",         "x": 2,  "z": 8 },
-    { "kind": "purifier",     "x": 7,  "z": 8 },
-    { "kind": "carrier_post", "x": 11, "z": 3 },
-    { "kind": "reliquary",    "x": 13, "z": 5, "items": { "pure_shard": 3 } },
-    { "kind": "moth", "x": 2,  "z": 9, "direction": "south" },
-    { "kind": "moth", "x": 7,  "z": 9, "direction": "north" },
-    { "kind": "moth", "x": 8,  "z": 8, "direction": "east" },
-    { "kind": "moth", "x": 13, "z": 6, "direction": "north" },
-    { "kind": "belt", "x": 2,  "z": 10, "direction": "east" },
-    { "kind": "belt", "x": 3,  "z": 10, "direction": "east" },
-    { "kind": "belt", "x": 4,  "z": 10, "direction": "east" },
-    { "kind": "belt", "x": 5,  "z": 10, "direction": "east" },
-    { "kind": "belt", "x": 6,  "z": 10, "direction": "east" },
-    { "kind": "belt", "x": 7,  "z": 10, "direction": "east" },
-    { "kind": "belt", "x": 8,  "z": 10, "direction": "east" },
-    { "kind": "belt", "x": 9,  "z": 10, "direction": "north" },
-    { "kind": "belt", "x": 9,  "z": 9,  "direction": "north" },
-    { "kind": "belt", "x": 9,  "z": 8,  "direction": "north" },
-    { "kind": "belt", "x": 9,  "z": 7,  "direction": "east" },
-    { "kind": "belt", "x": 10, "z": 7,  "direction": "east" },
-    { "kind": "belt", "x": 11, "z": 7,  "direction": "east" },
-    { "kind": "belt", "x": 12, "z": 7,  "direction": "east" },
-    { "kind": "belt", "x": 13, "z": 7,  "direction": "east" },
-    { "kind": "belt", "x": 14, "z": 7,  "direction": "east" },
-    { "kind": "belt", "x": 15, "z": 7,  "direction": "east" },
-    { "kind": "chest", "x": 16, "z": 7 },
-    { "kind": "mana_tower", "x": 4,  "z": 8 },
-    { "kind": "mana_tower", "x": 6,  "z": 7 },
-    { "kind": "mana_tower", "x": 12, "z": 4 },
-    { "kind": "mana_tower", "x": 18, "z": 6 },
-    { "kind": "mother_crystal", "x": 19, "z": 8 }
+    { "kind": "crystal_mine", "x": 7, "z": 10 },
+    { "kind": "crystal_mine", "x": 10, "z": 10 },
+    { "kind": "well", "x": 2, "z": 12 },
+    { "kind": "purifier", "x": 6, "z": 10 },
+    { "kind": "purifier", "x": 9, "z": 10 },
+    { "kind": "clay_pit", "x": 2, "z": 14 },
+    { "kind": "potter", "x": 4, "z": 14 },
+    { "kind": "carrier_post", "x": 11, "z": 14 },
+    { "kind": "reliquary", "x": 5, "z": 6, "items": { "pure_shard": 5 } },
+    { "kind": "reliquary", "x": 4, "z": 6, "items": { "pure_shard": 5 } },
+    { "kind": "moth", "x": 3, "z": 12, "direction": "east" },
+    { "kind": "moth", "x": 6, "z": 11, "direction": "north" },
+    { "kind": "moth", "x": 9, "z": 11, "direction": "north" },
+    { "kind": "moth", "x": 4, "z": 13, "direction": "south" },
+    { "kind": "moth", "x": 6, "z": 9, "direction": "north" },
+    { "kind": "moth", "x": 9, "z": 9, "direction": "north" },
+    { "kind": "moth", "x": 4, "z": 7, "direction": "north" },
+    { "kind": "moth", "x": 5, "z": 7, "direction": "north" },
+    { "kind": "moth", "x": 7, "z": 7, "direction": "north" },
+    { "kind": "belt", "x": 4, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 5, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 6, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 7, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 8, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 9, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 10, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 11, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 12, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 13, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 14, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 15, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 16, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 17, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 18, "z": 12, "direction": "east" },
+    { "kind": "belt", "x": 19, "z": 12, "direction": "north" },
+    { "kind": "belt", "x": 19, "z": 11, "direction": "north" },
+    { "kind": "belt", "x": 19, "z": 10, "direction": "north" },
+    { "kind": "belt", "x": 19, "z": 9, "direction": "north" },
+    { "kind": "belt", "x": 19, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 18, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 17, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 16, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 15, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 14, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 13, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 12, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 11, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 10, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 9, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 8, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 7, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 6, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 5, "z": 8, "direction": "west" },
+    { "kind": "belt", "x": 4, "z": 8, "direction": "west" },
+    { "kind": "chest", "x": 3, "z": 8 },
+    { "kind": "mana_tower", "x": 3, "z": 13 },
+    { "kind": "mana_tower", "x": 8, "z": 10 },
+    { "kind": "mana_tower", "x": 6, "z": 5 },
+    { "kind": "mother_crystal", "x": 7, "z": 6 }
   ],
-  // Um aldeão encostado em cada construção que chama gente, na ordem das construções acima (cada uma chama o livre
-  // mais perto): Mina, Poço, Purificador e o carregador.
+  // Na ordem das construções que chamam gente (cada uma chama o livre mais perto): Minas, Poço, Purificadores,
+  // Barreiro, Oleiro e os 2 carregadores.
   "villagers": [
-    { "x": 8, "z": 5 },
-    { "x": 3, "z": 8 },
-    { "x": 6, "z": 8 },
-    { "x": 11, "z": 2 }
+    { "x": 7, "z": 11 },
+    { "x": 11, "z": 10 },
+    { "x": 2, "z": 11 },
+    { "x": 5, "z": 10 },
+    { "x": 8, "z": 9 },
+    { "x": 2, "z": 15 },
+    { "x": 4, "z": 15 },
+    { "x": 12, "z": 14 },
+    { "x": 10, "z": 13 }
   ],
   "terrain": {
     "default": "grass",
     "patches": [
-      { "kind": "water", "x": 0, "z": 0, "width": 2, "height": 16 },
-      { "kind": "sand",  "x": 2, "z": 0, "width": 1, "height": 16 },
-      { "kind": "dirt",  "x": 3, "z": 4, "width": 14, "height": 7 },
-      { "kind": "dirt",  "x": 19, "z": 8, "radius": 2.5 }
+      { "kind": "water", "x": 0, "z": 0, "width": 2, "height": 18 },
+      { "kind": "sand",  "x": 2, "z": 0, "width": 1, "height": 13 },
+      { "kind": "bank",  "x": 2, "z": 13, "width": 1, "height": 5 },
+      { "kind": "dirt",  "x": 3, "z": 5, "width": 17, "height": 9 }
     ]
   }
 }

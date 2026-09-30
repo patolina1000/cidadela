@@ -1,7 +1,8 @@
 {
-  // TESTE B da linha da energia (docs/linha_energia.md, "Testes com o Arthur"): ZERO aldeões e nada construído. Só
-  // recursos (bosque ao norte e a leste, pedras, três veios de cristal podre), a água a oeste e o Cristal-mãe perto do
-  // início. O Arthur monta a linha inteira com a protagonista. Cena: scenes/tests/LinhaEnergiaZero.tscn.
+  // TESTE B das duas linhas (docs/linha_energia.md e docs/linha_aldeoes.md, "Testes com o Arthur"): ZERO aldeões e nada
+  // construído. Só recursos (bosque ao norte e a leste, pedras, veios de cristal podre), a água a oeste com um trecho de
+  // MARGEM (x 3, z 8–15) e o Cristal-mãe perto do início. O Arthur forma o primeiro aldeão à mão e monta tudo com a
+  // protagonista. Cena: scenes/tests/LinhaEnergiaZero.tscn.
   // Gerado por script (sorteio fixo) e depois conferido à mão; a área em volta do início fica livre.
   "width": 30,
   "height": 24,
@@ -90,6 +91,7 @@
     "patches": [
       { "kind": "water", "x": 0, "z": 0, "width": 3, "height": 24 },
       { "kind": "sand",  "x": 3, "z": 0, "width": 1, "height": 24 },
+      { "kind": "bank",  "x": 3, "z": 8, "width": 1, "height": 8 },
       { "kind": "mud",   "x": 4, "z": 9, "radius": 2.0 },
       { "kind": "dirt",  "x": 16, "z": 11, "radius": 2.5 }
     ]
