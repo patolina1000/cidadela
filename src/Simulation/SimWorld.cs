@@ -699,6 +699,9 @@ public sealed class SimWorld
             Castellan.TakePost(best, bestSlot);
     }
 
+    /// <summary>Se a célula é margem (terra encostada na água, onde se cava argila; docs/linha_aldeoes.md).</summary>
+    public bool IsBank(GridPos cell) => Grid.InBounds(cell) && Data.Terrains[Grid.TerrainAt(cell)].Bank;
+
     /// <summary>Se alguma das 4 vizinhas é água (o poço fica de lado para ela).</summary>
     public bool TouchesWater(GridPos cell)
     {

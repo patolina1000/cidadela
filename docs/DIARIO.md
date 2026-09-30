@@ -5993,3 +5993,14 @@ onde errou, correções manuais e quanto tempo levou.
 - **Testes:** nada de código mudou.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:09–19:09 de relógio.
+
+## 2026-09-30 — Linha 2 (formar aldeões), passo 2: argila, casca e margem
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** plano da linha 2 aprovado pelo Arthur (passos 2–8 e L1–L9, argila infinita). Passo 2: itens e margem.
+- **Feito:** `data/items.json`: Argila e Casca, pesadas (só nas costas). `data/terrain.json`: terreno "margem"
+  (`bank`, textura provisória da lama), pintado pelo mapa (L1); `TerrainType.Bank`, `SimWorld.IsBank`.
+- **Testes:** `ClayAndShellTests` (esteira e mariposa recusam argila e casca; margem é terreno de chão, pintado pelo
+  mapa); `ItemWeightTests` com os dois itens novos. `dotnet build` 0/0; `dotnet test` 243 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:13–19:14 de relógio.

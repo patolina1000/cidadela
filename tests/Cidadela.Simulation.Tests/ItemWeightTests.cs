@@ -15,7 +15,9 @@ public class ItemWeightTests
         Assert.Equal(ItemWeight.Heavy, data.Item("rotten_shard").Weight);
         Assert.Equal(ItemWeight.Light, data.Item("pure_shard").Weight);
         Assert.Equal(ItemWeight.Light, data.Item("water_jar").Weight);
-        Assert.Equal(5, data.Items.Count); // os itens antigos (minério, haste, lingote, espada) saíram
+        Assert.Equal(ItemWeight.Heavy, data.Item("clay").Weight);
+        Assert.Equal(ItemWeight.Heavy, data.Item("shell").Weight);
+        Assert.Equal(7, data.Items.Count); // os itens antigos (minério, haste, lingote, espada) saíram
     }
 
     [Fact]

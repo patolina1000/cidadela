@@ -7,5 +7,8 @@
   "stone":        { "name": "Pedra",           "color": "A89F91", "peso": "pesado" },
   "rotten_shard": { "name": "Fragmento podre", "color": "6B4F7C", "peso": "pesado" },
   "pure_shard":   { "name": "Fragmento puro",  "color": "B8C7E6", "peso": "leve" },
-  "water_jar":    { "name": "Jarro d'água",    "color": "4F7C7A", "peso": "leve" }
+  "water_jar":    { "name": "Jarro d'água",    "color": "4F7C7A", "peso": "leve" },
+  // Linha 2, formar aldeões (docs/linha_aldeoes.md): argila da margem e a casca de barro (o corpo do aldeão).
+  "clay":         { "name": "Argila",          "color": "7A5A4A", "peso": "pesado" },
+  "shell":        { "name": "Casca",           "color": "C9B38A", "peso": "pesado" }
 }
