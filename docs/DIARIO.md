@@ -4580,3 +4580,20 @@ onde errou, correções manuais e quanto tempo levou.
 - **Depois do commit:** `Main` reaberto no editor; a protagonista atravessou o bosque denso da borda sul até o meio
   (de z 14,8 a 8,2), onde antes parava na primeira fileira. Print: `docs/prints/arvores_vizinhas_bosque_jogo.png`.
 - **Tempo:** 22:54–23:07 de relógio (commit às 23:05).
+
+---
+
+## 2026-09-29 — Copas sem a borda fria (cenario.json da branch cenario, 1140406)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (decisão do Arthur):** ele não gostou da borda de luz fria em volta das copas. O CENÁRIO desligou a borda nas
+  árvores no `assets/cenario/cenario.json` da branch `cenario`; trazer só esse arquivo, conferir no jogo que as copas
+  ficaram sem a borda e que pedra e veio continuam com ela.
+- **O que foi feito:** `git fetch origin && git checkout origin/cenario -- assets/cenario/cenario.json` (origin/cenario em
+  1140406). Só esse arquivo mudou: `coldRim` vazio nas 4 árvores e nos 4 tocos; pedra, veio e manchas continuam com
+  `["pedra", ...]`. Nenhum código mudou (o jogo já lê o `coldRim` do manifesto). Os GLBs novos da mesma branch (tronco em
+  terra) ficam para a tarefa do contorno, quando vierem com o hash.
+- **Conferido no jogo** (cena de teste, reaberta para reler o manifesto): copas sem o filete claro; pedras e veios com
+  ele. Log sem erros. Print: `docs/prints/copas_sem_borda.png`.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 23:06–23:08 de relógio.
