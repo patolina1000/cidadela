@@ -4636,4 +4636,4 @@ onde errou, correções manuais e quanto tempo levou.
   `docs/prints/pedras_passagem.gif` (desliza em volta da pedra, diagonal pedra–árvore, aldeão entre pedra e tronco).
 - `dotnet build`: 0 erros, 0 avisos.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 23:08–23:24 de relógio.
+- **Tempo:** 23:08–23:21 de relógio.
