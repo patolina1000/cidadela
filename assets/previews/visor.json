@@ -243,5 +243,92 @@
     "tipo": "imagem",
     "caminho": "assets/previews/cenario/cenario_contato.png",
     "nota": "Pedra 76–112 tri (0,40–0,54 m), veio 68–104 tri (0,28–0,43 m), árvore revisão 3; borda fria (b); fila e mapa nos zooms 0,4/1/2,5 com crepúsculo."
+  },
+  {
+    "quando": "2026-09-29T22:00:46",
+    "titulo": "Pedra 1 (tarefa 4)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/pedra/pedra_1.glb",
+    "nota": "Pedra escurecida #57535F. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:00:47",
+    "titulo": "Veio 1 (tarefa 4)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/veio/veio_1.glb",
+    "nota": "Lascas 40 % mais largas. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:00:48",
+    "titulo": "Pedra 2 (tarefa 4)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/pedra/pedra_2.glb",
+    "nota": "Pedra escurecida #57535F. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:00:49",
+    "titulo": "Veio 2 (tarefa 4)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/veio/veio_2.glb",
+    "nota": "Lascas 40 % mais largas. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:00:50",
+    "titulo": "Pedra 3 (tarefa 4)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/pedra/pedra_3.glb",
+    "nota": "Pedra escurecida #57535F. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:00:51",
+    "titulo": "Veio 3 (tarefa 4)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/veio/veio_3.glb",
+    "nota": "Lascas 40 % mais largas. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:00:52",
+    "titulo": "Pedra 4 (tarefa 4)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/pedra/pedra_4.glb",
+    "nota": "Pedra escurecida #57535F. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:00:53",
+    "titulo": "Veio 4 (tarefa 4)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/veio/veio_4.glb",
+    "nota": "Lascas 40 % mais largas. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T22:00:54",
+    "titulo": "Pedaço de mapa — antes × depois (tarefa 4)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/cenario/mapa_antes_depois.png",
+    "nota": "Pedra #66636B → #57535F: brilho 68 → 58 (aldeão 128, protagonista 112). Lascas do veio 40 % mais largas; veio 3 com 0,34 m. Zooms 0,4/1/2,5 e crepúsculo."
   }
 ]
