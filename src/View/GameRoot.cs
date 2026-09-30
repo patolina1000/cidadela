@@ -12,6 +12,7 @@ namespace Cidadela.View;
 /// numa esteira ou baú (com um item segurado); segurar e arrastar repete célula a célula.
 /// Direito sem arrastar solta o que está escolhido ou desmonta. Teclado: WASD anda, 1–9 escolhem, R gira, Esc solta (sem nada na mão, abre o menu de pausa),
 /// C entra/sai da câmera cinematográfica no que está sob o cursor (ou no Castelão).
+/// Segurar Alt (modo de informação) mostra o ícone de estado de todos os aldeões; sem Alt, só dos que têm problema.
 /// Depuração dos aldeões: V alterna o patamar de velocidade, B liga/desliga a penalidade (fome ou moral baixa).
 /// Pausa (GDD, seção 3): Espaço pausa e continua. Na pausa a câmera continua livre, mas nada que muda o mundo é
 /// aceito. Não há velocidade 1x/2x/3x (decisão do Arthur, 29/09/2026: como no Factorio).
@@ -299,6 +300,8 @@ public partial class GameRoot : Node3D
         _inventoryBar.Visible = !cinematic;
         _inventoryLabel.Visible = !cinematic;
         _debugLabel.Visible = !cinematic;
+        _view.InfoMode = Input.IsKeyPressed(Key.Alt);
+        _view.IconsVisible = !cinematic;
         _pauseLabel.Visible = _clock.Paused && !cinematic;
         if (cinematic)
             hovered = null;

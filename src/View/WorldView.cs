@@ -22,6 +22,15 @@ public partial class WorldView : Node3D
     private readonly Dictionary<int, MeshInstance3D> _itemNodes = new();
     private readonly HashSet<int> _seenItems = new();
     private Label3D _chestLabel = null!;
+    private VillagerIcons _villagerIcons = null!;
+    private VillagerStatusTable _statusTable = null!;
+    private readonly List<(Villager, Vector3)> _iconSources = new();
+
+    /// <summary>Modo de informação (Alt): todos os aldeões mostram o ícone de estado, não só os com problema.</summary>
+    public bool InfoMode { get; set; }
+
+    /// <summary>Esconde os ícones (a câmera cinematográfica esconde a interface).</summary>
+    public bool IconsVisible { get => _villagerIcons.Visible; set => _villagerIcons.Visible = value; }
     private readonly Dictionary<Building, Dictionary<string, int>> _chestSnapshots = new();
     private float _smokeTimer;
     private float _time;
@@ -79,6 +88,11 @@ public partial class WorldView : Node3D
             _villagerNodes[villager] = visual;
         }
 
+        _statusTable = VillagerStatusTable.Parse(FileAccess.GetFileAsString(GameFiles.VillagerStatus));
+        _villagerIcons = new VillagerIcons { Name = "VillagerIcons" };
+        AddChild(_villagerIcons);
+        _villagerIcons.Build(_statusTable, world.Villagers.Count, new Rect2(0f, 0f, world.Grid.Width, world.Grid.Height));
+
         _castellan = new CastellanVisual { Name = "Castellan" };
         AddChild(_castellan);
         _effects = new Effects { Name = "Effects" };
@@ -119,8 +133,13 @@ public partial class WorldView : Node3D
         RenderChestTakes();
         RenderMachines(dt);
 
+        _iconSources.Clear();
         foreach ((Villager villager, VillagerVisual visual) in _villagerNodes)
+        {
             visual.UpdateFrom(villager, _world.Data, (float)alpha, dt);
+            _iconSources.Add((villager, visual.Position));
+        }
+        _villagerIcons.UpdateFrom(_iconSources, InfoMode);
 
         _castellan.UpdateFrom(_world.Castellan, (float)alpha, dt);
         _grass.SetPusher(_castellan.GlobalPosition);
@@ -284,13 +303,29 @@ public partial class WorldView : Node3D
         };
         if (building is null || lines is null)
         {
-            _chestLabel.Visible = false;
+            ShowVillagerInfo(cell);
             return;
         }
 
         _chestLabel.Text = string.Join("\n", lines);
         _chestLabel.Position = CellCenter(building.Cell, building.Machine is not null ? 1.9f : 1.3f);
         _chestLabel.Visible = true;
+    }
+
+    /// <summary>Aldeão na célula sob o cursor: o texto do estado dele (data/villager_status.json) acima do ícone.</summary>
+    private void ShowVillagerInfo(GridPos? cell)
+    {
+        foreach ((Villager villager, VillagerVisual visual) in _villagerNodes)
+        {
+            if (cell is GridPos c && villager.Cell == c)
+            {
+                _chestLabel.Text = "Aldeão\n" + _statusTable[villager.Status].Text;
+                _chestLabel.Position = visual.Position + new Vector3(0f, 1.15f, 0f);
+                _chestLabel.Visible = true;
+                return;
+            }
+        }
+        _chestLabel.Visible = false;
     }
 
     private List<string> ChestLines(Building chest, Inventory storage)

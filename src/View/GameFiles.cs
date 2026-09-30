@@ -13,6 +13,7 @@ public static class GameFiles
     public const string Buildings = "res://data/buildings.json";
     public const string Recipes = "res://data/recipes.json";
     public const string Terrain = "res://data/terrain.json";
+    public const string VillagerStatus = "res://data/villager_status.json";
 
     /// <summary>Onde o jogo salvo ficaria. Ainda não existe sistema de save (27/09/2026): o menu só olha se o arquivo existe.</summary>
     public const string SavePath = "user://save.json";

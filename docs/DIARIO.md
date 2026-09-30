@@ -4368,4 +4368,41 @@ onde errou, correções manuais e quanto tempo levou.
   sem caminho); os textos dos estados.
 - `dotnet build`: 0 erros, 0 avisos.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 22:22–22:27 de relógio.
+- **Tempo:** 22:15–22:22 de relógio.
+
+---
+
+## 2026-09-29 — Ícones de estado sobre os aldeões (MultiMesh, Alt mostra todos)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** tarefa 5, passo 2: ícones simples por código (formas e cores da paleta, nada de arte da ARTE),
+  legíveis nos zooms 0,4 / 1 / 2,5, que não tapem o rosto; por padrão só em quem tem problema, com Alt em todos.
+- **O que foi feito:**
+  - `VillagerIcons` (MultiMeshInstance3D): **todos os ícones num MultiMesh só** (uma chamada de desenho), com um
+    buffer preenchido a cada quadro (posição + célula do atlas por instância). A caixa cobre o mapa inteiro, para os
+    ícones não serem recortados pela câmera enquanto os aldeões andam.
+  - Atlas desenhado por código (uma célula de 64 px por estado): selo redondo vermelho de aviso (#C8402F) nos problemas,
+    roxo nos outros, moldura e desenho em osso (#EDE6D6), por distância com borda suave. Formas: três pontos (sem
+    trabalho), casinha (cabana cheia), X (sem caminho), círculo cortado (sem recurso), lua (descansando), losango
+    (coletando), caixa (levando carga), seta (indo), pausa (esperando).
+  - `VillagerIcon.gdshader`: quadrado virado para a câmera, **preso pela base 0,62 m acima dos pés e crescendo para
+    cima** (acima do cabelo: nunca tapa o rosto), tamanho fixo em pixels entre 26 e 44 px numa tela de 1890 de altura
+    (0,3 m quando cabe nesse intervalo), sem luz, sem névoa e por cima de tudo. Números em `data/visual.json`
+    (`villagerIcon`).
+  - `GameRoot`: segurar **Alt** liga o modo de informação (todos os ícones); a câmera cinematográfica esconde os ícones.
+    Passar o mouse sobre um aldeão mostra "Aldeão" e o texto do estado (`data/villager_status.json`), no mesmo rótulo
+    dos baús e máquinas.
+  - Mapas e cenas de medida para o passo 3: `data/maps/teste_aldeoes_200.json` e `_500.json`,
+    `scenes/tests/Aldeoes200.tscn` e `Aldeoes500.tscn` (aldeões sem cabana: todos com ícone, o pior caso).
+- **Conferido** fora do editor em 3024×1890, com uma captura automática temporária (não commitada): os 10 aldeões do
+  mapa de teste, sem cabana, mostram os três pontos no selo vermelho, legíveis nos três zooms, acima da cabeça. No
+  zoom 0,4 o selo (26 px) fica maior que o aldeão (19 px): é o mínimo para ler; se o Arthur achar grande, é o `minPx`.
+  Prints: `docs/prints/icones_aldeao_zooms.png` (recortes em pixels reais nos zooms 0,4, 1 e 2,5) e
+  `icones_aldeao_jogo.png`. O modo Alt não entrou em print: no mapa de teste todos estão sem trabalho, então os ícones
+  são os mesmos com e sem Alt.
+- **O que deu errado:** capturas do godot-ai falharam no transporte e a janela do editor abriu em 1152×648; passei a
+  capturar fora do editor. A tela cheia às vezes não engata nos primeiros 7 s (captura em 1152×648): repeti.
+- **Pendente (passo 3, interrompido pela ordem do Arthur de pôr as árvores do CENÁRIO):** medir 200 e 500 aldeões.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 125 aprovados.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:22–22:29 de relógio.

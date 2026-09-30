@@ -3,7 +3,7 @@ using Godot;
 
 namespace Cidadela.View;
 
-/// <summary>Parâmetros de desenho de data/visual.json (borda de luz fria, esmaecer o que tapa personagem), lidos uma vez.</summary>
+/// <summary>Parâmetros de desenho de data/visual.json (borda de luz fria, esmaecer o que tapa personagem, ícones dos aldeões), lidos uma vez.</summary>
 public sealed class VisualSettings
 {
     private static readonly JsonSerializerOptions Options = new()
@@ -17,6 +17,7 @@ public sealed class VisualSettings
 
     public RimSettings Rim { get; set; } = new();
     public OcclusionSettings Occlusion { get; set; } = new();
+    public IconSettings VillagerIcon { get; set; } = new();
 
     public static VisualSettings Current => _current ??=
         JsonSerializer.Deserialize<VisualSettings>(FileAccess.GetFileAsString("res://data/visual.json"), Options) ?? new VisualSettings();
@@ -37,6 +38,15 @@ public sealed class VisualSettings
         material.SetShaderParameter("occlusion_radius", Occlusion.Radius);
         material.SetShaderParameter("occlusion_keep", Occlusion.Keep);
         material.SetShaderParameter("occlusion_softness", Occlusion.Softness);
+    }
+
+    public sealed class IconSettings
+    {
+        public float Height { get; set; } = 0.62f;
+        public float WorldSize { get; set; } = 0.3f;
+        public float MinPx { get; set; } = 26f;
+        public float MaxPx { get; set; } = 44f;
+        public float ReferenceHeight { get; set; } = 1890f;
     }
 
     public sealed class OcclusionSettings

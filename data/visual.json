@@ -8,5 +8,9 @@
   // occlusion: o que fica entre a câmera e a protagonista, num círculo em volta do peito dela, é recortado em
   //   pontilhado. radius: raio em metros; keep: fração dos pixels que ficam no miolo (a "opacidade");
   //   softness: fração do raio em que o recorte some aos poucos; chestHeight: altura do centro acima dos pés.
-  "occlusion": { "radius": 0.6, "keep": 0.35, "softness": 0.3, "chestHeight": 0.45 }
+  "occlusion": { "radius": 0.6, "keep": 0.35, "softness": 0.3, "chestHeight": 0.45 },
+  // villagerIcon: ícone de estado sobre a cabeça do aldeão (estados e textos em data/villager_status.json).
+  //   height: altura da base do ícone acima dos pés (acima do cabelo: não tapa o rosto); worldSize: tamanho em metros
+  //   quando cabe entre minPx e maxPx (pixels numa tela de referenceHeight de altura; fora disso, trava no limite).
+  "villagerIcon": { "height": 0.62, "worldSize": 0.3, "minPx": 26, "maxPx": 44, "referenceHeight": 1890 }
 }
