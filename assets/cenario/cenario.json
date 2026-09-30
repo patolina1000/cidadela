@@ -1,0 +1,56 @@
+{
+  // Manifesto do cenário (objetos do mundo), gerado por tools/arte/cenario/manifesto.py. RASCUNHO até o manda do
+  // Arthur; regras em assets/cenario/cenario_contrato_rascunho.md. A chave é o id do recurso (data/resources.json).
+  // weight: peso do sorteio da variação por célula (soma 1). height: metros. cells: pegada em células (1 = a célula
+  // do nó). overhang: quanto a malha pode passar da borda da célula, em metros, no pior giro (a copa inclinada). triangles: LOD0; o LOD
+  // automático do Godot basta (verificacao.json). coldRim: materiais que levam a borda de luz fria do toon (opção b,
+  // aprovada pelo Arthur). castsShadow: só as massas grandes projetam sombra (GDD, seção 13).
+  // O jogo sorteia também o giro em Y (0–360°) e a escala (0,9–1,1) por instância.
+  // depleted: o que fica quando o recurso esgota. OPCIONAL: a decisão é do Arthur; sem ela, o nó some (como hoje).
+  "wood": {
+    // árvore: 1 gota, 2 dupla, 3 tufos (líquen roxo, destaque raro), 4 alta. Copa a partir de ≥ 1,0 m (fora do alcance).
+    "variants": [
+      { "file": "assets/cenario/arvore/arvore_1.glb", "weight": 0.3, "height": 2.483, "cells": 1, "overhang": 0.35, "triangles": 192, "coldRim": ["copa"], "castsShadow": true },
+      { "file": "assets/cenario/arvore/arvore_2.glb", "weight": 0.3, "height": 2.626, "cells": 1, "overhang": 0.2, "triangles": 240, "coldRim": ["copa"], "castsShadow": true },
+      { "file": "assets/cenario/arvore/arvore_3.glb", "weight": 0.1, "height": 2.095, "cells": 1, "overhang": 0.41, "triangles": 328, "coldRim": ["copa"], "castsShadow": true },
+      { "file": "assets/cenario/arvore/arvore_4.glb", "weight": 0.3, "height": 2.46, "cells": 1, "overhang": 1.06, "triangles": 176, "coldRim": ["copa"], "castsShadow": true }
+    ],
+    // Esgotado (opcional): Toco da própria árvore (mesmo índice, mesmo giro e escala da instância).
+    "depleted": {
+      "pick": "sameIndex",
+      "variants": [
+        { "file": "assets/cenario/arvore/toco_1.glb", "weight": null, "height": 0.16, "cells": 1, "overhang": 0.0, "triangles": 42, "coldRim": [], "castsShadow": false },
+        { "file": "assets/cenario/arvore/toco_2.glb", "weight": null, "height": 0.19, "cells": 1, "overhang": 0.0, "triangles": 42, "coldRim": [], "castsShadow": false },
+        { "file": "assets/cenario/arvore/toco_3.glb", "weight": null, "height": 0.18, "cells": 1, "overhang": 0.0, "triangles": 42, "coldRim": [], "castsShadow": false },
+        { "file": "assets/cenario/arvore/toco_4.glb", "weight": null, "height": 0.15, "cells": 1, "overhang": 0.0, "triangles": 42, "coldRim": [], "castsShadow": false }
+      ]
+    }
+  },
+  "stone": {
+    // pedra: 1 bloco com tampa de musgo, 2 dupla, 3 pilha em espiral, 4 laje. Pedra escurecida #57535F.
+    "variants": [
+      { "file": "assets/cenario/pedra/pedra_1.glb", "weight": 0.25, "height": 0.499, "cells": 1, "overhang": 0.0, "triangles": 76, "coldRim": ["pedra", "musgo"], "castsShadow": true },
+      { "file": "assets/cenario/pedra/pedra_2.glb", "weight": 0.25, "height": 0.405, "cells": 1, "overhang": 0.0, "triangles": 76, "coldRim": ["pedra", "musgo"], "castsShadow": true },
+      { "file": "assets/cenario/pedra/pedra_3.glb", "weight": 0.25, "height": 0.538, "cells": 1, "overhang": 0.0, "triangles": 112, "coldRim": ["pedra", "musgo"], "castsShadow": true },
+      { "file": "assets/cenario/pedra/pedra_4.glb", "weight": 0.25, "height": 0.397, "cells": 1, "overhang": 0.0, "triangles": 76, "coldRim": ["pedra", "musgo"], "castsShadow": true }
+    ]
+    // Esgotado: some (nenhuma opção pedida para a pedra).
+  },
+  "iron": {
+    // veio de ferro: 1 leque, 2 cruzado, 3 coroa, 4 torre. Rocha lama #2E2931, lascas #1E2A3A.
+    "variants": [
+      { "file": "assets/cenario/veio/veio_1.glb", "weight": 0.25, "height": 0.436, "cells": 1, "overhang": 0.0, "triangles": 84, "coldRim": ["pedra", "minerio"], "castsShadow": true },
+      { "file": "assets/cenario/veio/veio_2.glb", "weight": 0.25, "height": 0.436, "cells": 1, "overhang": 0.0, "triangles": 104, "coldRim": ["pedra", "minerio"], "castsShadow": true },
+      { "file": "assets/cenario/veio/veio_3.glb", "weight": 0.25, "height": 0.344, "cells": 1, "overhang": 0.0, "triangles": 100, "coldRim": ["pedra", "minerio"], "castsShadow": true },
+      { "file": "assets/cenario/veio/veio_4.glb", "weight": 0.25, "height": 0.439, "cells": 1, "overhang": 0.0, "triangles": 68, "coldRim": ["pedra", "minerio"], "castsShadow": true }
+    ],
+    // Esgotado (opcional): 1 placa com lascas, 2 só lascas.
+    "depleted": {
+      "pick": "weight",
+      "variants": [
+        { "file": "assets/cenario/veio/mancha_1.glb", "weight": 0.5, "height": 0.106, "cells": 1, "overhang": 0.0, "triangles": 36, "coldRim": ["pedra", "minerio"], "castsShadow": false },
+        { "file": "assets/cenario/veio/mancha_2.glb", "weight": 0.5, "height": 0.094, "cells": 1, "overhang": 0.0, "triangles": 30, "coldRim": ["pedra", "minerio"], "castsShadow": false }
+      ]
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "fonte": "tools/arte/cenario/veio.py",
+  "unidade": "m",
+  "frente": "+Z",
+  "variacoes": [
+    {
+      "arquivo": "veio_1.glb",
+      "triangulos": 84,
+      "altura_m": 0.436,
+      "pegada_x_m": [
+        -0.299,
+        0.315
+      ],
+      "pegada_z_m": [
+        -0.273,
+        0.245
+      ],
+      "nome": "leque",
+      "semente": 201,
+      "cores": {
+        "pedra": "#2E2931",
+        "minerio": "#1E2A3A"
+      }
+    },
+    {
+      "arquivo": "veio_2.glb",
+      "triangulos": 104,
+      "altura_m": 0.436,
+      "pegada_x_m": [
+        -0.335,
+        0.356
+      ],
+      "pegada_z_m": [
+        -0.308,
+        0.249
+      ],
+      "nome": "cruzado",
+      "semente": 211,
+      "cores": {
+        "pedra": "#2E2931",
+        "minerio": "#1E2A3A"
+      }
+    },
+    {
+      "arquivo": "veio_3.glb",
+      "triangulos": 100,
+      "altura_m": 0.344,
+      "pegada_x_m": [
+        -0.291,
+        0.355
+      ],
+      "pegada_z_m": [
+        -0.355,
+        0.377
+      ],
+      "nome": "coroa",
+      "semente": 223,
+      "cores": {
+        "pedra": "#2E2931",
+        "minerio": "#1E2A3A"
+      }
+    },
+    {
+      "arquivo": "veio_4.glb",
+      "triangulos": 68,
+      "altura_m": 0.439,
+      "pegada_x_m": [
+        -0.349,
+        0.3
+      ],
+      "pegada_z_m": [
+        -0.274,
+        0.144
+      ],
+      "nome": "torre",
+      "semente": 239,
+      "cores": {
+        "pedra": "#2E2931",
+        "minerio": "#1E2A3A"
+      }
+    }
+  ]
+}

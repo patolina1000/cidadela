@@ -1,0 +1,45 @@
+{
+  "fonte": "tools/arte/cenario/mancha.py",
+  "unidade": "m",
+  "frente": "+Z",
+  "variacoes": [
+    {
+      "arquivo": "mancha_1.glb",
+      "triangulos": 36,
+      "altura_m": 0.106,
+      "pegada_x_m": [
+        -0.306,
+        0.271
+      ],
+      "pegada_z_m": [
+        -0.266,
+        0.273
+      ],
+      "nome": "placa",
+      "semente": 301,
+      "cores": {
+        "pedra": "#2E2931",
+        "minerio": "#1E2A3A"
+      }
+    },
+    {
+      "arquivo": "mancha_2.glb",
+      "triangulos": 30,
+      "altura_m": 0.094,
+      "pegada_x_m": [
+        -0.174,
+        0.15
+      ],
+      "pegada_z_m": [
+        -0.124,
+        0.184
+      ],
+      "nome": "lascas",
+      "semente": 311,
+      "cores": {
+        "pedra": "#2E2931",
+        "minerio": "#1E2A3A"
+      }
+    }
+  ]
+}

@@ -4406,3 +4406,17 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 125 aprovados.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 22:22–22:29 de relógio.
+
+---
+
+## 2026-09-29 — Cenário: modelos da branch cenario (0ece37d), só a pasta
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (ordem do Arthur, via Diretor):** trazer para o master só `assets/cenario` da branch `cenario`, sem mesclar a
+  branch (ela saiu da `arte` e traria a protagonista em andamento).
+- **O que foi feito:** `git fetch origin && git checkout origin/cenario -- assets/cenario` (origin/cenario em
+  0ece37d). Conferido: 27 arquivos, todos dentro de `assets/cenario/` (4 árvores, 4 tocos, 4 pedras, 4 veios, 2
+  manchas, relatórios, `cenario.json`, `verificacao.json`, proposta e rascunho de contrato); nada fora da pasta.
+  Nenhum outro arquivo da `cenario` ou da `arte` veio junto.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:29–22:33 de relógio.
