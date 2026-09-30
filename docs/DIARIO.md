@@ -4515,4 +4515,4 @@ onde errou, correções manuais e quanto tempo levou.
   a copa foca o que estiver atrás); os aldeões continuam desviando da célula inteira da árvore.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 132 aprovados.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 22:42–22:58 de relógio.
+- **Tempo:** 22:42–22:51 de relógio.
