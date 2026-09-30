@@ -1,6 +1,7 @@
 {
   // Nós de recurso bruto do mapa (GDD, seções 4 e 10). A chave é o item que o nó dá (data/items.json).
-  // gatherSeconds: tempo para o Castelão coletar 1 item à mão.
+  // gatherSeconds: tempo para o Castelão coletar 1 item à mão (docs/linha_energia.md: tora e pedra 2 s; arrancar
+  //   o fragmento podre do veio, 4 s). Aldeões levam gatherMultiplier vezes isso (data/villagers.json).
   // amount: quantos itens cada nó tem antes de se esgotar.
   // variants (opcional): as variações do modelo, NA ORDEM de assets/cenario/cenario.json. Cada nó sorteia uma pelo
   //   weight, fixo pela célula, e bloqueia só a forma dela no chão, multiplicada pela escala sorteada em scale [mínima,
@@ -11,17 +12,17 @@
   //   (polígono convexo [x, z] em metros, no espaço do modelo: a casca convexa da base da pedra ou do veio, os vértices
   //   abaixo de 0,25 m de altura no GLB, simplificada a 8 pontos e encolhida 2 cm para dentro, a folga). A forma gira
   //   com o modelo (giro sorteado por célula) e escala junto. Medido em 29/09/2026 (método no diário).
-  "wood":         { "gatherSeconds": 1.0, "amount": 30, "scale": [0.9, 1.1],
+  "wood":         { "gatherSeconds": 2.0, "amount": 30, "scale": [0.9, 1.1],
              "variants": [ { "weight": 0.3, "radius": 0.15 }, { "weight": 0.3, "radius": 0.15 },
                            { "weight": 0.1, "radius": 0.15 }, { "weight": 0.3, "radius": 0.15 } ] },
-  "stone":        { "gatherSeconds": 1.5, "amount": 30, "scale": [0.9, 1.1],
+  "stone":        { "gatherSeconds": 2.0, "amount": 30, "scale": [0.9, 1.1],
              "variants": [ { "weight": 0.25, "polygon": [[-0.27,0.25],[-0.2,-0.06],[0.02,-0.2],[0.12,-0.19],[0.22,0.04],[0.15,0.24],[-0.08,0.32],[-0.24,0.28]] },
                            { "weight": 0.25, "polygon": [[-0.26,0.1],[-0.2,-0.26],[-0.1,-0.31],[0.02,-0.28],[0.15,-0.09],[0.21,0.21],[0.04,0.39],[-0.11,0.42]] },
                            { "weight": 0.25, "polygon": [[-0.26,0.03],[-0.01,-0.22],[0.19,-0.17],[0.19,-0.06],[0.17,0.18],[0.12,0.26],[0.06,0.27],[-0.18,0.24]] },
                            { "weight": 0.25, "polygon": [[-0.29,0.23],[-0.16,-0.11],[-0.11,-0.17],[0.06,-0.18],[0.14,-0.0],[0.15,0.07],[-0.02,0.34],[-0.1,0.44]] } ] },
   // rotten_shard: veio de cristal podre (esgota). Usa o modelo do veio de ferro do cenário tingido de roxo doente
   //   (data/visual.json, "resourceModels"), com as mesmas formas de bloqueio.
-  "rotten_shard": { "gatherSeconds": 2.0, "amount": 300, "scale": [0.9, 1.1],
+  "rotten_shard": { "gatherSeconds": 4.0, "amount": 300, "scale": [0.9, 1.1],
              "variants": [ { "weight": 0.25, "polygon": [[-0.28,-0.0],[-0.23,-0.13],[-0.1,-0.25],[0.16,-0.21],[0.3,0.02],[0.17,0.17],[0.01,0.23],[-0.27,0.16]] },
                            { "weight": 0.25, "polygon": [[-0.32,-0.13],[-0.14,-0.29],[0.06,-0.25],[0.26,-0.08],[0.34,0.02],[0.33,0.17],[0.09,0.23],[-0.21,0.08]] },
                            { "weight": 0.25, "polygon": [[-0.27,-0.16],[-0.2,-0.22],[0.1,-0.34],[0.21,-0.26],[0.34,0.02],[0.18,0.26],[0.01,0.36],[-0.18,0.33]] },

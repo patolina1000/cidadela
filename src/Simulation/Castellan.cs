@@ -29,8 +29,21 @@ public sealed class Castellan
     /// <summary>Progresso do item atual, de 0 a 1.</summary>
     public float GatherProgress => GatherTarget is null ? 0f : (float)_gatherTicks / GatherTarget.Type.GatherTicks;
 
+    /// <summary>A máquina em cujo posto ela está, ou null (docs/linha_energia.md: encostar e apertar E).</summary>
+    public Building? Post { get; private set; }
+
+    /// <summary>Quantas purificações à mão ainda estão na fila (a que está em andamento não conta).</summary>
+    public int HandQueue { get; private set; }
+
+    /// <summary>Se está purificando à mão agora (as entradas já saíram do inventário).</summary>
+    public bool HandBusy { get; private set; }
+
+    /// <summary>Progresso da purificação à mão em andamento, de 0 a 1.</summary>
+    public float HandProgress => HandBusy && Stats.PurifyByHand is RecipeType r ? (float)_handTicks / r.Ticks : 0f;
+
     private Vector2 _moveDirection;
     private int _gatherTicks;
+    private int _handTicks;
 
     public Castellan(int id, Vector2 position, CastellanStats stats)
     {
@@ -72,9 +85,12 @@ public sealed class Castellan
     {
         // Diagonal não pode ser mais rápida; entrada analógica menor que 1 anda mais devagar.
         _moveDirection = direction.LengthSquared() > 1f ? Vector2.Normalize(direction) : direction;
-        // Como no Factorio: andar interrompe o trabalho manual.
+        // Como no Factorio: andar interrompe a coleta; e sai do posto da máquina. A purificação à mão só pausa.
         if (_moveDirection != Vector2.Zero)
+        {
             StopGathering();
+            LeavePost();
+        }
     }
 
     internal void StartGathering(SimWorld world, GridPos cell)
@@ -91,9 +107,64 @@ public sealed class Castellan
     {
         PreviousPosition = Position;
         if (_moveDirection != Vector2.Zero)
+        {
             Move(world);
-        else
-            Gather();
+            return;
+        }
+        Gather();
+        TickHand();
+    }
+
+    /// <summary>Põe mais uma purificação à mão na fila (só ela faz; sem água).</summary>
+    internal void QueuePurify()
+    {
+        if (Stats.PurifyByHand is not null)
+            HandQueue++;
+    }
+
+    /// <summary>Purificação à mão: começa a próxima da fila se tiver as entradas (senão esvazia a fila) e anda parada.</summary>
+    private void TickHand()
+    {
+        if (Stats.PurifyByHand is not RecipeType recipe)
+            return;
+        if (!HandBusy)
+        {
+            if (HandQueue <= 0)
+                return;
+            if (!Inventory.TryRemove(recipe.Inputs))
+            {
+                HandQueue = 0;
+                return;
+            }
+            HandQueue--;
+            HandBusy = true;
+            _handTicks = 0;
+        }
+        if (++_handTicks < recipe.Ticks)
+            return;
+        Inventory.Add(recipe.Outputs);
+        HandBusy = false;
+        _handTicks = 0;
+    }
+
+    /// <summary>Assume o posto vago dessa máquina (índice <paramref name="slot"/>), virada para ela.</summary>
+    internal void TakePost(Building building, int slot)
+    {
+        LeavePost();
+        Post = building;
+        building.CastellanSlot = slot;
+        Vector2 toMachine = new Vector2(building.Cell.X, building.Cell.Z) - Position;
+        if (toMachine != Vector2.Zero)
+            Facing = Vector2.Normalize(toMachine);
+    }
+
+    /// <summary>Sai do posto em que está (E de novo, andar, ou a máquina foi desmontada).</summary>
+    internal void LeavePost()
+    {
+        if (Post is null)
+            return;
+        Post.CastellanSlot = null;
+        Post = null;
     }
 
     private void Move(SimWorld world)

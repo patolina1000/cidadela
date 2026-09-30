@@ -18,6 +18,9 @@
   "gatherReach": 1.0,
   "radius": 0.15,
   "gatherSurfaceReach": 1.3,
+  // purifyByHand: o que só ela faz com as mãos (docs/linha_energia.md): 2 fragmentos podres → 1 puro em 6 s, sem água.
+  //   Tecla P põe mais uma na fila; anda só com ela parada (andar pausa, não perde).
+  "purifyByHand": { "inputs": { "rotten_shard": 2 }, "outputs": { "pure_shard": 1 }, "seconds": 6 },
   // Aparência da protagonista v2 (docs/protagonista_v2_contrato.md, "CORES (provisórias, decididas na prévia, ficam em
   // data/)"), lida pela cena. shadowFloor: piso de sombra do toon só nela (contrato: ~0,5; o aldeão fica em 0,35).
   // rim: as partes que levam a borda de luz fria (data/visual.json): skin, cloth, hair, horn. Só o corpo (pele e roupa

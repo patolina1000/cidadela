@@ -29,7 +29,10 @@ public sealed class Building
     /// <summary>Quem ocupa cada posto (null = vago); vazio se a construção não tem postos.</summary>
     public Villager?[] Crew { get; }
 
-    /// <summary>Quantos da equipe já chegaram e estão encostados trabalhando.</summary>
+    /// <summary>O posto que a protagonista ocupa (índice em <see cref="Crew"/>, que fica vazio nele), ou null.</summary>
+    public int? CastellanSlot { get; internal set; }
+
+    /// <summary>Quantos da equipe já chegaram e estão encostados trabalhando (a protagonista conta).</summary>
     public int CrewPresent
     {
         get
@@ -38,7 +41,7 @@ public sealed class Building
             foreach (Villager? v in Crew)
                 if (v is { Task: VillagerTask.AtPost } && v.Home == this)
                     n++;
-            return n;
+            return CastellanSlot is null ? n : n + 1;
         }
     }
 

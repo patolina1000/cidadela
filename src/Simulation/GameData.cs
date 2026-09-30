@@ -122,7 +122,16 @@ public sealed class GameData
             ?? throw new FormatException("castellan.json vazio.");
         if (c.Speed <= 0f)
             throw new FormatException("castellan.json: speed precisa ser positivo.");
-        var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius, c.GatherSurfaceReach);
+        RecipeType? purifyByHand = null;
+        if (c.PurifyByHand is RecipeData hand)
+        {
+            if (hand.Seconds <= 0f || hand.Inputs.Count == 0 || hand.Outputs.Count == 0)
+                throw new FormatException("castellan.json: purifyByHand precisa de entradas, saídas e seconds positivos.");
+            CheckItems(itemKinds, hand.Inputs, "entradas de purifyByHand");
+            CheckItems(itemKinds, hand.Outputs, "saídas de purifyByHand");
+            purifyByHand = new RecipeType("purifyByHand", "castellan", hand.Inputs, hand.Outputs, SecondsToTicks(hand.Seconds));
+        }
+        var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius, c.GatherSurfaceReach, purifyByHand);
 
         var buildings = new List<BuildingType>();
         foreach ((string kind, BuildingData b) in Ordered<BuildingData>(buildingsJson, "buildings.json"))
@@ -415,5 +424,6 @@ public sealed class GameData
         public float GatherReach { get; set; } = 1f;
         public float Radius { get; set; } = 0.3f;
         public float GatherSurfaceReach { get; set; } = 1.3f;
+        public RecipeData? PurifyByHand { get; set; }
     }
 }

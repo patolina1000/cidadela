@@ -58,10 +58,13 @@ public sealed class SimWorld
 
     public void Tick()
     {
+        Building? postBefore = Castellan.Post;
         while (_commands.TryDequeue(out ISimCommand? command))
             command.Apply(this);
 
         Castellan.Tick(this);
+        if (postBefore is not null && Castellan.Post != postBefore && _buildingByCell.ContainsValue(postBefore))
+            AssignIdleWorkers(); // ela saiu do posto: um aldeão livre pode ocupar
         TickBelts();
         UpdateMana();
         TickMachines();
@@ -396,7 +399,7 @@ public sealed class SimWorld
             }
             for (int i = 0; i < building.Crew.Length; i++)
             {
-                if (building.Crew[i] is not null)
+                if (building.Crew[i] is not null || building.CastellanSlot == i)
                     continue;
                 if (NearestIdle(building) is not Villager crew)
                     return;
@@ -604,6 +607,8 @@ public sealed class SimWorld
     {
         if (BuildingAt(cell) is not Building building || building.Type.Fixed || !Castellan.CanReach(cell))
             return;
+        if (Castellan.Post == building)
+            Castellan.LeavePost();
         _buildingByCell.Remove(cell);
         _belts.Remove(building);
         _machines.Remove(building);
@@ -654,6 +659,40 @@ public sealed class SimWorld
         _resources.Add(node);
         _resourceByCell[cell] = node;
         return node;
+    }
+
+    /// <summary>
+    /// E (docs/linha_energia.md): se ela está num posto, sai; senão assume um posto vago da máquina encostada nela (a mais
+    /// perto, de lado ou na diagonal). Posto com aldeão designado (mesmo a caminho) não é vago.
+    /// </summary>
+    internal void ToggleCastellanPost()
+    {
+        if (Castellan.Post is not null)
+        {
+            Castellan.LeavePost();
+            return;
+        }
+        Building? best = null;
+        int bestSlot = -1;
+        float bestDistance = float.MaxValue;
+        int cx = (int)MathF.Round(Castellan.Position.X), cz = (int)MathF.Round(Castellan.Position.Y);
+        for (int dx = -2; dx <= 2; dx++)
+        for (int dz = -2; dz <= 2; dz++)
+        {
+            var cell = new GridPos(cx + dx, cz + dz);
+            if (BuildingAt(cell) is not { Type.Posts: not null } b || !Castellan.CanGather(cell))
+                continue;
+            int slot = Array.IndexOf(b.Crew, null);
+            float distance = Vector2.Distance(Castellan.Position, new Vector2(cell.X, cell.Z));
+            if (slot >= 0 && b.CastellanSlot is null && distance < bestDistance)
+            {
+                best = b;
+                bestSlot = slot;
+                bestDistance = distance;
+            }
+        }
+        if (best is not null)
+            Castellan.TakePost(best, bestSlot);
     }
 
     /// <summary>Se alguma das 4 vizinhas é água (o poço fica de lado para ela).</summary>

@@ -5883,3 +5883,26 @@ onde errou, correções manuais e quanto tempo levou.
   tira da saída de máquina; sem mana pousa; 0,1 parada × 0,5 voando). `dotnet build` 0/0; `dotnet test` 220 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 16:46–16:47 de relógio.
+
+## 2026-09-30 — Linha da energia, passo 7: ações à mão e operar posto
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 7 do plano: coletar tora/pedra (2 s), arrancar podre (4 s), purificar à mão (6 s, 2 podres → 1 puro,
+  sem água, só ela), E assume/sai do posto, andar sai, pôr e tirar itens à mão.
+- **Feito:**
+  - `data/resources.json`: tora e pedra 2 s, fragmento podre 4 s (aldeões levam 1,5×).
+  - `data/castellan.json` `"purifyByHand"` (receita dela, `CastellanStats.PurifyByHand`). Tecla **P** põe mais uma na
+    fila (`PurifyByHandCommand`); começa se tiver as entradas (senão a fila esvazia); só anda com ela parada.
+    **Escolha do mais simples:** andar pausa a purificação, não perde (a especificação não diz).
+  - Tecla **E** (`OperatePostCommand`, `SimWorld.ToggleCastellanPost`): assume o posto vago da máquina encostada
+    (de lado ou na diagonal; a mais perto), virada para ela; E de novo, andar ou desmontar a máquina sai. Ela conta na
+    equipe (`Building.CastellanSlot`); posto com aldeão designado (mesmo a caminho) não é vago; quando ela sai, um aldeão
+    livre é chamado.
+  - Pôr e tirar itens de máquina à mão já existiam (clique com o item na mão; tirar tudo).
+  - HUD: coleta, posto, purificação com a fila, e a dica "E opera · P purifica".
+- **Testes:** `CastellanHandTests` (tempos de coleta 2/2/4 s; purificar à mão 1 a cada 6 s, fila sem material esvazia,
+  sem água; andar pausa sem perder; E opera e E sai, máquina para no meio do ciclo; andar sai do posto; longe não opera;
+  posto de aldeão não é vago; ao sair, o aldeão livre assume). `dotnet build` 0/0; `dotnet test` 230 passaram. Main em
+  headless sem erro.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 16:48–16:50 de relógio.

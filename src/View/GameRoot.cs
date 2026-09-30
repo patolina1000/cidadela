@@ -158,6 +158,14 @@ public partial class GameRoot : Node3D
         {
             SetPaused(!_clock.Paused);
         }
+        else if (k == Key.E && !_clock.Paused)
+        {
+            _world.Enqueue(new OperatePostCommand()); // assume o posto da máquina encostada, ou sai dele
+        }
+        else if (k == Key.P && !_clock.Paused)
+        {
+            _world.Enqueue(new PurifyByHandCommand()); // mais uma purificação à mão na fila
+        }
         else if (k == Key.H)
         {
             _view.ShowCollision = !_view.ShowCollision; // formas de colisão no chão
@@ -418,9 +426,20 @@ public partial class GameRoot : Node3D
             ? $"Construindo {_selected.Name} ({DirectionName(_buildDirection)}) — R gira, botão direito cancela"
             : _heldItem is not null
                 ? $"Segurando {_world.Data.Item(_heldItem).Name} — clique numa esteira, baú ou máquina; botão direito solta"
-                : castellan.GatherTarget is ResourceNode node
-                    ? $"Coletando {node.Type.Name} {castellan.GatherProgress:P0} (restam {node.Remaining})"
-                    : "";
+                : string.Join("   ", HandLines(castellan));
+    }
+
+    /// <summary>O que ela faz à mão agora: coleta, posto, purificação (com a fila) e as teclas.</summary>
+    private static IEnumerable<string> HandLines(Castellan castellan)
+    {
+        if (castellan.GatherTarget is ResourceNode node)
+            yield return $"Coletando {node.Type.Name} {castellan.GatherProgress:P0} (restam {node.Remaining})";
+        if (castellan.Post is Building post)
+            yield return $"No posto: {post.Type.Name} (E ou andar sai)";
+        if (castellan.HandBusy || castellan.HandQueue > 0)
+            yield return $"Purificando à mão {castellan.HandProgress:P0}" + (castellan.HandQueue > 0 ? $" (+{castellan.HandQueue} na fila)" : "");
+        if (castellan.GatherTarget is null && castellan.Post is null && !castellan.HandBusy)
+            yield return "E opera a máquina encostada  ·  P purifica à mão (2 podres → 1 puro)";
     }
 
     private static string DirectionName(Direction d) => d switch
