@@ -5699,3 +5699,17 @@ onde errou, correções manuais e quanto tempo levou.
 - **Efeito no Main de hoje:** as esteiras do mapa antigo param sem manivela (esperado na era do torque).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 03:11–03:13 de relógio.
+
+## 2026-09-30 — Linha da flecha, passo 6b: manivela girada pelo eixo não chama aldeão
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Achado ao desenhar o mapa de teste:** a manivela tem 1 posto, então chamava um aldeão mesmo quando o eixo já a girava
+  (a especificação: "um eixo ligado à manivela a move sem aldeão").
+- **Feito:** `AssignIdleWorkers` pula manivela girando pelo eixo; quando a topologia muda e uma manivela passa a girar,
+  quem estava nela fica livre e é chamado para outro posto (`RefreshTopology`, também chamado antes de chamar gente). A
+  versão das construções agora sobe antes de chamar gente (a construção nova já entra na rede). No posto, o aldeão
+  prefere uma diagonal livre a ficar em cima de uma esteira (a mesa de emplumar fica cercada de esteiras).
+- **Testes:** `CrankTurnedByTheAxleCallsNobodyAndFreesItsVillager`. Falhou duas vezes por erro do teste (construções
+  fora do alcance de 10 e toras de menos); corrigido no teste. `dotnet build` 0/0; `dotnet test` 211 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 03:13–03:15 de relógio.

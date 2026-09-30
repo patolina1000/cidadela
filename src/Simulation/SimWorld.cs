@@ -62,11 +62,7 @@ public sealed class SimWorld
     {
         while (_commands.TryDequeue(out ISimCommand? command))
             command.Apply(this);
-        if (_networksVersion != BuildingsVersion)
-        {
-            RebuildNetworks();
-            RebuildLines();
-        }
+        RefreshTopology();
         UpdateLines();
 
         Castellan.Tick(this);
@@ -184,8 +180,11 @@ public sealed class SimWorld
     /// </summary>
     internal void AssignIdleWorkers()
     {
+        RefreshTopology();
         foreach (Building building in _staffed)
         {
+            if (building.Type.IsCrank && building.Turning)
+                continue; // o eixo gira esta manivela: não precisa de ninguém
             if (building.Workplace is Workplace work)
             {
                 if (work.Worker is not null)
@@ -361,6 +360,33 @@ public sealed class SimWorld
 
     /// <summary>Se a célula é água (rio, lago): ninguém passa; só a roda d'água se constrói nela.</summary>
     public bool IsWater(GridPos cell) => Grid.InBounds(cell) && Data.Terrains[Grid.TerrainAt(cell)].Water;
+
+    /// <summary>
+    /// Refaz redes de torque e linhas de esteira se alguma construção mudou. Manivela que passou a girar pelo eixo libera
+    /// quem estava nela (o aldeão volta a ficar livre e é chamado para outro posto).
+    /// </summary>
+    private void RefreshTopology()
+    {
+        if (_networksVersion == BuildingsVersion)
+            return;
+        RebuildNetworks();
+        RebuildLines();
+        bool freed = false;
+        foreach (Building b in _staffed)
+        {
+            if (!b.Type.IsCrank || !b.Turning)
+                continue;
+            for (int i = 0; i < b.Crew.Length; i++)
+                if (b.Crew[i] is Villager v)
+                {
+                    v.AssignHome(null);
+                    b.Crew[i] = null;
+                    freed = true;
+                }
+        }
+        if (freed)
+            AssignIdleWorkers();
+    }
 
     /// <summary>
     /// Refaz as linhas de esteira: esteiras ligadas pelo fluxo (a da frente recebe desta, sem apontar de volta) e as
@@ -543,12 +569,12 @@ public sealed class SimWorld
             _machines.Add(building);
         if (building.Workplace is not null)
             _workplaces.Add(building);
+        BuildingsVersion++; // antes de chamar gente: a topologia nova decide se a manivela precisa de alguém
         if (building.Workplace is not null || building.Crew.Length > 0)
         {
             _staffed.Add(building);
             AssignIdleWorkers();
         }
-        BuildingsVersion++;
         return building;
     }
 
