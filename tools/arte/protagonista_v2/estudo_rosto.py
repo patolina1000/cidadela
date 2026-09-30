@@ -13,7 +13,7 @@ margem transparente; assim os retalhos usam as mesmas janelas (EYES_FRAC, MOUTH_
 Saída: assets/previews/protagonista_v2/rosto_estudo/<variação>_{olhos,boca}.png (uma célula cada: é estudo, não o
 atlas) e estudo_rosto_2d.png (as três num rosto chapado da cor da pele, 256 e 64 px).
 
-Uso (em tools/arte): uv run protagonista_v2/estudo_rosto.py [rodada]   (1: a, b, c; 2: b1, b2 em rosto_estudo/rodada2/)
+Uso (em tools/arte): uv run protagonista_v2/estudo_rosto.py [rodada]   (1: a, b, c; 2: b1, b2; 3: b1, b3 — em rosto_estudo/rodada<n>/)
 """
 
 import json
@@ -54,6 +54,11 @@ OPEN = {"rx": 35, "top": 25, "bot": 18, "queda": 1, "olheira": (150, 0.95), "cob
 ROUNDS[2] = {
     "b1": {"nome": "b1: olhos abertos", **OPEN, "boca_sobe": 0.0, "queixo": 1.0},
     "b2": {"nome": "b2: abertos, boca alta, queixo curto", **OPEN, "boca_sobe": 0.12, "queixo": 0.72},
+}
+# Rodada 3: b3 = b1 com a boca subida só no retalho (a geometria e a largura da cabeça não mudam).
+ROUNDS[3] = {
+    "b1": ROUNDS[2]["b1"],
+    "b3": {"nome": "b3: abertos, boca alta (só retalho)", **OPEN, "boca_sobe": 0.12, "queixo": 1.0},
 }
 
 

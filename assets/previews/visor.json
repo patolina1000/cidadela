@@ -159,5 +159,19 @@
     "tipo": "imagem",
     "caminho": "assets/previews/protagonista_v2/rosto_prova_r2.png",
     "nota": "b1 olhos abertos; b2 + boca alta e queixo curto (cabeça 19% mais larga para manter 18%). Zoom 1: os olhos agora leem como dois traços claros."
+  },
+  {
+    "quando": "2026-09-29T22:18:10",
+    "titulo": "Protagonista v2 — rosto rodada 3 (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_prova_r3_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T22:18:11",
+    "titulo": "Protagonista v2 — rosto rodada 3: b3, b1 e a v1",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_prova_r3.png",
+    "nota": "b3 = b1 com a boca 2 cm mais alta só no retalho; cabeça igual (L/A 0,90). No jogo lê igual à b1: a diferença é só de perto."
   }
 ]

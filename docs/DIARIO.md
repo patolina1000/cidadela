@@ -3309,3 +3309,15 @@ onde errou, correções manuais e quanto tempo levou.
   faixas (trocado por Taubin); o relaxamento com troca de diagonais rodava depois da classificação das regiões e
   embaralhou os índices (cacos de tecido no tronco) — passou para antes; a caixa da cabeça da v1 pegava os braços em pose T.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~2 h.
+
+## 2026-09-29 — Protagonista v2: rosto, rodada 3 (b3)
+
+- **Pedido:** b3 = b1 com a boca subida só no retalho, sem mexer na geometria nem na largura da cabeça; mesma prova, com
+  a b1 e a v1 ao lado.
+- **Feito:** `estudo_rosto.py 3` → `rosto_estudo/rodada3/` (b1 e b3, mesmo desenho; b3 com `boca_sobe` 0,12, `queixo`
+  1,0); `prova_rosto.py … rodada3 --v1`; `folha_rosto.py` → `rosto_prova_r3.png` (+ crepúsculo, .json); notas em
+  `notas_rosto_r3.json`.
+- **Resultado:** janela da boca 2 cm mais alta (0,668–0,690 → 0,688–0,710 m); cabeça igual à da b1 (largura ÷ altura
+  0,898; 51 / 19 / 8 px nos zooms 2,5 / 1 / 0,4). Na câmera do jogo b3 lê igual à b1 (a boca não lê de cima): a diferença
+  é só de perto, onde o vão olhos–boca fica parecido com o da v1.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
