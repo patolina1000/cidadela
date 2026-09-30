@@ -5429,3 +5429,18 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 176 aprovados.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:01 de relógio (fim).
+
+---
+
+## 2026-09-30 — Cena de comparação: protagonista v1, v2 e aldeão (scenes/tests/ProtagonistaV2.tscn)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (passo 5):** cena com v1, v2 e aldeão lado a lado, idle e corrida alternáveis.
+- **O que foi feito:** `ProtagonistaV2Root` no crepúsculo do jogo (mesmo céu, névoa e sol): a v1 (`CastellanVisual` com
+  `UseV1`), a v2 e um aldeão v2, parados lado a lado, de frente para a câmera do jogo (55°, zoom 2,5; a roda aproxima e
+  afasta até 0,4), com rótulos. **Espaço** alterna idle e corrida (no lugar, em 1×); **Esc** volta ao menu.
+- **Conferido:** as três em idle e correndo; log sem erros. Prints: `docs/prints/protagonista_v2_comparacao_idle.png` e
+  `protagonista_v2_comparacao_corrida.png`. (O primeiro Espaço sintético do godot-ai não chegou; o segundo sim.)
+- `dotnet build`: 0 erros, 0 avisos.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 01:03 de relógio (fim).
