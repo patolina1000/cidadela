@@ -23,6 +23,9 @@ public sealed class SimWorld
     /// </summary>
     public bool FreeMachines { get; internal set; }
 
+    /// <summary>As linhas de esteira atuais (recalculadas quando uma construção entra ou sai).</summary>
+    public IReadOnlyList<BeltLine> Lines => _lines;
+
     /// <summary>As redes de torque atuais (recalculadas quando uma construção entra ou sai).</summary>
     public IReadOnlyList<TorqueNetwork> Networks => _networks;
 
@@ -41,6 +44,7 @@ public sealed class SimWorld
     private readonly List<Building> _staffed = new();
     private int _nextItemId = 1;
     private readonly List<TorqueNetwork> _networks = new();
+    private readonly List<BeltLine> _lines = new();
     private int _networksVersion = -1;
     private readonly Queue<ISimCommand> _commands = new();
     private int _nextId = 1;
@@ -59,7 +63,11 @@ public sealed class SimWorld
         while (_commands.TryDequeue(out ISimCommand? command))
             command.Apply(this);
         if (_networksVersion != BuildingsVersion)
+        {
             RebuildNetworks();
+            RebuildLines();
+        }
+        UpdateLines();
 
         Castellan.Tick(this);
         TickBelts();
@@ -92,10 +100,13 @@ public sealed class SimWorld
                 item.PreviousPosition = item.Position;
 
         foreach (Building belt in _belts)
-            belt.Belt!.Advance(belt.Type.BeltSpeed / SimClock.TicksPerSecond);
+            if (belt.Line?.Moving != false)
+                belt.Belt!.Advance(belt.Type.BeltSpeed / SimClock.TicksPerSecond);
 
         foreach (Building belt in _belts)
         {
+            if (belt.Line?.Moving == false)
+                continue; // linha parada: nada anda nem passa adiante
             BeltLane lane = belt.Belt!;
             if (lane.Items.Count == 0 || lane.Items[0].Progress < 1f)
                 continue;
@@ -350,6 +361,64 @@ public sealed class SimWorld
 
     /// <summary>Se a célula é água (rio, lago): ninguém passa; só a roda d'água se constrói nela.</summary>
     public bool IsWater(GridPos cell) => Grid.InBounds(cell) && Data.Terrains[Grid.TerrainAt(cell)].Water;
+
+    /// <summary>
+    /// Refaz as linhas de esteira: esteiras ligadas pelo fluxo (a da frente recebe desta, sem apontar de volta) e as
+    /// manivelas que apontam para elas. Só roda quando uma construção entra ou sai.
+    /// </summary>
+    private void RebuildLines()
+    {
+        _lines.Clear();
+        foreach (Building b in _belts)
+            b.Line = null;
+        var links = new Dictionary<Building, List<Building>>();
+        foreach (Building b in _belts)
+            links[b] = new List<Building>();
+        foreach (Building b in _belts)
+            if (BuildingAt(b.Cell.Step(b.Direction)) is { Belt: not null } next && next.Direction != b.Direction.Opposite())
+            {
+                links[b].Add(next);
+                links[next].Add(b);
+            }
+        foreach (Building start in _belts)
+        {
+            if (start.Line is not null)
+                continue;
+            var line = new BeltLine();
+            var queue = new Queue<Building>();
+            start.Line = line;
+            queue.Enqueue(start);
+            while (queue.TryDequeue(out Building? b))
+            {
+                line.Belts.Add(b);
+                line.NeedsPower |= b.Type.Powered;
+                foreach (Building n in links[b])
+                    if (n.Line is null)
+                    {
+                        n.Line = line;
+                        queue.Enqueue(n);
+                    }
+            }
+            _lines.Add(line);
+        }
+        foreach (Building b in _buildingByCell.Values)
+            if (b.Type.IsCrank && BuildingAt(b.Cell.Step(b.Direction)) is { Line: BeltLine target })
+                target.Cranks.Add(b);
+    }
+
+    /// <summary>A cada tick: quantas células as manivelas ativas de cada linha movem, e se a linha anda.</summary>
+    private void UpdateLines()
+    {
+        foreach (BeltLine line in _lines)
+        {
+            int capacity = 0;
+            foreach (Building crank in line.Cranks)
+                if (crank.CrankActive)
+                    capacity += crank.Type.CrankCells;
+            line.Capacity = capacity;
+            line.Moving = FreeMachines || !line.NeedsPower || capacity >= line.Length;
+        }
+    }
 
     /// <summary>
     /// Refaz as redes de torque: construções com torque ligadas pelas 4 vizinhas; cada rede soma força e demanda (grafo

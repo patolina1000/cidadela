@@ -39,7 +39,7 @@ arte nova (formas simples, como os provisórios), mas com feedback visual claro.
    raio (`data/buildings.json`). Cada carregador repete: acha, dentro do raio do posto, uma máquina que ainda aceita um
    item bruto da receita dela e uma fonte que tenha esse item (baú ou cabana), busca até a carga dele e entrega. Sobra na
    mão fica para a próxima máquina que aceitar. A cabana continua como está (o lenhador e o mineiro coletam e guardam).
-4. **Torque** (`data/power.json`). A **Roda d'água** só se constrói em célula de **água** (terreno novo `water`, que
+4. **Torque** (`"torque"` em `data/buildings.json`). A **Roda d'água** só se constrói em célula de **água** (terreno novo `water`, que
    bloqueia a passagem e as outras construções). O **Eixo** é uma construção em linha, baixa e não sólida (dá para passar
    por cima, como na esteira), que liga a rotação às 4 vizinhas. Rede = roda, eixos e consumidores ligados
    por vizinhança (grafo com somas, sem simular peça por peça: lição do Create). Cada rede soma a força das rodas e a
@@ -48,10 +48,10 @@ arte nova (formas simples, como os provisórios), mas com feedback visual claro.
 5. **Esteiras movidas a torque.** Uma **linha** de esteira é o conjunto de esteiras ligadas pelo fluxo (uma apontando para
    a outra). Cada linha precisa de **Manivela**: construção nova, com 1 posto, que aponta para uma esteira (a frente dela,
    R gira). Manivela ativa = aldeão no posto **ou** eixo girando ligado a ela. Cada manivela ativa move até 12 células de
-   esteira (`crankCells` em `data/power.json`); a linha anda se a soma das manivelas ativas dela cobre o tamanho da linha.
+   esteira (`crankCells` em `data/buildings.json`); a linha anda se a soma das manivelas ativas dela cobre o tamanho da linha.
    Linha sem manivela ativa (ou comprida demais) **para**: os itens ficam onde estão.
-   `beltsNeedPower` liga a regra (mapas e testes antigos sem o arquivo continuam com esteira livre; o palco da Biografia
-   também).
+   `"powered": true` na esteira liga a regra (os testes antigos, com esteira própria sem o campo, continuam livres); o
+   palco da Biografia é vitrine: `"freeMachines": true` no mapa (máquinas sem posto e esteiras sem manivela).
 6. **Estados da máquina** (simulação, lidos pela cena): trabalhando; falta insumo (qual item); posto vazio (quantos de
    quantos); saída cheia; sem torque (manivela, eixo e roda).
 

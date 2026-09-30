@@ -118,6 +118,21 @@ public static class BuildingModels
                 Add(axleSpin, new BoxMesh { Size = new Vector3(0.05f, 0.14f, 0.3f) }, Palette.Pumpkin, new Vector3(0f, 0.06f, 0f));
                 break;
             }
+            case "crank":
+            {
+                // Poste com uma roda de manivela virada para a frente (a esteira que ela move); gira no pivô "Spin" em volta de Z.
+                Add(model, new BoxMesh { Size = new Vector3(0.22f, 0.5f, 0.22f) }, Palette.Wood.Darkened(0.3f), new Vector3(0f, 0.25f, 0.1f));
+                var crankSpin = new Node3D { Name = "Spin", Position = new Vector3(0f, 0.42f, -0.08f) };
+                model.AddChild(crankSpin);
+                var disc = Add(crankSpin, new CylinderMesh { TopRadius = 0.2f, BottomRadius = 0.2f, Height = 0.05f, RadialSegments = 10 },
+                    Palette.Wheat, Vector3.Zero);
+                disc.Rotation = new Vector3(Mathf.Pi / 2f, 0f, 0f);
+                var handle = Add(crankSpin, new CylinderMesh { TopRadius = 0.03f, BottomRadius = 0.03f, Height = 0.18f }, Palette.Pumpkin,
+                    new Vector3(0.14f, 0f, -0.1f));
+                handle.Rotation = new Vector3(Mathf.Pi / 2f, 0f, 0f);
+                AddOutputArrow(model);
+                break;
+            }
             case "carrier_post":
                 // Tablado com sacos e uma vara de carregar.
                 Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.1f, 0.8f) }, Palette.Wood, new Vector3(0f, 0.05f, 0f));

@@ -442,9 +442,11 @@ public sealed class Villager
                 taken.Add(c);
         List<GridPos> goals = FreeNeighbors(world, home.Cell);
         goals.RemoveAll(taken.Contains);
-        // De lado primeiro (encostado de verdade), depois as diagonais.
+        // De lado primeiro (encostado de verdade), depois as diagonais; chão livre antes de cima de esteira ou eixo.
         List<GridPos> sides = goals.FindAll(g => g.X == home.Cell.X || g.Z == home.Cell.Z);
-        foreach (List<GridPos> choice in new[] { sides, goals })
+        List<GridPos> clearSides = sides.FindAll(g => world.BuildingAt(g) is null);
+        List<GridPos> clear = goals.FindAll(g => world.BuildingAt(g) is null);
+        foreach (List<GridPos> choice in new[] { clearSides, sides, clear, goals })
         {
             if (choice.Count == 0 || !TrySetPath(world, choice))
                 continue;

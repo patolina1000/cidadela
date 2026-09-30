@@ -69,8 +69,10 @@ public class ArrowChainRecipeTests
     public void ArsenalStoresArrowsFromABelt()
     {
         SimWorld world = TestWorlds.Open(x: 5, z: 5, data: TestWorlds.RealData(), buildings: """
-            [{ "kind": "belt", "x": 6, "z": 5, "direction": "east" }, { "kind": "arsenal", "x": 7, "z": 5 }]
-            """);
+            [{ "kind": "belt", "x": 6, "z": 5, "direction": "east" }, { "kind": "arsenal", "x": 7, "z": 5 },
+             { "kind": "crank", "x": 6, "z": 6, "direction": "north" }]
+            """, villagers: """[{ "x": 6, "z": 7 }]""");
+        TestWorlds.Run(world, 2); // o girador chega à manivela
         world.Castellan.Inventory.Add("arrow", 2);
         world.Enqueue(new InsertItemCommand(new GridPos(6, 5), "arrow"));
         TestWorlds.Run(world, Ticks(2f));

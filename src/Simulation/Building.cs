@@ -47,6 +47,14 @@ public sealed class Building
     /// <summary>A rede de torque em que está, ou null se não tem torque (a simulação recalcula quando algo muda).</summary>
     public TorqueNetwork? Network { get; internal set; }
 
+    /// <summary>A linha de esteira em que está (só esteiras), ou null.</summary>
+    public BeltLine? Line { get; internal set; }
+
+    /// <summary>
+    /// Manivela ativa: aldeão no posto ou eixo girando ligado a ela. Manivela é o que tem <see cref="BuildingType.CrankCells"/>.
+    /// </summary>
+    public bool CrankActive => Type.IsCrank && (CrewReady || Turning);
+
     /// <summary>Se está numa rede de torque girando.</summary>
     public bool Turning => Network?.Turning == true;
 

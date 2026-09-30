@@ -5678,3 +5678,24 @@ onde errou, correções manuais e quanto tempo levou.
 - **Testes:** `TorqueTests` (6). `dotnet build` 0/0; `dotnet test` 204 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 03:09–03:11 de relógio.
+
+## 2026-09-30 — Linha da flecha, passo 6: manivela e esteiras movidas a torque
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 6 de `docs/cadeia_flecha.md`.
+- **Feito:**
+  - Esteira com `"powered": true`; construção nova **Manivela** (2 toras, sólida): 1 posto (Girador, ícone de manivela),
+    `crankCells` 12, `torque` com demanda 2 (entra na rede se encostar num eixo).
+  - `BeltLine`: esteiras ligadas pelo fluxo; as manivelas que **apontam** para uma esteira da linha (R gira) somam 12
+    células cada quando ativas (aldeão no posto **ou** eixo girando); a linha anda se a soma cobre o tamanho dela.
+    Parada, nada anda nem passa adiante (máquina ainda solta na entrada se couber). Refeitas com as redes, quando uma
+    construção muda; a capacidade é conferida a cada tick.
+  - Posto: o aldeão prefere chão livre a ficar em cima de esteira ou eixo.
+  - Modelo provisório: poste com roda de manivela e cabo laranja, pivô de giro.
+  - Documento atualizado: nada de `power.json` (a regra está nas construções).
+- **Testes:** `CrankTests` (6: sem manivela para; com gente anda; sem gente para; 12 anda e 13 não, 2 manivelas 24;
+  eixo gira a manivela sem ninguém; vitrine anda livre). O teste do arsenal ganhou manivela. `dotnet build` 0/0;
+  `dotnet test` 210 passaram.
+- **Efeito no Main de hoje:** as esteiras do mapa antigo param sem manivela (esperado na era do torque).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 03:11–03:13 de relógio.

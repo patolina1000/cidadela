@@ -9,12 +9,18 @@
   //   células em volta da cabana, guardando até "capacity" itens (que ela solta na esteira ou baú à frente).
   // posts: postos de trabalho (docs/cadeia_flecha.md). Ao construir, o aldeão livre mais perto ocupa cada posto; a máquina
   //   só anda com todos ocupados por quem já chegou. name: ofício; tool: ícone da ferramenta sobre a cabeça dele.
+  // powered: esteira que só anda com manivela (era do torque; docs/cadeia_flecha.md). Uma linha (esteiras ligadas pelo
+  //   fluxo) anda se as manivelas ativas que apontam para ela somam células ≥ o tamanho dela.
+  // crankCells: manivela: quantas células de esteira ela move; ativa com aldeão no posto OU eixo girando ligado a ela
+  //   (a frente da manivela aponta para a esteira; R gira ao construir).
   // torque: parte de uma rede de torque (liga às 4 vizinhas com torque): supply = força que dá (roda d'água), demand =
   //   força que consome (fole, manivela), speedBonus = multiplicador da receita com a rede girando (fole da fundição).
   //   Rede com força ≥ demanda gira inteira; menos, para inteira. needsWater: só se constrói na água.
   // carriers: Posto de Carregadores: "count" vagas; cada carregador busca bruto (tora, pedra, minério) num baú ou cabana a
   //   até "radius" células do posto e leva até a máquina, no mesmo raio, que ainda aceita o item.
-  "belt":       { "name": "Esteira",  "cost": { "wood": 1 },                         "solid": false, "beltSpeed": 1.5 },
+  "belt":       { "name": "Esteira",  "cost": { "wood": 1 },                         "solid": false, "beltSpeed": 1.5, "powered": true },
+  "crank":      { "name": "Manivela", "cost": { "wood": 2 },                         "solid": true,  "crankCells": 12,
+                  "posts": { "count": 1, "name": "Girador", "tool": "crank" }, "torque": { "demand": 2 } },
   "axle":        { "name": "Eixo",        "cost": { "wood": 1 },            "solid": false, "torque": {} },
   "water_wheel": { "name": "Roda d'Água", "cost": { "wood": 10, "stone": 2 }, "solid": true, "needsWater": true,
                    "torque": { "supply": 16 } },
