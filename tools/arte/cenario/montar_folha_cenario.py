@@ -22,12 +22,12 @@ def main():
     crop = lambda name, key: Image.open(src / f"{name}.png").convert("RGB").crop(m["recortes"][key])
 
     s = Sheet()
-    s.text("Cenário piloto — pedra e veio de ferro, e as três famílias juntas (sem créditos)", 44)
+    s.text("Cenário — as três famílias para aprovação: árvore (revisão 3), pedra (escurecida) e veio de ferro", 44)
     s.text("Material fosco, luz de crepúsculo fria de cima, chão chapado #3F3342, borda de luz fria (b) na copa, na "
            "pedra e no veio. Aldeão v2 (0,40 m) e protagonista (bruto v2, 0,80 m) para escala.", 26, (70, 70, 70))
     tile = 360
-    for familia, cores in (("pedra", "pedra fria #66636B, tampa de musgo #4E5544 na 1"),
-                           ("veio", "rocha lama #2E2931, lascas azul meia-noite #1E2A3A (a cor do ferro)")):
+    for familia, cores in (("pedra", "pedra escurecida #57535F (tarefa 4), tampa de musgo #4E5544 na 1"),
+                           ("veio", "rocha lama #2E2931, lascas azul meia-noite #1E2A3A (a cor do ferro), engordadas na tarefa 4")):
         rep = json.loads((ROOT / f"assets/cenario/{familia}/{familia}_relatorio.json").read_text())
         items = []
         for vista in ("frente", "tres_quartos"):

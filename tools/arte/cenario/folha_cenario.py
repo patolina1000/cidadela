@@ -83,7 +83,7 @@ def main():
     put(VEIOS[0], (0.85, 0, 0))
     place(ALDEAO, (1.5, 0, 0), color=PELE_ALDEAO)
     place(PROTAGONISTA, (2.0, 0, 0), color=PELE_PROTAGONISTA)
-    ortho_camera(scene, (0.45, 0, 1.2), 30, 20, 4.4)
+    ortho_camera(scene, (0.45, 0, 1.35), 30, 20, 5.2)
     render(scene, OUT / "familias.png")
 
     # 3. Fila de pedras e veios na câmera do jogo, uma por célula.

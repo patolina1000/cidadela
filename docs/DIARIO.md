@@ -3266,3 +3266,11 @@ onde errou, correções manuais e quanto tempo levou.
   em sRGB (PNG de 8 bits). Conferi com PIL e corrigi. A primeira montagem do zoom 0,4 (×3) passava da largura da
   folha; ficou ×2.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Cenário, tarefa 5, passo 1: folha conjunta final das três famílias
+
+- **Pedido (Diretor):** refazer `cenario_contato.png` com a pedra escurecida e a árvore revisão 3; é a folha que
+  vai ao Arthur para aprovar as três famílias.
+- **Feito:** renders refeitos (`folha_cenario.py`) e títulos atualizados em `montar_folha_cenario.py`. A vista
+  "três famílias juntas" cortava o topo da árvore de 2,5 m; o enquadramento abriu de 4,4 para 5,2 m.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~10 min.
