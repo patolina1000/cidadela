@@ -3514,3 +3514,19 @@ onde errou, correções manuais e quanto tempo levou.
   deixava o crânio furar o meio dos triângulos grandes; na prova, chifres e cristal eram presos ao osso com o esqueleto fora do
   repouso e escorregavam 4 a 5 cm (corrigido; os GIFs foram refeitos).
 - **Créditos:** 20 (na protagonista: 121 de 300; saldo 2.177). **Correções manuais:** nenhuma. **Tempo:** ~3 h.
+
+## 2026-09-30 — Protagonista v2: limpeza do cabelo (braço, linha do cabelo, têmpora)
+
+- **Pedido:** 0 crédito. O braço atravessava a borda lateral do cabelo na corrida (até 27,8 mm); linha do cabelo serrilhada na
+  testa; falha na têmpora na frente do chifre.
+- **Achado:** o cabelo exportado tinha ~480 laços de borda, quase todos criados pelo exportador glTF, que divide os vértices nas
+  costuras de UV da Meshy (antes da exportação eram 46). Isso abria a malha e quebrava o sombreamento: era boa parte do
+  "serrilhado" e da falha na têmpora.
+- **Feito (`extrair_cabelo.py`):** os furos pequenos (até 24 arestas) são fechados antes da decimação (46 → 25 laços); o UV
+  sai antes de exportar (o cabelo é chapado); a borda aberta (linha do cabelo, janela dos olhos) é suavizada ao longo de si mesma
+  (6 passes) antes da folga; a folga virou uma função e é refeita depois de cada correção. Braços: em todos os 20 quadros da
+  corrida e no idle a cada 10 quadros, os vértices do cabelo a menos de 2 mm do corpo (sem a cabeça) são achados e, no repouso,
+  a região em volta (3 cm, com queda suave) é puxada para o meio das costas e 4 mm para trás; 12 rodadas. Resultado: **nenhum
+  vértice dentro do corpo em nenhum quadro, folga mínima de 3,5 mm** (antes −28 mm). 926 triângulos.
+- **Resta:** um ponto pequeno de pele na têmpora, na frente do chifre, no perfil.
+- **Créditos:** 0 (na protagonista: 121 de 300). **Correções manuais:** nenhuma. **Tempo:** ~1 h.

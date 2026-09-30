@@ -54,9 +54,12 @@ SCALP_CLEARANCE = 0.003  # m, na calota (acima do queixo), medida também no mei
 HORN_REACH = 0.02  # m: dentro do chifre = lado de dentro da face mais próxima, a até esta distância
 EYE_MARGIN = 0.006  # m em volta da janela dos olhos
 MERGE_DIST = 0.001
+BORDER_PASSES = 6
+HOLE_SIDES = 24  # furos com até este número de arestas são fechados antes da decimação
 PATCHES = ("Olhos", "Boca")
 WEIGHT_BONES = ("Head", "neck", "Spine", "Spine01")
 CHECK_POINTS = 8
+ARM_ROUNDS, ARM_GAP = 12, 0.002  # rodadas da correção dos braços; folga pedida em todos os quadros
 
 
 def srgb_lin(h):
@@ -113,6 +116,138 @@ def evaluated_bvh(objs):
 def signed(tree, normals, p):
     loc, _n, idx, dist = tree.find_nearest(p)
     return (dist if (p - loc).dot(normals[idx]) >= 0 else -dist), loc, normals[idx]
+
+
+def boundary_loops(bm):
+    """Laços de arestas de borda (componentes conexas)."""
+    seen, loops = set(), []
+    for e in bm.edges:
+        if not e.is_boundary or e in seen:
+            continue
+        comp, st = [], [e]
+        seen.add(e)
+        while st:
+            x = st.pop()
+            comp.append(x)
+            for v in x.verts:
+                for y in v.link_edges:
+                    if y.is_boundary and y not in seen:
+                        seen.add(y)
+                        st.append(y)
+        loops.append(comp)
+    return loops
+
+
+def close_holes(bm):
+    """Fecha os furos pequenos (a separação da pele e a fusão das mechas deixam centenas): cada laço de borda com até
+    HOLE_SIDES arestas vira faces. Os laços grandes (a abertura do rosto, a janela dos olhos, os cortes dos chifres) ficam."""
+    for _ in range(3):
+        small = [e for loop in boundary_loops(bm) if len(loop) <= HOLE_SIDES for e in loop]
+        if not small:
+            break
+        bmesh.ops.holes_fill(bm, edges=small, sides=HOLE_SIDES)
+        bmesh.ops.triangulate(bm, faces=bm.faces)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+
+
+def smooth_borders(obj, passes=BORDER_PASSES):
+    """Suaviza a borda aberta (linha do cabelo, janela dos olhos): cada vértice de borda anda para a média dos seus dois
+    vizinhos de borda. Os dentes que a separação da pele deixa viram uma curva. Devolve quantos vértices de borda há."""
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    border = [v for v in bm.verts if any(e.is_boundary for e in v.link_edges)]
+    nbrs = {v: [e.other_vert(v) for e in v.link_edges if e.is_boundary] for v in border}
+    for _ in range(passes):
+        new = {v: (v.co + sum((u.co for u in nbrs[v]), Vector())) / (1 + len(nbrs[v])) for v in border if len(nbrs[v]) == 2}
+        for v, co in new.items():
+            v.co = co
+    bm.to_mesh(obj.data)
+    bm.free()
+    return len(border)
+
+
+def push_clearance(mesh, body_tree, body_normals, patch_tree, patch_normals, chin_z):
+    """Folga do corpo e dos retalhos, só perto da superfície (longe dela o sinal em relação a uma malha aberta não vale),
+    nos vértices e no meio das faces (triângulos grandes cortam a curva do crânio): rodadas em que a face que ainda fica
+    perto demais empurra os seus vértices para fora. Devolve quantos empurrões."""
+    pushed = 0
+    for _ in range(6):
+        moved = 0
+        for v in mesh.vertices:
+            for tree, normals, reach, gap in ((body_tree, body_normals, 0.03, SCALP_CLEARANCE if v.co.z > chin_z else CLEARANCE),
+                                              (patch_tree, patch_normals, 0.01, CLEARANCE)):
+                if tree.find_nearest(v.co)[3] > reach:
+                    continue
+                d, loc, n = signed(tree, normals, v.co.copy())
+                if d < gap:
+                    v.co = loc + n * gap
+                    moved += 1
+        for p in mesh.polygons:
+            c = sum((mesh.vertices[i].co for i in p.vertices), Vector()) / len(p.vertices)
+            if body_tree.find_nearest(c)[3] > 0.03:
+                continue
+            d, loc, n = signed(body_tree, body_normals, c)
+            gap = SCALP_CLEARANCE if c.z > chin_z else CLEARANCE
+            if d < gap:
+                for i in p.vertices:
+                    mesh.vertices[i].co += n * (gap - d)
+                moved += 1
+        pushed += moved
+        if not moved:
+            break
+    mesh.update()
+    return pushed
+
+
+def clip_frames(action, every):
+    a, z = (int(x) for x in action.frame_range)
+    return list(range(a, z + 1, every)) + ([z] if (z - a) % every else [])
+
+
+def crossings(hair, armature, others, frames_by_clip, gap):
+    """Vértices do cabelo a menos de `gap` (ou dentro) de alguma parte do corpo sem a cabeça, em algum quadro dos clipes.
+    Devolve {índice: pior distância} e a lista (quadro, pior mm, vértices dentro)."""
+    bad, rows = {}, []
+    for clip, frames in frames_by_clip.items():
+        play(armature, bpy.data.actions[clip])
+        for f in frames:
+            bpy.context.scene.frame_set(f)
+            tree, normals = evaluated_bvh(others)
+            dg = bpy.context.evaluated_depsgraph_get()
+            ev = hair.evaluated_get(dg)
+            m = ev.to_mesh()
+            worst, inside = 0.03, 0
+            for v in m.vertices:
+                p = hair.matrix_world @ v.co
+                if tree.find_nearest(p)[3] > 0.03:
+                    continue
+                d = signed(tree, normals, p)[0]
+                worst = min(worst, d)
+                inside += d < 0
+                if d < gap:
+                    bad[v.index] = min(bad.get(v.index, 1.0), d)
+            ev.to_mesh_clear()
+            rows.append((f"{clip}@{f}", round(worst * 1000, 1), inside))
+    return bad, rows
+
+
+def pull_in(mesh, bad, radius=0.03, step=0.12):
+    """No repouso, puxa para a linha do meio das costas (x -> 0) e um pouco para trás a região em volta dos vértices que
+    cruzam o corpo, com queda suave até `radius`."""
+    idx = np.array(list(bad))
+    co = np.array([v.co[:] for v in mesh.vertices])
+    src = co[idx]
+    moved = 0
+    for i, v in enumerate(mesh.vertices):
+        d = np.linalg.norm(src - co[i], axis=1).min()
+        if d >= radius:
+            continue
+        w = (1 - d / radius) ** 2
+        v.co.x -= v.co.x * step * w
+        v.co.y += 0.004 * w  # para trás (+Y do Blender é as costas)
+        moved += 1
+    mesh.update()
+    return moved
 
 
 def inside_horn(tree, normals, p):
@@ -279,6 +414,9 @@ def main() -> None:
 
     # 5. mechas fundidas e decimação
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=MERGE_DIST)
+    report["lacos_de_borda_antes_de_fechar"] = len(boundary_loops(bm))
+    close_holes(bm)
+    report["lacos_de_borda_depois_de_fechar"] = len(boundary_loops(bm))
     bm.to_mesh(hair.data)
     bm.free()
     hair.data.calc_loop_triangles()
@@ -291,37 +429,9 @@ def main() -> None:
         bpy.context.view_layer.objects.active = hair
         bpy.ops.object.modifier_apply(modifier=mod.name)
 
-    # DEPOIS da decimação: folga do corpo e dos retalhos, e o corte dos chifres de novo
-    # só perto da superfície: longe dela o sinal em relação a uma malha aberta (os retalhos) não vale
-    # a folga vale nos vértices e no meio das faces (triângulos grandes cortam a curva do crânio): rodadas em que a face
-    # que ainda fica perto demais empurra os seus vértices para fora
-    pushed = 0
-    mesh = hair.data
-    for _ in range(6):
-        moved = 0
-        for v in mesh.vertices:
-            for tree, normals, reach, gap in ((body_tree, body_normals, 0.03, SCALP_CLEARANCE if v.co.z > chin_z else CLEARANCE),
-                                              (patch_tree, patch_normals, 0.01, CLEARANCE)):
-                if tree.find_nearest(v.co)[3] > reach:
-                    continue
-                d, loc, n = signed(tree, normals, v.co.copy())
-                if d < gap:
-                    v.co = loc + n * gap
-                    moved += 1
-        for p in mesh.polygons:
-            c = sum((mesh.vertices[i].co for i in p.vertices), Vector()) / len(p.vertices)
-            if body_tree.find_nearest(c)[3] > 0.03:
-                continue
-            d, loc, n = signed(body_tree, body_normals, c)
-            gap = SCALP_CLEARANCE if c.z > chin_z else CLEARANCE
-            if d < gap:
-                for i in p.vertices:
-                    mesh.vertices[i].co += n * (gap - d)
-                moved += 1
-        pushed += moved
-        if not moved:
-            break
-    mesh.update()
+    # DEPOIS da decimação: borda suavizada, folga do corpo e dos retalhos, e o corte dos chifres de novo
+    report["hairline_suavizada_vertices"] = smooth_borders(hair)
+    pushed = push_clearance(hair.data, body_tree, body_normals, patch_tree, patch_normals, chin_z)
     report["vertices_empurrados_para_a_folga"] = pushed
     bm = bmesh.new()
     bm.from_mesh(hair.data)
@@ -335,6 +445,10 @@ def main() -> None:
     hair.data.calc_loop_triangles()
     report["triangulos"] = len(hair.data.loop_triangles)
     assert report["triangulos"] <= MAX_TRIS, report
+    # sem UV: o cabelo é chapado, e as costuras de UV da Meshy fazem o exportador glTF dividir os vértices (bordas abertas e
+    # sombreamento quebrado em centenas de laços)
+    while hair.data.uv_layers:
+        hair.data.uv_layers.remove(hair.data.uv_layers[0])
     for p in hair.data.polygons:
         p.use_smooth = True
     mat = bpy.data.materials.new("cabelo")
@@ -371,33 +485,28 @@ def main() -> None:
     hair.matrix_parent_inverse = armature.matrix_world.inverted()
     hair.modifiers.new("Armature", "ARMATURE").object = armature
 
-    # 7. conferência nos clipes
+    # 7. braços e costas: nada do cabelo dentro do corpo (sem a cabeça) em nenhum quadro; a região que cruza é puxada para
+    # o meio das costas no repouso, com a folga refeita, em rodadas
     armature.data.pose_position = "POSE"
-    worst = {}
     others = [o for o in body if o.name.split(".")[0] != "cabeca"]
-    for clip in ("run-loop", "idle-loop"):
-        action = bpy.data.actions[clip]
-        play(armature, action)
-        a, z = (int(x) for x in action.frame_range)
-        for f in [a + (z - a) * i // (CHECK_POINTS - 1) for i in range(CHECK_POINTS)]:
-            bpy.context.scene.frame_set(f)
-            tree, normals = evaluated_bvh(others)
-            dg = bpy.context.evaluated_depsgraph_get()
-            ev = hair.evaluated_get(dg)
-            m = ev.to_mesh()
-            ds = []
-            for v in m.vertices:
-                p = hair.matrix_world @ v.co
-                if tree.find_nearest(p)[3] < 0.03:  # longe da pele o sinal não vale (e não há risco)
-                    ds.append(signed(tree, normals, p)[0])
-            ds = ds or [0.03]
-            ev.to_mesh_clear()
-            inside = sum(1 for d in ds if d < 0)
-            worst[f"{clip}@{f}"] = {"min_mm": round(min(ds) * 1000, 1), "vertices_dentro": inside}
-    report["folga_nos_clipes"] = worst
-    report["pior_mm"] = min(w["min_mm"] for w in worst.values())
-    report["pior_quadro"] = min(worst, key=lambda k: worst[k]["min_mm"])
-    report["vertices_dentro_max"] = max(w["vertices_dentro"] for w in worst.values())
+    frames = {"run-loop": clip_frames(bpy.data.actions["run-loop"], 1), "idle-loop": clip_frames(bpy.data.actions["idle-loop"], 10)}
+    rounds = []
+    for _ in range(ARM_ROUNDS):
+        bad, rows = crossings(hair, armature, others, frames, ARM_GAP)
+        rounds.append({"vertices": len(bad), "pior_mm": min(r[1] for r in rows)})
+        if not bad:
+            break
+        armature.data.pose_position = "REST"
+        bpy.context.view_layer.update()
+        rounds[-1]["movidos"] = pull_in(hair.data, bad)
+        push_clearance(hair.data, body_tree, body_normals, patch_tree, patch_normals, chin_z)
+        armature.data.pose_position = "POSE"
+    report["correcao_bracos"] = rounds
+    bad, rows = crossings(hair, armature, others, frames, 0.0)
+    report["folga_nos_clipes"] = {k: {"min_mm": w, "vertices_dentro": n} for k, w, n in rows}
+    report["pior_mm"] = min(r[1] for r in rows)
+    report["pior_quadro"] = min(rows, key=lambda r: r[1])[0]
+    report["vertices_dentro_max"] = max(r[2] for r in rows)
 
     # exportação: armature + cabelo, sem clipes, pelo contrato
     armature.animation_data.action = None
