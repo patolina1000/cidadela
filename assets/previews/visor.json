@@ -109,5 +109,52 @@
     "tipo": "imagem",
     "caminho": "assets/previews/cenario/arvore_contato.png",
     "nota": "Mais torta (5–12°), alta vira chapéu de bruxa dobrado; bosque atual × (a) copa #5A5847 × (b) musgo + borda fria, com crepúsculo; sorteio proposto 30/30/30/10 % (líquen raro)."
+  },
+  {
+    "quando": "2026-09-29T21:48:13",
+    "titulo": "Árvore 1 — gota (revisão 3)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/arvore/arvore_1.glb",
+    "nota": "Revisão 3: copa a partir de ~1,1 m, 2,48 m, 192 triângulos. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:48:14",
+    "titulo": "Árvore 2 — dupla (revisão 3)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/arvore/arvore_2.glb",
+    "nota": "Revisão 3: copa a partir de ~1,1 m, 2,63 m, 240 triângulos. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:48:15",
+    "titulo": "Árvore 3 — tufos (revisão 3)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/arvore/arvore_3.glb",
+    "nota": "Revisão 3: copa a partir de ~1,1 m, 2,10 m, 328 triângulos. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:48:16",
+    "titulo": "Árvore 4 — alta (revisão 3)",
+    "tipo": "glb",
+    "caminho": "assets/cenario/arvore/arvore_4.glb",
+    "nota": "Revisão 3: copa a partir de ~1,1 m, 2,46 m, 176 triângulos. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:48:17",
+    "titulo": "Árvore piloto — folha de contato (revisão 3)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/cenario/arvore_contato.png",
+    "nota": "Copa a partir de ≥ 1,0 m, árvores de 2,1 a 2,6 m, borda fria (b). Atrás, zoom 1: aldeão 60/0/58 %, protagonista 44/3/82 % a 0,5/1/2 m."
   }
 ]
