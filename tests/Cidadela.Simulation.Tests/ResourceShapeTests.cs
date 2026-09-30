@@ -68,7 +68,7 @@ public class ResourceShapeTests
                 TestWorlds.Move(world, dir.X, dir.Y, ticks: 90); // 2,4 cél/s × 4,5 s: dá para passar a pedra
                 Vector2 p = world.Castellan.Position;
                 ResourceShape shape = world.ResourceAt(new GridPos(x, z))!.Shape!;
-                Assert.True(shape.SignedDistance(p) >= 0.29f, $"{kind} ({x},{z}) ângulo {a * 45}° desvio {offset}: dentro da pedra em {p}");
+                Assert.True(shape.SignedDistance(p) >= world.Castellan.Stats.Radius - 0.01f, $"{kind} ({x},{z}) ângulo {a * 45}° desvio {offset}: dentro da pedra em {p}");
                 Assert.True(Vector2.Dot(p - center, dir) > 1f, $"{kind} ({x},{z}) ângulo {a * 45}° desvio {offset}: enroscou em {p}");
             }
         }

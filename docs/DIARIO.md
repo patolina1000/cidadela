@@ -4728,4 +4728,26 @@ onde errou, correções manuais e quanto tempo levou.
   minhas (pausa), sinal de que o Arthur estava jogando: parei de mandar teclas e deixei o jogo aberto assim.
 - `dotnet build`: 0 erros, 0 avisos.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 23:30–23:52 de relógio.
+- **Tempo:** 23:30–23:37 de relógio.
+
+---
+
+## 2026-09-29 — Raio de colisão da protagonista em 50% (0,3 → 0,15)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (decisão do Arthur):** a hitbox da protagonista estava grande demais: diminuir o raio de colisão em 50%, no
+  JSON, conferindo que ela continua sem atravessar tronco, pedra e construção, que os testes de vão passam com o raio
+  novo, que a coleta e o alcance não mudaram, e mostrar o círculo novo na tecla H.
+- **O que foi feito:** `data/castellan.json`: `radius` 0,15 (era 0,3), com o motivo no comentário. Nenhum código mudou:
+  a colisão, a assistência nas quinas e o desenho da tecla H já leem o raio do dado. A coleta e o alcance contam do
+  centro do corpo (não usam o raio). Efeito colateral: a verificação de "construção em cima do corpo" também usa o raio,
+  então agora dá para construir mais perto dela.
+- **Testes:** os de vão e de colisão da simulação usam dados próprios (raio 0,3) e não mudam; o de contornar as pedras
+  reais passou a usar o raio do dado. `CastellanRadiusTests` (7 novos, com os dados reais): o raio é 0,15; de 8 direções
+  ela nunca entra em tronco, pedra ou veio; para no baú (célula cheia) a até um passo do contato; passa entre duas
+  árvores vizinhas mesmo 0,2 m fora do meio; coleta na diagonal sim e a três células não, alcance 10 e 1,3 iguais.
+  `dotnet test`: 176 aprovados.
+- **No jogo:** não reabri (o Arthur estava jogando); o círculo branco da tecla H mostra o raio novo na próxima abertura.
+- `dotnet build`: 0 erros, 0 avisos.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 23:37–23:41 de relógio.
