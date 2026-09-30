@@ -4516,3 +4516,24 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 132 aprovados.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 22:42–22:51 de relógio.
+
+---
+
+## 2026-09-29 — Câmera cinematográfica (C) mira pela copa, como o clique
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** a câmera cinematográfica usar o mesmo teste da copa e do tronco que o clique usa, para focar a árvore sob o
+  cursor. Não fechar nem reiniciar o jogo aberto para o Arthur; sem medidas de FPS agora.
+- **O que foi feito:**
+  - `GameRoot.CinematicTarget`: além do alvo achado pelo chão sob o cursor (`FindFocus`), testa o raio do cursor contra
+    os recursos (`ResourceModels.Pick`, agora também devolvendo a distância do acerto). Se acertar uma árvore (ou pedra,
+    ou veio) antes do chão, o foco é ela; um personagem (Castelão ou aldeão) achado pelo chão e mais perto da câmera que
+    o acerto continua vencendo (quem está na frente da árvore).
+  - `WorldView.ResourceFocus`: o foco num recurso olha a meia altura do modelo e fica longe o bastante para caber
+    (1,8 × a altura; antes era fixo a 0,4 m e 3 m, feito para o cubo de 0,8 m). `IsCharacter` diz se o alvo é
+    personagem.
+- **Não testado no jogo:** o jogo do editor está aberto para o Arthur com o código anterior, e rodar outra instância
+  abriria uma janela em tela cheia por cima dele. Vale na próxima vez que o jogo for aberto. `dotnet build`: 0 erros,
+  0 avisos; `dotnet test`: 132 aprovados (a mudança é só na view).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:53–22:57 de relógio.

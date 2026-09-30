@@ -28,6 +28,10 @@ public partial class WorldView : Node3D
     /// <summary>Recurso de pé sob o raio do cursor (a copa inteira conta), antes do chão; null se nenhum.</summary>
     public ResourceNode? PickResource(Vector3 origin, Vector3 direction, float maxDistance) =>
         _resourceModels.Pick(origin, direction, maxDistance);
+
+    /// <summary>Como <see cref="PickResource(Vector3, Vector3, float)"/>, com a distância do acerto ao longo do raio.</summary>
+    public ResourceNode? PickResource(Vector3 origin, Vector3 direction, float maxDistance, out float distance) =>
+        _resourceModels.Pick(origin, direction, maxDistance, out distance);
     private VillagerStatusTable _statusTable = null!;
     private readonly List<(Villager, Vector3)> _iconSources = new();
 
@@ -402,10 +406,21 @@ public partial class WorldView : Node3D
             return new FocusTarget(bNode, height, building.Type.IsBelt ? 2.2f : 3.4f,
                 () => string.Join("  —  ", ShowableLines(building)));
         }
-        if (_world.ResourceAt(cell) is ResourceNode resource && _resourceVisuals.TryGetValue(resource, out ResourceVisual? rv))
-            return new FocusTarget(rv.Root, 0.4f, 3f, () => $"{resource.Type.Name}  —  restam {resource.Remaining}");
-        return null;
+        return _world.ResourceAt(cell) is ResourceNode resource ? ResourceFocus(resource) : null;
     }
+
+    /// <summary>Um recurso como alvo da câmera cinematográfica: olha a meia altura do modelo, de longe o bastante para caber.</summary>
+    public FocusTarget? ResourceFocus(ResourceNode resource)
+    {
+        if (!_resourceVisuals.TryGetValue(resource, out ResourceVisual? rv))
+            return null;
+        float height = rv.Mesh.Height;
+        return new FocusTarget(rv.Root, Mathf.Max(0.4f, height * 0.5f), Mathf.Max(3f, height * 1.8f),
+            () => $"{resource.Type.Name}  —  restam {resource.Remaining}");
+    }
+
+    /// <summary>Se o alvo é um personagem (o Castelão ou um aldeão), não uma construção ou recurso.</summary>
+    public bool IsCharacter(FocusTarget focus) => focus.Node == _castellan || focus.Node is VillagerVisual;
 
     /// <summary>O Castelão como alvo padrão da câmera cinematográfica.</summary>
     public FocusTarget CastellanFocus() => new(_castellan, 0.8f, 3.2f, DescribeCastellan);

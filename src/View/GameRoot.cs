@@ -204,6 +204,8 @@ public partial class GameRoot : Node3D
     /// <summary>
     /// Entra na câmera cinematográfica no que está sob o cursor (Castelão, aldeão, construção, recurso;
     /// sem nada, o Castelão) ou sai dela. Solta o que estava escolhido para não construir sem querer.
+    /// A árvore sob o cursor é achada pelo mesmo teste do clique (copa e tronco); um personagem mais perto da câmera
+    /// que ela ainda vence.
     /// </summary>
     private void ToggleCinematic()
     {
@@ -214,9 +216,23 @@ public partial class GameRoot : Node3D
         }
         Select(null);
         Hold(null);
-        Vector3? ground = CursorOverWorld() is Vector2 cursor ? _camera.GroundUnder(cursor) : null;
-        _focus = (ground is Vector3 g ? _view.FindFocus(g) : null) ?? _view.CastellanFocus();
+        _focus = CinematicTarget() ?? _view.CastellanFocus();
         _camera.EnterCinematic(_focus.Node, _focus.Height, _focus.Distance);
+    }
+
+    private FocusTarget? CinematicTarget()
+    {
+        if (CursorOverWorld() is not Vector2 cursor)
+            return null;
+        Vector3? ground = _camera.GroundUnder(cursor);
+        FocusTarget? byGround = ground is Vector3 g ? _view.FindFocus(g) : null;
+        (Vector3 origin, Vector3 direction) = _camera.RayAt(cursor);
+        float toGround = ground is Vector3 gp ? origin.DistanceTo(gp) : float.MaxValue;
+        if (_view.PickResource(origin, direction, toGround, out float toResource) is not ResourceNode resource)
+            return byGround;
+        if (byGround is not null && _view.IsCharacter(byGround) && origin.DistanceTo(byGround.Node.GlobalPosition) < toResource)
+            return byGround;
+        return _view.ResourceFocus(resource) ?? byGround;
     }
 
     /// <summary>

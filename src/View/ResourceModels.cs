@@ -91,7 +91,10 @@ public partial class ResourceModels : Node3D
     /// tronco; pedra e veio: a caixa inteira. Assim clicar na copa, que na tela fica acima e atrás do pé, aponta para a
     /// célula da árvore, e não para o chão atrás dela.
     /// </summary>
-    public ResourceNode? Pick(Vector3 origin, Vector3 direction, float maxDistance)
+    public ResourceNode? Pick(Vector3 origin, Vector3 direction, float maxDistance) => Pick(origin, direction, maxDistance, out _);
+
+    /// <summary>Como <see cref="Pick(Vector3, Vector3, float)"/>, devolvendo também a distância do acerto ao longo do raio.</summary>
+    public ResourceNode? Pick(Vector3 origin, Vector3 direction, float maxDistance, out float distance)
     {
         VisualSettings.PickSettings pick = VisualSettings.Current.ResourcePick;
         ResourceNode? best = null;
@@ -125,6 +128,7 @@ public partial class ResourceModels : Node3D
                 }
             }
         }
+        distance = bestDistance;
         return best;
     }
 
