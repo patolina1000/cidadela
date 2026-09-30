@@ -22,7 +22,7 @@
       "id": "protagonista", "nome": "O que não dorme", "categoria": "personagens",
       "descricao": "Nasceu completo, de um cristal que não explicou por quê. Não come, não dorme, não lembra. Constrói.",
       "historia": "Abriu os olhos numa clareira que não está nos mapas. O cristal estava lá: pequeno, azul, calado. Ele esperou uma palavra; não veio. Então começou a empilhar pedras. Toca os cristais podres com as mãos nuas e não se quebra. Ninguém sabe se isso é um dom. Depois das batalhas, às vezes constrói um banco onde ninguém vai sentar.",
-      "modelo": "castellan", "animacoes": ["idle", "run", "work"], "descoberto": true
+      "modelo": "castellan", "animacoes": ["idle", "run"], "descoberto": true
     },
     {
       "id": "aldeao", "nome": "Os Segundos", "categoria": "personagens",

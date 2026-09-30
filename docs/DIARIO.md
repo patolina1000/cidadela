@@ -5444,3 +5444,18 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:03 de relógio (fim).
+
+---
+
+## 2026-09-30 — Menu inicial e Biografia com a protagonista v2
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (passo 6):** menu inicial e Biografia passam a mostrar a v2.
+- **O que foi feito:** os dois já usam o `CastellanVisual`, que agora monta a v2 por padrão (idle, cristal aceso, rosto
+  piscando). Na Biografia, a entrada da protagonista (`data/biography.json`) ficou só com os botões "idle" e "run" (a v2
+  não tem clipe de trabalho; o "work" era da v1).
+- **Conferido:** menu com a v2 no meio dos aldeões; Biografia com a v2 no palco e os dois botões. Log sem erros. Prints:
+  `docs/prints/protagonista_v2_menu.png` e `protagonista_v2_biografia.png`.
+- `dotnet build`: 0 erros, 0 avisos.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 01:05 de relógio (fim).
