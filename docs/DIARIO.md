@@ -3180,3 +3180,11 @@ onde errou, correções manuais e quanto tempo levou.
   pelo bruto v2 da Meshy (`corpo_b_multi_1.glb`) escalado a 0,80 m, que o Diretor permitiu. O bruto sai levemente
   inclinado (é bruto, sem limpeza).
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~25 min.
+
+## 2026-09-29 — Cenário, tarefa 1, passo 4: árvore no Visor Cenário
+
+- **Feito:** `publicar.py` com as 4 árvores (GLB com o aldeão v2 junto) e a folha de contato por último; portal
+  "Visor Cenário" navegado até a folha. Conferi um GLB no visor: árvore 1 com 1,51 m ao lado do aldeão, 3/4 certo.
+- **Deu errado:** no laço do zsh o array começa em 1 e os títulos das árvores saíram deslocados; corrigi os 4
+  títulos direto no `visor.json`.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~5 min.

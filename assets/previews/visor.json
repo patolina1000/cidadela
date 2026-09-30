@@ -15,5 +15,52 @@
     "junto": [
       "assets/modelos/aldeao_v2/cabelos/cabelo_4.glb"
     ]
+  },
+  {
+    "quando": "2026-09-29T21:34:09",
+    "titulo": "Árvore 1 — gota",
+    "tipo": "glb",
+    "caminho": "assets/cenario/arvore/arvore_1.glb",
+    "nota": "Árvore piloto, 192 triângulos, cores chapadas da paleta. Aldeão v2 ao lado para escala.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:34:10",
+    "titulo": "Árvore 2 — dupla",
+    "tipo": "glb",
+    "caminho": "assets/cenario/arvore/arvore_2.glb",
+    "nota": "Árvore piloto, 240 triângulos, cores chapadas da paleta. Aldeão v2 ao lado para escala.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:34:11",
+    "titulo": "Árvore 3 — tufos",
+    "tipo": "glb",
+    "caminho": "assets/cenario/arvore/arvore_3.glb",
+    "nota": "Árvore piloto, 328 triângulos, cores chapadas da paleta. Aldeão v2 ao lado para escala.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:34:12",
+    "titulo": "Árvore 4 — alta",
+    "tipo": "glb",
+    "caminho": "assets/cenario/arvore/arvore_4.glb",
+    "nota": "Árvore piloto, 192 triângulos, cores chapadas da paleta. Aldeão v2 ao lado para escala.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:34:13",
+    "titulo": "Árvore piloto — folha de contato",
+    "tipo": "imagem",
+    "caminho": "assets/previews/cenario/arvore_contato.png",
+    "nota": "4 variações (192/240/328/192 tri; 1,48/1,58/1,35/1,67 m). Câmera do jogo 0,4/1/2,5, bosque de 8, personagem atrás (aldeão 0,5 m: 0 % visível; 1 m: 88 %), crepúsculo."
   }
 ]
