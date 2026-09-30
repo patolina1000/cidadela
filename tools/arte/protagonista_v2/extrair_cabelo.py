@@ -36,6 +36,7 @@ from mathutils.bvhtree import BVHTree
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent / "aldeao_v2"))
+from cabelo_lib import scalp_mask  # noqa: E402
 from chifres_lib import head_ellipsoid, merged_mesh  # noqa: E402
 from corpo_lib import ROOT, import_glb  # noqa: E402
 from rig_lib import export_contract_glb, play  # noqa: E402
@@ -55,7 +56,14 @@ HORN_REACH = 0.02  # m: dentro do chifre = lado de dentro da face mais próxima,
 EYE_MARGIN = 0.006  # m em volta da janela dos olhos
 MERGE_DIST = 0.001
 BORDER_PASSES = 6
-HOLE_SIDES = 24  # furos com até este número de arestas são fechados antes da decimação
+HOLE_SIDES = 24
+CAP_OFFSET = 0.004  # m: calota por código, casca da pele do couro cabeludo afastada isto (por baixo das mechas)
+CAP_TRIS = 140
+CAP_TUCK = 0.01
+HORN_RING = 0.012
+CAP_SIDE_DROP = 0.008
+CAP_NECK_DROP = 0.008  # m: na nuca a calota desce além da borda do teste (a cabeça inclina no idle)  # m: a calota cobre a pele até isto de cada chifre  # m da borda da calota até o afastamento cheio
+VOLUME = 0.003  # m: as mechas de cima vão para fora (volume), da altura dos olhos para cima, crescendo até o topo  # furos com até este número de arestas são fechados antes da decimação
 PATCHES = ("Olhos", "Boca")
 WEIGHT_BONES = ("Head", "neck", "Spine", "Spine01")
 CHECK_POINTS = 8
@@ -148,6 +156,112 @@ def close_holes(bm):
         bmesh.ops.holes_fill(bm, edges=small, sides=HOLE_SIDES)
         bmesh.ops.triangulate(bm, faces=bm.faces)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+
+
+def build_cap(head, eyes, cb, report, horn_tree=None):
+    """Calota por código: as faces do couro cabeludo (cabelo_lib.scalp_mask, borda recuada 2 mm para ficar por baixo da
+    linha do cabelo da Meshy) copiadas da malha da cabeça e afastadas CAP_OFFSET pela normal, decimadas a CAP_TRIS. Garante
+    que nenhuma pele do couro cabeludo aparece entre as mechas nem em volta da base dos chifres."""
+    mw = head.matrix_world
+    pts = np.array([(mw @ v.co)[:] for v in head.data.vertices])
+    ep = np.array([(eyes.matrix_world @ v.co)[:] for v in eyes.data.vertices])
+    # nas laterais a calota desce CAP_SIDE_DROP abaixo da borda do teste (o idle vira a cabeça e a pele dali, com peso do
+    # pescoço, desliza em relação à calota, que é 100% Head); a linha do cabelo da testa não muda
+    mask = scalp_mask(pts, cb, float(ep[:, 2].max()), float(pts[:, 2].max()), float(pts[:, 2].min()), shrink=0.002,
+                      eye_mid_z=float(ep[:, 2].max()) - 0.02 - CAP_SIDE_DROP, neck_drop=CAP_NECK_DROP)
+    if horn_tree is not None:  # anel em volta da base dos chifres, mesmo onde a base encosta na linha do cabelo
+        ring = np.array([horn_tree.find_nearest(Vector(p.tolist()))[3] < HORN_RING for p in pts])
+        mask = mask | ring
+        report["anel_dos_chifres_vertices"] = int(ring.sum())
+    bm = bmesh.new()
+    bm.from_mesh(head.data)
+    bm.transform(mw)
+    bm.normal_update()
+    bm.faces.ensure_lookup_table()
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if not all(mask[v.index] for v in f.verts)], context="FACES")
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
+    # a borda encosta na pele (sem fresta para espiar por baixo de lado); o afastamento sobe até CAP_OFFSET a 1 cm da borda
+    edge_pts = np.array([v.co[:] for v in bm.verts if v.is_boundary]) if any(v.is_boundary for v in bm.verts) else np.zeros((0, 3))
+    for v in bm.verts:
+        d = float(np.linalg.norm(edge_pts - np.array(v.co[:]), axis=1).min()) if len(edge_pts) else 1.0
+        v.co = v.co + v.normal * max(0.0005, CAP_OFFSET * min(1.0, d / CAP_TUCK))
+    mesh = bpy.data.meshes.new("calota")
+    bm.to_mesh(mesh)
+    bm.free()
+    cap = bpy.data.objects.new("calota", mesh)
+    bpy.context.scene.collection.objects.link(cap)
+    mesh.calc_loop_triangles()
+    before = len(mesh.loop_triangles)
+    if before > CAP_TRIS:
+        # a borda não encolhe: vértices de borda com peso 0 no grupo da decimação (peso 0 trava)
+        edge_count = {}
+        for p in mesh.polygons:
+            for k in p.edge_keys:
+                edge_count[k] = edge_count.get(k, 0) + 1
+        border = {i for k, n in edge_count.items() if n == 1 for i in k}
+        g = cap.vertex_groups.new(name="decimar")
+        g.add([v.index for v in mesh.vertices if v.index not in border], 1.0, "REPLACE")
+        g.add(list(border), 0.0, "REPLACE")
+        mod = cap.modifiers.new("decimar", "DECIMATE")
+        mod.decimate_type = "COLLAPSE"
+        mod.ratio = CAP_TRIS / before
+        mod.use_collapse_triangulate = True
+        mod.vertex_group = "decimar"
+        mod.vertex_group_factor = 10.0
+        bpy.context.view_layer.objects.active = cap
+        bpy.ops.object.modifier_apply(modifier=mod.name)
+    mesh.calc_loop_triangles()
+    cap.vertex_groups.clear()
+    report["calota"] = {"faces_da_pele": int(before), "triangulos": len(mesh.loop_triangles), "afastamento_mm": CAP_OFFSET * 1000}
+    return cap
+
+
+def add_volume(mesh, cb, eye_top_z, head_top_z):
+    """Mechas de cima para fora, pela direção a partir do centro da cabeça: 0 na altura dos olhos, VOLUME no topo."""
+    n = 0
+    c = Vector(cb.tolist())
+    for v in mesh.vertices:
+        t = (v.co.z - eye_top_z) / max(head_top_z - eye_top_z, 1e-6)
+        if t <= 0:
+            continue
+        d = (v.co - c).normalized()
+        v.co += d * VOLUME * min(t, 1.0)
+        n += 1
+    mesh.update()
+    return n
+
+
+def copy_skin_weights(hair, head, indices):
+    """A calota segue a pele de baixo dela: cada vértice copia os pesos do vértice mais próximo da malha da cabeça (em repouso).
+    Com 100% Head, a pele atrás da orelha (com peso do pescoço) furava a calota quando o idle vira a cabeça."""
+    from mathutils.kdtree import KDTree
+    hv = [head.matrix_world @ v.co for v in head.data.vertices]
+    kd = KDTree(len(hv))
+    for i, p in enumerate(hv):
+        kd.insert(p, i)
+    kd.balance()
+    names = {g.index: g.name for g in head.vertex_groups}
+    n = 0
+    for i in indices:
+        v = hair.data.vertices[i]
+        _co, j, _d = kd.find(hair.matrix_world @ v.co)
+        src = [(names[g.group], g.weight) for g in head.data.vertices[j].groups if g.weight > 1e-4]
+        total = sum(w for _, w in src) or 1.0
+        for g in list(v.groups):
+            hair.vertex_groups[g.group].remove([i])
+        for name, w in src:
+            grp = hair.vertex_groups.get(name) or hair.vertex_groups.new(name=name)
+            grp.add([i], w / total, "REPLACE")
+        n += 1
+    return n
+
+
+def join_into(hair, other):
+    bpy.ops.object.select_all(action="DESELECT")
+    other.select_set(True)
+    hair.select_set(True)
+    bpy.context.view_layer.objects.active = hair
+    bpy.ops.object.join()
 
 
 def smooth_borders(obj, passes=BORDER_PASSES):
@@ -421,16 +535,19 @@ def main() -> None:
     bm.free()
     hair.data.calc_loop_triangles()
     report["triangulos_antes"] = len(hair.data.loop_triangles)
-    if len(hair.data.loop_triangles) > MAX_TRIS:
+    cap = build_cap(head, eyes, cb, report, horn_tree)
+    budget = MAX_TRIS - report["calota"]["triangulos"] - 12
+    if len(hair.data.loop_triangles) > budget:
         mod = hair.modifiers.new("decimar", "DECIMATE")
         mod.decimate_type = "COLLAPSE"
-        mod.ratio = MAX_TRIS / len(hair.data.loop_triangles) * 0.96
+        mod.ratio = budget / len(hair.data.loop_triangles) * 0.97
         mod.use_collapse_triangulate = True
         bpy.context.view_layer.objects.active = hair
         bpy.ops.object.modifier_apply(modifier=mod.name)
 
-    # DEPOIS da decimação: borda suavizada, folga do corpo e dos retalhos, e o corte dos chifres de novo
+    # DEPOIS da decimação: borda suavizada, volume, a calota junta, folga do corpo e dos retalhos, e o corte dos chifres
     report["hairline_suavizada_vertices"] = smooth_borders(hair)
+    report["volume_vertices"] = add_volume(hair.data, cb, float(eye_box[1][2]), float(hp[:, 2].max()))
     pushed = push_clearance(hair.data, body_tree, body_normals, patch_tree, patch_normals, chin_z)
     report["vertices_empurrados_para_a_folga"] = pushed
     bm = bmesh.new()
@@ -442,6 +559,11 @@ def main() -> None:
     bm.to_mesh(hair.data)
     bm.free()
     report["faces_cortadas_pelos_chifres_depois"] = len(cut)
+    # a calota entra depois do corte dos chifres: ela fica inteira (a parte dentro do chifre nunca aparece), então não há pele
+    # entre o cabelo e a base dele
+    report["calota"]["empurroes_de_folga"] = push_clearance(cap.data, body_tree, body_normals, patch_tree, patch_normals, chin_z)
+    cap_range = (len(hair.data.vertices), len(hair.data.vertices) + len(cap.data.vertices))
+    join_into(hair, cap)
     hair.data.calc_loop_triangles()
     report["triangulos"] = len(hair.data.loop_triangles)
     assert report["triangulos"] <= MAX_TRIS, report
@@ -481,6 +603,7 @@ def main() -> None:
                 groups[b2].add([v.index], t, "REPLACE")
                 break
     report["pesos"] = {"degraus_z_m": {n: round(z, 4) for n, z in ladder}}
+    report["pesos"]["calota_copiada_da_pele"] = copy_skin_weights(hair, head, range(*cap_range))
     hair.parent = armature
     hair.matrix_parent_inverse = armature.matrix_world.inverted()
     hair.modifiers.new("Armature", "ARMATURE").object = armature

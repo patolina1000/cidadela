@@ -3546,3 +3546,27 @@ onde errou, correções manuais e quanto tempo levou.
 - **Folha:** `folha_limpeza.py` → `assets/previews/protagonista_v2/cabelo_limpeza.png` (+ crepúsculo); `cabelo_prova.png` e
   `cabelo_gifs/` refeitos com o cabelo limpo (chifres atuais), no visor.
 - **Créditos:** 0 (na protagonista: 121 de 300). **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-30 — Protagonista v2: couro cabeludo coberto (chifres recuados, calota, anel, volume, teste automático)
+
+- **Pedido (Arthur):** o cabelo em volta dos chifres estava escasso, dava para ver a careca. Usar a variante com a base recuada;
+  nenhuma pele do couro cabeludo à mostra em nenhuma vista, zoom ou quadro; anel de cabelo em volta da base dos chifres; volume
+  na calota (≤ 1.000 tri, folga de 2 mm, janela dos olhos); teste automático com meta zero; crédito só se a limpeza não bastar.
+- **Chifres:** a variante recuada virou a principal (`chifres.glb`: 20°, 1,3×, base 18 mm para trás, 291 tri).
+- **Cabelo (`extrair_cabelo.py`, 0 crédito):** calota por código sob as mechas da Meshy — as faces do couro cabeludo da
+  cabeça (`cabelo_lib.scalp_mask`) afastadas 4 mm pela normal (borda encostando na pele, subindo em 1 cm), decimadas a ~170 tri
+  com a borda travada, com a folga conferida no meio das faces e os pesos copiados da pele de baixo (atrás da orelha a pele
+  tem peso do pescoço); ela entra depois do corte dos chifres, então fica inteira sob eles; anel: a pele a até 12 mm de cada
+  chifre também entra na calota; nas laterais e na nuca a calota desce 8 mm além da borda do teste (o idle vira e inclina a
+  cabeça). Volume: as mechas de cima vão até 3 mm para fora (0 na altura dos olhos). Total **932 triângulos**; braços sem
+  nada dentro do cabelo em nenhum quadro (folga mínima 2,6 mm).
+- **Teste (`teste_couro.py`):** a pele do couro cabeludo (da linha do cabelo para trás; nas laterais só acima do meio dos
+  olhos) em vermelho puro, o resto em preto; 10 vistas + câmera do jogo nos 3 zooms, em repouso, 4 quadros da corrida e 3 do
+  idle (104 imagens). **Antes (variante recuada sem a calota): 668 px; depois: 0 px.** Resultado em
+  `assets/previews/protagonista_v2/teste_couro.json`.
+- **Folha:** `folha_couro.py` → `cabelo_couro.png` (+ crepúsculo): closes em volta dos chifres (3/4 e de cima), imagens do
+  teste antes e depois, câmera do jogo; `cabelo_prova.png` e `cabelo_gifs/` refeitos; no visor.
+- **O que deu errado e foi corrigido:** a primeira máscara do teste incluía as laterais do rosto até a mandíbula (não é couro
+  cabeludo: 8.515 px com ela); o corte dos chifres furava a calota; a decimação comia a borda da calota; um erro de sinal meu na
+  borda de trás da máscara; pontos de pele na nuca quando o idle inclina a cabeça (calota descendo 8 mm).
+- **Créditos:** 0 (na protagonista: 121 de 300). **Correções manuais:** nenhuma. **Tempo:** ~2 h 30.

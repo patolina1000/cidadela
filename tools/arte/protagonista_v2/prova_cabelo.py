@@ -110,6 +110,13 @@ def main() -> None:
         cam = ortho_camera(scene, d, head_c, 0.34)
         render(scene, out / f"cabeca_{view}.png")
         bpy.data.objects.remove(cam)
+    # closes em volta dos chifres (3/4 dos dois lados e de cima)
+    for view, d, c in (("chifre_esq_tq", Vector((1, -0.7, 0.6)), Vector((0.05, 0.02, 0.76))),
+                       ("chifre_dir_tq", Vector((-1, -0.7, 0.6)), Vector((-0.05, 0.02, 0.76))),
+                       ("chifres_cima", Vector((0, 0.15, 1)), Vector((0, 0.02, 0.77)))):
+        cam = ortho_camera(scene, d, c, 0.16 if view != "chifres_cima" else 0.2)
+        render(scene, out / f"close_{view}.png")
+        bpy.data.objects.remove(cam)
     for view, d in (("frente", Vector((0, -1, 0))), ("lado", Vector((1, 0, 0))), ("costas", Vector((0, 1, 0))), ("tres_quartos", Vector((1, -1, 0.2)))):
         cam = ortho_camera(scene, d, Vector((0, 0, 0.42)), 0.95)
         render(scene, out / f"corpo_{view}.png")
@@ -142,4 +149,5 @@ def main() -> None:
     print("PROVA ok")
 
 
-main()
+if __name__ == "__main__":
+    main()

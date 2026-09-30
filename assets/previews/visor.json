@@ -627,5 +627,68 @@
     "tipo": "imagem",
     "caminho": "assets/previews/protagonista_v2/cabelo_limpeza.png",
     "nota": "Antes/depois da limpeza; chifres 20° atuais × base recuada 18 mm (de frente saem de dentro do cabelo). Recomendação: recuada."
+  },
+  {
+    "quando": "2026-09-30T00:47:35",
+    "titulo": "Protagonista v2 — idle-loop, couro cabeludo coberto (costas)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_costas.gif",
+    "nota": "Calota + anel dos chifres; teste: 0 px de pele."
+  },
+  {
+    "quando": "2026-09-30T00:47:36",
+    "titulo": "Protagonista v2 — idle-loop, couro cabeludo coberto (lado)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_lado.gif",
+    "nota": "Calota + anel dos chifres; teste: 0 px de pele."
+  },
+  {
+    "quando": "2026-09-30T00:47:37",
+    "titulo": "Protagonista v2 — idle-loop, couro cabeludo coberto (jogo)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_jogo.gif",
+    "nota": "Calota + anel dos chifres; teste: 0 px de pele."
+  },
+  {
+    "quando": "2026-09-30T00:47:38",
+    "titulo": "Protagonista v2 — run-loop, couro cabeludo coberto (costas)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_costas.gif",
+    "nota": "Calota + anel dos chifres; teste: 0 px de pele."
+  },
+  {
+    "quando": "2026-09-30T00:47:39",
+    "titulo": "Protagonista v2 — run-loop, couro cabeludo coberto (lado)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_lado.gif",
+    "nota": "Calota + anel dos chifres; teste: 0 px de pele."
+  },
+  {
+    "quando": "2026-09-30T00:47:40",
+    "titulo": "Protagonista v2 — run-loop, couro cabeludo coberto (jogo)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_jogo.gif",
+    "nota": "Calota + anel dos chifres; teste: 0 px de pele."
+  },
+  {
+    "quando": "2026-09-30T00:47:41",
+    "titulo": "Protagonista v2 — cabelo com a calota (folha)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_prova.png",
+    "nota": "932 tri; chifres recuados."
+  },
+  {
+    "quando": "2026-09-30T00:47:42",
+    "titulo": "Protagonista v2 — couro cabeludo coberto (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_couro_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-30T00:47:43",
+    "titulo": "Protagonista v2 — couro cabeludo coberto (antes/depois)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_couro.png",
+    "nota": "Teste automático em 104 imagens: 668 px de pele antes, 0 depois. Chifres recuados, anel de cabelo em volta da base."
   }
 ]
