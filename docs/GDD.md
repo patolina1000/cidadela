@@ -46,7 +46,7 @@ O nicho "automação + defesa por ondas" já existe, mas quase sempre em sci-fi 
 
 ## 3. Loop de gameplay
 
-Cada ciclo tem dia (construir) e noite (defender). Sugestão inicial: dia de 12 minutos, noite de 4 a 6 minutos, com botão de pausa e velocidade 1x/2x/3x.
+Cada ciclo tem dia (construir) e noite (defender). Sugestão inicial: dia de 12 minutos, noite de 4 a 6 minutos, com botão de pausa (Espaço). Sem velocidade 1x/2x/3x, como no Factorio (decidido em 29/09/2026).
 
 ```mermaid
 flowchart LR
@@ -343,7 +343,7 @@ Câmera 3D em perspectiva, de cima e inclinada (cerca de 50° a 60°), como em A
 
 A solução mais usada em jogos com andares (The Sims, Prison Architect, Oxygen Not Included em outro formato) é o **seletor de andar**:
 
-1. **Teclas PageUp/PageDown** (ou 1, 2, 3) escolhem o andar ativo.
+1. **Teclas PageUp/PageDown** escolhem o andar ativo (1–9 são da barra de construção).
 2. **Andares acima do ativo ficam invisíveis** ou em transparência, para ver o que está embaixo.
 3. **Andares abaixo do ativo aparecem escurecidos**, só como referência.
 4. **Construção só no andar ativo**, sobre uma grade própria de cada andar.

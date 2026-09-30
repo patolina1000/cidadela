@@ -4218,3 +4218,27 @@ onde errou, correções manuais e quanto tempo levou.
   aprovado: precisa da decisão dele); no jogo há folga (80 FPS em 3024×1890).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:52–22:00 de relógio.
+
+---
+
+## 2026-09-29 — Sem velocidade 1x/2x/3x (decisão do Arthur); a pausa fica
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (decisão do Arthur, via Diretor):** o jogo não terá velocidade 1x/2x/3x (o Factorio não tem). Tirar as
+  teclas `-` e `=`, a lista em `data/time.json`, o indicador de velocidade e os testes dela; manter a pausa no Espaço e
+  o indicador de pausado. No GDD: seção 3 só com a pausa; seção 12 sem o "(ou 1, 2, 3)" dos andares.
+- **O que foi feito:**
+  - `SimClock`: sai `Speed` (e o teto de ticks por frame volta a 5 fixo); fica `Paused`.
+  - Removidos `src/Simulation/GameSpeeds.cs`, `data/time.json` e `tests/.../GameSpeedTests.cs`; o teste da pausa
+    (nenhum tick, `Alpha` mantido, retoma de onde parou) passou para `SimClockTests`. `dotnet test`: 117 aprovados.
+  - `GameRoot`: saem as teclas `-`/`=` e o `ChangeSpeed`; o indicador virou `PauseLabel` ("Pausado (Espaço)"), que só
+    aparece na pausa; o alvo de ticks da linha de depuração volta a 20 (0 na pausa).
+  - `docs/GDD.md`: seção 3 "com botão de pausa (Espaço). Sem velocidade 1x/2x/3x, como no Factorio (decidido em
+    29/09/2026)"; seção 12 "Teclas PageUp/PageDown escolhem o andar ativo (1–9 são da barra de construção)".
+    Auditoria: itens 1 e 4 com a decisão.
+- **Conferido no jogo:** Espaço pausa (0 ticks/s, "Pausado (Espaço)") e continua (20 ticks/s, indicador some); log
+  sem erros.
+- **O que deu errado:** nada.
+- `dotnet build`: 0 erros, 0 avisos.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:01–22:04 de relógio.

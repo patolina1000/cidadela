@@ -11,7 +11,8 @@ Legenda: **[decidido]** = o GDD já decide, só falta fazer. **[Arthur]** = prec
 ## Lacunas e defeitos, em ordem de valor
 
 1. **Não há pausa nem velocidade 1x/2x/3x** (seção 3). O `SimClock` só converte tempo real em ticks.
-   **[decidido]** — feito em 531df05.
+   **[decidido]** — feito em 531df05. **Decisão do Arthur (29/09):** sem velocidade (como no Factorio); a
+   velocidade saiu e a pausa no Espaço ficou; GDD atualizado.
 2. **Do jogo não se volta ao menu nem se sai.** No `Main.tscn` o Esc só solta o que está na mão ou sai da
    cinematográfica; não há menu de pausa. A única saída é fechar a janela. **[decidido pelo pedido]** — feito em
    1fa6a14.
@@ -22,6 +23,7 @@ Legenda: **[decidido]** = o GDD já decide, só falta fazer. **[Arthur]** = prec
    (ou 1, 2, 3)" para os andares; o pedido sugeria 1/2/3 para a velocidade. Hoje 1–9 é a barra. Para a velocidade
    usei `-` e `=` (a tecla do `+`) e Espaço para pausar; andares ficam com PageUp/PageDown quando existirem.
    **[Arthur]**: confirmar essas teclas e riscar o "(ou 1, 2, 3)" dos andares no GDD.
+   **Decidido pelo Arthur (29/09):** Espaço pausa, sem velocidade; andares só com PageUp/PageDown (GDD corrigido).
 5. **Menu inicial sem aldeões.** O GDD diz "a protagonista em idle com o cristal aceso e aldeões por perto"; o
    `MenuRoot` ainda diz "aguardando o novo aldeão", mas o aldeão v2 já está no jogo. **[decidido]**, 0 crédito
    (é pôr 3 ou 4 `VillagerVisual` como no jogo). Feito na tarefa 2.

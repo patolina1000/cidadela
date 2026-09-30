@@ -23,6 +23,20 @@ public class SimClockTests
     }
 
     [Fact]
+    public void PausedClockRunsNoTicksAndKeepsAlpha()
+    {
+        var clock = new SimClock();
+        clock.Advance(0.025); // meio tick
+        double alpha = clock.Alpha;
+        clock.Paused = true;
+        for (int i = 0; i < 60; i++)
+            Assert.Equal(0, clock.Advance(1.0 / 60.0));
+        Assert.Equal(alpha, clock.Alpha);
+        clock.Paused = false;
+        Assert.Equal(1, clock.Advance(0.025)); // retoma de onde parou
+    }
+
+    [Fact]
     public void NegativeDeltaIsIgnored()
     {
         var clock = new SimClock();
