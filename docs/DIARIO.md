@@ -4089,3 +4089,29 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:41–21:43 de relógio.
+
+---
+
+## 2026-09-29 — Configurações salvas em `user://` e aplicadas ao abrir o jogo
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 2c: completar as Configurações do esboço do GDD (tela cheia e V-Sync), salvas em `user://` e
+  aplicadas ao abrir o jogo, acessíveis do menu inicial e do de pausa. Passo 3: prints de cada tela e logs.
+- **O que foi feito:**
+  - `GameSettings` (estático): `user://settings.cfg` (`ConfigFile`, seção `video`, chaves `fullscreen` e `vsync`);
+    `EnsureApplied()` lê e aplica uma vez por execução, chamado pelo `MenuRoot` e pelo `GameRoot` (vale também
+    rodando o `Main.tscn` direto); sem arquivo, vale o `project.godot`. Cada clique numa caixa aplica e salva na hora.
+  - `SettingsPanel` usa o `GameSettings` e, ao abrir, mostra o estado real (o V-Sync também muda pela tecla do
+    painel F3, que continua sem salvar, por ser depuração).
+  - Auditoria atualizada: itens 1 a 3 feitos, e dois defeitos vistos nos prints (caixa desmarcada quase invisível
+    no tema padrão; palco da Biografia com faixas), os dois para o Arthur dizer se incomodam.
+- **Conferido no jogo:** no menu inicial, desliguei o V-Sync → o arquivo ficou `vsync=false`; parei e abri de
+  novo → log `[config] user://settings.cfg: tela cheia True, V-Sync False` e a caixa desmarcada. Liguei o V-Sync de
+  volta no fim (o arquivo ficou igual ao padrão). Biografia abre e volta. Logs sem erros.
+  Prints (960×540): `docs/prints/polimento_menu_inicial.png`, `polimento_configuracoes_salvas.png`,
+  `polimento_biografia.png`, junto dos `jogo_pausado.png` e `menu_pausa.png` dos passos anteriores.
+- **O que deu errado:** um clique sintético na caixa do V-Sync não pegou; com um movimento do mouse antes do
+  clique, pegou.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:43–21:46 de relógio.

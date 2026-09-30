@@ -4,7 +4,8 @@ namespace Cidadela.View;
 
 /// <summary>
 /// Painel de Configurações (GDD, seção 12: tela cheia e V-Sync), à direita do painel do menu.
-/// Usado pelo menu inicial e pelo de pausa. O volume fica desativado até existir som.
+/// Usado pelo menu inicial e pelo de pausa; cada mudança é salva na hora (<see cref="GameSettings"/>).
+/// O volume fica desativado até existir som.
 /// </summary>
 public partial class SettingsPanel : PanelContainer
 {
@@ -29,16 +30,23 @@ public partial class SettingsPanel : PanelContainer
         title.AddThemeColorOverride("font_color", Palette.Bone);
         column.AddChild(title);
 
-        var fullscreen = new CheckBox { Text = "Tela cheia", ButtonPressed = DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Fullscreen };
-        fullscreen.Toggled += on => DisplayServer.WindowSetMode(on ? DisplayServer.WindowMode.Fullscreen : DisplayServer.WindowMode.Windowed);
+        var fullscreen = new CheckBox { Text = "Tela cheia", ButtonPressed = GameSettings.Fullscreen };
+        fullscreen.Toggled += GameSettings.SetFullscreen;
         column.AddChild(fullscreen);
 
-        var vsync = new CheckBox { Text = "V-Sync", ButtonPressed = DisplayServer.WindowGetVsyncMode() != DisplayServer.VSyncMode.Disabled };
-        vsync.Toggled += on => DisplayServer.WindowSetVsyncMode(on ? DisplayServer.VSyncMode.Enabled : DisplayServer.VSyncMode.Disabled);
+        var vsync = new CheckBox { Text = "V-Sync", ButtonPressed = GameSettings.Vsync };
+        vsync.Toggled += GameSettings.SetVsync;
         column.AddChild(vsync);
 
         column.AddChild(new Label { Text = "Volume (ainda sem som)" });
         column.AddChild(new HSlider { MinValue = 0, MaxValue = 100, Value = 80, Editable = false });
+
+        // Ao abrir, mostra o estado real (a tela cheia também muda pelo sistema, e o V-Sync pela tecla do painel F3).
+        VisibilityChanged += () =>
+        {
+            fullscreen.SetPressedNoSignal(GameSettings.Fullscreen);
+            vsync.SetPressedNoSignal(GameSettings.Vsync);
+        };
 
         var close = new Button { Text = "Fechar" };
         close.Pressed += () => Visible = false;

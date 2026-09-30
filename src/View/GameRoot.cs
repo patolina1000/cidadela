@@ -60,6 +60,7 @@ public partial class GameRoot : Node3D
 
     public override void _Ready()
     {
+        GameSettings.EnsureApplied();
         GameData data = GameData.Parse(
             FileAccess.GetFileAsString(ItemsPath),
             FileAccess.GetFileAsString(ResourcesPath),

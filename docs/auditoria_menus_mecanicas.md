@@ -11,13 +11,13 @@ Legenda: **[decidido]** = o GDD já decide, só falta fazer. **[Arthur]** = prec
 ## Lacunas e defeitos, em ordem de valor
 
 1. **Não há pausa nem velocidade 1x/2x/3x** (seção 3). O `SimClock` só converte tempo real em ticks.
-   **[decidido]** — feito nesta tarefa (item 2a).
+   **[decidido]** — feito em 531df05.
 2. **Do jogo não se volta ao menu nem se sai.** No `Main.tscn` o Esc só solta o que está na mão ou sai da
-   cinematográfica; não há menu de pausa. A única saída é fechar a janela. **[decidido pelo pedido]** — feito
-   nesta tarefa (item 2b).
+   cinematográfica; não há menu de pausa. A única saída é fechar a janela. **[decidido pelo pedido]** — feito em
+   1fa6a14.
 3. **Configurações não são salvas.** Tela cheia e V-Sync funcionam no painel do menu, mas voltam ao padrão a cada
-   abertura, e o painel só existe no menu inicial. **[decidido]** (seção 12: "esboço: tela cheia e V-Sync") — feito
-   nesta tarefa (item 2c).
+   abertura, e o painel só existe no menu inicial. **[decidido]** (seção 12: "esboço: tela cheia e V-Sync") — feito no
+   commit das configurações (`user://settings.cfg`).
 4. **Conflito de teclas no GDD: 1, 2, 3.** A seção 20 dá 1–9 à barra de construção; a seção 12 sugere "PageUp/PageDown
    (ou 1, 2, 3)" para os andares; o pedido sugeria 1/2/3 para a velocidade. Hoje 1–9 é a barra. Para a velocidade
    usei `-` e `=` (a tecla do `+`) e Espaço para pausar; andares ficam com PageUp/PageDown quando existirem.
@@ -50,6 +50,18 @@ Legenda: **[decidido]** = o GDD já decide, só falta fazer. **[Arthur]** = prec
     GDD; deixei como estava. **[Arthur]**: tirar até existir som, ou manter como lembrete.
 15. **Debug na tela do jogo.** A linha de cima (ticks, FPS, patamar dos aldeões, V e B) aparece sempre para quem
     joga. É útil agora; **[Arthur]**: esconder atrás do F3 quando amigos forem testar (meta da fase 1).
+
+16. **Caixa de seleção desmarcada quase invisível.** No painel de Configurações, com o tema padrão do Godot, a caixa
+    do V-Sync desligado some no fundo escuro (só o texto aparece; ver `docs/prints/polimento_configuracoes_salvas.png`).
+    Defeito visual pequeno; corrigir é dar um ícone próprio às caixas. **[Arthur]** só se quiser um tema de UI
+    próprio; senão, faço junto do próximo polimento.
+17. **Palco da Biografia com faixas.** No print `docs/prints/polimento_biografia.png` o palco 3D aparece como um
+    retângulo mais claro no alto, com a protagonista passando da borda de baixo para o painel das animações.
+    Pode ser o enquadramento do SubViewport; é visual, então **[Arthur]** diz se incomoda antes de eu mexer.
+    (A Biografia ainda mostra a protagonista v1, o que é esperado até a v2 chegar.)
+
+Prints desta auditoria: `docs/prints/jogo_pausado.png`, `menu_pausa.png`, `polimento_menu_inicial.png`,
+`polimento_configuracoes_salvas.png`, `polimento_biografia.png` (960×540, capturas do godot-ai).
 
 ## Conferido e em dia com o GDD
 
