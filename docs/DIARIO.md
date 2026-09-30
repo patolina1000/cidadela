@@ -4536,4 +4536,4 @@ onde errou, correções manuais e quanto tempo levou.
   abriria uma janela em tela cheia por cima dele. Vale na próxima vez que o jogo for aberto. `dotnet build`: 0 erros,
   0 avisos; `dotnet test`: 132 aprovados (a mudança é só na view).
 - **Correções manuais:** nenhuma.
-- **Tempo:** 22:53–22:57 de relógio.
+- **Tempo:** 22:52–22:53 de relógio.
