@@ -3362,3 +3362,23 @@ onde errou, correções manuais e quanto tempo levou.
 - **Visor:** novo tipo "texto" (.md): o `publicar.py` aceita, e o visor desenha títulos, listas, tabelas, negrito e
   código com um conversor pequeno (sem biblioteca nova).
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Protagonista v2: cristal do peito por código
+
+- **Pedido:** o cristal pelo contrato (≤ 60 triângulos, material "Cristal", único emissivo, encaixe Peito no Spine, luz
+  azul e camada da v1), peça própria posicionada no peito do corpo limpo em repouso; prova de frente, 3/4 e câmera do jogo
+  nos 3 zooms, com crepúsculo, ao lado da v1; tem de ler no zoom 0,4.
+- **v1 medida (`protagonista.glb`, repouso):** losango chato de 4 triângulos, 27 × 52 mm, 4 cm abaixo do Spine, um pouco
+  fora do centro; material "Cristal" com textura de emissão ciano (média #4C9DB7, pico #8DF1FC), força 3.
+- **Feito:** `tools/arte/protagonista_v2/cristal.py` → `assets/modelos/protagonista_v2/cristal.glb` + `cristal.json`:
+  prisma hexagonal alongado com pontas, **24 triângulos**, 30 × 58 × 16 mm, na linha do meio na altura da axila do corpo
+  limpo (0,559 m), meio encaixado (avança 8,1 mm do esterno), inclinado 15° para cima (a câmera vem de cima); cor #8FE3FF,
+  emissão #4CC3FF força 3 (o jogo multiplica por 3); no espaço do corpo em repouso. O `cristal.json` leva a luz da v1 para o
+  jogo (OmniLight cor 0,35/0,55/1, energia 0,85, alcance 2,3, atenuação 1,4, camada própria 20). `prova_cristal.py` e
+  `folha_cristal.py` → `assets/previews/protagonista_v2/cristal_prova.png`.
+- **Leitura:** câmera do jogo 1,7 × 2,6 / 4,4 × 6,6 / 11,8 × 17,8 px nos zooms 0,4 / 1 / 2,5 (v1: 1,6 × 1,9 / 3,9 × 4,9 /
+  10,2 × 13,4). No zoom 0,4 lê como um ponto ciano forte, como o da v1, de dia e no crepúsculo (no crepúsculo a luz cai e
+  a emissão não, como no jogo). Com força 3 × 3 a cor satura para ciano quase branco, como na v1.
+- **O que deu errado:** a emissão por uma imagem de 1 pixel no material toon não entrava no render (gema apagada no
+  crepúsculo); a prova passou a usar um material de emissão direto.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.

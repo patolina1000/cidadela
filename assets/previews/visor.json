@@ -215,5 +215,23 @@
     "tipo": "texto",
     "caminho": "assets/previews/protagonista_v2/plano_creditos.md",
     "nota": "Mínimo 51, máximo 146 créditos; sugestão de teto 150 com paradas. Saldo 2.258. Uthana é dinheiro, não crédito."
+  },
+  {
+    "quando": "2026-09-29T22:56:23",
+    "titulo": "Protagonista v2 — cristal do peito ao lado da v1",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cristal_prova.png",
+    "nota": "24 triângulos, 30×58×16 mm, material Cristal (emissão #4CC3FF força 3, ×3 no jogo). No zoom 0,4 lê como um ponto ciano forte, como o da v1, de dia e no crepúsculo."
+  },
+  {
+    "quando": "2026-09-29T22:56:24",
+    "titulo": "Protagonista v2 — corpo limpo com o cristal",
+    "tipo": "glb",
+    "caminho": "assets/modelos/protagonista_v2/protagonista_corpo_limpo.glb",
+    "nota": "Corpo limpo + cristal.glb no peito (espaço do corpo em repouso).",
+    "altura": 0.8,
+    "junto": [
+      "assets/modelos/protagonista_v2/cristal.glb"
+    ]
   }
 ]
