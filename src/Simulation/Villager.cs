@@ -272,17 +272,17 @@ public sealed class Villager
     }
 
     /// <summary>
-    /// Recurso com tronco: antes de coletar, chega da célula vizinha até encostar no tronco (tronco + corpo). Devolve
-    /// true quando já está encostado; sem tronco, sempre true (coleta da célula vizinha, como antes).
+    /// Recurso com forma (tronco, base da pedra): antes de coletar, chega da célula vizinha até encostar na borda real
+    /// dela. Devolve true quando já está encostado; sem forma, sempre true (coleta da célula vizinha, como antes).
     /// </summary>
     private bool Touching(SimWorld world, ResourceNode node)
     {
-        if (node.BlockRadius is not float trunk)
+        if (node.Shape is not ResourceShape shape)
             return true;
         var center = new Vector2(node.Cell.X, node.Cell.Z);
         Vector2 toTrunk = center - Position;
-        float gap = toTrunk.Length() - (trunk + Stats.Radius);
-        if (gap <= 0.02f)
+        float gap = shape.SignedDistance(Position) - Stats.Radius;
+        if (gap <= 0.02f || toTrunk.LengthSquared() < 1e-8f)
             return true;
         float step = MathF.Min(gap, Speed / SimClock.TicksPerSecond);
         Facing = Vector2.Normalize(toTrunk);
@@ -331,21 +331,31 @@ public sealed class Villager
                 return false;
             }
             var target = new Vector2(next.X, next.Z);
-            float arrive = world.BlockRadiusAt(next) is float trunk ? trunk + Stats.Radius + 0.02f : 0f;
             Vector2 delta = target - Position;
             float distance = delta.Length();
-            if (distance - arrive > budget)
+            if (world.ShapeAt(next) is ResourceShape shape)
+            {
+                // Célula de recurso: conta como atingida ao encostar na forma; dali escorrega rumo à próxima.
+                if (shape.SignedDistance(Position) <= Stats.Radius + 0.05f || distance < 1e-5f)
+                {
+                    _path.Dequeue();
+                    continue;
+                }
+                float move = MathF.Min(budget, distance);
+                Vector2 toward = delta / distance * move;
+                Facing = delta / distance;
+                Position = SlideAroundTrunks(world, toward);
+                return false;
+            }
+            if (distance > budget)
             {
                 Vector2 step = delta / distance * budget;
                 Facing = step / budget;
                 Position = SlideAroundTrunks(world, step);
                 return false;
             }
-            float walk = MathF.Max(0f, distance - arrive);
-            Position = arrive > 0f && distance > 1e-5f
-                ? world.PushOutOfTrunks(Position + delta / distance * walk, Stats.Radius)
-                : target;
-            budget -= walk;
+            Position = target;
+            budget -= distance;
             _path.Dequeue();
         }
         return _path.Count == 0;
@@ -401,7 +411,7 @@ public sealed class Villager
     private bool TrySetPath(SimWorld world, List<GridPos> goals)
     {
         List<GridPos>? path = GridPath.Find(world.BlocksVillager, Cell, goals,
-            cell => world.BlockRadiusAt(cell) is null ? 0f : Stats.ResourceCellCost);
+            cell => world.ShapeAt(cell) is null ? 0f : Stats.ResourceCellCost);
         if (path is null)
             return false;
         _path.Clear();

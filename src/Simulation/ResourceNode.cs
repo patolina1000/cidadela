@@ -14,8 +14,11 @@ public sealed class ResourceNode
     /// <summary>Escala sorteada (fixa pela célula); a cena desenha o modelo nela.</summary>
     public float Scale { get; }
 
-    /// <summary>Raio do círculo que bloqueia no centro da célula, em metros; null = bloqueia a célula inteira.</summary>
-    public float? BlockRadius { get; }
+    /// <summary>Giro em Y (radianos), fixo pela célula: a cena desenha o modelo nele e a forma de bloqueio gira junto.</summary>
+    public float Yaw { get; }
+
+    /// <summary>O que bloqueia no chão, já girado, escalado e na célula; null = bloqueia a célula inteira.</summary>
+    public ResourceShape? Shape { get; }
 
     public string Kind => Type.Kind;
     public bool IsDepleted => Remaining <= 0;
@@ -29,7 +32,10 @@ public sealed class ResourceNode
         uint h = CellHash.Of(cell.X, cell.Z);
         Variant = Pick(type.Variants, CellHash.Unit(h));
         Scale = type.MinScale + (type.MaxScale - type.MinScale) * CellHash.Unit(CellHash.Mix(h, 2));
-        BlockRadius = type.Variants.Count > 0 ? type.Variants[Variant].Radius * Scale : null;
+        Yaw = CellHash.Unit(CellHash.Mix(h, 1)) * 2f * System.MathF.PI;
+        Shape = type.Variants.Count > 0
+            ? type.Variants[Variant].Shape.Placed(new System.Numerics.Vector2(cell.X, cell.Z), Yaw, Scale)
+            : null;
     }
 
     private static int Pick(System.Collections.Generic.IReadOnlyList<ResourceVariant> variants, float r)

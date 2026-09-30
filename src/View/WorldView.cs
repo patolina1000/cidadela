@@ -24,6 +24,10 @@ public partial class WorldView : Node3D
     private Label3D _chestLabel = null!;
     private VillagerIcons _villagerIcons = null!;
     private ResourceModels _resourceModels = null!;
+    private CollisionDebug _collisionDebug = null!;
+
+    /// <summary>Tecla H: formas de colisão desenhadas no chão (<see cref="CollisionDebug"/>).</summary>
+    public bool ShowCollision { get => _collisionDebug.Visible; set => _collisionDebug.Visible = value; }
 
     /// <summary>Recurso de pé sob o raio do cursor (a copa inteira conta), antes do chão; null se nenhum.</summary>
     public ResourceNode? PickResource(Vector3 origin, Vector3 direction, float maxDistance) =>
@@ -110,6 +114,9 @@ public partial class WorldView : Node3D
         AddChild(_villagerIcons);
         _villagerIcons.Build(_statusTable, world.Villagers.Count, new Rect2(0f, 0f, world.Grid.Width, world.Grid.Height));
 
+        _collisionDebug = new CollisionDebug { Name = "CollisionDebug" };
+        AddChild(_collisionDebug);
+
         _castellan = new CastellanVisual { Name = "Castellan" };
         AddChild(_castellan);
         _effects = new Effects { Name = "Effects" };
@@ -160,6 +167,8 @@ public partial class WorldView : Node3D
 
         _castellan.UpdateFrom(_world.Castellan, (float)alpha, dt);
         _grass.SetPusher(_castellan.GlobalPosition);
+        if (_collisionDebug.Visible)
+            _collisionDebug.Draw(_world);
         // O que tapa a protagonista esmaece em volta dela (a Biografia esconde o Castelão: desliga).
         ResourceModels.SetOcclusionCenter(_castellan.Visible
             ? _castellan.GlobalPosition + new Vector3(0f, VisualSettings.Current.Occlusion.ChestHeight, 0f)
@@ -631,7 +640,7 @@ public partial class WorldView : Node3D
         _hover.Position = CellCenter(c, 0.02f);
         Castellan castellan = _world.Castellan;
         if (_world.ResourceAt(c) is not null)
-            _hoverMaterial.AlbedoColor = castellan.CanGather(c, _world.ResourceAt(c)!.BlockRadius)
+            _hoverMaterial.AlbedoColor = castellan.CanGather(c, _world.ResourceAt(c)!.Shape)
                 ? Palette.Bone with { A = 0.55f }
                 : Palette.Warning with { A = 0.45f };
         else if (castellan.CanReach(c))

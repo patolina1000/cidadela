@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Xunit;
@@ -31,10 +32,15 @@ public class StoneGapTests
     public void CastellanStopsTouchingTheStoneNotAtTheCellEdge()
     {
         SimWorld world = Open(4f, 6.5f, """[{ "kind": "stone", "x": 4, "z": 4 }]""");
-        TestWorlds.Move(world, 0f, -1f, ticks: 12);
-        // Corpo 0,3 + pedra 0,3: para a 0,6 do centro (z = 4,6); pela célula inteira pararia em z = 5,3.
-        Vector2 p = world.Castellan.Position;
-        Assert.InRange(Vector2.Distance(p, new Vector2(4f, 4f)), 0.59f, 0.7f);
+        world.Enqueue(new MoveCommand(new Vector2(0f, -1f)));
+        float closest = float.MaxValue;
+        for (int i = 0; i < 30; i++)
+        {
+            world.Tick();
+            closest = MathF.Min(closest, Vector2.Distance(world.Castellan.Position, new Vector2(4f, 4f)));
+        }
+        // Corpo 0,3 + pedra 0,3: chega a 0,6 do centro; pela célula inteira pararia a 1,3. De frente, contorna.
+        Assert.InRange(closest, 0.59f, 0.7f);
     }
 
     [Theory]
@@ -63,7 +69,7 @@ public class StoneGapTests
     {
         SimWorld world = Open(4f, 4f, """[{ "kind": "stone", "x": 5, "z": 5 }]""");
         ResourceNode stone = world.ResourceAt(new GridPos(5, 5))!;
-        Assert.True(world.Castellan.CanGather(stone.Cell, stone.BlockRadius));
+        Assert.True(world.Castellan.CanGather(stone.Cell, stone.Shape));
         world.Enqueue(new GatherCommand(stone.Cell));
         TestWorlds.Run(world, 40);
         Assert.True(world.Castellan.Inventory.Count("stone") >= 1);
@@ -93,6 +99,6 @@ public class StoneGapTests
         // Cabana de lenhador não coleta pedra: aqui só confere o círculo de bloqueio da pedra para o caminho do aldeão.
         SimWorld world = Open(18f, 18f, """[{ "kind": "stone", "x": 4, "z": 4 }]""");
         Assert.False(world.BlocksVillager(new GridPos(4, 4)));
-        Assert.Equal(0.3f, world.BlockRadiusAt(new GridPos(4, 4))!.Value, 3);
+        Assert.Equal(0.3f, world.ShapeAt(new GridPos(4, 4))!.Circles[0].Radius, 3);
     }
 }

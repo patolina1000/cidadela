@@ -4684,4 +4684,48 @@ onde errou, correções manuais e quanto tempo levou.
   Arthur não estiver jogando"), deixei a medida para depois.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 154 aprovados.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 23:21–23:31 de relógio.
+- **Tempo:** 23:21–23:29 de relógio.
+
+---
+
+## 2026-09-29 — Formas de colisão reais (polígono da base) e a tecla H que as desenha
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (Arthur: "o hitbox das pedras melhorou mas não está 100%"):** (1) tecla de debug que desenha no chão as formas
+  de colisão de tudo (tronco, base de pedra e veio, corpo do Castelão e dos aldeões); (2) trocar o círculo por variação
+  por um polígono convexo da base (ou 2 círculos na pedra de dois blocos), medido do GLB, com folga pequena, o Castelão
+  deslizando sem enroscar nas quinas; (3) conferir o clique e a coleta (alcance até a borda real).
+- **Medida:** casca convexa dos vértices da base (abaixo de 0,25 m) de cada GLB de pedra e veio, simplificada a 8
+  pontos e encolhida 2 cm para dentro (a folga). Na pedra dupla e no veio cruzado os dois blocos se sobrepõem (k-médias
+  com 2 grupos: sem vão entre eles), então o polígono convexo cobre bem e não precisei de 2 círculos. Árvore: círculo de
+  0,15 m (tronco medido 0,12–0,16).
+- **O que foi feito:**
+  - `ResourceShape` (simulação): círculos e/ou polígono convexo; distância com sinal até a borda, empurrão para fora
+    (desliza pela borda e pelas quinas), sobreposição, centroide; `Placed` gira, escala e leva para a célula com o mesmo
+    giro da cena. O **giro também passou para a simulação** (`ResourceNode.Yaw`, pelo hash da célula), porque a forma
+    gira com o modelo; a cena lê o giro do nó (o visual não mudou: é o mesmo sorteio que a cena fazia).
+  - `data/resources.json`: cada variação de pedra e veio com `polygon` ([x, z] em metros, no espaço do modelo); árvore com
+    `radius`. `GameData` recusa polígono não convexo ou que passe de 0,6 m do centro.
+  - **Assistência nas quinas:** de frente contra uma face reta, o empurrão pela normal quase não deixa avançar (parecia
+    enroscar). Se ela avança menos de 35% do passo com um recurso encostado, tenta o passo desviado 35° e 60°, primeiro
+    para o lado em que já está em relação ao centro da forma, e fica com o primeiro que a desloca sem recuar nem invadir
+    nada: desliza pela face e contorna a quina mais perto. Só contra recursos (construções e a borda do mapa, não).
+  - **Coleta:** alcance medido até a borda real da forma (`gatherSurfaceReach` 1,3). **Clique:** o raio do cursor vai
+    para o espaço do modelo (giro e escala da instância) e é testado contra a caixa do modelo: justa mesmo numa laje
+    girada (antes a caixa alinhada ao mundo engordava o modelo girado).
+  - Aldeões: encostam na borda real para coletar e contam a célula de recurso do caminho como atingida ao encostar na
+    forma (antes, no círculo).
+  - **Tecla H** (`CollisionDebug`): desenha no chão, por cima de tudo, amarelo = o que os recursos bloqueiam (polígono da
+    base, círculo do tronco), vermelho = células cheias (construções sólidas, recurso sem forma), branco = corpo da
+    protagonista, azul = corpo de cada aldeão. Só redesenha enquanto ligada.
+- **Testes:** `ResourceShapeTests` (13 novos): distância com sinal, forma girada como a cena, empurrão na quina, a
+  protagonista contornando as pedras e veios **reais** (4 células × 2 recursos × 8 direções × 2 desvios, com os dados de
+  `data/`: nunca entra e nunca enrosca), alcance de coleta até a base real (diagonal sim, duas células não). Os testes de
+  "para no tronco/na pedra" passaram a medir a menor distância na aproximação (de frente ela agora contorna). `dotnet
+  test`: 167 aprovados. Custo do caminho (100 aldeões): 0,15 ms por tick (igual).
+- **No jogo:** `Main` aberto com a tecla H ligada, a protagonista perto das pedras e do veio na borda do bosque; as formas
+  batem com os modelos. Print: `docs/prints/colisao_formas_H.png`. Durante o teste a janela recebeu entradas que não eram
+  minhas (pausa), sinal de que o Arthur estava jogando: parei de mandar teclas e deixei o jogo aberto assim.
+- `dotnet build`: 0 erros, 0 avisos.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 23:30–23:52 de relógio.

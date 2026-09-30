@@ -12,7 +12,7 @@ namespace Cidadela.View;
 /// numa esteira ou baú (com um item segurado); segurar e arrastar repete célula a célula.
 /// Direito sem arrastar solta o que está escolhido ou desmonta. Teclado: WASD anda, 1–9 escolhem, R gira, Esc solta (sem nada na mão, abre o menu de pausa),
 /// C entra/sai da câmera cinematográfica no que está sob o cursor (ou no Castelão).
-/// O liga e desliga o contorno fino escuro (prova, 29/09/2026).
+/// O liga e desliga o contorno fino escuro (prova, 29/09/2026). H desenha no chão as formas de colisão.
 /// Segurar Alt (modo de informação) mostra o ícone de estado de todos os aldeões; sem Alt, só dos que têm problema.
 /// Depuração dos aldeões: V alterna o patamar de velocidade, B liga/desliga a penalidade (fome ou moral baixa).
 /// Pausa (GDD, seção 3): Espaço pausa e continua. Na pausa a câmera continua livre, mas nada que muda o mundo é
@@ -150,6 +150,10 @@ public partial class GameRoot : Node3D
         else if (k == Key.Space)
         {
             SetPaused(!_clock.Paused);
+        }
+        else if (k == Key.H)
+        {
+            _view.ShowCollision = !_view.ShowCollision; // formas de colisão no chão
         }
         else if (k == Key.O)
         {
@@ -393,7 +397,7 @@ public partial class GameRoot : Node3D
         _debugLabel.Text =
             $"Tick {_world.TickCount}  |  {_measuredTicksPerSecond} ticks/s (alvo {(_clock.Paused ? 0 : SimClock.TicksPerSecond)})  |  " +
             $"{Engine.GetFramesPerSecond()} FPS  |  Castelão ({p.X:0.0}, {p.Y:0.0})  |  grama: {_view.GrassTufts} tufos  |  " +
-            $"aldeões: patamar {_debugSpeedTier + 1}/{_world.Data.Villagers.SpeedTiers.Count} ({_world.Data.Villagers.SpeedTiers[_debugSpeedTier]:0.00} cél/s){(_debugPenalized ? ", com penalidade" : "")}  [V patamar, B penalidade]  [O contorno {(Outline.Enabled ? "ligado" : "desligado")}]";
+            $"aldeões: patamar {_debugSpeedTier + 1}/{_world.Data.Villagers.SpeedTiers.Count} ({_world.Data.Villagers.SpeedTiers[_debugSpeedTier]:0.00} cél/s){(_debugPenalized ? ", com penalidade" : "")}  [V patamar, B penalidade]  [O contorno {(Outline.Enabled ? "ligado" : "desligado")}]  [H colisão]";
 
         _inventoryLabel.Text = _selected is not null
             ? $"Construindo {_selected.Name} ({DirectionName(_buildDirection)}) — R gira, botão direito cancela"

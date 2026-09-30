@@ -53,7 +53,7 @@ public partial class ResourceModels : Node3D
             if (resource.Type.Variants.Count > 0 && resource.Type.Variants.Count != variants.Count && WarnedKinds.Add(resource.Kind))
                 GD.PushWarning($"[cenário] {resource.Kind}: {resource.Type.Variants.Count} variações em data/resources.json e {variants.Count} no manifesto; a simulação e o desenho podem discordar.");
             Variant variant = variants[Math.Clamp(resource.Variant, 0, variants.Count - 1)];
-            float yaw = CellHash.Unit(CellHash.Mix(h, 1)) * Mathf.Tau;
+            float yaw = resource.Yaw;
             float scale = resource.Scale;
             picks.Add((resource, variant, yaw, scale));
             counts[variant] = counts.GetValueOrDefault(variant) + 1;
@@ -79,7 +79,8 @@ public partial class ResourceModels : Node3D
             var handle = new Handle
             {
                 Mesh = meshes[variant], Index = next[variant]++, Yaw = yaw, Scale = scale, Height = variant.Height * scale,
-                Bounds = variant.Mesh.GetAabb(), TrunkRadius = resource.Kind == "wood" ? resource.BlockRadius : null,
+                Bounds = variant.Mesh.GetAabb(),
+                TrunkRadius = resource.Kind == "wood" && resource.Shape is { Circles.Count: > 0 } s ? s.Circles[0].Radius : null,
                 Position = new Vector3(resource.Cell.X + 0.5f, 0f, resource.Cell.Z + 0.5f),
             };
             _handles[resource] = handle;
@@ -105,25 +106,29 @@ public partial class ResourceModels : Node3D
         {
             if (resource.IsDepleted)
                 continue;
+            // O raio vai para o espaço do modelo (giro e escala da instância): a caixa fica justa no modelo, mesmo girado
+            // (uma laje comprida não vira uma caixa larga), e a distância ao longo do raio é a mesma.
             var transform = new Transform3D(new Basis(Vector3.Up, h.Yaw).Scaled(Vector3.One * h.Scale), h.Position);
+            Transform3D toModel = transform.AffineInverse();
+            Vector3 localOrigin = toModel * origin, localDirection = toModel.Basis * direction;
             if (h.TrunkRadius is float trunk)
             {
-                float from = Mathf.Max(h.Bounds.Position.Y, pick.CanopyFrom);
+                float from = Mathf.Max(h.Bounds.Position.Y, pick.CanopyFrom / h.Scale);
                 var canopy = new Aabb(new Vector3(h.Bounds.Position.X, from, h.Bounds.Position.Z),
                     new Vector3(h.Bounds.Size.X, h.Bounds.End.Y - from, h.Bounds.Size.Z));
-                float r = trunk + pick.TrunkMargin;
+                float r = (trunk + pick.TrunkMargin) / h.Scale;
                 var column = new Aabb(new Vector3(-r, 0f, -r), new Vector3(2f * r, from, 2f * r));
-                Test(transform * canopy);
-                Test(transform * column);
+                Test(canopy);
+                Test(column);
             }
             else
             {
-                Test(transform * h.Bounds);
+                Test(h.Bounds);
             }
 
             void Test(Aabb box)
             {
-                if (RayHit(box, origin, direction) is float d && d < bestDistance)
+                if (RayHit(box, localOrigin, localDirection) is float d && d < bestDistance)
                 {
                     bestDistance = d;
                     best = resource;

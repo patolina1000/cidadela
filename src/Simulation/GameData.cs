@@ -97,9 +97,9 @@ public sealed class GameData
             var variants = new List<ResourceVariant>();
             if (r.Variants is { Count: > 0 })
                 foreach (VariantData vd in r.Variants)
-                    variants.Add(new ResourceVariant(vd.Weight, vd.Radius));
+                    variants.Add(new ResourceVariant(vd.Weight, ShapeOf(kind, vd)));
             else if (r.TrunkRadius is float t)
-                variants.Add(new ResourceVariant(1f, t));
+                variants.Add(new ResourceVariant(1f, Circle(kind, t)));
             float minScale = r.Scale is { Count: 2 } ? r.Scale[0] : 1f, maxScale = r.Scale is { Count: 2 } ? r.Scale[1] : 1f;
             if (minScale <= 0f || maxScale < minScale)
                 throw new FormatException($"Recurso \"{kind}\": scale precisa ser [mínima, máxima], positivas.");
@@ -107,8 +107,12 @@ public sealed class GameData
             {
                 if (rv.Weight <= 0f)
                     throw new FormatException($"Recurso \"{kind}\": peso de variação precisa ser positivo.");
-                if (rv.Radius <= 0f || rv.Radius * maxScale >= 0.5f)
-                    throw new FormatException($"Recurso \"{kind}\": o raio de bloqueio precisa ficar entre 0 e 0,5 (dentro da célula), já com a escala.");
+                foreach ((System.Numerics.Vector2 cc, float cr) in rv.Shape.Circles)
+                    if ((cc.Length() + cr) * maxScale >= 0.5f)
+                        throw new FormatException($"Recurso \"{kind}\": o círculo de bloqueio precisa ficar dentro da célula (0,5), já com a escala.");
+                foreach (System.Numerics.Vector2 p in rv.Shape.Polygon)
+                    if (p.Length() * maxScale > 0.6f)
+                        throw new FormatException($"Recurso \"{kind}\": o polígono de bloqueio passa de 0,6 m do centro, já com a escala.");
             }
             resources[kind] = new ResourceType(kind, item.Name, SecondsToTicks(r.GatherSeconds), r.Amount, variants, minScale, maxScale);
         }
@@ -269,10 +273,33 @@ public sealed class GameData
         public List<float>? Scale { get; set; }
     }
 
+    private static ResourceShape Circle(string kind, float radius)
+    {
+        if (radius <= 0f)
+            throw new FormatException($"Recurso \"{kind}\": o raio de bloqueio precisa ser positivo.");
+        return new ResourceShape(new[] { (System.Numerics.Vector2.Zero, radius) }, Array.Empty<System.Numerics.Vector2>());
+    }
+
+    private static ResourceShape ShapeOf(string kind, VariantData v)
+    {
+        if (v.Polygon is { Count: >= 3 })
+        {
+            var points = new List<System.Numerics.Vector2>();
+            foreach (List<float> p in v.Polygon)
+                points.Add(new System.Numerics.Vector2(p[0], p[1]));
+            List<System.Numerics.Vector2> convex;
+            try { convex = ResourceShape.ConvexPolygon(points); }
+            catch (FormatException e) { throw new FormatException($"Recurso \"{kind}\": {e.Message}"); }
+            return new ResourceShape(Array.Empty<(System.Numerics.Vector2, float)>(), convex);
+        }
+        return Circle(kind, v.Radius ?? 0f);
+    }
+
     private sealed class VariantData
     {
         public float Weight { get; set; } = 1f;
-        public float Radius { get; set; }
+        public float? Radius { get; set; }
+        public List<List<float>>? Polygon { get; set; }
     }
 
     private sealed class CastellanData

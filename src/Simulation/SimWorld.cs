@@ -229,20 +229,39 @@ public sealed class SimWorld
     public Building? BuildingAt(GridPos cell) => _buildingByCell.GetValueOrDefault(cell);
 
     /// <summary>Se a célula bloqueia a passagem (fora do mapa, recurso ou construção sólida).</summary>
-    /// <summary>Raio do círculo que o recurso da célula bloqueia (tronco, base da pedra ou do veio), ou null.</summary>
-    public float? BlockRadiusAt(GridPos cell) => ResourceAt(cell)?.BlockRadius;
+    /// <summary>Forma que o recurso da célula bloqueia (tronco, base da pedra ou do veio), ou null.</summary>
+    public ResourceShape? ShapeAt(GridPos cell) => ResourceAt(cell)?.Shape;
 
     /// <summary>
     /// Se a célula bloqueia o caminho dos aldeões: como <see cref="IsSolid"/>, menos a célula de recurso que só bloqueia um
     /// círculo (o aldeão passa sob a copa ou rente à pedra, desviando do círculo ao andar).
     /// </summary>
-    public bool BlocksVillager(GridPos cell) => IsSolid(cell) && BlockRadiusAt(cell) is null;
+    public bool BlocksVillager(GridPos cell) => IsSolid(cell) && ShapeAt(cell) is null;
 
     /// <summary>
     /// Empurra um corpo (posição no centro de célula, como a do Castelão e a dos aldeões) para fora dos círculos dos
     /// recursos em volta (troncos, pedras, veios): quem anda contra um desliza em volta dele, em vez de parar. Poucas
     /// passadas bastam para dois vizinhos.
     /// </summary>
+    /// <summary>A forma de recurso mais perto de um corpo (a menos de <paramref name="within"/> da borda), e o centro da célula dela.</summary>
+    public (ResourceShape Shape, Vector2 Center)? NearestShape(Vector2 position, float within)
+    {
+        (ResourceShape, Vector2)? best = null;
+        float bestDistance = within;
+        int cx = (int)MathF.Round(position.X), cz = (int)MathF.Round(position.Y);
+        for (int dx = -1; dx <= 1; dx++)
+        for (int dz = -1; dz <= 1; dz++)
+        {
+            var cell = new GridPos(cx + dx, cz + dz);
+            if (ShapeAt(cell) is ResourceShape shape && shape.SignedDistance(position) is float d && d < bestDistance)
+            {
+                bestDistance = d;
+                best = (shape, new Vector2(cell.X, cell.Z));
+            }
+        }
+        return best;
+    }
+
     /// <summary>Se o corpo invade o círculo de algum recurso em volta (sobra de empurrão entre dois vizinhos apertados).</summary>
     public bool OverlapsResourceCircle(Vector2 position, float radius)
     {
@@ -251,7 +270,7 @@ public sealed class SimWorld
         for (int dz = -1; dz <= 1; dz++)
         {
             var cell = new GridPos(cx + dx, cz + dz);
-            if (BlockRadiusAt(cell) is float r && Vector2.Distance(position, new Vector2(cell.X, cell.Z)) < radius + r - 0.001f)
+            if (ShapeAt(cell) is ResourceShape shape && shape.SignedDistance(position) < radius - 0.001f)
                 return true;
         }
         return false;
@@ -267,15 +286,12 @@ public sealed class SimWorld
             for (int dz = -1; dz <= 1; dz++)
             {
                 var cell = new GridPos(cx + dx, cz + dz);
-                if (BlockRadiusAt(cell) is not float trunk)
+                if (ShapeAt(cell) is not ResourceShape shape)
                     continue;
-                var center = new Vector2(cell.X, cell.Z);
-                Vector2 away = position - center;
-                float min = radius + trunk;
-                float length = away.Length();
-                if (length >= min)
+                Vector2 pushed = shape.PushOut(position, radius);
+                if (pushed == position)
                     continue;
-                position = center + (length > 1e-5f ? away / length : Vector2.UnitX) * min;
+                position = pushed;
                 moved = true;
             }
             if (!moved)

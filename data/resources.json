@@ -3,20 +3,25 @@
   // gatherSeconds: tempo para o Castelão coletar 1 item à mão.
   // amount: quantos itens cada nó tem antes de se esgotar.
   // variants (opcional): as variações do modelo, NA ORDEM de assets/cenario/cenario.json. Cada nó sorteia uma pelo
-  //   weight, fixo pela célula, e bloqueia só um círculo de radius metros no centro da célula (o tronco da árvore, a base
-  //   da pedra ou do veio), multiplicado pela escala sorteada em scale [mínima, máxima] (o modelo é desenhado nela).
-  //   Quem anda contra o círculo desliza em volta; a coleta conta até a borda dele (data/castellan.json,
-  //   gatherSurfaceReach); os aldeões atravessam a célula desviando do círculo. Sem variants, o nó bloqueia a célula
-  //   inteira. trunkRadius: atalho de uma variação só.
-  //   Raios medidos nos GLBs (29/09/2026): tronco 0,12–0,16 m; pedra e veio, o maior raio da base (abaixo de 0,25 m de
-  //   altura) × 0,9, porque a base é irregular e o vértice mais longe exagera o corpo.
+  //   weight, fixo pela célula, e bloqueia só a forma dela no chão, multiplicada pela escala sorteada em scale [mínima,
+  //   máxima] (o modelo é desenhado nela). Quem anda contra a forma desliza em volta, inclusive nas quinas; a coleta conta
+  //   até a borda dela (data/castellan.json, gatherSurfaceReach); os aldeões atravessam a célula desviando dela. Sem
+  //   variants, o nó bloqueia a célula inteira. trunkRadius: atalho de um círculo só.
+  //   Forma de cada variação: radius (círculo no centro: o tronco da árvore, 0,12–0,16 m medido nos GLBs) ou polygon
+  //   (polígono convexo [x, z] em metros, no espaço do modelo: a casca convexa da base da pedra ou do veio, os vértices
+  //   abaixo de 0,25 m de altura no GLB, simplificada a 8 pontos e encolhida 2 cm para dentro, a folga). A forma gira
+  //   com o modelo (giro sorteado por célula) e escala junto. Medido em 29/09/2026 (método no diário).
   "wood":  { "gatherSeconds": 1.0, "amount": 30, "scale": [0.9, 1.1],
              "variants": [ { "weight": 0.3, "radius": 0.15 }, { "weight": 0.3, "radius": 0.15 },
                            { "weight": 0.1, "radius": 0.15 }, { "weight": 0.3, "radius": 0.15 } ] },
   "stone": { "gatherSeconds": 1.5, "amount": 30, "scale": [0.9, 1.1],
-             "variants": [ { "weight": 0.25, "radius": 0.35 }, { "weight": 0.25, "radius": 0.41 },
-                           { "weight": 0.25, "radius": 0.29 }, { "weight": 0.25, "radius": 0.42 } ] },
+             "variants": [ { "weight": 0.25, "polygon": [[-0.27,0.25],[-0.2,-0.06],[0.02,-0.2],[0.12,-0.19],[0.22,0.04],[0.15,0.24],[-0.08,0.32],[-0.24,0.28]] },
+                           { "weight": 0.25, "polygon": [[-0.26,0.1],[-0.2,-0.26],[-0.1,-0.31],[0.02,-0.28],[0.15,-0.09],[0.21,0.21],[0.04,0.39],[-0.11,0.42]] },
+                           { "weight": 0.25, "polygon": [[-0.26,0.03],[-0.01,-0.22],[0.19,-0.17],[0.19,-0.06],[0.17,0.18],[0.12,0.26],[0.06,0.27],[-0.18,0.24]] },
+                           { "weight": 0.25, "polygon": [[-0.29,0.23],[-0.16,-0.11],[-0.11,-0.17],[0.06,-0.18],[0.14,-0.0],[0.15,0.07],[-0.02,0.34],[-0.1,0.44]] } ] },
   "iron":  { "gatherSeconds": 2.0, "amount": 20, "scale": [0.9, 1.1],
-             "variants": [ { "weight": 0.25, "radius": 0.30 }, { "weight": 0.25, "radius": 0.35 },
-                           { "weight": 0.25, "radius": 0.36 }, { "weight": 0.25, "radius": 0.32 } ] }
+             "variants": [ { "weight": 0.25, "polygon": [[-0.28,-0.0],[-0.23,-0.13],[-0.1,-0.25],[0.16,-0.21],[0.3,0.02],[0.17,0.17],[0.01,0.23],[-0.27,0.16]] },
+                           { "weight": 0.25, "polygon": [[-0.32,-0.13],[-0.14,-0.29],[0.06,-0.25],[0.26,-0.08],[0.34,0.02],[0.33,0.17],[0.09,0.23],[-0.21,0.08]] },
+                           { "weight": 0.25, "polygon": [[-0.27,-0.16],[-0.2,-0.22],[0.1,-0.34],[0.21,-0.26],[0.34,0.02],[0.18,0.26],[0.01,0.36],[-0.18,0.33]] },
+                           { "weight": 0.25, "polygon": [[-0.33,-0.05],[-0.22,-0.16],[-0.1,-0.26],[0.07,-0.19],[0.28,-0.1],[0.24,0.02],[0.14,0.13],[-0.27,0.12]] } ] }
 }

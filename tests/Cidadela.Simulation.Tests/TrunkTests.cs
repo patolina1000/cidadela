@@ -24,10 +24,16 @@ public class TrunkTests
     public void WalkingIntoATreeStopsAtTheTrunkNotAtTheCellEdge()
     {
         SimWorld world = Open(4, 2, """[{ "kind": "wood", "x": 4, "z": 4 }]""");
-        TestWorlds.Move(world, 0f, 1f, ticks: 60);
-        float d = TrunkDistance(world, new GridPos(4, 4));
-        // Corpo 0,3 + tronco 0,2: para a ~0,5 m do centro do tronco (antes parava a 0,8, na borda da célula).
-        Assert.InRange(d, 0.49f, 0.62f);
+        world.Enqueue(new MoveCommand(new System.Numerics.Vector2(0f, 1f)));
+        float closest = float.MaxValue;
+        for (int i = 0; i < 60; i++)
+        {
+            world.Tick();
+            closest = MathF.Min(closest, TrunkDistance(world, new GridPos(4, 4)));
+        }
+        // Corpo 0,3 + tronco 0,2: chega a ~0,5 m do centro do tronco (antes parava a 0,8, na borda da célula) e, de
+        // frente, contorna o tronco (assistência) em vez de parar.
+        Assert.InRange(closest, 0.49f, 0.62f);
     }
 
     [Fact]
@@ -57,7 +63,7 @@ public class TrunkTests
     {
         SimWorld world = Open(4, 4, $$"""[{ "kind": "wood", "x": {{x}}, "z": {{z}} }]""");
         ResourceNode tree = world.ResourceAt(new GridPos(x, z))!;
-        Assert.Equal(can, world.Castellan.CanGather(tree.Cell, tree.BlockRadius));
+        Assert.Equal(can, world.Castellan.CanGather(tree.Cell, tree.Shape));
     }
 
     [Fact]
