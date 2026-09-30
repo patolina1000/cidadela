@@ -3139,3 +3139,16 @@ onde errou, correções manuais e quanto tempo levou.
 - A reserva (3ª geração) **não foi usada**: nenhuma das duas falhou tecnicamente no download (a conferência
   visual vem na folha de contato).
 - **Créditos:** 20 (acumulado nesta parte: 40/60). **Correções manuais:** nenhuma. **Tempo:** ~5 min.
+
+## 2026-09-29 — Cenário, tarefa 1, passo 1: proposta de objetos do mundo
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente CENÁRIO na branch `cenario`.
+- **Pedido:** ler GDD (seções 4, 10, 13, 17 e "Piso e chão"), `data/resources.json`, `WorldView.cs` e
+  `BuildingModels.cs` no master e propor os objetos do mundo e as regras de um contrato de cenário.
+- **Feito:** `assets/cenario/PROPOSTA.md`: árvore, pedra e veio de ferro (os três recursos do MVP), com pegada,
+  altura, triângulos, cores da paleta, variações e estado esgotado; enfeites só onde o GDD sustenta (nenhum por
+  ora). Base medida no master: célula de 1 m, recursos hoje são cubos de 0,8 m que encolhem até 55 % e somem.
+  Árvore proposta com 1,3–1,7 m (≈ 4 aldeões, 2 protagonistas; cobre ~1 célula atrás a 55°). Regras de contrato:
+  metros, +Z, pivô no centro da base, giro livre, material chapado nomeado, sem textura, LOD do Godot, sombra só
+  nas massas grandes.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
