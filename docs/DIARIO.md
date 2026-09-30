@@ -3349,3 +3349,15 @@ onde errou, correções manuais e quanto tempo levou.
   outras e dá leitura de volume sem brilho, mas no crepúsculo o ganho ainda é pequeno; C é a que mais separa copa
   de copa e de chão, em luz e em crepúsculo. Na alta, a divisão de cor de B fica serrilhada nos triângulos.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Cenário, tarefa 10: tronco terra em todas as árvores (decisão do Arthur)
+
+- **Pedido (Diretor, decisão do Arthur):** opção A + contorno escuro. Troncos de todas as árvores e dos tocos em
+  terra #4A3B3A, nos GLBs e no `cenario.json`; copas sem mudança (sem as duas cores do B); o contorno é do JOGO,
+  no shader.
+- **Feito:** `arvore.py` com `tronco: terra` nas 4 variações (a dupla e a alta eram lama #2E2931, os tufos terra
+  arroxeada #3F3342); GLBs das árvores e dos tocos regerados (o toco sai da própria árvore). Conferi GLB a GLB contra
+  o commit anterior: só o `baseColorFactor` do tronco mudou; geometria e copa idênticas. `toco_relatorio.json`
+  agora registra a cor do tronco. `cenario.json` (comentário da família wood e do toco) e o rascunho de contrato
+  registram a decisão; `verificar.py` passa.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~10 min.

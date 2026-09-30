@@ -41,7 +41,7 @@
         0.6
       ],
       "cores": {
-        "tronco": "#2E2931",
+        "tronco": "#4A3B3A",
         "copa": "#4E5544"
       }
     },
@@ -62,7 +62,7 @@
         0.571
       ],
       "cores": {
-        "tronco": "#3F3342",
+        "tronco": "#4A3B3A",
         "copa": "#6B4F7C"
       }
     },
@@ -83,7 +83,7 @@
         0.101
       ],
       "cores": {
-        "tronco": "#2E2931",
+        "tronco": "#4A3B3A",
         "copa": "#4E5544"
       }
     }

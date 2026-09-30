@@ -10,13 +10,15 @@
   // depleted: o que fica quando o recurso esgota. OPCIONAL: a decisão é do Arthur; sem ela, o nó some (como hoje).
   "wood": {
     // árvore: 1 gota, 2 dupla, 3 tufos (líquen roxo, destaque raro), 4 alta. Copa a partir de ≥ 1,0 m (fora do alcance).
+    // Tronco terra #4A3B3A em todas; copa sem borda fria e com o contorno fino escuro do toon (decisão do Arthur,
+    // 29/09/2026: opção A + contorno; o contorno é do shader do jogo, não do GLB).
     "variants": [
       { "file": "assets/cenario/arvore/arvore_1.glb", "weight": 0.3, "height": 2.483, "cells": 1, "overhang": 0.35, "triangles": 192, "coldRim": [], "castsShadow": true },
       { "file": "assets/cenario/arvore/arvore_2.glb", "weight": 0.3, "height": 2.626, "cells": 1, "overhang": 0.2, "triangles": 240, "coldRim": [], "castsShadow": true },
       { "file": "assets/cenario/arvore/arvore_3.glb", "weight": 0.1, "height": 2.095, "cells": 1, "overhang": 0.41, "triangles": 328, "coldRim": [], "castsShadow": true },
       { "file": "assets/cenario/arvore/arvore_4.glb", "weight": 0.3, "height": 2.46, "cells": 1, "overhang": 1.06, "triangles": 176, "coldRim": [], "castsShadow": true }
     ],
-    // Esgotado (opcional): Toco da própria árvore (mesmo índice, mesmo giro e escala da instância).
+    // Esgotado (opcional): Toco da própria árvore (mesmo índice, mesmo giro e escala da instância); tronco terra #4A3B3A.
     "depleted": {
       "pick": "sameIndex",
       "variants": [

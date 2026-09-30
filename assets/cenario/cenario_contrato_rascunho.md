@@ -34,7 +34,7 @@ Mudanças só com aval do Arthur: quem precisar mudar algo, para e pergunta.
 
 | Recurso | Variações | Altura | Triângulos | Cores |
 | --- | --- | --- | --- | --- |
-| wood (árvore) | 1 gota, 2 dupla, 3 tufos, 4 alta | 2,10–2,63 m; copa a partir de ≥ 1,0 m | ≤ 400 (176–328) | tronco #4A3B3A, #2E2931 ou #3F3342; copa musgo #4E5544 (1, 2, 4) ou líquen #6B4F7C (3) |
+| wood (árvore) | 1 gota, 2 dupla, 3 tufos, 4 alta | 2,10–2,63 m; copa a partir de ≥ 1,0 m | ≤ 400 (176–328) | tronco terra #4A3B3A em todas; copa musgo #4E5544 (1, 2, 4) ou líquen #6B4F7C (3) |
 | stone (pedra) | 1 bloco com musgo, 2 dupla, 3 pilha, 4 laje | 0,40–0,54 m | ≤ 200 (76–112) | pedra #57535F; musgo #4E5544 |
 | iron (veio) | 1 leque, 2 cruzado, 3 coroa, 4 torre | 0,34–0,44 m | ≤ 200 (68–104) | rocha #2E2931; minério #1E2A3A |
 
@@ -50,7 +50,8 @@ Mudanças só com aval do Arthur: quem precisar mudar algo, para e pergunta.
 
 - Borda de luz fria do toon (opção b) nos materiais listados em `coldRim`: pedra e musgo; rocha e minério do veio;
   manchas (por enquanto). Copa, tronco e toco sem borda: o Arthur viu a borda na copa dentro do jogo e não gostou
-  (29/09/2026); como a copa volta a sumir no crepúsculo, a alternativa está em aberto. A borda ainda não existe no `Toon.gdshaderinc`: é
+  (29/09/2026). Decisão do Arthur (29/09/2026): no lugar dela, tronco terra #4A3B3A em todas as árvores e nos tocos
+  e **contorno fino escuro no toon do jogo** (o GDD, seção 17, já pede); as copas não mudam de cor. A borda ainda não existe no `Toon.gdshaderinc`: é
   tarefa do JOGO; a arte a aproximou no Blender (faixa dura, cor do sol frio × 0,10).
 - Projetam sombra só as massas grandes (`castsShadow`: árvore, pedra, veio), na cascata perto; toco e mancha não.
 - O JOGO esmaece a copa quando um personagem está atrás dela (a ~1 m atrás, a árvore esconde de 97 a 100 % do corpo

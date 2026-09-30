@@ -16,7 +16,9 @@ FAMILIAS = [
     # (id do recurso, família, prefixo dos arquivos, pesos, materiais com borda fria, projeta sombra, comentário)
     # Copa sem borda fria: o Arthur viu no jogo e não gostou do brilho em volta das folhas (tarefa 8, 29/09/2026).
     ("wood", "árvore", "arvore/arvore_", [0.3, 0.3, 0.1, 0.3], [], True,
-     "1 gota, 2 dupla, 3 tufos (líquen roxo, destaque raro), 4 alta. Copa a partir de ≥ 1,0 m (fora do alcance)."),
+     "1 gota, 2 dupla, 3 tufos (líquen roxo, destaque raro), 4 alta. Copa a partir de ≥ 1,0 m (fora do alcance).\n"
+     "    // Tronco terra #4A3B3A em todas; copa sem borda fria e com o contorno fino escuro do toon (decisão do Arthur,\n"
+     "    // 29/09/2026: opção A + contorno; o contorno é do shader do jogo, não do GLB)."),
     ("stone", "pedra", "pedra/pedra_", [0.25] * 4, ["pedra", "musgo"], True,
      "1 bloco com tampa de musgo, 2 dupla, 3 pilha em espiral, 4 laje. Pedra escurecida #57535F."),
     ("iron", "veio de ferro", "veio/veio_", [0.25] * 4, ["pedra", "minerio"], True,
@@ -24,7 +26,7 @@ FAMILIAS = [
 ]
 ESGOTADO = {
     "wood": ("arvore/toco_", "sameIndex", [], False,
-             "Toco da própria árvore (mesmo índice, mesmo giro e escala da instância)."),
+             "Toco da própria árvore (mesmo índice, mesmo giro e escala da instância); tronco terra #4A3B3A."),
     "iron": ("veio/mancha_", [0.5, 0.5], ["pedra", "minerio"], False, "1 placa com lascas, 2 só lascas."),
 }
 

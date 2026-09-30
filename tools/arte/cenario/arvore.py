@@ -36,6 +36,7 @@ PALETA = {  # GDD, seção 17
     "liquen": "#6B4F7C",
 }
 
+# Tronco terra #4A3B3A em todas (decisão do Arthur, 29/09/2026: opção A; o contorno escuro é do jogo).
 # A árvore é desenhada inclinando para +X ("inclina", graus) e no fim gira em Z pelo ângulo sorteado pela semente.
 # Cada massa da copa: base (x, y, z), comprimento ao longo do eixo, raio máximo, barriga (0..1 do comprimento),
 # quanto o eixo dobra até a ponta ("dobra", graus; > 90 cai como chapéu de bruxa) e para que lado ("lado", graus,
@@ -52,7 +53,7 @@ VARIACOES = [
         ],
     },
     {
-        "nome": "dupla", "semente": 23, "inclina": 6, "tronco": "lama", "copa": "musgo",
+        "nome": "dupla", "semente": 23, "inclina": 6, "tronco": "terra", "copa": "musgo",
         "troncos": [{"de": (0, 0, -0.02), "ate": (0.0, 0.0, 0.95), "r": 0.07, "entorta": 0.07, "giro": 70}],
         "massas": [
             {"base": (0.0, 0.0, 0.42), "comp": 0.58, "r": 0.47, "barriga": 0.42, "dobra": 10, "lado": 90,
@@ -62,7 +63,7 @@ VARIACOES = [
         ],
     },
     {
-        "nome": "tufos", "semente": 37, "inclina": 5, "tronco": "terra_roxa", "copa": "liquen",
+        "nome": "tufos", "semente": 37, "inclina": 5, "tronco": "terra", "copa": "liquen",
         "troncos": [
             {"de": (0, 0, -0.02), "ate": (0.02, 0.0, 0.52), "r": 0.08, "entorta": 0.04, "giro": 60},
             {"de": (0.02, 0.0, 0.48), "ate": (0.28, 0.06, 0.80), "r": 0.05, "entorta": 0.05, "giro": 50, "lados": 5},
@@ -80,7 +81,7 @@ VARIACOES = [
     },
     {
         # Chapéu de bruxa dobrado: fina, a mais inclinada, a ponta passa da horizontal e cai.
-        "nome": "alta", "semente": 53, "inclina": 12, "tronco": "lama", "copa": "musgo",
+        "nome": "alta", "semente": 53, "inclina": 12, "tronco": "terra", "copa": "musgo",
         "troncos": [{"de": (0, 0, -0.02), "ate": (0.0, 0.0, 0.85), "r": 0.058, "entorta": 0.08, "giro": 110}],
         "massas": [
             {"base": (0.0, 0.0, 0.52), "comp": 1.62, "r": 0.27, "barriga": 0.20, "dobra": 125, "lado": 0,

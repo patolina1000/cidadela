@@ -20,7 +20,7 @@ import bpy
 from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from arvore import VARIACOES, build, material  # noqa: E402
+from arvore import PALETA, VARIACOES, build, material  # noqa: E402
 from cenario_lib import ROOT, block, export, join, write_report  # noqa: E402
 
 OUT = ROOT / "assets/cenario/arvore"
@@ -101,7 +101,7 @@ def main():
         obj = roots(obj, spec["semente"])
         rows.append(export(obj, OUT / f"toco_{index}.glb", MAX_TRIS, {
             "nome": spec["nome"], "semente": spec["semente"], "corte_m": ALTURA[spec["nome"]],
-            "cores": {"tronco": None, "madeira": CORTE}}))
+            "cores": {"tronco": PALETA[spec["tronco"]], "madeira": CORTE}}))
     write_report(OUT / "toco_relatorio.json", "tools/arte/cenario/toco.py", rows)
 
 
