@@ -3068,3 +3068,28 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** `/assets/` dava 404 (é pasta, não arquivo); passou a 403 explícito. O teste da porta pela
   rede não rodava (o nome da máquina resolvia para 127.0.0.1); passou a descobrir o IP da interface de saída.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
+
+## 2026-09-29 — Visor de arte, passo 2: página com imagem, GIF e GLB em 3D
+
+- **Pedido:** `index.html` com three.js em versão fixa; lê `assets/previews/visor.json` a cada 2 s; mais novo em
+  destaque e lista dos anteriores; imagem/GIF em tamanho real com zoom; GLB em 3D com câmera orbital, vistas, câmera
+  do jogo, toon de 3 faixas, luz fria de cima, fundo #4E4A58, crepúsculo, clipes e GLBs "junto".
+- **Feito:** `tools/arte/visor/index.html`, `visor.js`, `visor.css`, `personagens.json` e three.js **r169** copiado em
+  `vendor/` (módulo, GLTFLoader, OrbitControls, BufferGeometryUtils, licença MIT): funciona sem internet.
+  - Toon: `ShaderMaterial` com a conta do `Toon.gdshaderinc` (meio-Lambert, `floor(ndl·3)/2`, piso 0,35 por
+    personagem no `personagens.json`), com pele (skinning). Cores pelo nome do material, dos contratos: aldeão pele
+    #AEBFD3 e cabelo #6F7F96; protagonista pele #91ADB7, cabelo #4B5A69, chifre #2B2140, tecido #3F3342, cristal
+    emissivo. Retalhos do rosto como o `VillagerFace.gdshader`: UV cru + célula da grade do `rosto.json`, quadro 0.
+  - Luz: cores do sol e do ambiente do `scenes/Main.tscn`, sol vindo de cima (65°). Aproximação, sem calibrar.
+  - "Junto": peça rígida vai para o osso do encaixe (cabelo/chifre → Head, cristal → Spine) compensando o repouso no
+    espaço do Armature, como o jogo faz com `GetBoneGlobalRest`; corpo com esqueleto vai ao lado; GLB só de clipes
+    empresta as animações ao principal.
+  - Câmera do jogo: `CameraRig.cs` (55°, FOV 45°, 16 m ÷ zoom, olhando o chão sob o personagem pela frente),
+    desenhada em 3024×1890 e encaixada na caixa, ou 1:1 com rolagem; mostra a altura do personagem em px.
+  - Crepúsculo: camada `multiply` de #6A5B7C sobre imagem ou 3D; lembrado por visitante.
+- **Conferido no portal "Visor"** (servidor subido só para o teste): cabelo 4 preso na cabeça durante idle e run,
+  rosto no lugar, faixas visíveis, clipes tocam/pausam/repouso, imagem em tamanho real. Aldeão com cabelo, em
+  repouso: **19 / 48 / 123 px** nos zooms 0,4 / 1 / 2,5 (a nota 01 dá 19 / 44 / 112 px, só o corpo).
+- **O que deu errado:** a altura em px pela caixa envolvente saía 24 / 61 / 153 px (a profundidade da caixa entra na
+  projeção inclinada); passou a projetar vértice a vértice, já com a pose do clipe.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
