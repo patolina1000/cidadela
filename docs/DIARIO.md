@@ -5603,3 +5603,20 @@ onde errou, correções manuais e quanto tempo levou.
 - **Efeito no Main de hoje:** cabana com esteira à frente para de soltar (esperado: agora o bruto vai por carregador).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 03:01–03:02 de relógio.
+
+## 2026-09-30 — Linha da flecha, passo 2: máquinas e receitas
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 2 de `docs/cadeia_flecha.md`.
+- **Feito:** `data/buildings.json` com Carvoaria, Bigorna, Galinheiro, Mesa de Emplumar e Arsenal (depósito, como o
+  baú), já na ordem das duas páginas da barra (logística e fontes, depois máquinas). `data/recipes.json` com os números
+  da especificação: serraria 1 tora → 4 hastes em 8 s; carvoaria 10 toras → 20 carvões em 120 s; fundição 1 minério +
+  1 carvão → 1 lingote em 15 s; bigorna 1 lingote → 3 pontas em 15 s; galinheiro → 1 pena em 10 s (receita sem entrada:
+  a validação agora só exige saída); mesa 1 haste + 1 ponta + 2 penas → 2 flechas em 10 s; forja da espada igual.
+  Modelos provisórios em `BuildingModels` (cúpula escura com boca acesa, bigorna sobre toco, casinha com telhado, mesa
+  com hastes e pena, depósito roxo com flecha) e fumaça só em fundição, forja e carvoaria.
+- **Custos das construções novas (escolha minha, só bruto):** carvoaria 8 pedras; bigorna 2 toras + 4 pedras + 2
+  minérios; galinheiro 6 toras; mesa 4 toras; arsenal 6 toras + 4 pedras.
+- **Testes:** `ArrowChainRecipeTests` (7) com os números reais. `dotnet build` 0/0; `dotnet test` 188 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 03:02–03:03 de relógio.

@@ -308,7 +308,7 @@ public partial class WorldView : Node3D
             float pulse = machine.IsWorking ? 1f + 0.04f * Mathf.Sin(_time * 10f) : 1f;
             model.Scale = new Vector3(1f, pulse, 1f);
 
-            if (puff && machine.IsWorking && building.Kind != "sawmill")
+            if (puff && machine.IsWorking && building.Kind is "smelter" or "forge" or "charcoal_kiln")
                 _effects.Smoke(node.Position + new Vector3(0f, 1.15f, 0f));
         }
     }

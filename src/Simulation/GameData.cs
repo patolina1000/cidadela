@@ -148,8 +148,8 @@ public sealed class GameData
                 throw new FormatException($"Receita \"{id}\": máquina desconhecida \"{r.Machine}\".");
             if (recipes.Exists(x => x.Machine == r.Machine))
                 throw new FormatException($"Receita \"{id}\": \"{r.Machine}\" já tem receita (por enquanto, uma por máquina).");
-            if (r.Seconds <= 0f || r.Inputs.Count == 0 || r.Outputs.Count == 0)
-                throw new FormatException($"Receita \"{id}\" precisa de entradas, saídas e seconds positivos.");
+            if (r.Seconds <= 0f || r.Outputs.Count == 0)
+                throw new FormatException($"Receita \"{id}\" precisa de saídas e seconds positivos (entradas podem faltar).");
             CheckItems(itemKinds, r.Inputs, $"entradas de \"{id}\"");
             CheckItems(itemKinds, r.Outputs, $"saídas de \"{id}\"");
             recipes.Add(new RecipeType(id, r.Machine, r.Inputs, r.Outputs, SecondsToTicks(r.Seconds)));

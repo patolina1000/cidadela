@@ -58,6 +58,41 @@ public static class BuildingModels
                 Add(model, new CylinderMesh { TopRadius = 0.1f, BottomRadius = 0.13f, Height = 0.7f }, Palette.Midnight, new Vector3(0.22f, 0.85f, 0.15f));
                 AddOutputArrow(model);
                 break;
+            case "charcoal_kiln":
+                // Meda de carvão: cúpula escura com a boca acesa.
+                Add(model, new SphereMesh { Radius = 0.44f, Height = 0.7f, RadialSegments = 16, Rings = 8 }, Palette.Mud, new Vector3(0f, 0.18f, 0f));
+                Add(model, new CylinderMesh { TopRadius = 0.07f, BottomRadius = 0.09f, Height = 0.18f }, Palette.Pumpkin, new Vector3(0f, 0.56f, 0f));
+                AddOutputArrow(model);
+                break;
+            case "anvil":
+                Add(model, new BoxMesh { Size = new Vector3(0.36f, 0.34f, 0.3f) }, Palette.Wood, new Vector3(0f, 0.17f, 0f));
+                Add(model, new BoxMesh { Size = new Vector3(0.62f, 0.14f, 0.26f) }, Palette.ColdStone, new Vector3(0f, 0.41f, 0f));
+                var horn = Add(model, new PrismMesh { Size = new Vector3(0.2f, 0.22f, 0.14f) }, Palette.ColdStone, new Vector3(0.41f, 0.41f, 0f));
+                horn.Rotation = new Vector3(0f, 0f, -Mathf.Pi / 2f);
+                AddOutputArrow(model);
+                break;
+            case "coop":
+                Add(model, new BoxMesh { Size = new Vector3(0.7f, 0.4f, 0.55f) }, Palette.Wheat, new Vector3(0f, 0.2f, 0f));
+                var coopRoof = Add(model, new PrismMesh { Size = new Vector3(0.8f, 0.3f, 0.64f) }, Palette.Wood, new Vector3(0f, 0.55f, 0f));
+                coopRoof.Rotation = new Vector3(0f, Mathf.Pi / 2f, 0f);
+                Add(model, new SphereMesh { Radius = 0.09f, Height = 0.16f }, Palette.Bone, new Vector3(0.22f, 0.08f, -0.36f));
+                AddOutputArrow(model);
+                break;
+            case "fletching_table":
+                Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.06f, 0.55f) }, Palette.Wood, new Vector3(0f, 0.42f, 0f));
+                foreach (float lx in new[] { -0.34f, 0.34f })
+                foreach (float lz in new[] { -0.22f, 0.22f })
+                    Add(model, new BoxMesh { Size = new Vector3(0.06f, 0.4f, 0.06f) }, Palette.Wood.Darkened(0.3f), new Vector3(lx, 0.2f, lz));
+                Add(model, new BoxMesh { Size = new Vector3(0.5f, 0.04f, 0.06f) }, Palette.Wheat, new Vector3(0f, 0.47f, 0.08f));
+                Add(model, new BoxMesh { Size = new Vector3(0.1f, 0.03f, 0.12f) }, Palette.Bone, new Vector3(-0.22f, 0.47f, -0.1f));
+                AddOutputArrow(model);
+                break;
+            case "arsenal":
+                Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.55f, 0.7f) }, Palette.PurpleEarth, new Vector3(0f, 0.275f, 0f));
+                var arsenalRoof = Add(model, new PrismMesh { Size = new Vector3(0.9f, 0.3f, 0.8f) }, Palette.Midnight, new Vector3(0f, 0.7f, 0f));
+                arsenalRoof.Rotation = new Vector3(0f, Mathf.Pi / 2f, 0f);
+                Add(model, new BoxMesh { Size = new Vector3(0.05f, 0.4f, 0.05f) }, Palette.Pumpkin, new Vector3(0.3f, 0.75f, -0.38f));
+                break;
             default:
                 Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.8f, 0.8f) }, Colors.Magenta, new Vector3(0f, 0.4f, 0f));
                 break;
