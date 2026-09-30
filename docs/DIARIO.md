@@ -5713,3 +5713,22 @@ onde errou, correções manuais e quanto tempo levou.
   fora do alcance de 10 e toras de menos); corrigido no teste. `dotnet build` 0/0; `dotnet test` 211 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 03:13–03:15 de relógio.
+
+## 2026-09-30 — Linha da flecha, passo 8a: mapa e cena de teste, teste de ponta a ponta
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 8 de `docs/cadeia_flecha.md` (a parte da simulação vem antes do visual, para o passo 7 ser
+  conferido na linha de verdade).
+- **Feito:** `data/maps/linha_flecha.json` (34×24, gerado por script e legível, um objeto por linha): rio no norte com a
+  roda d'água, eixo até a fundição e 4 manivelas (hastes, carvão, lingotes, pontas), 2 manivelas com gente (penas,
+  flechas), bosque + lenhador + baú de toras, veios + mineiro + baú de minério, Posto de Carregadores, serraria,
+  carvoaria, fundição, bigorna, galinheiro, mesa de emplumar e arsenal; 14 aldeões (12 com trabalho, 2 livres). Baús e o
+  Castelão começam com um pouco de bruto: `MapLoader` aceita `"items"` em construções que guardam e no Castelão.
+  Cena `scenes/tests/LinhaFlecha.tscn` (o Main com esse mapa).
+- **Rastreio de 10 min de simulação:** a primeira flecha sai perto de 3,5 min (a carvoaria leva 120 s); 56 flechas em
+  10 min; o gargalo é a pena (1 a cada 10 s, 2 por ciclo), como os números preveem. A serraria enche de hastes (sobra,
+  como a especificação diz) e o carvão acumula porque os carregadores repartem o tempo entre toras e minério.
+- **Testes:** `ArrowLineMapTests` (todos os postos ocupados, 4 manivelas pelo eixo sem ninguém, 2 livres, todas as
+  linhas andando; ≥ 10 flechas em 5 min). `dotnet build` 0/0; `dotnet test` 213 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 03:15–03:16 de relógio.

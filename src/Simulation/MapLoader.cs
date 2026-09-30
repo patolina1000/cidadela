@@ -23,12 +23,20 @@ public static class MapLoader
             throw new FormatException("Mapa sem o Castelão.");
         GridPos start = Checked(world, data.Castellan.X, data.Castellan.Z);
         world.SetCastellan(new System.Numerics.Vector2(start.X, start.Z));
+        foreach ((string kind, int amount) in data.Castellan.Items)
+            world.Castellan.Inventory.Add(gameData.Item(kind).Kind, amount);
 
         foreach (PlacedData r in data.Resources)
             world.AddResource(r.Kind, Checked(world, r.X, r.Z));
 
         foreach (PlacedData b in data.Buildings)
-            world.AddBuilding(gameData.Building(b.Kind), Checked(world, b.X, b.Z), DirectionExtensions.Parse(b.Direction));
+        {
+            Building building = world.AddBuilding(gameData.Building(b.Kind), Checked(world, b.X, b.Z), DirectionExtensions.Parse(b.Direction));
+            // Baú que já começa com itens (mapas de teste): "items": { "wood": 30 }.
+            foreach ((string kind, int amount) in b.Items)
+                (building.Storage ?? throw new FormatException($"\"{b.Kind}\" não guarda itens."))
+                    .Add(gameData.Item(kind).Kind, amount);
+        }
 
         foreach (PlacedData v in data.Villagers)
         {
@@ -112,11 +120,14 @@ public static class MapLoader
         public int X { get; set; }
         public int Z { get; set; }
         public string? Direction { get; set; }
+        public Dictionary<string, int> Items { get; set; } = new();
     }
 
     private sealed class CastellanData
     {
         public int X { get; set; }
         public int Z { get; set; }
+        /// <summary>O que ele já leva na mochila (mapas de teste).</summary>
+        public Dictionary<string, int> Items { get; set; } = new();
     }
 }
