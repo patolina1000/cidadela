@@ -5477,5 +5477,6 @@ onde errou, correções manuais e quanto tempo levou.
   Sem custo mensurável (a v2 tem 2.482 triângulos nas regiões + retalhos, cabelo 927, chifres 291, cristal 24). Nas
   rodadas de antes o Arthur estava usando o Safari e o WhatsApp (o jogo continuou desenhando na Retina); nas de depois o
   Godot ficou na frente.
+- **Jogo para o Arthur:** `Main` aberto no editor com a v2 dentro do bosque. Print: `docs/prints/protagonista_v2_bosque.png`.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:06 de relógio (fim).
