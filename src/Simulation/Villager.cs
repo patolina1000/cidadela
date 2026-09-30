@@ -299,6 +299,7 @@ public sealed class Villager
 
         var machines = new List<Building>();
         var sources = new List<Building>();
+        // Fontes (e o baú de devolução) do mais perto ao mais longe dele.
         foreach (Building b in world.Buildings)
         {
             if (!InRange(b))
@@ -309,6 +310,7 @@ public sealed class Villager
                 sources.Add(b);
         }
         machines.Sort((a, b) => Distance(a.Cell).CompareTo(Distance(b.Cell)));
+        sources.Sort((a, b) => Distance(a.Cell).CompareTo(Distance(b.Cell)));
 
         // Já com carga: leva para a máquina mais perto que aceita.
         if (CarryingKind is string carried && CarryingCount > 0)
@@ -326,6 +328,18 @@ public sealed class Villager
                     return;
                 }
             }
+            // Nenhuma máquina quer o que está na mão (alguém encheu antes): devolve ao baú mais perto no raio, para não
+            // ficar preso com a carga.
+            foreach (Building src in sources)
+                if (src.Storage is not null && TrySetPath(world, FreeNeighbors(world, src.Cell)))
+                {
+                    HaulTo = src;
+                    HaulKind = carried;
+                    HaulAmount = CarryingCount;
+                    Task = VillagerTask.Hauling;
+                    _noPath = false;
+                    return;
+                }
             Task = VillagerTask.Waiting;
             return;
         }
@@ -393,13 +407,19 @@ public sealed class Villager
 
     private void DropOff(SimWorld world)
     {
-        MachineState machine = HaulTo!.Machine!;
         int given = 0;
-        while (CarryingCount > 0 && machine.Accepts(CarryingKind!))
+        if (HaulTo!.Machine is MachineState machine)
+            while (CarryingCount > 0 && machine.Accepts(CarryingKind!))
+            {
+                machine.Input.Add(CarryingKind!);
+                CarryingCount--;
+                given++;
+            }
+        else if (HaulTo.Storage is Inventory storage && CarryingCount > 0)
         {
-            machine.Input.Add(CarryingKind!);
-            CarryingCount--;
-            given++;
+            storage.Add(CarryingKind!, CarryingCount);
+            given = CarryingCount;
+            CarryingCount = 0;
         }
         if (CarryingCount == 0)
             CarryingKind = null;

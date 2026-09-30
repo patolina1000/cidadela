@@ -63,6 +63,7 @@ public partial class WorldView : Node3D
     private StandardMaterial3D _hoverMaterial = null!;
     private CastellanVisual _castellan = null!;
     private Effects _effects = null!;
+    private EnergyOverlay _energy = null!;
 
     /// <summary>Nó desenhado do Castelão, para a câmera seguir.</summary>
     public Node3D CastellanNode => _castellan;
@@ -120,6 +121,9 @@ public partial class WorldView : Node3D
         AddChild(_castellan);
         _effects = new Effects { Name = "Effects" };
         AddChild(_effects);
+        _energy = new EnergyOverlay { Name = "Energy" };
+        AddChild(_energy);
+        _energy.Build(world);
         BuildHover();
         _ghostMaterial = new StandardMaterial3D
         {
@@ -155,6 +159,9 @@ public partial class WorldView : Node3D
         RenderBeltItems((float)alpha);
         RenderChestTakes();
         RenderMachines(dt);
+        _energy.InfoMode = InfoMode;
+        _energy.LabelsVisible = IconsVisible;
+        _energy.Render(dt);
 
         _iconSources.Clear();
         foreach ((Villager villager, VillagerVisual visual) in _villagerNodes)
@@ -314,6 +321,10 @@ public partial class WorldView : Node3D
             { Storage: Inventory storage } => ChestLines(building, storage),
             { Machine: MachineState machine } => MachineLines(building, machine),
             { Workplace: Workplace work } => WorkplaceLines(building, work),
+            { Moth: MothState moth } => MothLines(building, moth),
+            { Type.Tower: not null } => new List<string> { building.Type.Name, NetworkText(building.Network) },
+            { Type.Mana.Capacity: > 0f } => new List<string>
+                { building.Type.Name, $"Carga {building.ManaStored:0}/{building.Type.Mana!.Capacity:0}", NetworkText(building.Network) },
             _ => null,
         };
         if (building is null || lines is null)
@@ -364,16 +375,41 @@ public partial class WorldView : Node3D
             lines.Add("Entrada: " + string.Join(", ", Contents(machine.Input)));
         if (!machine.Output.IsEmpty)
             lines.Add("Pronto: " + string.Join(", ", Contents(machine.Output)));
-        lines.Add(machine.Waiting switch
-        {
-            null => $"Trabalhando {machine.Progress:P0}",
-            MachineWait.OutputFull => "Parada: saída cheia",
-            MachineWait.PostsEmpty => $"Parada: postos {building.CrewPresent}/{building.Crew.Length}",
-            MachineWait.NoMana => "Parada: sem mana",
-            MachineWait.SourceDepleted => "Parada: veio esgotado",
-            _ => "Esperando " + ItemsText(recipe.Inputs),
-        });
+        if (building.Crew.Length > 0)
+            lines.Add("Operador: " + OperatorText(building));
+        if (building.Type.Mana is ManaType mana)
+            lines.Add(mana.Supply > 0f
+                ? $"Mana: gera {mana.Supply:0.#}/s queimando"
+                : $"Mana: {mana.Use:0.#}/s trabalhando, recebe {building.ManaSatisfaction:P0}" + (building.Network is null ? " (fora da rede)" : ""));
+        MachineWait? wait = machine.Waiting;
+        string state = EnergyOverlay.StateText(_world.Data, building, machine, wait);
+        lines.Add(wait is null ? $"{char.ToUpper(state[0])}{state[1..]} {machine.Progress:P0}" : $"Parada: {state}");
+        if (building.Source is ResourceNode vein)
+            lines.Add($"Veio: restam {vein.Remaining}");
         return lines;
+    }
+
+    private string OperatorText(Building building)
+    {
+        var who = new List<string>();
+        if (building.CastellanSlot is not null)
+            who.Add("a protagonista");
+        foreach (Villager? v in building.Crew)
+            if (v is not null)
+                who.Add(v.Task == VillagerTask.AtPost ? "aldeão" : "aldeão a caminho");
+        return who.Count == 0 ? "ninguém (E opera)" : string.Join(", ", who);
+    }
+
+    private static string NetworkText(ManaNetwork? network) => network is null
+        ? "Fora da rede de mana"
+        : $"Rede: gera {network.Supply:0.#}/s, pede {network.Demand:0.#}/s ({network.Satisfaction:P0})";
+
+    private List<string> MothLines(Building building, MothState moth)
+    {
+        string state = moth.Landed ? "pousada: sem mana"
+            : moth.Carrying is string kind ? $"levando {_world.Data.Item(kind).Name.ToLowerInvariant()}"
+            : "parada: nada leve para levar";
+        return new List<string> { building.Type.Name, char.ToUpper(state[0]) + state[1..], NetworkText(building.Network) };
     }
 
     /// <summary>

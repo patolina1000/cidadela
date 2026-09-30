@@ -169,9 +169,13 @@ public sealed class SimWorld
         }
     }
 
-    /// <summary>Gerador: com receita (o Relicário, que queima combustível), só enquanto o ciclo anda; sem receita, sempre.</summary>
+    /// <summary>
+    /// Gerador: com receita (o Relicário, que queima combustível), enquanto queima ou tem o que começar a queimar (sem buraco
+    /// no tick entre dois ciclos); sem receita, sempre.
+    /// </summary>
     private static float SupplyOf(Building b) =>
-        b.Type.Mana is not { Supply: > 0f } mana ? 0f : b.Machine is null || b.Machine.IsWorking ? mana.Supply : 0f;
+        b.Type.Mana is not { Supply: > 0f } mana ? 0f
+        : b.Machine is null || b.Machine.IsWorking || b.Machine.CanStart ? mana.Supply : 0f;
 
     /// <summary>
     /// Consumidor: máquina só trabalhando ou prestes a começar (com gente no posto); mariposa, a mana de voo voando e a de

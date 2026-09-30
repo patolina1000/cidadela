@@ -5920,3 +5920,33 @@ onde errou, correções manuais e quanto tempo levou.
   enche a entrada). `dotnet build` 0/0; `dotnet test` 232 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 16:51–16:51 de relógio.
+
+## 2026-09-30 — Linha da energia, passo 9: feedback visual (e duas correções achadas no teste A)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 9 do plano: estado das máquinas, barra de progresso, fios azul-frios que piscam com a rede fraca,
+  mariposa como pontinho de luz, HUD de geração × consumo e carga do Cristal-mãe, Alt e mouse, barra só com a linha.
+- **Feito:**
+  - `src/View/EnergyOverlay.cs`: etiqueta de estado sobre cada máquina (trabalhando/queimando, falta <item>, sem
+    operador, sem mana, saída cheia, veio esgotado; problemas sempre, todos com Alt), barra de progresso
+    (`ProgressBar.gdshader`, billboard sem PROJECTION_MATRIX), barra de carga sobre o Cristal-mãe, fios de luz entre
+    as torres ligadas (piscam quando a rede gera menos do que pede ou nada), mariposa como pontinho de luz com asas que
+    batem, voando em arco entre as duas células com o item embaixo; parada, paira; sem mana, pousa apagada.
+  - HUD (canto de cima à direita): "Mana: gera X/s · consome Y/s · sobra Z/s" (ou FALTA com a fração) por rede, e a carga
+    do Cristal-mãe. Mouse em cima: receita, operador (protagonista, aldeão, a caminho, ninguém), mana pedida e a fração
+    recebida, estado, veio restante; mariposa, torre e Cristal-mãe também têm etiqueta.
+  - A barra de construção já só tinha a linha: Esteira, Torre, Relicário, Mina, Poço, Purificador, Mariposa, Baú, Posto
+    de Carregadores (teclas 1–9).
+- **O que deu errado (achado ao montar o teste A):**
+  - Carregador preso: buscou um jarro d'água do baú de sobras (D5), a mariposa encheu o Purificador antes, e ele ficou
+    para sempre com o jarro na mão — e o Purificador parou de receber podres. Agora a carga que nenhuma máquina aceita
+    volta ao baú mais perto no raio (`CarrierTests.ALoadNobodyWantsGoesBackToTheChest`).
+  - O Relicário não gerava no tick entre dois ciclos (a rede caía a 0 por 1 tick a cada 20 s). Agora gera enquanto
+    queima ou tem puro para começar.
+  - Os fios não apareciam: o desenho montava tudo antes do primeiro tick montar as redes. Agora segue
+    `SimWorld.ManaRebuilds`. Fio engrossado para aparecer de longe.
+  - A captura do godot-ai caiu no transporte a 1100–1400 px nesta cena; a 700–900 px passa.
+- **Testes:** `dotnet build` 0/0; `dotnet test` 235 passaram. Teste A rodado pelo godot-ai, sem erro no log; print
+  `docs/prints/energia_passo9_feedback.png`. O Alt não foi testado por injeção (o jogo lê a tecla por polling).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 16:52–17:02 de relógio (com a interrupção da sessão do Diretor no meio).

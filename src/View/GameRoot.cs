@@ -36,6 +36,7 @@ public partial class GameRoot : Node3D
     private WorldView _view = null!;
     private CameraRig _camera = null!;
     private Hotbar _hotbar = null!;
+    private Label _manaLabel = null!;
     /// <summary>As construções da barra (as de data/buildings.json com "hotbar" ligado), na ordem das teclas.</summary>
     private readonly List<BuildingType> _hotbarTypes = new();
     private InventoryBar _inventoryBar = null!;
@@ -92,6 +93,19 @@ public partial class GameRoot : Node3D
                 _hotbarTypes.Add(type);
         _hotbar.Build(_hotbarTypes, data);
         _hotbar.SlotClicked += Select;
+
+        // Mana no canto de cima à direita (docs/linha_energia.md: geração × consumo e a carga do Cristal-mãe).
+        _manaLabel = new Label
+        {
+            Name = "ManaLabel",
+            HorizontalAlignment = HorizontalAlignment.Right,
+            AnchorLeft = 1f, AnchorRight = 1f, OffsetLeft = -620f, OffsetRight = -16f, OffsetTop = 40f, OffsetBottom = 100f,
+        };
+        _manaLabel.AddThemeColorOverride("font_color", Palette.ManaBlue);
+        _manaLabel.AddThemeColorOverride("font_outline_color", Colors.Black);
+        _manaLabel.AddThemeConstantOverride("outline_size", 6);
+        _manaLabel.AddThemeFontSizeOverride("font_size", 18);
+        GetNode("DebugHud").AddChild(_manaLabel);
 
         _inventoryBar = new InventoryBar { Name = "InventoryBar" };
         GetNode("DebugHud").AddChild(_inventoryBar);
@@ -422,11 +436,33 @@ public partial class GameRoot : Node3D
             $"{Engine.GetFramesPerSecond()} FPS  |  Castelão ({p.X:0.0}, {p.Y:0.0}) a {castellan.Stats.CellsPerSecond:0.0} cél/s [ ]  |  grama: {_view.GrassTufts} tufos  |  " +
             $"aldeões: patamar {_debugSpeedTier + 1}/{_world.Data.Villagers.SpeedTiers.Count} ({_world.Data.Villagers.SpeedTiers[_debugSpeedTier]:0.00} cél/s){(_debugPenalized ? ", com penalidade" : "")}  [V patamar, B penalidade]  [O contorno {(Outline.Enabled ? "ligado" : "desligado")}]  [H colisão]";
 
+        _manaLabel.Text = ManaText();
+
         _inventoryLabel.Text = _selected is not null
             ? $"Construindo {_selected.Name} ({DirectionName(_buildDirection)}) — R gira, botão direito cancela"
             : _heldItem is not null
                 ? $"Segurando {_world.Data.Item(_heldItem).Name} — clique numa esteira, baú ou máquina; botão direito solta"
                 : string.Join("   ", HandLines(castellan));
+    }
+
+    /// <summary>Geração × consumo de cada rede de mana (a soma, se houver mais de uma) e a carga do Cristal-mãe.</summary>
+    private string ManaText()
+    {
+        var lines = new List<string>();
+        IReadOnlyList<ManaNetwork> networks = _world.ManaNetworks;
+        if (networks.Count == 0)
+            lines.Add("Mana: nenhuma torre");
+        for (int i = 0; i < networks.Count; i++)
+        {
+            ManaNetwork n = networks[i];
+            string name = networks.Count > 1 ? $"Rede {i + 1}" : "Mana";
+            string state = n.Supply <= 0f ? "sem geração" : n.Satisfaction < 1f ? $"FALTA ({n.Satisfaction:P0})" : $"sobra {n.Surplus:0.0}/s";
+            lines.Add($"{name}: gera {n.Supply:0.0}/s · consome {Mathf.Min(n.Demand, n.Supply):0.0}/s · {state}");
+        }
+        foreach (Building b in _world.Buildings)
+            if (b.Type.Mana is { Capacity: > 0f } mana)
+                lines.Add($"{b.Type.Name}: {b.ManaStored:0}/{mana.Capacity:0}");
+        return string.Join("\n", lines);
     }
 
     /// <summary>O que ela faz à mão agora: coleta, posto, purificação (com a fila) e as teclas.</summary>

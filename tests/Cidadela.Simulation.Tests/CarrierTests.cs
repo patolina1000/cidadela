@@ -1,3 +1,4 @@
+using System.Linq;
 using Xunit;
 
 namespace Cidadela.Simulation.Tests;
@@ -76,6 +77,19 @@ public class CarrierTests
                 most = System.Math.Max(most, v.CarryingCount);
         }
         Assert.Equal(2, most); // pesado: 2 por viagem nos dados de teste (no jogo, 1)
+    }
+
+    [Fact]
+    public void ALoadNobodyWantsGoesBackToTheChest()
+    {
+        // O forno encheu por outro caminho enquanto o carregador vinha: ele não fica preso com a carga na mão.
+        SimWorld world = World(""", { "kind": "kiln", "x": 10, "z": 10 }""", "wood", inChest: 2);
+        for (int i = 0; i < Seconds(10f) && world.Villagers.All(v => v.CarryingCount == 0); i++)
+            world.Tick();
+        world.BuildingAt(new GridPos(10, 10))!.Machine!.Input.Add("wood", 30); // 10 começam a queimar, 20 enchem a entrada
+        TestWorlds.Run(world, Seconds(20f));
+        Assert.All(world.Villagers, v => Assert.Equal(0, v.CarryingCount));
+        Assert.Equal(2, world.BuildingAt(new GridPos(5, 10))!.Storage!.Count("wood"));
     }
 
     [Fact]
