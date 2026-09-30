@@ -19,7 +19,8 @@ public enum VillagerTask
 /// <summary>
 /// Aldeão trabalhador (GDD, seção 6). Com uma cabana, repete sozinho: acha o recurso do ofício mais
 /// perto dentro do raio, anda até encostar (caminho A*), coleta até encher a carga e volta para entregar.
-/// Aldeões não colidem entre si nem com o Castelão.
+/// Aldeões não colidem entre si nem com o Castelão. A célula de árvore não bloqueia o caminho (só o tronco): eles passam
+/// sob a copa, deslizando em volta do tronco, e coletam encostados nele.
 /// </summary>
 public sealed class Villager
 {
@@ -251,6 +252,8 @@ public sealed class Villager
             Plan(world, work);
             return;
         }
+        if (!Touching(world, node))
+            return;
 
         Vector2 toNode = new Vector2(node.Cell.X, node.Cell.Z) - Position;
         if (toNode != Vector2.Zero)
@@ -266,6 +269,25 @@ public sealed class Villager
         }
         if (CarryingCount >= Stats.Carry || node.IsDepleted)
             GoHome(world);
+    }
+
+    /// <summary>
+    /// Recurso com tronco: antes de coletar, chega da célula vizinha até encostar no tronco (tronco + corpo). Devolve
+    /// true quando já está encostado; sem tronco, sempre true (coleta da célula vizinha, como antes).
+    /// </summary>
+    private bool Touching(SimWorld world, ResourceNode node)
+    {
+        if (node.Type.TrunkRadius is not float trunk)
+            return true;
+        var center = new Vector2(node.Cell.X, node.Cell.Z);
+        Vector2 toTrunk = center - Position;
+        float gap = toTrunk.Length() - (trunk + Stats.Radius);
+        if (gap <= 0.02f)
+            return true;
+        float step = MathF.Min(gap, Speed / SimClock.TicksPerSecond);
+        Facing = Vector2.Normalize(toTrunk);
+        Position = world.PushOutOfTrunks(Position + Facing * step, Stats.Radius);
+        return false;
     }
 
     private void GoHome(SimWorld world)
@@ -292,38 +314,94 @@ public sealed class Villager
         _retryIn = CarryingCount > 0 ? RetryTicks : 0;
     }
 
-    /// <summary>Anda pelo caminho; true quando chegou. Se a próxima célula virou sólida, replaneja.</summary>
+    /// <summary>
+    /// Anda pelo caminho; true quando chegou. Se a próxima célula virou sólida, replaneja. Célula de árvore no caminho
+    /// conta como atingida ao encostar no tronco; dali, rumo à próxima, o aldeão escorrega em volta do tronco.
+    /// </summary>
     private bool FollowPath(SimWorld world)
     {
         float budget = Speed / SimClock.TicksPerSecond;
         while (budget > 0f && _path.Count > 0)
         {
             GridPos next = _path.Peek();
-            if (world.IsSolid(next))
+            if (world.BlocksVillager(next))
             {
                 _path.Clear();
                 Plan(world, Home!.Workplace!);
                 return false;
             }
             var target = new Vector2(next.X, next.Z);
+            float arrive = world.TrunkAt(next) is float trunk ? trunk + Stats.Radius + 0.02f : 0f;
             Vector2 delta = target - Position;
             float distance = delta.Length();
-            if (distance > budget)
+            if (distance - arrive > budget)
             {
-                Position += delta / distance * budget;
-                Facing = Vector2.Normalize(delta);
+                Vector2 step = delta / distance * budget;
+                Facing = step / budget;
+                Position = SlideAroundTrunks(world, step);
                 return false;
             }
-            Position = target;
-            budget -= distance;
+            float walk = MathF.Max(0f, distance - arrive);
+            Position = arrive > 0f && distance > 1e-5f
+                ? world.PushOutOfTrunks(Position + delta / distance * walk, Stats.Radius)
+                : target;
+            budget -= walk;
             _path.Dequeue();
         }
         return _path.Count == 0;
     }
 
+    /// <summary>
+    /// Um passo que bateria num tronco vira o passo ao longo da tangente (escorrega em volta dele); de frente, sem
+    /// tangente, escolhe um lado pelo id, sempre o mesmo. Depois empurra para fora de qualquer tronco.
+    /// </summary>
+    private Vector2 SlideAroundTrunks(SimWorld world, Vector2 step)
+    {
+        Vector2 next = Position + step;
+        Vector2 pushed = world.PushOutOfTrunks(next, Stats.Radius);
+        if (pushed == next)
+            return next;
+        Vector2 normal = Vector2.Normalize(pushed - next);
+        float into = Vector2.Dot(step, normal);
+        if (into < 0f)
+        {
+            Vector2 tangent = step - normal * into;
+            float length = step.Length();
+            if (tangent.Length() < 0.3f * length)
+            {
+                // De frente: vai para o lado com mais folga das células cheias (pedra, construção); empate, pelo id.
+                var side = new Vector2(-normal.Y, normal.X) * length;
+                float left = Clearance(world, Position + side), right = Clearance(world, Position - side);
+                float sign = MathF.Abs(left - right) > 0.01f ? (left > right ? 1f : -1f) : (Id % 2 == 0 ? 1f : -1f);
+                tangent = side * sign;
+            }
+            next = Position + tangent;
+        }
+        return world.PushOutOfTrunks(next, Stats.Radius);
+    }
+
+    /// <summary>Distância de uma posição até a célula cheia mais perto em volta (até 1,5; mais que isso não importa).</summary>
+    private static float Clearance(SimWorld world, Vector2 position)
+    {
+        float best = 1.5f;
+        int cx = (int)MathF.Round(position.X), cz = (int)MathF.Round(position.Y);
+        for (int dx = -1; dx <= 1; dx++)
+        for (int dz = -1; dz <= 1; dz++)
+        {
+            var cell = new GridPos(cx + dx, cz + dz);
+            if (!world.BlocksVillager(cell))
+                continue;
+            float ox = MathF.Max(MathF.Abs(position.X - cell.X) - 0.5f, 0f);
+            float oz = MathF.Max(MathF.Abs(position.Y - cell.Z) - 0.5f, 0f);
+            best = MathF.Min(best, MathF.Sqrt(ox * ox + oz * oz));
+        }
+        return best;
+    }
+
     private bool TrySetPath(SimWorld world, List<GridPos> goals)
     {
-        List<GridPos>? path = GridPath.Find(world.IsSolid, Cell, goals);
+        List<GridPos>? path = GridPath.Find(world.BlocksVillager, Cell, goals,
+            cell => world.TrunkAt(cell) is null ? 0f : Stats.TreeCellCost);
         if (path is null)
             return false;
         _path.Clear();

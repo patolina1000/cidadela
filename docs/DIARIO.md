@@ -4537,3 +4537,44 @@ onde errou, correções manuais e quanto tempo levou.
   0 avisos; `dotnet test`: 132 aprovados (a mudança é só na view).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 22:52–22:53 de relógio.
+
+---
+
+## 2026-09-29 — Passar entre duas árvores vizinhas (Castelão e aldeões)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** (1) os aldeões usarem o mesmo tronco que o Castelão (passar sob a copa, coletar encostados), sem ficar
+  mais caro com centenas deles, medindo o custo do caminho por tick nos testes; (2) prioridade, do Arthur: "não consigo
+  passar entre duas árvores" — reproduzir (lado a lado e diagonal, vários ângulos), achar o porquê e corrigir para a
+  protagonista e os aldeões, com teste automático.
+- **Por que travava:** com tronco de 0,2 m e o Castelão de raio 0,3, o vão entre dois troncos vizinhos era de 0,6 m,
+  **exatamente o corpo dela**: só passava no milímetro do meio. E a colisão (um eixo por vez, feita para paredes retas)
+  não faz deslizar em volta de um círculo: 0,1 m fora do meio, ela parava encostada no tronco (reproduzido: parou em
+  z = 4,4 com x = 4,4 e 4,62; pelo meio exato, 4,5, passava). Os aldeões nem tentavam: o caminho deles é por célula e a
+  célula da árvore era sólida (muro com duas árvores: "sem caminho").
+- **O que foi feito:**
+  - `data/resources.json`: tronco de **0,15 m** (o tronco real das árvores do CENÁRIO, ~0,1–0,15): o vão vira 0,7 m.
+  - **Castelão:** as paredes (células cheias) continuam por eixo; os troncos saíram da colisão por eixo e viraram um
+    empurrão para fora (`SimWorld.PushOutOfTrunks`): ela anda e, se invadiu um tronco, é empurrada pela normal — desliza
+    em volta dele e se encaixa no vão. Se o empurrão a jogaria numa parede, fica onde estava.
+  - **Aldeões:** a célula de árvore não bloqueia mais o caminho (`BlocksVillager`), com um custo extra de 0,5 célula
+    (`data/villagers.json`, `treeCellCost`: preferem o chão aberto, mas passam sob a copa quando é mais curto); a célula
+    de árvore no caminho conta como atingida ao encostar no tronco, e dali eles escorregam pela tangente do tronco
+    rumo à próxima célula; de frente, vão para o lado com mais folga das células cheias (senão pelo id). Coletam
+    **encostados no tronco** (último passo da célula vizinha até tronco + corpo). Corpo do aldeão: `radius` 0,15.
+  - A diagonal entre célula livre e célula de árvore já não é "quina": passa a 0,71 m do tronco.
+- **Testes:** 12 novos (`TreeGapTests`): Castelão lado a lado pelo meio, 0,1 m para cada lado e de viés (±0,35);
+  diagonal perpendicular e de viés; nunca entra no tronco; aldeão atravessa um muro de pedra pelo vão entre dois troncos
+  (lado a lado e diagonal, entregando do outro lado); aldeão coleta encostado no tronco (0,2–0,45 m, antes 1–1,41 m). Os
+  testes usam tronco de 0,2 (o caso mais apertado) e passam; o jogo usa 0,15. `VillagerPathCostTests`: 100 lenhadores
+  num bosque 60×60 com 30 % de árvores e cabanas que não enchem.
+- **Custo do caminho por tick (100 aldeões trabalhando, 600 ticks, 3 rodadas):** antes 0,12–0,15 ms; depois 0,15–0,20 ms
+  (ruído do teste; no pior, +0,05 ms por tick, meio microssegundo por aldeão). Entregas caíram de 2.992 para 2.586 em
+  600 ticks porque cada viagem agora inclui o passo até encostar no tronco.
+- **No jogo:** mais um par de árvores lado a lado e um na diagonal em `data/maps/teste_cenario.json`. Rodei a cena de
+  teste, mas enquanto eu mandava as teclas a janela recebeu outras entradas (pausa, V, câmera): parei de mandar teclas
+  para não atrapalhar quem estivesse jogando. O GIF foi desenhado da própria simulação, de cima (posições tick a tick
+  gravadas por um teste temporário, não commitado): `docs/prints/arvores_vizinhas_passagem.gif` (e `.png`).
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 145 aprovados.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:54–23:07 de relógio.

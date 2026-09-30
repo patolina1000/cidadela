@@ -148,7 +148,8 @@ public sealed class GameData
             throw new FormatException("villagers.json: penaltySpeed precisa ser positivo e no máximo o patamar base.");
         if (v.MaxSpeed <= 0f || v.GatherMultiplier <= 0f || v.Carry <= 0)
             throw new FormatException("villagers.json: maxSpeed, gatherMultiplier e carry precisam ser positivos.");
-        var villagers = new VillagerStats(v.SpeedTiers, v.PenaltySpeed / v.SpeedTiers[0], v.MaxSpeed, v.GatherMultiplier, v.Carry);
+        var villagers = new VillagerStats(v.SpeedTiers, v.PenaltySpeed / v.SpeedTiers[0], v.MaxSpeed, v.GatherMultiplier, v.Carry,
+            v.Radius, v.TreeCellCost);
 
         var terrains = new List<TerrainType>();
         if (terrainJson is null)
@@ -241,6 +242,8 @@ public sealed class GameData
         public float MaxSpeed { get; set; } = 1.5f;
         public float GatherMultiplier { get; set; } = 1.5f;
         public int Carry { get; set; } = 5;
+        public float Radius { get; set; } = 0.15f;
+        public float TreeCellCost { get; set; } = 0.5f;
     }
 
     private sealed class ResourceData

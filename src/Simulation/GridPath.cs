@@ -5,7 +5,8 @@ namespace Cidadela.Simulation;
 
 /// <summary>
 /// Busca de caminho A* na grade, em 8 direções, sem cortar quina (diagonal só se as duas laterais
-/// estão livres). Custo 1 reto e √2 na diagonal; a estimativa é a distância octil até o objetivo mais perto.
+/// estão livres). Custo 1 reto e √2 na diagonal, mais um custo extra opcional por célula (os aldeões pagam mais para
+/// passar pela célula de uma árvore); a estimativa é a distância octil até o objetivo mais perto.
 /// </summary>
 public static class GridPath
 {
@@ -18,7 +19,8 @@ public static class GridPath
     /// Células a percorrer de <paramref name="start"/> (exclusive) até um dos objetivos (inclusive).
     /// Lista vazia se já está num objetivo; null se nenhum é alcançável.
     /// </summary>
-    public static List<GridPos>? Find(Func<GridPos, bool> isSolid, GridPos start, IReadOnlyCollection<GridPos> goals)
+    public static List<GridPos>? Find(Func<GridPos, bool> isSolid, GridPos start, IReadOnlyCollection<GridPos> goals,
+        Func<GridPos, float>? extraCost = null)
     {
         if (goals.Count == 0)
             return null;
@@ -45,7 +47,7 @@ public static class GridPath
                 if (diagonal && (isSolid(new GridPos(current.X + dx, current.Z)) || isSolid(new GridPos(current.X, current.Z + dz))))
                     continue;
 
-                float newCost = cost[current] + (diagonal ? 1.41421f : 1f);
+                float newCost = cost[current] + (diagonal ? 1.41421f : 1f) + (extraCost?.Invoke(next) ?? 0f);
                 if (cost.TryGetValue(next, out float known) && known <= newCost)
                     continue;
                 cost[next] = newCost;

@@ -7,6 +7,9 @@
   "castellan": { "x": 8, "z": 7 },
   "resources": [
     { "kind": "wood",  "x": 8,  "z": 8 },
+    { "kind": "wood",  "x": 9,  "z": 8 },   // lado a lado com a de cima: vão entre os troncos
+    { "kind": "wood",  "x": 12, "z": 11 },  // par na diagonal
+    { "kind": "wood",  "x": 13, "z": 12 },
     { "kind": "wood",  "x": 6,  "z": 9 },
     { "kind": "wood",  "x": 10, "z": 9 },
     { "kind": "wood",  "x": 5,  "z": 6 },

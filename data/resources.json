@@ -4,8 +4,9 @@
   // amount: quantos itens cada nó tem antes de se esgotar.
   // trunkRadius (opcional): o nó bloqueia só o tronco, um círculo desse raio em metros no centro da célula, e a coleta
   //   conta até ele (data/castellan.json, gatherTrunkReach). Sem ele, bloqueia a célula inteira (pedra e veio enchem a
-  //   célula). 0,2 = o tronco das árvores do CENÁRIO (~0,1–0,15 m) com folga para o corpo não raspar.
-  "wood":  { "gatherSeconds": 1.0, "amount": 30, "trunkRadius": 0.2 },
+  //   célula). 0,15 = o tronco das árvores do CENÁRIO (~0,1–0,15 m). Com o Castelão de raio 0,3, o vão entre dois
+  //   troncos vizinhos fica em 0,7 m: ela passa deslizando (em 0,2 o vão era 0,6, igual ao corpo, e ela enroscava).
+  "wood":  { "gatherSeconds": 1.0, "amount": 30, "trunkRadius": 0.15 },
   "stone": { "gatherSeconds": 1.5, "amount": 30 },
   "iron":  { "gatherSeconds": 2.0, "amount": 20 }
 }

@@ -9,9 +9,14 @@
   // maxSpeed: teto da velocidade final.
   // gatherMultiplier: quanto mais devagar coletam que o Castelão (1.5 = 50% mais lento).
   // carry: quantos itens levam por viagem.
+  // radius: raio do corpo, em células, para desviar dos troncos (o aldeão tem 0,40 m de altura).
+  // treeCellCost: custo extra de caminho para atravessar a célula de uma árvore (1 = uma célula a mais): preferem o
+  //   chão aberto, mas passam sob a copa, entre troncos, quando é o caminho mais curto.
   "speedTiers": [0.8, 1.0, 1.2],
   "penaltySpeed": 0.57,
   "maxSpeed": 1.5,
   "gatherMultiplier": 1.5,
-  "carry": 5
+  "carry": 5,
+  "radius": 0.15,
+  "treeCellCost": 0.5
 }

@@ -58,6 +58,13 @@ public sealed class Castellan
         return Vector2.Distance(center, nearest) <= Stats.GatherReach;
     }
 
+    /// <summary>Põe o corpo numa posição (testes; o jogo só move pelo <see cref="MoveCommand"/>).</summary>
+    internal void PlaceAt(Vector2 position)
+    {
+        Position = position;
+        PreviousPosition = position;
+    }
+
     internal void SetMoveDirection(Vector2 direction)
     {
         // Diagonal não pode ser mais rápida; entrada analógica menor que 1 anda mais devagar.
@@ -91,13 +98,18 @@ public sealed class Castellan
         Vector2 step = _moveDirection * (Stats.CellsPerSecond / SimClock.TicksPerSecond);
         var max = new Vector2(world.Grid.Width - 1, world.Grid.Height - 1);
 
-        // Um eixo por vez: bater numa parede num eixo ainda deixa deslizar no outro.
+        // Paredes (células cheias): um eixo por vez, e bater num eixo ainda deixa deslizar no outro.
+        Vector2 start = Position;
         Vector2 tryX = Vector2.Clamp(Position + new Vector2(step.X, 0f), Vector2.Zero, max);
         if (!Collides(world, tryX))
             Position = tryX;
         Vector2 tryZ = Vector2.Clamp(Position + new Vector2(0f, step.Y), Vector2.Zero, max);
         if (!Collides(world, tryZ))
             Position = tryZ;
+        // Troncos (círculos): anda e é empurrado para fora, então desliza em volta e passa no vão entre dois troncos.
+        // Se o empurrão a jogar numa parede, fica onde estava.
+        Vector2 pushed = Vector2.Clamp(world.PushOutOfTrunks(Position, Stats.Radius), Vector2.Zero, max);
+        Position = Collides(world, pushed) ? start : pushed;
 
         Facing = Vector2.Normalize(_moveDirection);
     }
@@ -112,8 +124,8 @@ public sealed class Castellan
     }
 
     /// <summary>
-    /// Círculo do corpo contra o que bloqueia em volta: o quadrado da célula sólida ou, se o recurso tem tronco, só o
-    /// círculo do tronco no centro da célula (dá para chegar perto do pé da árvore e passar sob a copa).
+    /// Círculo do corpo contra as células cheias em volta (construções sólidas, pedra, veio, borda do mapa). Os troncos
+    /// não entram aqui: são resolvidos por <see cref="SimWorld.PushOutOfTrunks"/>, que faz deslizar em volta deles.
     /// </summary>
     private bool Collides(SimWorld world, Vector2 position)
     {
@@ -124,14 +136,7 @@ public sealed class Castellan
         for (int z = (int)MathF.Floor(center.Y - r); z <= (int)MathF.Floor(center.Y + r); z++)
         {
             var cell = new GridPos(x, z);
-            if (!world.IsSolid(cell))
-                continue;
-            if (world.ResourceAt(cell)?.Type.TrunkRadius is float t)
-            {
-                if (Vector2.Distance(center, new Vector2(x + 0.5f, z + 0.5f)) < r + t)
-                    return true;
-            }
-            else if (CircleHitsCell(center, cell))
+            if (world.IsSolid(cell) && world.TrunkAt(cell) is null && CircleHitsCell(center, cell))
                 return true;
         }
         return false;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -228,6 +229,46 @@ public sealed class SimWorld
     public Building? BuildingAt(GridPos cell) => _buildingByCell.GetValueOrDefault(cell);
 
     /// <summary>Se a célula bloqueia a passagem (fora do mapa, recurso ou construção sólida).</summary>
+    /// <summary>Raio do tronco do recurso na célula (árvore), ou null se não há recurso com tronco.</summary>
+    public float? TrunkAt(GridPos cell) => ResourceAt(cell)?.Type.TrunkRadius;
+
+    /// <summary>
+    /// Se a célula bloqueia o caminho dos aldeões: como <see cref="IsSolid"/>, menos a célula de árvore, que só bloqueia
+    /// o tronco (o aldeão passa sob a copa, desviando do tronco ao andar).
+    /// </summary>
+    public bool BlocksVillager(GridPos cell) => IsSolid(cell) && TrunkAt(cell) is null;
+
+    /// <summary>
+    /// Empurra um corpo (posição no centro de célula, como a do Castelão e a dos aldeões) para fora dos troncos em volta:
+    /// quem anda contra um tronco desliza em volta dele, em vez de parar. Poucas passadas bastam para dois troncos.
+    /// </summary>
+    public Vector2 PushOutOfTrunks(Vector2 position, float radius)
+    {
+        for (int pass = 0; pass < 3; pass++)
+        {
+            bool moved = false;
+            int cx = (int)MathF.Round(position.X), cz = (int)MathF.Round(position.Y);
+            for (int dx = -1; dx <= 1; dx++)
+            for (int dz = -1; dz <= 1; dz++)
+            {
+                var cell = new GridPos(cx + dx, cz + dz);
+                if (TrunkAt(cell) is not float trunk)
+                    continue;
+                var center = new Vector2(cell.X, cell.Z);
+                Vector2 away = position - center;
+                float min = radius + trunk;
+                float length = away.Length();
+                if (length >= min)
+                    continue;
+                position = center + (length > 1e-5f ? away / length : Vector2.UnitX) * min;
+                moved = true;
+            }
+            if (!moved)
+                break;
+        }
+        return position;
+    }
+
     public bool IsSolid(GridPos cell) =>
         !Grid.InBounds(cell) || ResourceAt(cell) is not null || BuildingAt(cell) is { Type.Solid: true };
 
