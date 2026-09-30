@@ -3,6 +3,12 @@
 Cópia fiel de `~/Projetos/cidadela-diretor/especificacoes/linha_aldeoes.md` (Diretor). Números iniciais, todos em
 `data/`. Continua a linha da energia (`docs/linha_energia.md`).
 
+> **ATUALIZADO em 30/09/2026 (mudança de rumo: ladainhas, `docs/ladainhas.md`).** Sem esteiras e sem mariposas
+> (arquivadas na tag `esteiras-mariposas-arquivadas`). Todo transporte é feito por aldeões seguindo ladainhas; o baú é o
+> ponto de troca entre eles. As máquinas guardam o que recebem e o que produzem: tudo entra e sai pela mão de um aldeão ou
+> da protagonista. O aldeão formado nasce vazio. Carga por viagem: pesado 1 por ponto de Força, leve 10. As partes que
+> falavam de esteira e mariposa foram tiradas ou reescritas abaixo; o resto segue a especificação original.
+
 ## O processo aprovado
 
 - A casca de barro é o corpo.
@@ -14,7 +20,7 @@ Cópia fiel de `~/Projetos/cidadela-diretor/especificacoes/linha_aldeoes.md` (Di
 - argila: pesado;
 - casca: pesado.
 
-Seguem as mesmas regras de peso da linha da energia: pesado só nas costas, nunca em esteira nem em mariposa.
+Seguem as mesmas regras de peso da linha da energia: pesado nas costas, 1 por ponto de Força.
 
 ## Mapa
 
@@ -33,16 +39,18 @@ Seguem as mesmas regras de peso da linha da energia: pesado só nas costas, nunc
 
 - Substitui o "só acumula mana" da linha da energia.
 - Guarda até 2 cascas e 2 puros; forma um aldeão por vez.
-- Recebe a casca à mão ou por carregador (pesado) e o puro por mariposa ou à mão.
+- Recebe a casca e o puro pela mão de um aldeão (com ladainha) ou da protagonista.
 - Com a rede fraca, forma mais devagar, pela mesma fração das outras máquinas.
-- O aldeão nasce LIVRE ao lado do cristal e vai sozinho para o posto vazio mais perto (comportamento que já existe).
+- O aldeão nasce VAZIO: sai do Cristal-mãe e fica parado ao lado dele, sem ir para posto nenhum, até receber uma ladainha
+  (`docs/ladainhas.md`; substitui o "vai sozinho para o posto vazio mais perto").
 
 ## Fluxo
 
 - Barreiro → argila nas costas → Oleiro.
-- Poço → mariposa → esteira → mariposa → Oleiro. O jarro agora é disputado entre Purificador e Oleiro.
+- Poço → jarro nas costas → Oleiro. O jarro agora é disputado entre Purificador e Oleiro.
 - Oleiro → casca nas costas → Cristal-mãe.
-- Purificador → mariposa → esteira → mariposa → Cristal-mãe. O puro agora é disputado entre Relicário e Cristal-mãe.
+- Purificador → puro nas costas → Cristal-mãe. O puro agora é disputado entre Relicário e Cristal-mãe.
+- Todo transporte por aldeões com ladainhas (ou pela protagonista); o baú é o ponto de troca.
 
 ## Ações à mão da protagonista (além das da linha da energia)
 
@@ -64,11 +72,11 @@ Com isso ela forma o primeiro aldeão sem nenhuma máquina.
 ## Testes automáticos da simulação
 
 - O Cristal-mãe só forma com casca + puro + mana, e forma mais devagar com a rede fraca.
-- O aldeão nasce livre e ocupa um posto vazio.
-- Argila e casca são recusadas por esteira e por mariposa.
+- O aldeão nasce vazio e fica parado ao lado do Cristal-mãe.
+- Argila e casca são pesadas (1 por ponto de Força por viagem).
 - Moldar à mão exige água perto.
 
-## Testes com o Arthur (substituem os anteriores)
+## Testes com o Arthur (substituem os anteriores) — agora substituídos pelos de `docs/ladainhas.md`
 
 - **A) Mínimo de aldeões:** as duas linhas montadas, 2 Relicários, e os aldeões mínimos para tudo andar (operadores da mina, do poço, do purificador, do barreiro e do oleiro; carregadores para os pesados). Dizer quantos foram. Medir: tempo entre aldeões novos, sobra ou falta de mana e FPS.
 - **B) Zero aldeões:** só recursos, água, margem, veio e o Cristal-mãe. O Arthur forma o primeiro aldeão à mão e monta tudo com a protagonista.

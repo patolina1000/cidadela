@@ -6159,3 +6159,17 @@ onde errou, correções manuais e quanto tempo levou.
   alimentador direto na máquina). Main, Biography e LinhaEnergia em headless, sem erro.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:48–19:51 de relógio.
+
+## 2026-09-30 — Ladainhas, passo 2: documentos
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** `docs/ladainhas.md` (especificação fiel + estudo do Autonauts) e atualizar as duas linhas.
+- **Feito:** `docs/ladainhas.md`: cópia fiel de `~/Projetos/cidadela-diretor/especificacoes/ladainhas.md` (título e linha
+  de origem ajustados) e uma seção "Do estudo do Autonauts" com "O que as ladainhas copiam", "O que as ladainhas evitam" e
+  as três decisões pequenas (de `~/Projetos/cidadela-diretor/estudos/autonauts.md`), antes das "Ideias guardadas" das
+  mariposas, que ficaram no fim. `docs/linha_energia.md` e `docs/linha_aldeoes.md`: aviso no topo (sem esteiras nem
+  mariposas; transporte por aldeões com ladainhas; baú como ponto de troca; máquinas guardam entrada e saída; aldeão nasce
+  vazio; pesado 1 por ponto de Força) e as regras, tabelas, fluxos e testes que falavam de esteira e mariposa reescritos.
+- **Testes:** nada de código mudou.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:52–19:52 de relógio.
