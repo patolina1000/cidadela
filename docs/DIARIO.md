@@ -3166,3 +3166,17 @@ onde errou, correções manuais e quanto tempo levou.
   2 dupla 240 tri, 1,58 m; 3 tufos (líquen roxo, tronco em forquilha) 328 tri, 1,35 m; 4 alta 192 tri, 1,67 m.
   Pegada de ~0,75 a 1,05 m, dentro da célula.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
+
+## 2026-09-29 — Cenário, tarefa 1, passo 3: folha de contato da árvore
+
+- **Feito:** `tools/arte/cenario/folha_arvore.py` (renders no Blender importando os GLBs exportados, luz de
+  crepúsculo da ARTE via `corpo_lib`, só uso) e `montar_folha.py` (PIL) →
+  `assets/previews/cenario/arvore_contato.png`: frente e 3/4 com o aldeão ao lado; fila na câmera do jogo nos
+  zooms 0,4 / 1 / 2,5 em pixels reais; bosque de 8; personagem atrás; tudo também × #6A5B7C.
+- **Medido:** fração do corpo que aparece atrás da árvore, no zoom 1: aldeão 0,5 m atrás da gota 0 %, 1 m
+  (célula de trás) 88 %; protagonista 0,5 m atrás da alta 4 %, 1 m 67 %.
+- **Deu errado:** a protagonista v1 importou deitada e com 1,40 m (o primeiro clipe entrava e eu sobrescrevia a
+  escala da raiz). Corrigi limpando a animação e multiplicando a escala, mas o repouso da v1 continua torto; troquei
+  pelo bruto v2 da Meshy (`corpo_b_multi_1.glb`) escalado a 0,80 m, que o Diretor permitiu. O bruto sai levemente
+  inclinado (é bruto, sem limpeza).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~25 min.
