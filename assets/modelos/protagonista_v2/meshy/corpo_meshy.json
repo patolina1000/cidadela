@@ -1,0 +1,30 @@
+{
+  "teto_creditos": 60,
+  "teto_geracoes": 3,
+  "tarefas": [
+    {
+      "entrada": "a_frente",
+      "tentativa": 1,
+      "task_id": "01a0efa8-beea-71aa-806a-73567944494f",
+      "endpoint": "image-to-3d",
+      "status": "SUCCEEDED",
+      "creditos": 20,
+      "saldo_antes": 2298,
+      "saldo_depois": 2278,
+      "glb": "assets/modelos/protagonista_v2/meshy/corpo_a_frente_1.glb",
+      "erro": null,
+      "imagens": [
+        "corpo_frente.png"
+      ],
+      "parametros": {
+        "ai_model": "latest",
+        "should_texture": false,
+        "pose_mode": "a-pose",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 2500,
+        "symmetry_mode": "auto"
+      }
+    }
+  ]
+}

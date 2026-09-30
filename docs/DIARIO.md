@@ -3117,3 +3117,16 @@ onde errou, correções manuais e quanto tempo levou.
   `Main.tscn` e o sol de cima); o piso 0,5 e a borda fria da protagonista ainda não existem no shader do jogo, então
   o visor usa 0,35 para os dois.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Protagonista v2, passo 2A: corpo na Meshy, só a frente
+
+- **Agente / modelo:** Claude Code + Opus 5.5, agente de ARTE na branch `arte`.
+- **Pedido:** corpo na Meshy, teto de 3 gerações e 60 créditos (aval do Arthur em 29/09/2026); geração A com
+  `corpo_frente.png`, sem textura, pose A; brutos em `assets/modelos/protagonista_v2/meshy/` com id e custo.
+- **Feito:** `tools/arte/protagonista_v2/meshy_corpo.py`, com os parâmetros do corpo aprovado do aldeão
+  (`ai_model` latest, sem textura, `a-pose`, remesh em triângulos, alvo 2.500, simetria automática). Travas: 3
+  gerações, 60 créditos contados no estado, saldo e custo previsto conferidos antes de cada geração; a 3ª só sai com
+  `--reserva`. O registro público (ids, créditos, parâmetros; sem chave) vai em `meshy/corpo_meshy.json`.
+- **Geração A:** tarefa `01a0efa8-beea-71aa-806a-73567944494f` (image-to-3d), **20 créditos** (saldo 2.298 → 2.278).
+  `corpo_a_frente_1.glb`, 124 KB, 2.602 triângulos brutos, uma malha sem material, 1,90 m de altura bruta.
+- **Créditos:** 20 (acumulado nesta parte: 20/60). **Correções manuais:** nenhuma. **Tempo:** ~15 min.
