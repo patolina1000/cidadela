@@ -5810,3 +5810,28 @@ onde errou, correções manuais e quanto tempo levou.
   inventar lore).
 - **Correções manuais:** nenhuma.
 - **Tempo:** início não medido (depois das 15:55)–16:39 de relógio.
+
+## 2026-09-30 — Linha da energia, passo 4: rede de torres de mana
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 4 do plano: rede de mana como a rede elétrica do Factorio (docs/linha_energia.md, regra 6).
+- **Feito:**
+  - `TowerType` ("tower": wire, area), `ManaType` ("mana": use, idleUse, supply, capacity), `ManaNetwork` (torres,
+    membros, geração, pedido, `Satisfaction`, `Surplus`). `Building.Network`, `ManaSatisfaction`, `ManaDemand`,
+    `ManaSupply`, `ManaStored`.
+  - `SimWorld.RebuildManaNetworks`: só quando uma construção entra ou sai (`ManaRebuilds` conta). Torres ligam às
+    outras a até `wire` células (distância real entre centros, o menor fio dos dois); o que gasta/gera/guarda mana e
+    está no quadrado `area`×`area` de uma torre entra na rede dela (se estiver em duas, a da torre construída primeiro).
+  - `UpdateMana` a cada tick: soma geração e pedido de cada rede. Máquina só pede trabalhando ou prestes a começar com
+    gente no posto (D1); sem receita, pede sempre. Gerador com receita (o Relicário) só gera com o ciclo andando; sem
+    receita, sempre. Faltou mana, todos recebem a mesma fração; a máquina anda nessa velocidade
+    (`MachineState.Tick(ManaSatisfaction)`); quem não gasta mana anda a 1. Fora de rede, fração 0. A sobra vai para os
+    reservatórios (`capacity`), repartida por igual.
+  - `data/buildings.json`: Torre de Mana (2 toras + 1 fragmento puro, fio 7, área 5×5), na barra. Modelo provisório:
+    poste com cristal azul-frio (`Palette.ManaBlue`).
+- **Testes:** `ManaNetworkTests` (7 liga e 8 não; diagonal pela distância real; área 5×5; mesma fração 10/16 para 4
+  consumidores; duas redes independentes; sem gerador ou fora de rede = 0; quem não gasta mana não desacelera; rede
+  refeita só quando algo muda, e desmontar a torre desliga). `dotnet build` 0/0; `dotnet test` 204 passaram. Main em
+  headless sem erro.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 16:40–16:41 de relógio.

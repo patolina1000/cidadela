@@ -21,6 +21,12 @@ public sealed class SimWorld
     /// <summary>Vitrine (palco da Biografia): máquinas andam sem gente nos postos. O jogo nunca liga.</summary>
     public bool FreeMachines { get; internal set; }
 
+    /// <summary>As redes de mana atuais (refeitas só quando uma construção entra ou sai).</summary>
+    public IReadOnlyList<ManaNetwork> ManaNetworks => _networks;
+
+    /// <summary>Quantas vezes as redes de mana foram refeitas (testes: só quando algo muda).</summary>
+    public int ManaRebuilds { get; private set; }
+
     /// <summary>Muda a cada construção colocada ou tirada; a cena usa para saber quando redesenhar.</summary>
     public int BuildingsVersion { get; private set; }
     public IReadOnlyList<Villager> Villagers => _villagers;
@@ -35,6 +41,8 @@ public sealed class SimWorld
     /// <summary>Construções que chamam aldeões (cabanas e postos), na ordem em que foram construídas.</summary>
     private readonly List<Building> _staffed = new();
     private int _nextItemId = 1;
+    private readonly List<ManaNetwork> _networks = new();
+    private int _networksVersion = -1;
     private readonly Queue<ISimCommand> _commands = new();
     private int _nextId = 1;
 
@@ -54,6 +62,7 @@ public sealed class SimWorld
 
         Castellan.Tick(this);
         TickBelts();
+        UpdateMana();
         TickMachines();
         foreach (Villager villager in _villagers)
             villager.Tick(this);
@@ -114,12 +123,127 @@ public sealed class SimWorld
         foreach (Building building in _machines)
         {
             MachineState machine = building.Machine!;
-            machine.CrewReady = FreeMachines || building.CrewReady;
-            machine.Tick();
+            machine.Tick(building.ManaSatisfaction);
 
             if (machine.NextOutput() is string kind && PushForward(building, kind))
                 machine.Output.TryRemoveOne(kind);
         }
+    }
+
+    /// <summary>
+    /// Mana (docs/linha_energia.md, regra 6): refaz as redes se alguma construção mudou; soma o que cada rede gera e o que
+    /// os consumidores pedem neste tick (máquina só pede trabalhando ou prestes a começar: D1 do Arthur, 30/09); a sobra
+    /// enche os reservatórios, repartida por igual.
+    /// </summary>
+    private void UpdateMana()
+    {
+        if (_networksVersion != BuildingsVersion)
+            RebuildManaNetworks();
+        foreach (Building building in _machines)
+            building.Machine!.CrewReady = FreeMachines || building.CrewReady;
+        foreach (ManaNetwork network in _networks)
+        {
+            float supply = 0f, demand = 0f;
+            int sinks = 0;
+            foreach (Building b in network.Members)
+            {
+                b.ManaSupply = SupplyOf(b);
+                b.ManaDemand = DemandOf(b);
+                supply += b.ManaSupply;
+                demand += b.ManaDemand;
+                if (b.Type.Mana is { Capacity: > 0f } && b.ManaStored < b.Type.Mana.Capacity)
+                    sinks++;
+            }
+            network.Supply = supply;
+            network.Demand = demand;
+            if (sinks == 0)
+                continue;
+            float share = network.Surplus / SimClock.TicksPerSecond / sinks;
+            foreach (Building b in network.Members)
+                if (b.Type.Mana is { Capacity: > 0f } mana)
+                    b.ManaStored = MathF.Min(mana.Capacity, b.ManaStored + share);
+        }
+    }
+
+    /// <summary>Gerador: com receita (o Relicário, que queima combustível), só enquanto o ciclo anda; sem receita, sempre.</summary>
+    private static float SupplyOf(Building b) =>
+        b.Type.Mana is not { Supply: > 0f } mana ? 0f : b.Machine is null || b.Machine.IsWorking ? mana.Supply : 0f;
+
+    /// <summary>Consumidor: máquina só trabalhando ou prestes a começar (com gente no posto); sem receita, sempre.</summary>
+    private static float DemandOf(Building b)
+    {
+        if (b.Type.Mana is not { Use: > 0f } mana)
+            return 0f;
+        if (b.Machine is not MachineState m)
+            return mana.Use;
+        return m.CrewReady && (m.IsWorking || m.CanStart) ? mana.Use : 0f;
+    }
+
+    /// <summary>
+    /// Refaz as redes de mana: torres se ligam às outras ao alcance do fio (o menor dos dois), e cada construção dentro
+    /// da área de uma torre entra na rede dela (a da primeira torre construída, se estiver em duas). Só roda quando uma
+    /// construção entra ou sai.
+    /// </summary>
+    private void RebuildManaNetworks()
+    {
+        _networksVersion = BuildingsVersion;
+        ManaRebuilds++;
+        _networks.Clear();
+        var towers = new List<Building>();
+        foreach (Building b in _buildingByCell.Values)
+        {
+            b.Network = null;
+            if (b.Type.Tower is not null)
+                towers.Add(b);
+        }
+        towers.Sort((a, b) => a.Id.CompareTo(b.Id));
+        foreach (Building start in towers)
+        {
+            if (start.Network is not null)
+                continue;
+            var network = new ManaNetwork();
+            var queue = new Queue<Building>();
+            start.Network = network;
+            queue.Enqueue(start);
+            while (queue.TryDequeue(out Building? t))
+            {
+                network.Towers.Add(t);
+                foreach (Building other in towers)
+                    if (other.Network is null && WireReaches(t, other))
+                    {
+                        other.Network = network;
+                        queue.Enqueue(other);
+                    }
+            }
+            _networks.Add(network);
+        }
+        foreach (ManaNetwork network in _networks)
+            network.Members.AddRange(network.Towers);
+        foreach (Building b in _buildingByCell.Values)
+        {
+            if (b.Network is not null || b.Type.Mana is null)
+                continue;
+            foreach (Building t in towers)
+            {
+                int half = t.Type.Tower!.Area / 2;
+                if (Math.Abs(b.Cell.X - t.Cell.X) <= half && Math.Abs(b.Cell.Z - t.Cell.Z) <= half)
+                {
+                    b.Network = t.Network;
+                    t.Network!.Members.Add(b);
+                    break;
+                }
+            }
+        }
+        foreach (Building b in _buildingByCell.Values)
+            if (b.Network is null)
+                b.ManaSupply = b.ManaDemand = 0f;
+    }
+
+    private static bool WireReaches(Building a, Building b)
+    {
+        float reach = MathF.Min(a.Type.Tower!.Wire, b.Type.Tower!.Wire);
+        float dx = a.Cell.X - b.Cell.X, dz = a.Cell.Z - b.Cell.Z;
+        return dx * dx + dz * dz <= reach * reach + 1e-4f;
     }
 
     /// <summary>Cabana com algo guardado solta 1 item por tick na esteira ou baú à sua frente, como uma máquina.</summary>

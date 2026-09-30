@@ -8,12 +8,13 @@ namespace Cidadela.Simulation;
 /// <paramref name="Job"/> = cabana de trabalho; <paramref name="SpeedBonus"/> = multiplicador da velocidade de quem anda
 /// sobre a construção (pisos construídos do GDD; 1 = nenhum); <paramref name="Posts"/> = postos que aldeões precisam
 /// ocupar para ela andar (null = anda sozinha); <paramref name="Carriers"/> = vagas de carregador (Posto de Carregadores);
-/// <paramref name="Hotbar"/> = aparece na barra de construção (falso: o código fica, mas o jogador não constrói).
+/// <paramref name="Hotbar"/> = aparece na barra de construção (falso: o código fica, mas o jogador não constrói);
+/// <paramref name="Tower"/> = torre de mana; <paramref name="Mana"/> = gasta, gera ou guarda mana.
 /// </summary>
 public sealed record BuildingType(
     string Kind, string Name, IReadOnlyDictionary<string, int> Cost, bool Solid, float BeltSpeed = 0f, bool Storage = false,
     JobType? Job = null, float SpeedBonus = 1f, PostType? Posts = null, CarrierType? Carriers = null,
-    bool Hotbar = true)
+    bool Hotbar = true, TowerType? Tower = null, ManaType? Mana = null)
 {
     public bool IsBelt => BeltSpeed > 0f;
 }

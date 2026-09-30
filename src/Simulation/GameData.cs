@@ -155,8 +155,22 @@ public sealed class GameData
                     throw new FormatException($"Carregadores inválidos em \"{kind}\": count e radius positivos, sem job nem posts.");
                 carriers = new CarrierType(cd.Count, cd.Radius);
             }
+            TowerType? tower = null;
+            if (b.Tower is TowerData td)
+            {
+                if (td.Wire <= 0f || td.Area <= 0 || td.Area % 2 == 0)
+                    throw new FormatException($"Torre inválida em \"{kind}\": wire positivo e area ímpar positiva.");
+                tower = new TowerType(td.Wire, td.Area);
+            }
+            ManaType? mana = null;
+            if (b.Mana is ManaData md)
+            {
+                if (md.Use < 0f || md.IdleUse < 0f || md.Supply < 0f || md.Capacity < 0f)
+                    throw new FormatException($"Mana inválida em \"{kind}\": use, idleUse, supply e capacity não negativos.");
+                mana = new ManaType(md.Use, md.IdleUse, md.Supply, md.Capacity);
+            }
             buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus, posts, carriers,
-                b.Hotbar));
+                b.Hotbar, tower, mana));
         }
 
         var recipes = new List<RecipeType>();
@@ -268,6 +282,22 @@ public sealed class GameData
         public PostData? Posts { get; set; }
         public CarrierData? Carriers { get; set; }
         public bool Hotbar { get; set; } = true;
+        public TowerData? Tower { get; set; }
+        public ManaData? Mana { get; set; }
+    }
+
+    private sealed class TowerData
+    {
+        public float Wire { get; set; }
+        public int Area { get; set; }
+    }
+
+    private sealed class ManaData
+    {
+        public float Use { get; set; }
+        public float IdleUse { get; set; }
+        public float Supply { get; set; }
+        public float Capacity { get; set; }
     }
 
     private sealed class CarrierData

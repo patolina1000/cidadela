@@ -39,6 +39,11 @@ public static class BuildingModels
                 Add(model, new BoxMesh { Size = new Vector3(0.62f, 0.42f, 0.5f) }, Palette.Wood, new Vector3(0f, 0.21f, 0f));
                 Add(model, new BoxMesh { Size = new Vector3(0.66f, 0.08f, 0.54f) }, Palette.Wheat, new Vector3(0f, 0.46f, 0f));
                 break;
+            case "mana_tower":
+                // Poste fino com um cristal azul-frio no alto (provisório; os fios vêm no feedback visual).
+                Add(model, new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.1f, Height = 1.1f }, Palette.Wood.Darkened(0.3f), new Vector3(0f, 0.55f, 0f));
+                Add(model, new SphereMesh { Radius = 0.13f, Height = 0.36f, RadialSegments = 6, Rings = 3 }, Palette.ManaBlue, new Vector3(0f, 1.25f, 0f));
+                break;
             case "carrier_post":
                 // Tablado com sacos e uma vara de carregar.
                 Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.1f, 0.8f) }, Palette.Wood, new Vector3(0f, 0.05f, 0f));

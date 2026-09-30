@@ -44,6 +44,23 @@ public sealed class Building
 
     public string Kind => Type.Kind;
 
+    /// <summary>A rede de mana em que está (dentro da área de uma torre, ou a própria torre), ou null.</summary>
+    public ManaNetwork? Network { get; internal set; }
+
+    /// <summary>
+    /// Fração de mana que recebe agora (1 = tudo o que pede; 0 = nada, ou fora de rede). Quem não gasta mana recebe 1.
+    /// </summary>
+    public float ManaSatisfaction => Type.Mana is not { Use: > 0f } and not { IdleUse: > 0f } ? 1f : Network?.Satisfaction ?? 0f;
+
+    /// <summary>Mana por segundo que pede neste tick (a simulação atualiza).</summary>
+    public float ManaDemand { get; internal set; }
+
+    /// <summary>Mana por segundo que gera neste tick (a simulação atualiza).</summary>
+    public float ManaSupply { get; internal set; }
+
+    /// <summary>Mana guardada (reservatório, como o Cristal-mãe).</summary>
+    public float ManaStored { get; internal set; }
+
     public Building(int id, BuildingType type, GridPos cell, Direction direction, RecipeType? recipe = null)
     {
         Id = id;

@@ -24,6 +24,9 @@ public static class Palette
     public static readonly Color PurpleEarth = new("3F3342");
     public static readonly Color GrassPurple = new("5E5268");
 
+    /// <summary>Mana e cristal puro: o azul-frio da borda de luz (data/visual.json, rim.color).</summary>
+    public static readonly Color ManaBlue = new("B8C7E6");
+
     /// <summary>Fora da paleta do GDD: só para avisos de interface (ex.: fora do alcance).</summary>
     public static readonly Color Warning = new("C8402F");
 

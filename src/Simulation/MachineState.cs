@@ -61,6 +61,9 @@ public sealed class MachineState
         }
     }
 
+    /// <summary>Se começaria um ciclo agora (tem as entradas e a saída tem espaço), sem olhar a equipe.</summary>
+    public bool CanStart => !OutputFull && Input.Has(Recipe.Inputs);
+
     private bool OutputFull
     {
         get

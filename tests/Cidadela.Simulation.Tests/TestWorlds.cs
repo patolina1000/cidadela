@@ -52,6 +52,9 @@ internal static class TestWorlds
                      "posts": { "count": 1, "name": "Prenseiro", "tool": "press" } },
           "carrier_post": { "name": "Posto de Carregadores", "cost": { "wood": 4 }, "solid": true,
                             "carriers": { "count": 2, "radius": 12 } },
+          "tower": { "name": "Torre", "cost": { "wood": 1 }, "solid": true, "tower": { "wire": 7, "area": 5 } },
+          "generator": { "name": "Gerador", "cost": { "wood": 1 }, "solid": true, "mana": { "supply": 10 } },
+          "lamp": { "name": "Lâmpada", "cost": { "wood": 1 }, "solid": true, "mana": { "use": 4 } },
           "floor": { "name": "Piso de teste", "cost": { "wood": 1 }, "solid": false, "speedBonus": 1.2 },
           "lumber_hut": { "name": "Cabana do Lenhador", "cost": { "wood": 2 }, "solid": true,
                           "job": { "name": "Lenhador", "resource": "wood", "radius": 8, "capacity": 3 } }
