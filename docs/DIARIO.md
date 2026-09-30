@@ -4035,3 +4035,31 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** nada.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:25–21:37 de relógio.
+
+---
+
+## 2026-09-29 — Pausa e velocidade 1x/2x/3x do tempo do jogo
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 2a da tarefa "polir mecânicas e menus": pausa e velocidade 1x/2x/3x (GDD, seção 3) com ticks
+  fixos de 50 ms, a velocidade mudando quantos ticks rodam por frame; teclas simples e indicador pequeno.
+- **O que foi feito:**
+  - `SimClock`: `Paused` (nenhum tick e o `Alpha` fica parado, então o desenho congela onde estava) e `Speed`
+    (multiplica o tempo que entra no acumulador; o teto contra a espiral da morte passa a ser 5 × velocidade).
+  - `data/time.json` com `speeds: [1, 2, 3]` e `GameSpeeds.Parse` (recusa lista vazia, valor < 1 e fora de ordem).
+  - `GameRoot`: **Espaço** pausa e continua; **`-`** e **`=`** (a tecla do `+`; também `-` e `+` do teclado
+    numérico) descem e sobem a velocidade, sem dar a volta, e tiram da pausa. Não usei 1/2/3 porque 1–9 são a
+    barra de construção (GDD, seção 20). Na pausa a `WorldView` para de processar (animações, efeitos e partículas
+    congelam), a câmera, o zoom, o giro e a cinematográfica continuam, e nada que muda o mundo é aceito (clique,
+    arrasto, desmontar, WASD). Indicador no canto de cima à direita ("1x", "2x", "3x" ou "Pausado (Espaço)"),
+    escondido na cinematográfica; a linha de depuração mostra o alvo de ticks já multiplicado.
+  - Testes: 11 novos (`GameSpeedTests`): 20/40/60 ticks por segundo real, pausa sem ticks e com o `Alpha` mantido,
+    teto 15 no 3x, velocidade 0 recusada, `time.json` real e arquivos inválidos. `dotnet test`: 127 aprovados.
+- **Conferido no jogo:** com `=` a linha de depuração mediu 39 ticks/s (alvo 40); com Espaço, 0 ticks/s e
+  "Pausado (Espaço)". Log sem erros. Print: `docs/prints/jogo_pausado.png`.
+- **O que deu errado:** o indicador nasceu no canto de cima e ficou embaixo da linha de depuração, que ocupa a
+  largura toda em 3840×2160; desceu uma linha. Uma captura a 1280 px derrubou o transporte do godot-ai; a 960 px foi.
+- **Escolha minha, para o Arthur:** o que fazer com construir na pausa (hoje bloqueado; ver auditoria, item 6).
+- `dotnet build`: 0 erros, 0 avisos.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:37–21:41 de relógio.

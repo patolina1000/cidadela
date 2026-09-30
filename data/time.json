@@ -1,0 +1,6 @@
+{
+  // Tempo do jogo (GDD, seção 3: "botão de pausa e velocidade 1x/2x/3x").
+  // speeds: multiplicadores que o jogador escolhe, em ordem crescente; o primeiro é o padrão.
+  //   O tick continua de 50 ms; a velocidade muda quantos ticks rodam por frame.
+  "speeds": [1, 2, 3]
+}

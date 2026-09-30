@@ -13,6 +13,8 @@ namespace Cidadela.View;
 /// Direito sem arrastar solta o que está escolhido ou desmonta. Teclado: WASD anda, 1–9 escolhem, R gira, Esc solta,
 /// C entra/sai da câmera cinematográfica no que está sob o cursor (ou no Castelão).
 /// Depuração dos aldeões: V alterna o patamar de velocidade, B liga/desliga a penalidade (fome ou moral baixa).
+/// Tempo do jogo (GDD, seção 3): Espaço pausa e continua; - e = (a tecla do +) diminuem e aumentam a velocidade
+/// (data/time.json). Na pausa a câmera continua livre, mas nada que muda o mundo é aceito.
 /// </summary>
 public partial class GameRoot : Node3D
 {
@@ -24,6 +26,7 @@ public partial class GameRoot : Node3D
     [Export(PropertyHint.File, "*.json")] public string BuildingsPath = "res://data/buildings.json";
     [Export(PropertyHint.File, "*.json")] public string RecipesPath = "res://data/recipes.json";
     [Export(PropertyHint.File, "*.json")] public string TerrainPath = "res://data/terrain.json";
+    [Export(PropertyHint.File, "*.json")] public string TimePath = "res://data/time.json";
 
     private SimWorld _world = null!;
     private readonly SimClock _clock = new();
@@ -36,6 +39,9 @@ public partial class GameRoot : Node3D
     private Label _debugLabel = null!;
     private PerfOverlay _perf = null!;
     private Label _inventoryLabel = null!;
+    private Label _speedLabel = null!;
+    private GameSpeeds _speeds = null!;
+    private int _speedIndex;
 
     // Modo de construção: o que está escolhido, para onde aponta e a última célula do arrasto.
     private BuildingType? _selected;
@@ -62,6 +68,8 @@ public partial class GameRoot : Node3D
             FileAccess.GetFileAsString(RecipesPath),
             FileAccess.GetFileAsString(TerrainPath));
         _world = MapLoader.Parse(FileAccess.GetFileAsString(MapPath), data);
+        _speeds = GameSpeeds.Parse(FileAccess.GetFileAsString(TimePath));
+        _clock.Speed = _speeds.Speeds[0];
 
         _view = GetNode<WorldView>("WorldView");
         _view.Build(_world);
@@ -92,6 +100,18 @@ public partial class GameRoot : Node3D
         _perf.Setup(_view, GetNode<WorldEnvironment>("WorldEnvironment"), GetNode<DirectionalLight3D>("Sun"),
             GetNode<CanvasItem>("DebugHud/Vignette"));
 
+        _speedLabel = new Label { Name = "SpeedLabel", HorizontalAlignment = HorizontalAlignment.Right };
+        _speedLabel.SetAnchorsPreset(Control.LayoutPreset.TopRight);
+        _speedLabel.OffsetLeft = -260f;
+        _speedLabel.OffsetRight = -14f;
+        _speedLabel.OffsetTop = 34f; // abaixo da linha de depuração, que ocupa a largura toda
+        _speedLabel.AddThemeFontSizeOverride("font_size", 20);
+        _speedLabel.AddThemeColorOverride("font_color", Palette.Bone);
+        _speedLabel.AddThemeColorOverride("font_outline_color", Colors.Black);
+        _speedLabel.AddThemeConstantOverride("outline_size", 4);
+        GetNode("DebugHud").AddChild(_speedLabel);
+        UpdateSpeedLabel();
+
         // A linha de status desce para baixo dos botões do inventário.
         _inventoryLabel.OffsetTop = 72f;
         _inventoryLabel.OffsetBottom = 98f;
@@ -106,7 +126,7 @@ public partial class GameRoot : Node3D
         {
             _leftHeld = click.Pressed;
             _lastBuildCell = null;
-            if (click.Pressed && CellUnder(click.Position) is GridPos cell)
+            if (click.Pressed && !_clock.Paused && CellUnder(click.Position) is GridPos cell)
                 ActAt(cell);
         }
     }
@@ -125,6 +145,18 @@ public partial class GameRoot : Node3D
         else if (k == Key.R && _selected is not null)
         {
             _buildDirection = _buildDirection.RotatedClockwise();
+        }
+        else if (k == Key.Space)
+        {
+            SetPaused(!_clock.Paused);
+        }
+        else if (k is Key.Minus or Key.KpSubtract)
+        {
+            ChangeSpeed(-1);
+        }
+        else if (k is Key.Equal or Key.KpAdd)
+        {
+            ChangeSpeed(+1);
         }
         else if (k == Key.C)
         {
@@ -153,6 +185,28 @@ public partial class GameRoot : Node3D
             Hold(null);
         }
     }
+
+    /// <summary>
+    /// Pausa ou continua o tempo do jogo. Na pausa a cena do mundo para de processar (animações, efeitos e
+    /// partículas congelam onde estão) e a câmera continua livre.
+    /// </summary>
+    private void SetPaused(bool paused)
+    {
+        _clock.Paused = paused;
+        _view.ProcessMode = paused ? ProcessModeEnum.Disabled : ProcessModeEnum.Inherit;
+        UpdateSpeedLabel();
+    }
+
+    /// <summary>Vai para a velocidade anterior ou a seguinte de data/time.json, sem dar a volta; também tira da pausa.</summary>
+    private void ChangeSpeed(int step)
+    {
+        _speedIndex = Mathf.Clamp(_speedIndex + step, 0, _speeds.Speeds.Count - 1);
+        _clock.Speed = _speeds.Speeds[_speedIndex];
+        SetPaused(false);
+    }
+
+    private void UpdateSpeedLabel() =>
+        _speedLabel.Text = _clock.Paused ? "Pausado  (Espaço)" : $"{_clock.Speed}x";
 
     /// <summary>
     /// Entra na câmera cinematográfica no que está sob o cursor (Castelão, aldeão, construção, recurso;
@@ -196,7 +250,7 @@ public partial class GameRoot : Node3D
             Select(null);
             Hold(null);
         }
-        else if (CellUnder(screenPos) is GridPos cell)
+        else if (!_clock.Paused && CellUnder(screenPos) is GridPos cell)
         {
             _world.Enqueue(new DeconstructCommand(cell));
         }
@@ -226,20 +280,22 @@ public partial class GameRoot : Node3D
     public override void _Process(double delta)
     {
         long started = System.Diagnostics.Stopwatch.GetTimestamp();
-        SendMoveInput();
+        if (!_clock.Paused)
+            SendMoveInput();
 
         Vector2? cursor = CursorOverWorld();
         GridPos? hovered = cursor is Vector2 c ? CellUnder(c) : null;
 
         // Segurar o esquerdo e arrastar repete a ação célula a célula (fileira de esteiras, itens em várias).
-        if (_leftHeld && (_selected is not null || _heldItem is not null) && hovered is GridPos cell && cell != _lastBuildCell)
+        if (_leftHeld && !_clock.Paused && (_selected is not null || _heldItem is not null) && hovered is GridPos cell && cell != _lastBuildCell)
             ActAt(cell);
 
         int ticks = _clock.Advance(delta);
         for (int i = 0; i < ticks; i++)
             _world.Tick();
 
-        _view.Render(_clock.Alpha, delta);
+        if (!_clock.Paused)
+            _view.Render(_clock.Alpha, delta);
         _perf.GameCpuMs = System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
 
         // Na cinematográfica, a interface some e só ficam as faixas com a legenda ao vivo.
@@ -251,6 +307,7 @@ public partial class GameRoot : Node3D
         _inventoryBar.Visible = !cinematic;
         _inventoryLabel.Visible = !cinematic;
         _debugLabel.Visible = !cinematic;
+        _speedLabel.Visible = !cinematic;
         if (cinematic)
             hovered = null;
 
@@ -304,7 +361,7 @@ public partial class GameRoot : Node3D
         Castellan castellan = _world.Castellan;
         System.Numerics.Vector2 p = castellan.Position;
         _debugLabel.Text =
-            $"Tick {_world.TickCount}  |  {_measuredTicksPerSecond} ticks/s (alvo {SimClock.TicksPerSecond})  |  " +
+            $"Tick {_world.TickCount}  |  {_measuredTicksPerSecond} ticks/s (alvo {(_clock.Paused ? 0 : SimClock.TicksPerSecond * _clock.Speed)})  |  " +
             $"{Engine.GetFramesPerSecond()} FPS  |  Castelão ({p.X:0.0}, {p.Y:0.0})  |  grama: {_view.GrassTufts} tufos  |  " +
             $"aldeões: patamar {_debugSpeedTier + 1}/{_world.Data.Villagers.SpeedTiers.Count} ({_world.Data.Villagers.SpeedTiers[_debugSpeedTier]:0.00} cél/s){(_debugPenalized ? ", com penalidade" : "")}  [V patamar, B penalidade]";
 
