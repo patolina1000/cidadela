@@ -6173,3 +6173,13 @@ onde errou, correções manuais e quanto tempo levou.
 - **Testes:** nada de código mudou.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:52–19:52 de relógio.
+
+## 2026-09-30 — Ladainhas: regra absoluta e ajustes do Arthur no documento
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** plano das ladainhas aprovado com ajustes; pôr a regra absoluta no topo de `docs/ladainhas.md`.
+- **Feito:** `docs/ladainhas.md`: REGRA ABSOLUTA no topo (o aldeão não faz nada sozinho) e a seção "Ajustes do Arthur ao
+  plano" (postos ficam, só "Operar" ocupa; cabanas e Posto de Carregadores viram lugares citáveis, sem automático; blocos
+  na tela desde o passo 7). Plano renumerado na nota 08 (passo 10 novo: cabanas como lugares; 11: as duas linhas).
+- **Testes:** nada de código mudou.
+- **Tempo:** 20:04–20:05 de relógio.

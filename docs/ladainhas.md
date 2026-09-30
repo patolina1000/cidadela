@@ -1,5 +1,9 @@
 # LADAINHAS — aldeões programados (ordem do Arthur, 30/09/2026)
 
+> **REGRA ABSOLUTA (Arthur, 30/09/2026): O ALDEÃO NÃO FAZ NADA SOZINHO.** Sem ladainha, ele fica parado. Ele só vai a um
+> posto, carrega, colhe ou opera porque a ladainha dele manda. Nenhuma construção chama, atribui ou move aldeão por conta
+> própria.
+
 Cópia fiel de `~/Projetos/cidadela-diretor/especificacoes/ladainhas.md` (Diretor), com o que o estudo do Autonauts
 (`~/Projetos/cidadela-diretor/estudos/autonauts.md`) trouxe. Números em `data/`. Esteiras e mariposas arquivadas na tag
 `esteiras-mariposas-arquivadas`.
@@ -71,6 +75,19 @@ Se a ladainha usa um comando que a Inteligência do aldeão não alcança, ou é
 
 - **A) Mínimo de aldeões:** as duas linhas montadas, com os aldeões mínimos já carregando ladainhas prontas do JSON. Mostrar tudo andando sozinho.
 - **B) Zero aldeões:** o Arthur forma o primeiro aldeão à mão e ensina a primeira ladainha por demonstração.
+
+## Ajustes do Arthur ao plano (30/09/2026)
+
+1. **Postos de máquina ficam**, inclusive os acoplados (serra de dois homens, prova de operação): são o lugar onde o
+   operador encosta. O aldeão só ocupa um posto quando a ladainha dele tem "Operar [máquina]". A chamada automática
+   para postos sai de vez.
+2. **Cabanas e Posto de Carregadores:** sai todo comportamento automático deles, mas NÃO são apagados. Ficam como LUGARES
+   que a ladainha pode citar ("colha tora perto da Cabana do Lenhador", "ponha na Cabana"), definindo a área de busca e o
+   estoque. A cabana nunca dá ordem a ninguém. Sem cabana citada, vale o raio de 8 células em volta de onde o comando foi
+   gravado. Entra num passo próprio, logo depois de "copiar ladainhas".
+3. **Blocos na tela desde o começo:** as ladainhas são programação no estilo Scratch. Junto dos estados visíveis, clicar
+   num aldeão mostra a ladainha dele desenhada em BLOCOS (encaixes, cor por tipo de comando, o comando atual aceso), só
+   para ver. O editor em blocos aproveita o mesmo desenho.
 
 ## Do estudo do Autonauts (Diretor, 30/09/2026)
 
