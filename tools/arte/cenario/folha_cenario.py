@@ -25,13 +25,17 @@ from folha_arvore import (ALDEAO, ARVORES, PELE_ALDEAO, PELE_PROTAGONISTA, PROTA
 OUT = Path(sys.argv[sys.argv.index("--") + 1]) if "--" in sys.argv else Path("/tmp/folha_cenario")
 PEDRAS = [ROOT / f"assets/cenario/pedra/pedra_{i}.glb" for i in range(1, 5)]
 VEIOS = [ROOT / f"assets/cenario/veio/veio_{i}.glb" for i in range(1, 5)]
+TOCOS = [ROOT / f"assets/cenario/arvore/toco_{i}.glb" for i in range(1, 5)]
+MANCHAS = [ROOT / f"assets/cenario/veio/mancha_{i}.glb" for i in range(1, 3)]
+# Mapa "depois da coleta" (tarefa 5): quais células do mapa foram esgotadas, pela ordem das listas de build_mapa.
+ESGOTADOS = {"arvore": {1, 2, 4, 8}, "pedra": {1}, "veio": {0, 2}}
 PESO_ARVORE = [0.3, 0.3, 0.1, 0.3]  # gota, dupla, tufos (líquen), alta
 
 
 def put(path, location, yaw=0.0, scale=1.0):
     """Objeto do cenário; pedra e veio levam a borda fria em todos os materiais (a árvore, só na copa)."""
     objs = place(path, location, yaw, scale)
-    if path not in ARVORES:
+    if path not in ARVORES and path not in TOCOS:  # o toco é tronco, e o tronco não tem borda
         for m in {s.material for o in objs if o.type == "MESH" for s in o.material_slots}:
             if m and "rim" not in m:
                 add_rim(m)
@@ -42,20 +46,36 @@ def put(path, location, yaw=0.0, scale=1.0):
 MAPA_ALVO = (0.3, 0.3, 0)
 
 
-def build_mapa(pedras_glb, veios_glb):
-    """Pedaço de mapa de 7×5 células na cena atual; devolve os objetos por grupo (para medir o brilho de cada um)."""
+def build_mapa(pedras_glb, veios_glb, esgotado=None):
+    """Pedaço de mapa de 7×5 células na cena atual; devolve os objetos por grupo (para medir o brilho de cada um).
+
+    esgotado: None = tudo vivo; "some" = as células de ESGOTADOS ficam vazias; "restos" = toco no lugar da árvore e
+    mancha no lugar do veio (a pedra esgotada some nos dois casos). O sorteio é o mesmo, então o resto do mapa não muda.
+    """
+    gone = ESGOTADOS if esgotado else {"arvore": set(), "pedra": set(), "veio": set()}
     rng = random.Random(17)
     g = {"arvore": [], "pedra": [], "veio": [], "aldeao": [], "protagonista": []}
     arvores = [(0, 0), (1, 0), (3, 0), (0, 1), (2, 1), (4, 1), (1, 2), (3, 3), (5, 0), (6, 2)]
     pedras = [(2, 0), (4, 0), (5, 2), (0, 3)]
     veios = [(4, 3), (5, 3), (5, 4), (6, 4)]
-    for cx, cy in arvores:
+    g["resto"] = []
+    for k, (cx, cy) in enumerate(arvores):
         v = rng.choices(range(4), PESO_ARVORE)[0]
-        g["arvore"] += put(ARVORES[v], (cx - 3, cy - 1.5, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1))
+        at, yaw, sc = (cx - 3, cy - 1.5, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1)
+        if k not in gone["arvore"]:
+            g["arvore"] += put(ARVORES[v], at, yaw, sc)
+        elif esgotado == "restos":
+            g["resto"] += put(TOCOS[v], at, yaw, sc)  # o toco da mesma árvore, no mesmo giro
     for k, (cx, cy) in enumerate(pedras):
-        g["pedra"] += put(pedras_glb[k % 4], (cx - 3, cy - 1.5, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1))
+        at, yaw, sc = (cx - 3, cy - 1.5, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1)
+        if k not in gone["pedra"]:
+            g["pedra"] += put(pedras_glb[k % 4], at, yaw, sc)
     for k, (cx, cy) in enumerate(veios):
-        g["veio"] += put(veios_glb[k % 4], (cx - 3, cy - 1.5, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1))
+        at, yaw, sc = (cx - 3, cy - 1.5, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1)
+        if k not in gone["veio"]:
+            g["veio"] += put(veios_glb[k % 4], at, yaw, sc)
+        elif esgotado == "restos":
+            g["resto"] += put(MANCHAS[k % 2], at, yaw, sc)
     # personagens na frente (lado da câmera), para não sumirem atrás das copas
     g["aldeao"] += place(ALDEAO, (-1.4, -2.1, 0), color=PELE_ALDEAO)
     g["protagonista"] += place(PROTAGONISTA, (1.8, -2.0, 0), color=PELE_PROTAGONISTA)

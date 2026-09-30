@@ -1,0 +1,87 @@
+{
+  "fonte": "tools/arte/cenario/toco.py",
+  "unidade": "m",
+  "frente": "+Z",
+  "variacoes": [
+    {
+      "arquivo": "toco_1.glb",
+      "triangulos": 42,
+      "altura_m": 0.16,
+      "pegada_x_m": [
+        -0.253,
+        0.193
+      ],
+      "pegada_z_m": [
+        -0.151,
+        0.221
+      ],
+      "nome": "gota",
+      "semente": 11,
+      "corte_m": 0.11,
+      "cores": {
+        "tronco": null,
+        "corte": "#6B5B4B"
+      }
+    },
+    {
+      "arquivo": "toco_2.glb",
+      "triangulos": 42,
+      "altura_m": 0.19,
+      "pegada_x_m": [
+        -0.219,
+        0.249
+      ],
+      "pegada_z_m": [
+        -0.23,
+        0.128
+      ],
+      "nome": "dupla",
+      "semente": 23,
+      "corte_m": 0.14,
+      "cores": {
+        "tronco": null,
+        "corte": "#6B5B4B"
+      }
+    },
+    {
+      "arquivo": "toco_3.glb",
+      "triangulos": 42,
+      "altura_m": 0.18,
+      "pegada_x_m": [
+        -0.181,
+        0.261
+      ],
+      "pegada_z_m": [
+        -0.201,
+        0.181
+      ],
+      "nome": "tufos",
+      "semente": 37,
+      "corte_m": 0.13,
+      "cores": {
+        "tronco": null,
+        "corte": "#6B5B4B"
+      }
+    },
+    {
+      "arquivo": "toco_4.glb",
+      "triangulos": 42,
+      "altura_m": 0.15,
+      "pegada_x_m": [
+        -0.122,
+        0.199
+      ],
+      "pegada_z_m": [
+        -0.206,
+        0.191
+      ],
+      "nome": "alta",
+      "semente": 53,
+      "corte_m": 0.1,
+      "cores": {
+        "tronco": null,
+        "corte": "#6B5B4B"
+      }
+    }
+  ]
+}

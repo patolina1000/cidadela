@@ -297,4 +297,5 @@ def main():
     (OUT / "arvore_relatorio.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
 
 
-main()
+if __name__ == "__main__":  # toco.py importa build daqui para cortar o toco da própria árvore
+    main()

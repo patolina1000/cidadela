@@ -3274,3 +3274,21 @@ onde errou, correções manuais e quanto tempo levou.
 - **Feito:** renders refeitos (`folha_cenario.py`) e títulos atualizados em `montar_folha_cenario.py`. A vista
   "três famílias juntas" cortava o topo da árvore de 2,5 m; o enquadramento abriu de 4,4 para 5,2 m.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~10 min.
+
+## 2026-09-29 — Cenário, tarefa 5, passo 2: opções para quando o recurso esgota
+
+- **Pedido (Diretor):** opções visuais, sem decidir: (a) toco para cada árvore (≤ 60 tri, 0,10–0,20 m, mesma
+  torção); (b) mancha do veio esgotado (placa baixa ou 2–3 lascas quebradas, ≤ 40 tri); pedaço de mapa "depois da
+  coleta" nos 3 zooms e crepúsculo, ao lado da versão "some tudo".
+- **Feito:** `toco.py`: refaz a própria árvore com `arvore.build` (mesma semente: torção, inclinação e giro), corta
+  na altura do toco, serrilha a borda (dentes de 5 cm alternados), fecha com um leque na cor da madeira do jogo
+  #6B5B4B (o que se vê de cima) e põe 3 raízes curtas e pontudas no pé. 42 tri; 0,16 / 0,19 / 0,18 / 0,15 m.
+  `arvore.py` ganhou `if __name__` (os GLBs das árvores saem idênticos). `mancha.py`: 1 placa (laje lama + 2
+  lascas deitadas, 36 tri, 0,11 m) e 2 lascas (3 lascas deitadas, 30 tri, 0,09 m).
+- **Mapa:** `build_mapa` aceita `esgotado` ("some" ou "restos") com o mesmo sorteio, então o resto do mapa não
+  muda; 4 árvores, 2 veios e 1 pedra esgotados (a pedra some nos dois). `folha_esgotado.py` +
+  `montar_folha_esgotado.py` → `assets/previews/cenario/esgotado_contato.png`. O toco não leva a borda fria (é
+  tronco, e o tronco não tem); a mancha leva.
+- **Deu errado:** o primeiro toco (só o corte do tronco, 18 tri) parecia um bloco de madeira; as raízes resolveram.
+  A dupla passava de 0,20 m com os dentes; baixei os cortes.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
