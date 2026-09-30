@@ -5542,3 +5542,32 @@ onde errou, correções manuais e quanto tempo levou.
 - **Jogo para o Arthur:** `Main` rodando no editor, protagonista parada ao lado das pedras e do veio.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 01:49 de relógio (fim).
+
+## 2026-09-30 — Velocidade da protagonista: 1,8 cél/s e teclas [ e ] para o Arthur ajustar
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** primeiro voltar para 2,4 cél/s (GDD, seção 20), com a corrida acompanhando e comparação de 1,8 / 2,1 / 2,4.
+  No meio da tarefa veio a decisão nova do Arthur (testou 2,4: rápida demais; 1,267 era lenta): aplicar **1,8** e criar
+  teclas de depuração temporárias **[ e ]** que baixam e sobem 0,1 cél/s, com o valor na tela; o valor escolhido vira o
+  `speed` do JSON.
+- **Feito:**
+  - `data/castellan.json`: `speed` 1.8 (comentário com o histórico 1,267 → 2,4 → 1,8).
+  - Simulação: `SetCastellanSpeedCommand` (a tecla vira comando, aplicado no próximo tick; mínimo 0,1) e
+    `Castellan.SetSpeed` (troca só a velocidade no `Stats`). Dois testes novos em `CastellanMovementTests`.
+  - `GameRoot`: `[` e `]` pelo **caractere** da tecla (`Keycode`), não pela posição física: no teclado ABNT o [ fica em
+    outra posição. O HUD de cima mostra "Castelão (x, z) a 1,8 cél/s [ ]". O valor vale só na partida; ao reiniciar
+    volta ao JSON.
+  - A corrida já acompanha a velocidade real (`CastellanVisual`: escala = andado por segundo ÷ passada de 1,267 m/s),
+    sem os pés deslizarem: nada a mudar lá.
+- **Conferido no jogo:** com 2,4, medi 2,42 cél/s e a corrida a 1,89×. Com 1,8, 1,75 cél/s numa janela de ~1 s (folga do
+  timer) e a corrida a 1,41× (1,8 ÷ 1,267 = 1,42). `]` três vezes e `[` uma vez: HUD 1,9 → 2,0 → 2,1 → 2,0. Depois disso o
+  Arthur pegou o jogo (janela em foco, ela andando e o HUD em 1,2 sem entrada minha) e eu parei de mandar teclas.
+- **Não feito:** a comparação 1,8 / 2,1 / 2,4 em GIF ficou pela metade quando o pedido mudou (o Arthur agora ajusta
+  jogando). Pelo que vi nos quadros de 1,8, o run acelerado não fica estranho; não medi o ponto em que começa a ficar.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 178 passaram.
+- **O que deu errado:** um `cat` perdido num comando de shell ficou esperando entrada e travou o comando; parei e
+  apliquei o que faltava (o teste).
+- **Jogo para o Arthur:** `Main` rodando com ele jogando; não levei a protagonista para o bosque para não brigar com as
+  teclas dele.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 02:00 de relógio (fim).

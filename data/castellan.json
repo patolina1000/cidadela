@@ -1,9 +1,10 @@
 {
   // Castelão (GDD, seção 20).
   // speed: células por segundo. A protagonista só corre (sem andar e sem botão de correr, 26/09/2026).
-  //   1.267 = passada natural do run-loop da protagonista v2 (passada_m_s em
-  //   assets/modelos/protagonista_v2/clipes/clipes.json; o contrato manda reajustar pela passada nova, 30/09/2026).
-  //   Era 2.4 com a v1. Subir mais faz a animação tocar mais rápido (os pés acompanham, sem deslizar).
+  //   1.8: meio-termo (decisão do Arthur, 30/09/2026: 1,267 ficou lenta e 2,4 rápida demais). O run-loop da v2 tem
+  //   passada natural de 1,267 m/s (passada_m_s em assets/modelos/protagonista_v2/clipes/clipes.json): a animação toca na
+  //   razão velocidade ÷ passada (1,8 → 1,42×), e os pés acompanham o chão sem deslizar. Teclas [ e ] do jogo (depuração
+  //   temporária) mudam 0,1 cél/s jogando; o valor que o Arthur escolher vem para cá.
   // reach: alcance para construir e abrir máquinas, em células (centro a centro).
   // gatherReach: para coletar, distância máxima do centro do corpo até a borda do recurso;
   //   1.0 = precisa estar encostado, de lado ou na diagonal.
@@ -12,7 +13,7 @@
   //   do corpo e não mudam com o raio.
   // gatherSurfaceReach: para coletar recurso que bloqueia um círculo (tronco, base da pedra ou do veio), distância
   //   máxima do centro do corpo até a borda do círculo. 1.3 = encostado de lado ou na diagonal da célula da árvore conta; duas células de distância, não.
-  "speed": 1.267,
+  "speed": 1.8,
   "reach": 10.0,
   "gatherReach": 1.0,
   "radius": 0.15,

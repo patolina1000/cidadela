@@ -11,7 +11,7 @@ namespace Cidadela.Simulation;
 public sealed class Castellan
 {
     public int Id { get; }
-    public CastellanStats Stats { get; }
+    public CastellanStats Stats { get; private set; }
     public Inventory Inventory { get; } = new();
 
     /// <summary>Posição contínua no plano da grade (X, Z), em células; (x, z) = centro da célula x, z.</summary>
@@ -39,6 +39,9 @@ public sealed class Castellan
         PreviousPosition = position;
         Stats = stats;
     }
+
+    /// <summary>Troca só a velocidade (depuração: <see cref="SetCastellanSpeedCommand"/>).</summary>
+    public void SetSpeed(float cellsPerSecond) => Stats = Stats with { CellsPerSecond = cellsPerSecond };
 
     /// <summary>Se a célula está dentro do alcance de construir (distância entre centros).</summary>
     public bool CanReach(GridPos cell) =>

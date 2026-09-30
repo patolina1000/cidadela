@@ -15,6 +15,25 @@ public class CastellanMovementTests
     }
 
     [Fact]
+    public void SpeedCommandChangesTheWalk()
+    {
+        SimWorld world = TestWorlds.Open(x: 3, z: 3);
+        world.Enqueue(new SetCastellanSpeedCommand(1.8f));
+        TestWorlds.Move(world, 1f, 0f, ticks: 20);
+        Assert.Equal(1.8f, world.Castellan.Stats.CellsPerSecond, 3);
+        Assert.Equal(4.8f, world.Castellan.Position.X, 3);
+    }
+
+    [Fact]
+    public void SpeedCommandKeepsAMinimum()
+    {
+        SimWorld world = TestWorlds.Open(x: 3, z: 3);
+        world.Enqueue(new SetCastellanSpeedCommand(-1f));
+        world.Tick();
+        Assert.Equal(SetCastellanSpeedCommand.Minimum, world.Castellan.Stats.CellsPerSecond, 3);
+    }
+
+    [Fact]
     public void SpeedMustBePositive()
     {
         Assert.Throws<System.FormatException>(() => GameData.Parse(TestWorlds.Items, TestWorlds.Resources,

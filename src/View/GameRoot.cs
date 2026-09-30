@@ -14,6 +14,7 @@ namespace Cidadela.View;
 /// C entra/sai da câmera cinematográfica no que está sob o cursor (ou no Castelão).
 /// O liga e desliga o contorno fino escuro (prova, 29/09/2026). H desenha no chão as formas de colisão.
 /// Segurar Alt (modo de informação) mostra o ícone de estado de todos os aldeões; sem Alt, só dos que têm problema.
+/// Depuração da protagonista (temporária): [ e ] baixam e sobem a velocidade dela em 0,1 cél/s, mostrada no HUD.
 /// Depuração dos aldeões: V alterna o patamar de velocidade, B liga/desliga a penalidade (fome ou moral baixa).
 /// Pausa (GDD, seção 3): Espaço pausa e continua. Na pausa a câmera continua livre, mas nada que muda o mundo é
 /// aceito. Não há velocidade 1x/2x/3x (decisão do Arthur, 29/09/2026: como no Factorio).
@@ -168,6 +169,14 @@ public partial class GameRoot : Node3D
             // Depuração: alterna o patamar de velocidade de todos (até existir pesquisa ou era).
             _debugSpeedTier = (_debugSpeedTier + 1) % _world.Data.Villagers.SpeedTiers.Count;
             _world.Enqueue(new SetSpeedTierCommand(_debugSpeedTier));
+        }
+        else if (key.Keycode is Key.Bracketleft or Key.Bracketright)
+        {
+            // Depuração temporária: [ e ] baixam e sobem a velocidade dela em 0,1 cél/s (tecla lógica: no teclado
+            // ABNT o [ fica em outra posição física). O valor escolhido pelo Arthur vira o speed de data/castellan.json.
+            float step = key.Keycode == Key.Bracketright ? 0.1f : -0.1f;
+            float speed = Mathf.Round((_world.Castellan.Stats.CellsPerSecond + step) * 10f) / 10f;
+            _world.Enqueue(new SetCastellanSpeedCommand(speed));
         }
         else if (k == Key.B)
         {
@@ -396,7 +405,7 @@ public partial class GameRoot : Node3D
         System.Numerics.Vector2 p = castellan.Position;
         _debugLabel.Text =
             $"Tick {_world.TickCount}  |  {_measuredTicksPerSecond} ticks/s (alvo {(_clock.Paused ? 0 : SimClock.TicksPerSecond)})  |  " +
-            $"{Engine.GetFramesPerSecond()} FPS  |  Castelão ({p.X:0.0}, {p.Y:0.0})  |  grama: {_view.GrassTufts} tufos  |  " +
+            $"{Engine.GetFramesPerSecond()} FPS  |  Castelão ({p.X:0.0}, {p.Y:0.0}) a {castellan.Stats.CellsPerSecond:0.0} cél/s [ ]  |  grama: {_view.GrassTufts} tufos  |  " +
             $"aldeões: patamar {_debugSpeedTier + 1}/{_world.Data.Villagers.SpeedTiers.Count} ({_world.Data.Villagers.SpeedTiers[_debugSpeedTier]:0.00} cél/s){(_debugPenalized ? ", com penalidade" : "")}  [V patamar, B penalidade]  [O contorno {(Outline.Enabled ? "ligado" : "desligado")}]  [H colisão]";
 
         _inventoryLabel.Text = _selected is not null
