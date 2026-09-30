@@ -156,5 +156,92 @@
     "tipo": "imagem",
     "caminho": "assets/previews/cenario/arvore_contato.png",
     "nota": "Copa a partir de ≥ 1,0 m, árvores de 2,1 a 2,6 m, borda fria (b). Atrás, zoom 1: aldeão 60/0/58 %, protagonista 44/3/82 % a 0,5/1/2 m."
+  },
+  {
+    "quando": "2026-09-29T21:54:27",
+    "titulo": "Pedra 1 — bloco",
+    "tipo": "glb",
+    "caminho": "assets/cenario/pedra/pedra_1.glb",
+    "nota": "Pedra piloto, 76 triângulos, pedra fria #66636B. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:54:28",
+    "titulo": "Pedra 2 — dupla",
+    "tipo": "glb",
+    "caminho": "assets/cenario/pedra/pedra_2.glb",
+    "nota": "Pedra piloto, 76 triângulos, pedra fria #66636B. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:54:29",
+    "titulo": "Pedra 3 — pilha",
+    "tipo": "glb",
+    "caminho": "assets/cenario/pedra/pedra_3.glb",
+    "nota": "Pedra piloto, 112 triângulos, pedra fria #66636B. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:54:30",
+    "titulo": "Pedra 4 — laje",
+    "tipo": "glb",
+    "caminho": "assets/cenario/pedra/pedra_4.glb",
+    "nota": "Pedra piloto, 76 triângulos, pedra fria #66636B. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:54:31",
+    "titulo": "Veio 1 — leque",
+    "tipo": "glb",
+    "caminho": "assets/cenario/veio/veio_1.glb",
+    "nota": "Veio de ferro piloto, 84 triângulos, rocha #2E2931 e lascas #1E2A3A. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:54:32",
+    "titulo": "Veio 2 — cruzado",
+    "tipo": "glb",
+    "caminho": "assets/cenario/veio/veio_2.glb",
+    "nota": "Veio de ferro piloto, 104 triângulos, rocha #2E2931 e lascas #1E2A3A. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:54:33",
+    "titulo": "Veio 3 — coroa",
+    "tipo": "glb",
+    "caminho": "assets/cenario/veio/veio_3.glb",
+    "nota": "Veio de ferro piloto, 100 triângulos, rocha #2E2931 e lascas #1E2A3A. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:54:34",
+    "titulo": "Veio 4 — torre",
+    "tipo": "glb",
+    "caminho": "assets/cenario/veio/veio_4.glb",
+    "nota": "Veio de ferro piloto, 68 triângulos, rocha #2E2931 e lascas #1E2A3A. Aldeão v2 ao lado.",
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:54:35",
+    "titulo": "Cenário piloto — pedra, veio e as três famílias",
+    "tipo": "imagem",
+    "caminho": "assets/previews/cenario/cenario_contato.png",
+    "nota": "Pedra 76–112 tri (0,40–0,54 m), veio 68–104 tri (0,28–0,43 m), árvore revisão 3; borda fria (b); fila e mapa nos zooms 0,4/1/2,5 com crepúsculo."
   }
 ]
