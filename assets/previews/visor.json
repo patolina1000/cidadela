@@ -15,5 +15,41 @@
     "junto": [
       "assets/modelos/aldeao_v2/cabelos/cabelo_4.glb"
     ]
+  },
+  {
+    "quando": "2026-09-29T21:23:02",
+    "titulo": "Protagonista v2 — corpo A (só a frente), bruto",
+    "tipo": "glb",
+    "caminho": "assets/modelos/protagonista_v2/meshy/corpo_a_frente_1.glb",
+    "nota": "Meshy 01a0efa8, 20 créditos, 2.602 triângulos, sem limpeza. Normalizado a 0,80 m no visor, pele #91ADB7; aldeão v2 ao lado para a escala. Mãos abertas; perfil com glúteo e panturrilha.",
+    "altura": 0.8,
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:23:03",
+    "titulo": "Protagonista v2 — corpo B (frente + perfil + costas), bruto",
+    "tipo": "glb",
+    "caminho": "assets/modelos/protagonista_v2/meshy/corpo_b_multi_1.glb",
+    "nota": "Meshy 01a0efaa, 20 créditos, 2.620 triângulos, sem limpeza. Normalizado a 0,80 m no visor, pele #91ADB7; aldeão v2 ao lado para a escala. Mãos meio fechadas; perfil reto.",
+    "altura": 0.8,
+    "junto": [
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T21:23:04",
+    "titulo": "Protagonista v2 — folha de contato do corpo (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/meshy_corpo_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T21:23:05",
+    "titulo": "Protagonista v2 — folha de contato do corpo (A e B)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/meshy_corpo.png",
+    "nota": "A: só a frente. B: frente + perfil + costas. Câmera do jogo 32/81/215 e 32/80/212 px (alvo 28/68/179: a 0,80 m sai ~19% acima). Cabeça L÷A 0,915 / 0,901 (folha 0,935). Recomendação: B (mãos meio fechadas; o perfil reto se corrige na limpeza, as mãos abertas não)."
   }
 ]

@@ -64,7 +64,8 @@ function mostrar(it) {
   desenharLista();
   $('titulo').textContent = it.titulo || it.caminho;
   const junto = (it.junto || []).map((j) => (typeof j === 'string' ? j : j.caminho));
-  $('meta').textContent = `${it.quando} · ${it.tipo} · ${it.caminho}${junto.length ? ' + ' + junto.join(', ') : ''}`;
+  $('meta').textContent = `${it.quando} · ${it.tipo} · ${it.caminho}${it.altura ? ` (normalizado a ${it.altura} m)` : ''}` +
+    `${junto.length ? ' + ' + junto.join(', ') : ''}`;
   $('nota').textContent = it.nota || '';
   $('vazio').hidden = true;
   if (it.tipo === 'glb') mostrar3d(it);
@@ -236,7 +237,8 @@ async function gradesDo(perso) {
 
 function materialToon(orig, perso, grades) {
   const nome = (orig.name || '').replace(/\.\d+$/, '').toLowerCase();
-  const hex = perso && perso.cores[nome];
+  // Material sem nome (GLB bruto da Meshy) fica com a pele do personagem.
+  const hex = perso && (perso.cores[nome] || (!nome && perso.cores.pele));
   const rosto = nome.startsWith('rosto_') ? grades[nome.slice(6)] : null;
   let albedo = hex ? new THREE.Color(hex) : (orig.color ? orig.color.clone() : new THREE.Color(1, 1, 1));
   if (rosto) albedo = new THREE.Color(1, 1, 1);
@@ -324,6 +326,14 @@ async function mostrar3d(it) {
   const [principal, ...outros] = carregados;
   cena.add(principal.raiz);
   principal.raiz.updateMatrixWorld(true);
+  if (it.altura) {
+    // Bruto fora de escala: normaliza a esta altura, pés no chão e centro na origem (como o render_meshy.py).
+    const cx = new THREE.Box3().setFromObject(principal.raiz, true);
+    const k = it.altura / (cx.max.y - cx.min.y);
+    principal.raiz.scale.setScalar(k);
+    principal.raiz.position.set(-(cx.min.x + cx.max.x) / 2 * k, -cx.min.y * k, -(cx.min.z + cx.max.z) / 2 * k);
+    principal.raiz.updateMatrixWorld(true);
+  }
   const caixaPrincipal = new THREE.Box3().setFromObject(principal.raiz, true);
   let proximoX = caixaPrincipal.max.x + config.cena.ao_lado_folga_m;
   const clipesExtras = [];

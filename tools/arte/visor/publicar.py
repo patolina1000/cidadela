@@ -1,7 +1,7 @@
 """Acrescenta uma prévia ao visor (assets/previews/visor.json). O visor mostra a mais nova em até 2 s.
 
 Uso, na raiz da worktree da arte:
-  python3 tools/arte/visor/publicar.py <caminho> <imagem|gif|glb> "<título>" "<nota>" [--junto a.glb b.glb]
+  python3 tools/arte/visor/publicar.py <caminho> <imagem|gif|glb> "<título>" "<nota>" [--junto a.glb b.glb] [--altura 0.80]
 
 O caminho (e os do --junto) precisa estar dentro de assets/, que é o que o servidor do visor entrega.
 """
@@ -42,9 +42,11 @@ def main():
     ap.add_argument("nota")
     ap.add_argument("--junto", nargs="+", default=[], metavar="GLB",
                     help="outros GLBs na mesma cena (peça no osso do encaixe, corpo ao lado, GLB de clipes)")
+    ap.add_argument("--altura", type=float, metavar="M",
+                    help="normaliza o GLB principal a esta altura em metros (bruto fora de escala)")
     a = ap.parse_args()
-    if a.junto and a.tipo != "glb":
-        sys.exit("--junto só vale para tipo glb")
+    if (a.junto or a.altura) and a.tipo != "glb":
+        sys.exit("--junto e --altura só valem para tipo glb")
 
     item = {
         "quando": datetime.datetime.now().isoformat(timespec="seconds"),
@@ -53,6 +55,8 @@ def main():
         "caminho": relativo(a.caminho, EXTENSOES[a.tipo]),
         "nota": a.nota,
     }
+    if a.altura:
+        item["altura"] = a.altura
     if a.junto:
         item["junto"] = [relativo(j, EXTENSOES["glb"]) for j in a.junto]
 

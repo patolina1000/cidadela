@@ -3160,3 +3160,13 @@ onde errou, correções manuais e quanto tempo levou.
   Blender atualizar a cena (px absurdos e aldeão atrás da protagonista no perfil); passou a atualizar a cena ao criar a
   câmera. A troca de ponto por vírgula nos números não mexe mais nas vírgulas do texto.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Protagonista v2, passo 2D: folha e corpos brutos no visor
+
+- **Feito:** publicados no visor os dois GLBs brutos (com o aldeão v2 junto), a folha de contato e a versão
+  crepúsculo; o portal "Visor" ficou na folha. Para o GLB bruto (1,90 m, sem material) aparecer em escala, o
+  `publicar.py` ganhou `--altura` (o visor normaliza o principal a essa altura, pés no chão, como o
+  `render_meshy.py`) e o visor pinta material sem nome com a pele do personagem.
+- **Nota:** o servidor do visor já estava no ar pelo terminal "Visor" (processo `servir.py` desta worktree); não mexi
+  nele.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
