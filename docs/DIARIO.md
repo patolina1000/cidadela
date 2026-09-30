@@ -5732,3 +5732,36 @@ onde errou, correções manuais e quanto tempo levou.
   linhas andando; ≥ 10 flechas em 5 min). `dotnet build` 0/0; `dotnet test` 213 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 03:15–03:16 de relógio.
+
+## 2026-09-30 — Mudança de rumo, passo 1: descarte do torque e da linha da flecha
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** ordem do Arthur (via Diretor): torque e linha da flecha descartados; a energia vira MANA em rede de torres
+  e a primeira linha complexa passa a ser a LINHA DA ENERGIA. Passo 1: arquivar e apagar o que era da flecha e do
+  torque, mantendo postos de máquina e Posto de Carregadores.
+- **Feito:**
+  - Tag `linha-flecha-arquivada` em `ba58bb8` (sem o passo 7), com push, só para histórico.
+  - Passo 7 (feedback visual) que estava no disco sem commit: descartado (`git restore` dos modificados; apagados
+    `BuildingStatus.cs`, `IconDrawing.cs`, `MachineBadges.cs`, `MachineBar.gdshader` e os `.uid` deles).
+  - Apagados: `TorqueNetwork`, `TorqueType`, `BeltLine` (linhas de esteira só existiam para a manivela), redes de torque,
+    bônus do fole, manivela, esteira "powered" e "crankCells"; roda d'água, eixo, carvoaria, bigorna, galinheiro, mesa de
+    emplumar e arsenal (dados e modelos); itens carvão, ponta, pena e flecha; `data/maps/linha_flecha.json`,
+    `scenes/tests/LinhaFlecha.tscn`, `docs/cadeia_flecha.md`; testes `TorqueTests`, `CrankTests`,
+    `ArrowChainRecipeTests`, `ArrowLineMapTests`. A esteira volta a andar sempre (a linha da energia diz que ela não
+    gasta mana nem tem operador).
+  - **Terreno água mantido** (é mais simples e o Poço da linha da energia fica ao lado dela): ninguém passa e nada se
+    constrói em cima (`BuildCheck.WrongGround`).
+  - Receitas da serraria e da fundição voltaram aos números de antes da flecha (1 tora → 2 hastes em 2 s; 2 minérios →
+    1 lingote em 3 s), porque a fundição dependia do carvão.
+  - Campo novo `"hotbar": false` em `data/buildings.json` (`BuildingType.Hotbar`): serraria, fundição, forja e as três
+    cabanas saem da barra, mas o código e os dados ficam. A barra agora tem Esteira, Baú e Posto de Carregadores.
+  - Mantidos: postos de máquina, Posto de Carregadores, bruto fora da esteira, itens iniciais nos mapas, `FreeMachines`
+    (vitrine da Biografia), `Direction.All`, a velocidade por tick do `MachineState` (servirá à fração de mana).
+  - Testes de carregadores e postos refeitos com as máquinas que ficaram (fundição com minério, forja sem postos,
+    serraria como segundo posto).
+- **O que deu errado:** `CarrierTests.DeconstructingThePostGivesTheLoadToTheCastellan` falhou: a carvoaria não tinha
+  posto, a fundição tem, e um carregador liberado vai para ela. Corrigido no teste (ninguém fica no posto desmontado).
+- **Testes:** `dotnet build` 0/0; `dotnet test` 191 passaram. Godot estava fechado: Main e Biography rodados em
+  `--headless` (200 e 120 quadros), sem erro nem aviso.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 15:46–15:54 de relógio.

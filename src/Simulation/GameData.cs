@@ -154,17 +154,8 @@ public sealed class GameData
                     throw new FormatException($"Carregadores inválidos em \"{kind}\": count e radius positivos, sem job nem posts.");
                 carriers = new CarrierType(cd.Count, cd.Radius);
             }
-            TorqueType? torque = null;
-            if (b.Torque is TorqueData td)
-            {
-                if (td.Supply < 0f || td.Demand < 0f || td.SpeedBonus <= 0f)
-                    throw new FormatException($"Torque inválido em \"{kind}\": supply e demand não negativos, speedBonus positivo.");
-                torque = new TorqueType(td.Supply, td.Demand, td.SpeedBonus);
-            }
-            if (b.CrankCells < 0 || (b.CrankCells > 0 && posts is null))
-                throw new FormatException($"Manivela inválida em \"{kind}\": crankCells positivo e um posto.");
             buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus, posts, carriers,
-                torque, b.NeedsWater, b.Powered, b.CrankCells));
+                b.Hotbar));
         }
 
         var recipes = new List<RecipeType>();
@@ -265,17 +256,7 @@ public sealed class GameData
         public float SpeedBonus { get; set; } = 1f;
         public PostData? Posts { get; set; }
         public CarrierData? Carriers { get; set; }
-        public TorqueData? Torque { get; set; }
-        public bool NeedsWater { get; set; }
-        public bool Powered { get; set; }
-        public int CrankCells { get; set; }
-    }
-
-    private sealed class TorqueData
-    {
-        public float Supply { get; set; }
-        public float Demand { get; set; }
-        public float SpeedBonus { get; set; } = 1f;
+        public bool Hotbar { get; set; } = true;
     }
 
     private sealed class CarrierData

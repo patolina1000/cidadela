@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cidadela.Simulation;
 using Godot;
 
@@ -35,6 +36,8 @@ public partial class GameRoot : Node3D
     private WorldView _view = null!;
     private CameraRig _camera = null!;
     private Hotbar _hotbar = null!;
+    /// <summary>As construções da barra (as de data/buildings.json com "hotbar" ligado), na ordem das teclas.</summary>
+    private readonly List<BuildingType> _hotbarTypes = new();
     private InventoryBar _inventoryBar = null!;
     private CinematicOverlay _cinematicOverlay = null!;
     private FocusTarget? _focus;
@@ -84,7 +87,10 @@ public partial class GameRoot : Node3D
 
         _hotbar = new Hotbar { Name = "Hotbar" };
         GetNode("DebugHud").AddChild(_hotbar);
-        _hotbar.Build(data.Buildings, data);
+        foreach (BuildingType type in data.Buildings)
+            if (type.Hotbar)
+                _hotbarTypes.Add(type);
+        _hotbar.Build(_hotbarTypes, data);
         _hotbar.SlotClicked += Select;
 
         _inventoryBar = new InventoryBar { Name = "InventoryBar" };
@@ -141,8 +147,8 @@ public partial class GameRoot : Node3D
         if (k >= Key.Key1 && k <= Key.Key9)
         {
             int index = (int)(k - Key.Key1);
-            if (index < _world.Data.Buildings.Count)
-                Select(_selected == _world.Data.Buildings[index] ? null : index); // mesma tecla desmarca
+            if (index < _hotbarTypes.Count)
+                Select(_selected == _hotbarTypes[index] ? null : index); // mesma tecla desmarca
         }
         else if (k == Key.R && _selected is not null)
         {
@@ -286,7 +292,7 @@ public partial class GameRoot : Node3D
     /// <summary>Escolhe uma construção da barra (ou nenhuma). Solta o item da mão.</summary>
     private void Select(int? index)
     {
-        _selected = index is int i ? _world.Data.Buildings[i] : null;
+        _selected = index is int i ? _hotbarTypes[i] : null;
         _hotbar.ShowSelected(index);
         if (_selected is not null)
             Hold(null);

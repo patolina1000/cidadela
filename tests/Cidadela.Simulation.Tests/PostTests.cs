@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Cidadela.Simulation.Tests;
 
-/// <summary>Postos de máquina (docs/cadeia_flecha.md): aldeão ocupa, máquina só anda com todos, desmontar libera.</summary>
+/// <summary>Postos de máquina: aldeão ocupa, máquina só anda com todos, desmontar libera.</summary>
 public class PostTests
 {
     private static SimWorld Sawmill(string villagers)
@@ -28,8 +28,8 @@ public class PostTests
     public void SawmillRunsWithBothSawyers()
     {
         SimWorld world = Sawmill("""[{ "x": 8, "z": 7 }, { "x": 8, "z": 9 }]""");
-        TestWorlds.Run(world, 8 * SimClock.TicksPerSecond + 2);
-        Assert.Equal(4, world.BuildingAt(new GridPos(8, 8))!.Machine!.Output.Count("shaft"));
+        TestWorlds.Run(world, 2 * SimClock.TicksPerSecond + 2);
+        Assert.Equal(2, world.BuildingAt(new GridPos(8, 8))!.Machine!.Output.Count("shaft"));
     }
 
     [Fact]
@@ -52,32 +52,34 @@ public class PostTests
     public void DeconstructingFreesTheCrewForAnotherPost()
     {
         SimWorld world = TestWorlds.Open(x: 8, z: 6, data: TestWorlds.RealData(),
-            buildings: """[{ "kind": "anvil", "x": 8, "z": 8 }]""", villagers: """[{ "x": 8, "z": 9 }]""");
+            buildings: """[{ "kind": "smelter", "x": 8, "z": 8 }]""", villagers: """[{ "x": 8, "z": 9 }]""");
         TestWorlds.Run(world, 2);
         Villager smith = world.Villagers[0];
         Assert.Equal(VillagerTask.AtPost, smith.Task);
 
-        world.Castellan.Inventory.Add("wood", 10);
-        world.Enqueue(new BuildCommand("coop", new GridPos(10, 8), Direction.East));
+        world.Castellan.Inventory.Add("wood", 8);
+        world.Castellan.Inventory.Add("stone", 4);
+        world.Enqueue(new BuildCommand("sawmill", new GridPos(10, 8), Direction.East));
         world.Tick();
         Assert.Equal(VillagerTask.AtPost, smith.Task); // o posto dele não muda por causa de outra máquina
 
         world.Enqueue(new DeconstructCommand(new GridPos(8, 8)));
         world.Tick();
-        Assert.Same(world.BuildingAt(new GridPos(10, 8)), smith.Home); // foi chamado para o galinheiro vago
+        Assert.Same(world.BuildingAt(new GridPos(10, 8)), smith.Home); // foi chamado para a serraria vaga
         TestWorlds.Run(world, 10 * SimClock.TicksPerSecond);
-        Assert.Equal("basket", smith.PostTool);
+        Assert.Equal("saw", smith.PostTool);
     }
 
     [Fact]
     public void MachineWithoutPostsRunsAlone()
     {
         SimWorld world = TestWorlds.Open(x: 1, z: 1, data: TestWorlds.RealData(),
-            buildings: """[{ "kind": "charcoal_kiln", "x": 8, "z": 8 }]""");
-        Building kiln = world.BuildingAt(new GridPos(8, 8))!;
-        Assert.True(kiln.CrewReady);
-        kiln.Machine!.Input.Add("wood", 10);
+            buildings: """[{ "kind": "forge", "x": 8, "z": 8 }]""");
+        Building forge = world.BuildingAt(new GridPos(8, 8))!;
+        Assert.True(forge.CrewReady);
+        forge.Machine!.Input.Add("ingot", 2);
+        forge.Machine.Input.Add("shaft", 1);
         world.Tick();
-        Assert.True(kiln.Machine.IsWorking);
+        Assert.True(forge.Machine.IsWorking);
     }
 }

@@ -2,7 +2,7 @@ using Xunit;
 
 namespace Cidadela.Simulation.Tests;
 
-/// <summary>Bruto x processado (docs/cadeia_flecha.md): tora, pedra e minério não entram em esteira.</summary>
+/// <summary>Bruto x processado: tora, pedra e minério não entram em esteira.</summary>
 public class RawItemTests
 {
     [Fact]
@@ -13,7 +13,6 @@ public class RawItemTests
         Assert.True(data.Item("stone").Raw);
         Assert.True(data.Item("iron").Raw);
         Assert.False(data.Item("shaft").Raw);
-        Assert.False(data.Item("charcoal").Raw);
         Assert.False(data.Item("ingot").Raw);
     }
 

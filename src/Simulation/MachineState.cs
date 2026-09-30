@@ -5,7 +5,7 @@ namespace Cidadela.Simulation;
 /// <summary>
 /// Uma máquina trabalhando uma receita. Guarda entradas até 2 ciclos, trabalha quando tem tudo e a equipe completa
 /// (<see cref="CrewReady"/>), e acumula saídas até <see cref="OutputCycles"/> ciclos (depois para, esperando alguém
-/// tirar). O progresso anda <c>speed</c> ticks por tick (1 normal; 1,5 com o fole da fundição girando).
+/// tirar). O progresso anda <c>speed</c> ticks por tick (1 = normal).
 /// </summary>
 public sealed class MachineState
 {
@@ -20,7 +20,7 @@ public sealed class MachineState
     /// <summary>Se os postos da máquina estão todos ocupados por quem já chegou (a simulação atualiza a cada tick).</summary>
     public bool CrewReady { get; internal set; } = true;
 
-    /// <summary>Velocidade do último tick (1 = normal; o fole girando acelera a fundição).</summary>
+    /// <summary>Velocidade do último tick (1 = normal).</summary>
     public float Speed { get; internal set; } = 1f;
 
     public float Progress => IsWorking ? _progress / Recipe.Ticks : 0f;

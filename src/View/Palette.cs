@@ -15,8 +15,6 @@ public static class Palette
     public static readonly Color Pumpkin = new("E07B2E");
     public static readonly Color Bone = new("EDE6D6");
     public static readonly Color Sickly = new("9BC53D");
-    public static readonly Color Mud = new("2E2931");
-    public static readonly Color ColdStone = new("66636B");
 
     // Grama do crepúsculo (GDD, seção 17, paleta do dia revisada em 26/09/2026).
     public static readonly Color DeadGrass = new("5A5847");

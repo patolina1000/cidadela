@@ -18,16 +18,8 @@ public sealed class SimWorld
     public IReadOnlyList<ResourceNode> Resources => _resources;
     public IReadOnlyCollection<Building> Buildings => _buildingByCell.Values;
 
-    /// <summary>
-    /// Vitrine (palco da Biografia): máquinas andam sem gente nos postos e esteiras sem manivela. O jogo nunca liga.
-    /// </summary>
+    /// <summary>Vitrine (palco da Biografia): máquinas andam sem gente nos postos. O jogo nunca liga.</summary>
     public bool FreeMachines { get; internal set; }
-
-    /// <summary>As linhas de esteira atuais (recalculadas quando uma construção entra ou sai).</summary>
-    public IReadOnlyList<BeltLine> Lines => _lines;
-
-    /// <summary>As redes de torque atuais (recalculadas quando uma construção entra ou sai).</summary>
-    public IReadOnlyList<TorqueNetwork> Networks => _networks;
 
     /// <summary>Muda a cada construção colocada ou tirada; a cena usa para saber quando redesenhar.</summary>
     public int BuildingsVersion { get; private set; }
@@ -43,9 +35,6 @@ public sealed class SimWorld
     /// <summary>Construções que chamam aldeões (cabanas e postos), na ordem em que foram construídas.</summary>
     private readonly List<Building> _staffed = new();
     private int _nextItemId = 1;
-    private readonly List<TorqueNetwork> _networks = new();
-    private readonly List<BeltLine> _lines = new();
-    private int _networksVersion = -1;
     private readonly Queue<ISimCommand> _commands = new();
     private int _nextId = 1;
 
@@ -62,8 +51,6 @@ public sealed class SimWorld
     {
         while (_commands.TryDequeue(out ISimCommand? command))
             command.Apply(this);
-        RefreshTopology();
-        UpdateLines();
 
         Castellan.Tick(this);
         TickBelts();
@@ -96,13 +83,10 @@ public sealed class SimWorld
                 item.PreviousPosition = item.Position;
 
         foreach (Building belt in _belts)
-            if (belt.Line?.Moving != false)
-                belt.Belt!.Advance(belt.Type.BeltSpeed / SimClock.TicksPerSecond);
+            belt.Belt!.Advance(belt.Type.BeltSpeed / SimClock.TicksPerSecond);
 
         foreach (Building belt in _belts)
         {
-            if (belt.Line?.Moving == false)
-                continue; // linha parada: nada anda nem passa adiante
             BeltLane lane = belt.Belt!;
             if (lane.Items.Count == 0 || lane.Items[0].Progress < 1f)
                 continue;
@@ -131,8 +115,7 @@ public sealed class SimWorld
         {
             MachineState machine = building.Machine!;
             machine.CrewReady = FreeMachines || building.CrewReady;
-            // Fole da fundição: com a rede girando, a receita anda mais rápido.
-            machine.Tick(building.Turning && building.Type.Torque is TorqueType t ? t.SpeedBonus : 1f);
+            machine.Tick();
 
             if (machine.NextOutput() is string kind && PushForward(building, kind))
                 machine.Output.TryRemoveOne(kind);
@@ -153,7 +136,7 @@ public sealed class SimWorld
 
     /// <summary>
     /// Tenta pôr 1 item na esteira (que não aponte de volta) ou baú à frente da construção. Item bruto não entra em
-    /// esteira (docs/cadeia_flecha.md): só no baú.
+    /// esteira: só no baú.
     /// </summary>
     private bool PushForward(Building from, string kind)
     {
@@ -180,11 +163,8 @@ public sealed class SimWorld
     /// </summary>
     internal void AssignIdleWorkers()
     {
-        RefreshTopology();
         foreach (Building building in _staffed)
         {
-            if (building.Type.IsCrank && building.Turning)
-                continue; // o eixo gira esta manivela: não precisa de ninguém
             if (building.Workplace is Workplace work)
             {
                 if (work.Worker is not null)
@@ -358,127 +338,8 @@ public sealed class SimWorld
     public bool IsSolid(GridPos cell) =>
         !Grid.InBounds(cell) || IsWater(cell) || ResourceAt(cell) is not null || BuildingAt(cell) is { Type.Solid: true };
 
-    /// <summary>Se a célula é água (rio, lago): ninguém passa; só a roda d'água se constrói nela.</summary>
+    /// <summary>Se a célula é água (rio, lago): ninguém passa e nada se constrói nela.</summary>
     public bool IsWater(GridPos cell) => Grid.InBounds(cell) && Data.Terrains[Grid.TerrainAt(cell)].Water;
-
-    /// <summary>
-    /// Refaz redes de torque e linhas de esteira se alguma construção mudou. Manivela que passou a girar pelo eixo libera
-    /// quem estava nela (o aldeão volta a ficar livre e é chamado para outro posto).
-    /// </summary>
-    private void RefreshTopology()
-    {
-        if (_networksVersion == BuildingsVersion)
-            return;
-        RebuildNetworks();
-        RebuildLines();
-        bool freed = false;
-        foreach (Building b in _staffed)
-        {
-            if (!b.Type.IsCrank || !b.Turning)
-                continue;
-            for (int i = 0; i < b.Crew.Length; i++)
-                if (b.Crew[i] is Villager v)
-                {
-                    v.AssignHome(null);
-                    b.Crew[i] = null;
-                    freed = true;
-                }
-        }
-        if (freed)
-            AssignIdleWorkers();
-    }
-
-    /// <summary>
-    /// Refaz as linhas de esteira: esteiras ligadas pelo fluxo (a da frente recebe desta, sem apontar de volta) e as
-    /// manivelas que apontam para elas. Só roda quando uma construção entra ou sai.
-    /// </summary>
-    private void RebuildLines()
-    {
-        _lines.Clear();
-        foreach (Building b in _belts)
-            b.Line = null;
-        var links = new Dictionary<Building, List<Building>>();
-        foreach (Building b in _belts)
-            links[b] = new List<Building>();
-        foreach (Building b in _belts)
-            if (BuildingAt(b.Cell.Step(b.Direction)) is { Belt: not null } next && next.Direction != b.Direction.Opposite())
-            {
-                links[b].Add(next);
-                links[next].Add(b);
-            }
-        foreach (Building start in _belts)
-        {
-            if (start.Line is not null)
-                continue;
-            var line = new BeltLine();
-            var queue = new Queue<Building>();
-            start.Line = line;
-            queue.Enqueue(start);
-            while (queue.TryDequeue(out Building? b))
-            {
-                line.Belts.Add(b);
-                line.NeedsPower |= b.Type.Powered;
-                foreach (Building n in links[b])
-                    if (n.Line is null)
-                    {
-                        n.Line = line;
-                        queue.Enqueue(n);
-                    }
-            }
-            _lines.Add(line);
-        }
-        foreach (Building b in _buildingByCell.Values)
-            if (b.Type.IsCrank && BuildingAt(b.Cell.Step(b.Direction)) is { Line: BeltLine target })
-                target.Cranks.Add(b);
-    }
-
-    /// <summary>A cada tick: quantas células as manivelas ativas de cada linha movem, e se a linha anda.</summary>
-    private void UpdateLines()
-    {
-        foreach (BeltLine line in _lines)
-        {
-            int capacity = 0;
-            foreach (Building crank in line.Cranks)
-                if (crank.CrankActive)
-                    capacity += crank.Type.CrankCells;
-            line.Capacity = capacity;
-            line.Moving = FreeMachines || !line.NeedsPower || capacity >= line.Length;
-        }
-    }
-
-    /// <summary>
-    /// Refaz as redes de torque: construções com torque ligadas pelas 4 vizinhas; cada rede soma força e demanda (grafo
-    /// com somas, sem simular peça por peça). Só roda quando uma construção entra ou sai.
-    /// </summary>
-    private void RebuildNetworks()
-    {
-        _networksVersion = BuildingsVersion;
-        _networks.Clear();
-        foreach (Building b in _buildingByCell.Values)
-            b.Network = null;
-        foreach (Building start in _buildingByCell.Values)
-        {
-            if (start.Type.Torque is null || start.Network is not null)
-                continue;
-            var network = new TorqueNetwork();
-            var queue = new Queue<Building>();
-            start.Network = network;
-            queue.Enqueue(start);
-            while (queue.TryDequeue(out Building? b))
-            {
-                network.Members.Add(b);
-                network.Supply += b.Type.Torque!.Supply;
-                network.Demand += b.Type.Torque.Demand;
-                foreach (Direction d in DirectionExtensions.All)
-                    if (BuildingAt(b.Cell.Step(d)) is { Type.Torque: not null, Network: null } next)
-                    {
-                        next.Network = network;
-                        queue.Enqueue(next);
-                    }
-            }
-            _networks.Add(network);
-        }
-    }
 
     /// <summary>Se o Castelão pode construir esse tipo nessa célula agora, e por que não.</summary>
     public BuildCheck CanBuild(BuildingType type, GridPos cell)
@@ -489,7 +350,7 @@ public sealed class SimWorld
             return BuildCheck.OutOfReach;
         if (ResourceAt(cell) is not null || BuildingAt(cell) is not null)
             return BuildCheck.Occupied;
-        if (IsWater(cell) != type.NeedsWater)
+        if (IsWater(cell))
             return BuildCheck.WrongGround;
         if (type.Solid && Castellan.BodyOverlaps(cell))
             return BuildCheck.Occupied;
@@ -569,7 +430,7 @@ public sealed class SimWorld
             _machines.Add(building);
         if (building.Workplace is not null)
             _workplaces.Add(building);
-        BuildingsVersion++; // antes de chamar gente: a topologia nova decide se a manivela precisa de alguém
+        BuildingsVersion++;
         if (building.Workplace is not null || building.Crew.Length > 0)
         {
             _staffed.Add(building);

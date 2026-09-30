@@ -1,12 +1,8 @@
 {
-  // Receitas das máquinas (GDD, seção 5; linha da flecha de ferro, era do torque: docs/cadeia_flecha.md).
+  // Receitas das máquinas (GDD, seção 5). Máquinas antigas, fora da barra desde a linha da energia (docs/linha_energia.md).
   // machine: construção que faz a receita (data/buildings.json). Por enquanto, uma receita por máquina.
-  // inputs/outputs: itens por ciclo (sem inputs: produz sozinha, como o galinheiro). seconds: duração de um ciclo.
-  "shafts":   { "machine": "sawmill",         "inputs": { "wood": 1 },                               "outputs": { "shaft": 4 },     "seconds": 8 },
-  "charcoal": { "machine": "charcoal_kiln",   "inputs": { "wood": 10 },                              "outputs": { "charcoal": 20 }, "seconds": 120 },
-  "ingot":    { "machine": "smelter",         "inputs": { "iron": 1, "charcoal": 1 },                "outputs": { "ingot": 1 },     "seconds": 15 },
-  "points":   { "machine": "anvil",           "inputs": { "ingot": 1 },                              "outputs": { "point": 3 },     "seconds": 15 },
-  "feather":  { "machine": "coop",            "inputs": {},                                          "outputs": { "feather": 1 },   "seconds": 10 },
-  "arrows":   { "machine": "fletching_table", "inputs": { "shaft": 1, "point": 1, "feather": 2 },    "outputs": { "arrow": 2 },     "seconds": 10 },
-  "sword":    { "machine": "forge",           "inputs": { "ingot": 2, "shaft": 1 },                  "outputs": { "sword": 1 },     "seconds": 5 }
+  // inputs/outputs: itens por ciclo (sem inputs: produz sozinha). seconds: duração de um ciclo.
+  "shafts":   { "machine": "sawmill", "inputs": { "wood": 1 },              "outputs": { "shaft": 2 }, "seconds": 2 },
+  "ingot":    { "machine": "smelter", "inputs": { "iron": 2 },              "outputs": { "ingot": 1 }, "seconds": 3 },
+  "sword":    { "machine": "forge",   "inputs": { "ingot": 2, "shaft": 1 }, "outputs": { "sword": 1 }, "seconds": 5 }
 }

@@ -4,7 +4,7 @@
   // texture: textura repetível de 512 px (gerada em tools/meshy_pipeline/textures.py).
   // grassDensity: quanto tufo de grama nasce nesse chão, de 0 (nenhum) a 1 (cheio). Pedra, lama, trilhas e
   //   pisos construídos ficam em 0; musgo, quando existir como terreno, vai perto de 1.
-  // water: água (rio, lago; docs/cadeia_flecha.md): ninguém passa e só a roda d'água se constrói nela.
+  // water: água (rio, lago): ninguém passa e nada se constrói nela (o Poço da linha da energia fica ao lado).
   // color: cor lisa (hex) quando não há textura (a água do protótipo: névoa azul-esverdeada da paleta, GDD seção 17).
   "grass": { "name": "Grama escura", "texture": "res://assets/texturas/chao/grama_escura.png", "grassDensity": 1.0 },
   "dirt":  { "name": "Terra",        "texture": "res://assets/texturas/chao/terra.png",        "grassDensity": 0.15 },

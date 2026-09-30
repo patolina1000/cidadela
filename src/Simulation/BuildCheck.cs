@@ -8,6 +8,6 @@ public enum BuildCheck
     OutOfReach,
     Occupied,
     NotEnoughItems,
-    /// <summary>Roda d'água fora da água, ou outra construção na água.</summary>
+    /// <summary>Construção na água (nada se constrói nela).</summary>
     WrongGround,
 }

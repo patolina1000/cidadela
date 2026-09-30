@@ -259,7 +259,7 @@ public sealed class Villager
     }
 
     /// <summary>
-    /// Carregador (docs/cadeia_flecha.md): busca bruto num baú ou cabana dentro do raio do posto e leva até a máquina, no
+    /// Carregador: busca bruto num baú ou cabana dentro do raio do posto e leva até a máquina, no
     /// raio, que ainda aceita esse item (descontando o que outros carregadores já levam para ela). Sobra na mão vai para a
     /// próxima máquina que aceitar.
     /// </summary>
@@ -442,7 +442,7 @@ public sealed class Villager
                 taken.Add(c);
         List<GridPos> goals = FreeNeighbors(world, home.Cell);
         goals.RemoveAll(taken.Contains);
-        // Chão livre antes de cima de esteira ou eixo; de lado (encostado de verdade) antes da diagonal.
+        // Chão livre antes de cima de esteira; de lado (encostado de verdade) antes da diagonal.
         List<GridPos> sides = goals.FindAll(g => g.X == home.Cell.X || g.Z == home.Cell.Z);
         List<GridPos> clearSides = sides.FindAll(g => world.BuildingAt(g) is null);
         List<GridPos> clear = goals.FindAll(g => world.BuildingAt(g) is null);
