@@ -4651,3 +4651,37 @@ onde errou, correções manuais e quanto tempo levou.
   depois dos GLBs (23:23:37), conferido em `.godot/imported`.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 23:23–23:25 de relógio.
+
+---
+
+## 2026-09-29 — Prova do contorno fino escuro (casca invertida, tecla O)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (decisão do Arthur):** prova do contorno fino escuro #1B1620 do toon (GDD, seção 17: "toon com contorno
+  fino escuro, lembrando Castle Crashers"; estudo do CENÁRIO, opção C): casca invertida ou pós-processo, o mais barato
+  que funcione com MultiMesh e personagens animados; ligável por material e com chave de debug; ligado em árvores,
+  pedras, veios, aldeões, protagonista e construções; espessura em `data/visual.json`, constante nos 3 zooms; prints com
+  e sem, FPS antes/depois se o Arthur não estiver jogando.
+- **Escolha: casca invertida como segundo passe (`next_pass`) do material.** Por quê: liga por material (o
+  pós-processo contornaria tudo, inclusive a grama inteira, e custa uma passada na tela toda); vai junto com a malha no
+  MultiMesh; é empurrada depois do esqueleto (personagens animados); o empurrão é feito no espaço de recorte, em pixels,
+  então a espessura é igual em qualquer zoom. Custo: um desenho a mais por superfície contornada, em malhas de poucas
+  centenas de triângulos. Limite conhecido: onde a malha é facetada (normais separadas) o contorno pode abrir uma
+  fresta na quina.
+- **O que foi feito:**
+  - `Outline.gdshader`: faces de trás, cor chapada, sem sombra; o recorte em volta da protagonista vale também (o
+    contorno da copa não aparece no buraco). `Outline` (registro): um material de contorno compartilhado e uma variante
+    com o recorte para as árvores; `Attach` põe o passe; `Enabled` tira e repõe o passe de todos.
+  - Ligado em: materiais dos recursos (árvore, pedra, veio), construções (`BuildingModels`), aldeões (pele e cabelo;
+    o rosto não) e protagonista (cópia de cada material do GLB, menos o cristal).
+  - **Tecla O** no jogo: liga e desliga o contorno de tudo; a linha de depuração mostra o estado.
+  - `data/visual.json` → `outline`: `enabled` true, `color` #1B1620 (o traço do rosto do aldeão), `widthPx` 1,5 numa tela
+    de 1890 de altura.
+- **No jogo:** o contorno aparece nas pedras, copas, protagonista e aldeões; com O, some. Prints:
+  `docs/prints/contorno_zoom1.png` e `contorno_zoom25_com_sem.png` (zoom 2,5 com e sem).
+- **Não feito:** o print no zoom 0,4 e o FPS antes/depois. No meio dos prints a janela recebeu entradas que não eram
+  minhas (pausa, menu, câmera) e o jogo foi fechado por fora: o Arthur estava usando a máquina. Pela ordem ("só se o
+  Arthur não estiver jogando"), deixei a medida para depois.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 154 aprovados.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 23:21–23:31 de relógio.

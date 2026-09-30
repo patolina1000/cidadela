@@ -89,7 +89,9 @@ public static class BuildingModels
 
     private static MeshInstance3D Add(Node3D parent, PrimitiveMesh mesh, Color color, Vector3 position)
     {
-        mesh.Material = new StandardMaterial3D { AlbedoColor = color, Roughness = 0.9f };
+        var material = new StandardMaterial3D { AlbedoColor = color, Roughness = 0.9f };
+        Outline.Attach(material);
+        mesh.Material = material;
         var instance = new MeshInstance3D { Mesh = mesh, Position = position };
         parent.AddChild(instance);
         return instance;

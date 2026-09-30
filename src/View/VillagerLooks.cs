@@ -154,10 +154,17 @@ public static class VillagerLooks
     }
 
     /// <summary>Material toon da pele (compartilhado por todos os aldeões).</summary>
-    public static ShaderMaterial SkinMaterial() => _skinMaterial ??= Toon(SkinColor);
+    public static ShaderMaterial SkinMaterial() => _skinMaterial ??= Outlined(Toon(SkinColor));
 
     /// <summary>Material toon do cabelo: branco, a cor vem do "tint" por instância (<see cref="ApplyHairTone"/>).</summary>
-    public static ShaderMaterial HairMaterial() => _hairMaterial ??= Toon(Colors.White);
+    public static ShaderMaterial HairMaterial() => _hairMaterial ??= Outlined(Toon(Colors.White));
+
+    /// <summary>Corpo e cabelo levam o contorno fino escuro (Outline); o rosto não (é um retalho colado na pele).</summary>
+    private static ShaderMaterial Outlined(ShaderMaterial material)
+    {
+        Outline.Attach(material);
+        return material;
+    }
 
     public static ShaderMaterial EyesMaterial() => _eyesMaterial ??= FaceMaterial(EyesAtlas(), Face().Eyes);
 

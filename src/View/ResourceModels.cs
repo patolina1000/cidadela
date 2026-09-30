@@ -169,6 +169,7 @@ public partial class ResourceModels : Node3D
     /// <summary>Põe o centro do esmaecimento (o peito da protagonista) em todos os materiais; null desliga.</summary>
     public static void SetOcclusionCenter(Vector3? center)
     {
+        Outline.SetOcclusionCenter(center);
         foreach (((Color, bool, bool Occlusion) key, ShaderMaterial material) in Materials)
         {
             if (!key.Occlusion)
@@ -189,6 +190,7 @@ public partial class ResourceModels : Node3D
             VisualSettings.Current.ApplyRim(material);
         if (occlusion)
             VisualSettings.Current.ApplyOcclusion(material);
+        Outline.Attach(material, occluding: occlusion);
         Materials[(color, rim, occlusion)] = material;
         return material;
     }

@@ -16,5 +16,10 @@
   // resourcePick: clique e destaque sobre recursos (sem construção nem item na mão). Árvore: a copa conta a partir de
   //   canopyFrom metros (as do CENÁRIO começam em 1,06–1,09 m) e o tronco é um pilar do raio do tronco
   //   (data/resources.json) + trunkMargin (o tronco inclina até 12°). Pedra e veio: a caixa inteira do modelo.
-  "resourcePick": { "canopyFrom": 1.0, "trunkMargin": 0.1 }
+  "resourcePick": { "canopyFrom": 1.0, "trunkMargin": 0.1 },
+  // outline: contorno fino escuro do toon (GDD, seção 17; prova pedida pelo Arthur em 29/09/2026), em árvores, pedras,
+  //   veios, aldeões, protagonista e construções. color: #1B1620 (o traço do rosto do aldeão); widthPx: espessura em
+  //   pixels numa tela de referenceHeight de altura (fica igual em qualquer zoom); enabled: se começa ligado (a tecla O
+  //   do jogo alterna).
+  "outline": { "enabled": true, "color": "#1B1620", "widthPx": 1.5, "referenceHeight": 1890 }
 }

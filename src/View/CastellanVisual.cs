@@ -157,6 +157,13 @@ public partial class CastellanVisual : Node3D
                     brighter.EmissionEnergyMultiplier = crystal.EmissionEnergyMultiplier * CrystalEmissionBoost;
                     mesh.SetSurfaceOverrideMaterial(i, brighter);
                 }
+                else if (mesh.Mesh.SurfaceGetMaterial(i) is Material original)
+                {
+                    // Contorno fino escuro (Outline) no corpo e no cabelo; cópia, para não mexer no material importado.
+                    var outlined = (Material)original.Duplicate();
+                    Outline.Attach(outlined);
+                    mesh.SetSurfaceOverrideMaterial(i, outlined);
+                }
             }
         }
 
