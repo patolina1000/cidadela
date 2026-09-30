@@ -5393,3 +5393,39 @@ onde errou, correções manuais e quanto tempo levou.
 - `.uid` do `ResourceShape.cs` (gerado pelo Godot) incluído.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 00:51–00:55 de relógio.
+
+---
+
+## 2026-09-30 — Protagonista v2 no jogo (Castelão)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (ordem de merge, passo 4):** trocar a v1 pela v2: corpo, rosto (atlas + `rosto.json`, expressões pelos
+  estados que já existem), cabelo com pesos, chifres no encaixe Chifres (Head), cristal no Peito (Spine) com a luz azul
+  da v1, shader com borda fria e piso de sombra ~0,5 só nela; velocidade e corrida pela `passada_m_s`.
+- **O que foi feito:**
+  - `ProtagonistV2Model` monta a v2 de `assets/modelos/protagonista_v2/`: corpo girado 180° (frente +Z do glTF); `pele` e
+    `tecido` viram o `Toon.gdshader` com as cores do contrato (agora em `data/castellan.json`, `looks`: pele #91ADB7,
+    cabelo #4B5A69, chifre #2B2140, tecido #3F3342), borda fria ligada e piso de sombra 0,5; contorno escuro também.
+  - `Toon.gdshaderinc`: o piso de sombra virou parâmetro (`shadow_floor`, padrão 0,35: o aldeão não muda).
+  - Rosto: `ProtagonistFace` lê o `rosto.json` dela (o `FaceTable` do aldeão exige as 9 expressões dele), põe o shader do
+    rosto nos retalhos `Olhos` e `Boca` com o atlas dela e o piso 0,5, e pisca em três quadros (meio fechado → fechado →
+    meio fechado, os tempos do aldeão). Expressões ligadas: coletando = `esforco`; senão, `neutra_cansada`. `dor` e
+    `olhar_cristal` esperam gatilho (dano; regra no GDD).
+  - Cabelo com pesos: a malha do `cabelo.glb` vai para o `Skeleton3D` do corpo e a pele liga os ossos pelo nome.
+  - Encaixes do contrato de animação criados como no aldeão (compensando a pose de repouso do osso): `Chifres` e
+    `Cabelo`/`Chapéu` (Head), `Peito` (Spine), `MaoDireita`, `MaoEsquerda`, `Costas` (Spine01). Chifres em `Chifres`
+    (toon, cor chifre); cristal em `Peito` com o material `Cristal` do GLB (o único emissivo) e a luz azul lida do
+    `cristal.json` (os valores da v1), na camada própria da protagonista (a luz não a ilumina).
+  - Clipes: no GLB são `idle-loop` e `run-loop`; o importador do Godot tira o sufixo "-loop" e liga o laço, então no jogo
+    são "idle" e "run" (primeira tentativa usou os nomes do GLB: "Animation not found", corrigido). Sem clipe de trabalho:
+    coletando, ela fica no idle com a expressão de esforço (a v1 tinha "work").
+  - Corrida pela passada: `data/castellan.json` `speed` **1,267** (era 2,4), a `passada_m_s` do `run-loop`, como o
+    contrato manda; o run toca no ritmo da velocidade real ÷ passada (os pés não deslizam). **Atenção, Arthur: ela anda na
+    metade da velocidade de antes**; subir a `speed` faz a corrida tocar mais rápido, sem deslizar.
+  - `CastellanVisual`: a v2 é o padrão; `UseV1` mantém a v1 (para a cena de comparação). Raio de colisão 0,15 mantido.
+  - Teste com os dados reais ajustado à velocidade nova (`CastellanRadiusTests`: 100 ticks em vez de 60).
+- **No jogo:** `CenarioTeste`: a v2 corre e fica em idle, com cabelo, cristal aceso e luz azul no chão; log sem erros.
+  Print: `docs/prints/protagonista_v2_jogo_cinematica.png` (câmera cinematográfica).
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 176 aprovados.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 01:01 de relógio (fim).

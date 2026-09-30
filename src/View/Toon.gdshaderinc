@@ -9,13 +9,15 @@
 // VIEW_MATRIX, PROJECTION_MATRIX)) discard; O código põe o centro (o peito dela) no material a cada quadro.
 
 const int TOON_STEPS = 3;
-const float TOON_SHADOW_FLOOR = 0.35; // a faixa mais escura da luz direta ainda deixa ver a cor
+// A faixa mais escura da luz direta ainda deixa ver a cor. Parâmetro por material: o aldeão fica em 0,35 (o padrão);
+// a protagonista v2 usa ~0,5 (contrato), para não sumir no chão escuro.
+uniform float shadow_floor = 0.35;
 
 vec3 toon_diffuse(vec3 normal, vec3 light_dir, vec3 light_color, float attenuation, vec3 albedo) {
 	// Meio-Lambert: o lado oposto à luz não fica preto, só na faixa de baixo.
 	float ndl = clamp(dot(normal, light_dir) * 0.5 + 0.5, 0.0, 1.0);
 	float band = floor(ndl * float(TOON_STEPS)) / float(TOON_STEPS - 1);
-	band = mix(TOON_SHADOW_FLOOR, 1.0, clamp(band, 0.0, 1.0));
+	band = mix(shadow_floor, 1.0, clamp(band, 0.0, 1.0));
 	return albedo * light_color * attenuation * band;
 }
 

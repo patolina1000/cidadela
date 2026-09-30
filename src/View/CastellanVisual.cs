@@ -4,10 +4,11 @@ using Godot;
 namespace Cidadela.View;
 
 /// <summary>
-/// Desenho do Castelão: o modelo da protagonista (assets/modelos/protagonista) com os clipes
-/// idle, run e work (ela só corre); sem o modelo, cápsula escura com "nariz" laranja. Anima só a partir do
-/// estado da simulação: vira suave para a direção e, na cápsula, quica ao andar e dá golpes
-/// sincronizados com a coleta (o golpe acerta quando o item cai).
+/// Desenho do Castelão: a protagonista v2 (assets/modelos/protagonista_v2, <see cref="ProtagonistV2Model"/>) com os clipes
+/// idle-loop e run-loop (ela só corre) e o rosto com expressão pelo estado (coletando: esforço; senão, neutra cansada);
+/// com <see cref="UseV1"/>, a v1 (assets/modelos/protagonista, clipes idle, run e work), para a cena de comparação; sem
+/// modelo, cápsula escura com "nariz" laranja. Anima só a partir do estado da simulação: vira suave para a direção e, na
+/// cápsula, quica ao andar e dá golpes sincronizados com a coleta (o golpe acerta quando o item cai).
 /// </summary>
 public partial class CastellanVisual : Node3D
 {
@@ -37,12 +38,28 @@ public partial class CastellanVisual : Node3D
 
     private AnimationPlayer? _animations;
     private float _runStride; // m/s em que o run não desliza (medido no Blender); 0 = desconhecido
+    private ProtagonistFace? _face;
+    private string _idleClip = "idle", _runClip = "run", _workClip = "work";
+
+    /// <summary>Desenha a v1 no lugar da v2 (só a cena de comparação usa).</summary>
+    [Export] public bool UseV1 { get; set; }
 
     public override void _Ready()
     {
         // Pivô nos pés: inclinar gira em volta do chão, não do meio do corpo.
         _pivot = new Node3D { Name = "Pivot" };
         AddChild(_pivot);
+
+        if (!UseV1 && ProtagonistV2Model.Available)
+        {
+            ProtagonistV2Model.Built v2 = ProtagonistV2Model.Build(_pivot, SelfLayer);
+            _animations = v2.Animations;
+            _face = v2.Face;
+            _runStride = v2.RunStride;
+            (_idleClip, _runClip, _workClip) = (ProtagonistV2Model.IdleClip, ProtagonistV2Model.RunClip, ProtagonistV2Model.IdleClip);
+            _animations?.Play(_idleClip);
+            return;
+        }
 
         if (ResourceLoader.Exists(ModelPath) && GD.Load<PackedScene>(ModelPath) is PackedScene scene)
         {
@@ -74,14 +91,35 @@ public partial class CastellanVisual : Node3D
         _pivot.AddChild(new MeshInstance3D { Name = "Nose", Mesh = nose, Position = new Vector3(0f, 0.9f, -0.35f) });
     }
 
-    /// <summary>Toca um clipe em 1× fora da simulação (palco da Biografia). Sem efeito na cápsula.</summary>
+    /// <summary>
+    /// Toca um clipe em 1× fora da simulação (palco da Biografia, menu, cena de comparação): "idle", "run" ou "work" (na
+    /// v2, "work" é o idle: ela ainda não tem clipe de trabalho). Sem efeito na cápsula.
+    /// </summary>
     public void PlayClip(string clip)
     {
-        if (_animations is null || !_animations.HasAnimation(clip))
+        string name = clip switch { "idle" => _idleClip, "run" => _runClip, "work" => _workClip, _ => clip };
+        if (_animations is null || !_animations.HasAnimation(name))
             return;
-        _animations.Play(clip, ClipBlendSeconds);
+        _animations.Play(name, ClipBlendSeconds);
         _animations.SpeedScale = 1f;
     }
+
+    /// <summary>Clipes que este modelo tem, pelos nomes lógicos (a Biografia mostra só esses botões).</summary>
+    public bool HasClip(string clip) => clip switch
+    {
+        "work" => _animations?.HasAnimation(_workClip) == true && _workClip != _idleClip,
+        "idle" => _animations?.HasAnimation(_idleClip) == true,
+        "run" => _animations?.HasAnimation(_runClip) == true,
+        _ => _animations?.HasAnimation(clip) == true,
+    };
+
+    public override void _Process(double delta)
+    {
+        // O rosto pisca e segue a expressão mesmo fora do jogo (menu, Biografia).
+        _face?.Update((float)delta, _expression);
+    }
+
+    private string _expression = ProtagonistFace.Neutral;
 
     public void UpdateFrom(Castellan castellan, float alpha, float dt)
     {
@@ -110,13 +148,14 @@ public partial class CastellanVisual : Node3D
         if (_animations is not null)
         {
             bool moving = walked > 0.0001f;
-            string clip = castellan.GatherTarget is not null ? "work" : moving ? "run" : "idle";
+            string clip = castellan.GatherTarget is not null ? _workClip : moving ? _runClip : _idleClip;
+            _expression = castellan.GatherTarget is not null ? ProtagonistFace.Effort : ProtagonistFace.Neutral;
             if (_animations.CurrentAnimation != clip && _animations.HasAnimation(clip))
                 _animations.Play(clip, ClipBlendSeconds);
 
             // O run toca no ritmo da velocidade real no chão, para os pés não deslizarem
             // (inclusive ao frear numa parede).
-            float stride = clip == "run" ? _runStride : 0f;
+            float stride = clip == _runClip ? _runStride : 0f;
             float targetScale = 1f;
             if (stride > 0f && dt > 0f)
                 targetScale = walked / dt / stride;

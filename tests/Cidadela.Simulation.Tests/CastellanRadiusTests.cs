@@ -67,7 +67,7 @@ public class CastellanRadiusTests
     {
         SimWorld world = World("""[{ "kind": "wood", "x": 4, "z": 4 }, { "kind": "wood", "x": 5, "z": 4 }]""");
         world.Castellan.PlaceAt(new Vector2(x, 7f));
-        TestWorlds.Move(world, 0f, -1f, ticks: 60);
+        TestWorlds.Move(world, 0f, -1f, ticks: 100); // 1,267 cél/s × 5 s
         Assert.True(world.Castellan.Position.Y < 2.5f, $"de x = {x}: parou em {world.Castellan.Position}");
     }
 
