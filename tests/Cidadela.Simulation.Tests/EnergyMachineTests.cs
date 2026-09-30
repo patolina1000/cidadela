@@ -100,17 +100,13 @@ public class EnergyMachineTests
     }
 
     [Fact]
-    public void SurplusFillsTheMotherCrystalUpToItsCapacity()
+    public void TheSurplusIsWhatTheConsumersDoNotUse()
     {
-        // Relicário 10/s e a mina trabalhando (2/s): sobram 8/s para o Cristal-mãe.
+        // Relicário 10/s e a mina trabalhando (2/s): sobram 8/s (e se perdem; o Cristal-mãe não guarda mais mana).
         SimWorld world = World($"{At("mana_tower", 10, 6)}, {At("reliquary", 9, 7, ", \"items\": { \"pure_shard\": 5 }")}, " +
-            $"{At("crystal_mine", 10, 4)}, {At("mother_crystal", 11, 7)}", """[{ "x": 11, "z": 4 }]""");
-        Building crystal = world.BuildingAt(new GridPos(11, 7))!;
-        TestWorlds.Run(world, Seconds(10f));
-        Assert.Equal(80f, crystal.ManaStored, 0);
-        crystal.ManaStored = 999f;
-        TestWorlds.Run(world, Seconds(5f));
-        Assert.Equal(1000f, crystal.ManaStored);
+            $"{At("crystal_mine", 10, 4)}", """[{ "x": 11, "z": 4 }]""");
+        TestWorlds.Run(world, Seconds(2f));
+        Assert.Equal(8f, world.ManaNetworks.Single().Surplus, 3);
     }
 
     [Fact]

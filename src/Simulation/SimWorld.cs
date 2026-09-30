@@ -128,16 +128,28 @@ public sealed class SimWorld
         {
             MachineState machine = building.Machine!;
             machine.Exhausted = building.Source is { IsDepleted: true };
+            if (building.Type.SpawnsVillager)
+            {
+                if (building.PendingVillagers > 0 && FreeCellBeside(building.Cell) is GridPos spawn)
+                    SpawnVillager(building, spawn);
+                machine.NoRoom = building.PendingVillagers > 0;
+            }
             machine.Tick(building.ManaSatisfaction);
             if (machine.StartedThisTick)
                 building.Source?.TakeOne();
+            if (machine.CompletedThisTick && building.Type.SpawnsVillager)
+            {
+                building.PendingVillagers++;
+                if (FreeCellBeside(building.Cell) is GridPos cell)
+                    SpawnVillager(building, cell);
+            }
         }
     }
 
     /// <summary>
     /// Mana (docs/linha_energia.md, regra 6): refaz as redes se alguma construção mudou; soma o que cada rede gera e o que
-    /// os consumidores pedem neste tick (máquina só pede trabalhando ou prestes a começar: D1 do Arthur, 30/09); a sobra
-    /// enche os reservatórios, repartida por igual.
+    /// os consumidores pedem neste tick (máquina só pede trabalhando ou prestes a começar: D1 do Arthur, 30/09). A sobra
+    /// se perde.
     /// </summary>
     private void UpdateMana()
     {
@@ -148,24 +160,15 @@ public sealed class SimWorld
         foreach (ManaNetwork network in _networks)
         {
             float supply = 0f, demand = 0f;
-            int sinks = 0;
             foreach (Building b in network.Members)
             {
                 b.ManaSupply = SupplyOf(b);
                 b.ManaDemand = DemandOf(b);
                 supply += b.ManaSupply;
                 demand += b.ManaDemand;
-                if (b.Type.Mana is { Capacity: > 0f } && b.ManaStored < b.Type.Mana.Capacity)
-                    sinks++;
             }
             network.Supply = supply;
             network.Demand = demand;
-            if (sinks == 0)
-                continue;
-            float share = network.Surplus / SimClock.TicksPerSecond / sinks;
-            foreach (Building b in network.Members)
-                if (b.Type.Mana is { Capacity: > 0f } mana)
-                    b.ManaStored = MathF.Min(mana.Capacity, b.ManaStored + share);
         }
     }
 
@@ -381,6 +384,34 @@ public sealed class SimWorld
             return true;
         }
         return false;
+    }
+
+    /// <summary>
+    /// O aldeão formado nasce LIVRE na célula ao lado e vai sozinho para o posto vazio mais perto (docs/linha_aldeoes.md).
+    /// </summary>
+    private void SpawnVillager(Building from, GridPos cell)
+    {
+        from.PendingVillagers--;
+        from.VillagersFormed++;
+        from.LastFormedTick = TickCount;
+        AddVillager(new Vector2(cell.X, cell.Z));
+        AssignIdleWorkers();
+    }
+
+    /// <summary>Uma célula livre encostada (de lado primeiro, depois na diagonal), ou null (L5 do Arthur).</summary>
+    private GridPos? FreeCellBeside(GridPos cell)
+    {
+        foreach (Direction d in DirectionExtensions.All)
+            if (!IsSolid(cell.Step(d)))
+                return cell.Step(d);
+        for (int dx = -1; dx <= 1; dx += 2)
+        for (int dz = -1; dz <= 1; dz += 2)
+        {
+            var diagonal = new GridPos(cell.X + dx, cell.Z + dz);
+            if (!IsSolid(diagonal))
+                return diagonal;
+        }
+        return null;
     }
 
     /// <summary>

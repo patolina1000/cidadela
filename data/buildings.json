@@ -14,10 +14,12 @@
   // tower: torre de mana (docs/linha_energia.md, regra 6): o fio liga outras torres a até "wire" células (centro a centro)
   //   e a área de abastecimento "area"×"area" em volta dela liga à rede o que gasta, gera ou guarda mana.
   // mana: mana por segundo. use: gasta trabalhando (máquina só gasta trabalhando: D1 do Arthur); idleUse: gasta parada
-  //   (mariposa); supply: gera (Relicário, enquanto queima); capacity: guarda a sobra da rede (Cristal-mãe).
+  //   (mariposa); supply: gera (Relicário, enquanto queima). A sobra da rede se perde.
   // onResource: só se constrói sobre esse recurso e tira dele 1 a cada ciclo (a mina sobre o veio; esgotado, para).
   // onBank: só se constrói na margem (o Barreiro; a argila não esgota, L1 do Arthur).
   // nextToWater: só se constrói encostada de lado na água (o poço). fixed: já vem no mapa e não se desmonta.
+  // spawnsVillager: cada ciclo da receita forma um aldeão, que nasce LIVRE numa célula vizinha livre e vai sozinho para
+  //   o posto vazio mais perto; sem célula livre, espera (o Cristal-mãe, docs/linha_aldeoes.md).
   // moth: mariposa de cristal: pega um item LEVE da célula a "reach" células atrás e põe na célula à mesma distância na
   //   frente (R gira ao construir), "seconds" por item, na fração de mana da rede; sem mana, pousa. Nível 1: reach 1.
   //   O nível 2 (alcance 2) está "a definir" na especificação e não existe ainda.
@@ -39,7 +41,7 @@
   "potter":     { "name": "Oleiro",   "cost": { "stone": 10, "wood": 5 },          "solid": true,
                   "mana": { "use": 2 }, "posts": { "count": 1, "name": "Oleiro", "tool": "potter" } },
   "mother_crystal": { "name": "Cristal-mãe", "cost": {},                             "solid": true, "hotbar": false,
-                      "fixed": true, "mana": { "capacity": 1000 } },
+                      "fixed": true, "mana": { "use": 4 }, "spawnsVillager": true },
   "moth":       { "name": "Mariposa de Cristal", "cost": { "pure_shard": 1 },       "solid": true,
                   "mana": { "use": 0.5, "idleUse": 0.1 }, "moth": { "seconds": 1.2, "reach": 1 } },
   "chest":      { "name": "Baú",      "cost": { "wood": 5 },                         "solid": true,  "storage": true },

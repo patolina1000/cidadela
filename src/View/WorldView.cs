@@ -323,8 +323,6 @@ public partial class WorldView : Node3D
             { Workplace: Workplace work } => WorkplaceLines(building, work),
             { Moth: MothState moth } => MothLines(building, moth),
             { Type.Tower: not null } => new List<string> { building.Type.Name, NetworkText(building.Network) },
-            { Type.Mana.Capacity: > 0f } => new List<string>
-                { building.Type.Name, $"Carga {building.ManaStored:0}/{building.Type.Mana!.Capacity:0}", NetworkText(building.Network) },
             _ => null,
         };
         if (building is null || lines is null)
@@ -386,6 +384,8 @@ public partial class WorldView : Node3D
         lines.Add(wait is null ? $"{char.ToUpper(state[0])}{state[1..]} {machine.Progress:P0}" : $"Parada: {state}");
         if (building.Source is ResourceNode vein)
             lines.Add($"Veio: restam {vein.Remaining}");
+        if (building.Type.SpawnsVillager)
+            lines.Add($"Aldeões formados: {building.VillagersFormed}");
         return lines;
     }
 

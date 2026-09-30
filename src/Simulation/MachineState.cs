@@ -31,6 +31,12 @@ public sealed class MachineState
     /// <summary>Se começou um ciclo neste tick (a mina tira 1 do veio nessa hora).</summary>
     public bool StartedThisTick { get; private set; }
 
+    /// <summary>Se terminou um ciclo neste tick (o Cristal-mãe forma o aldeão nessa hora).</summary>
+    public bool CompletedThisTick { get; private set; }
+
+    /// <summary>Não há espaço para o que ela faz sair (o aldeão formado sem célula livre ao lado). A simulação atualiza.</summary>
+    public bool NoRoom { get; internal set; }
+
     private float _progress;
 
     public MachineState(RecipeType recipe)
@@ -46,11 +52,12 @@ public sealed class MachineState
         Recipe.Inputs.TryGetValue(kind, out int perCycle) ? System.Math.Max(0, perCycle * Recipe.InputCycles - Input.Count(kind)) : 0;
 
     /// <summary>
-    /// Por que está parada, do mais forte ao mais fraco: posto vazio, veio esgotado, sem mana, saída cheia, falta de
-    /// entrada; null se está trabalhando.
+    /// Por que está parada, do mais forte ao mais fraco: posto vazio, sem espaço, veio esgotado, sem mana, saída cheia,
+    /// falta de entrada; null se está trabalhando.
     /// </summary>
     public MachineWait? Waiting =>
         !CrewReady ? MachineWait.PostsEmpty
+        : NoRoom && !IsWorking ? MachineWait.NoRoom
         : Exhausted && !IsWorking ? MachineWait.SourceDepleted
         : (IsWorking || CanStart) && Speed <= 0f ? MachineWait.NoMana
         : IsWorking ? null
@@ -70,7 +77,7 @@ public sealed class MachineState
     }
 
     /// <summary>Se começaria um ciclo agora (tem as entradas e a saída tem espaço), sem olhar a equipe.</summary>
-    public bool CanStart => !Exhausted && !OutputFull && Input.Has(Recipe.Inputs);
+    public bool CanStart => !Exhausted && !NoRoom && !OutputFull && Input.Has(Recipe.Inputs);
 
     private bool OutputFull
     {
@@ -87,6 +94,7 @@ public sealed class MachineState
     {
         Speed = speed;
         StartedThisTick = false;
+        CompletedThisTick = false;
         if (!CrewReady)
             return;
         if (!IsWorking)
@@ -104,6 +112,7 @@ public sealed class MachineState
             return;
 
         Output.Add(Recipe.Outputs);
+        CompletedThisTick = true;
         IsWorking = false;
         _progress = 0f;
     }
@@ -139,4 +148,6 @@ public enum MachineWait
     NoMana,
     /// <summary>A fonte embaixo acabou (veio esgotado).</summary>
     SourceDepleted,
+    /// <summary>O que ela faz não tem por onde sair (o aldeão formado sem célula livre ao lado).</summary>
+    NoRoom,
 }

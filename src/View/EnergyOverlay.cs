@@ -23,7 +23,6 @@ public partial class EnergyOverlay : Node3D
 
     private readonly Dictionary<Building, (Label3D Badge, MeshInstance3D Bar)> _machines = new();
     private readonly Dictionary<Building, MothVisual> _moths = new();
-    private readonly Dictionary<Building, MeshInstance3D> _charges = new();
     private readonly List<(ManaNetwork Network, StandardMaterial3D Material)> _wireMaterials = new();
     private Node3D _wires = null!;
 
@@ -64,12 +63,6 @@ public partial class EnergyOverlay : Node3D
             RenderMachine(building, badge, bar);
         foreach ((Building building, MothVisual visual) in _moths)
             RenderMoth(building, visual);
-        foreach ((Building building, MeshInstance3D bar) in _charges)
-        {
-            // Barra de carga do Cristal-mãe (sempre à vista, menos na câmera cinematográfica).
-            bar.Visible = LabelsVisible;
-            bar.SetInstanceShaderParameter("progress", building.ManaStored / building.Type.Mana!.Capacity);
-        }
         foreach ((ManaNetwork network, StandardMaterial3D material) in _wireMaterials)
         {
             // Rede fraca (falta mana, ou nada gera): o fio pisca.
@@ -92,9 +85,6 @@ public partial class EnergyOverlay : Node3D
         foreach (MothVisual moth in _moths.Values)
             moth.Root.QueueFree();
         _moths.Clear();
-        foreach (MeshInstance3D bar in _charges.Values)
-            bar.QueueFree();
-        _charges.Clear();
 
         foreach (Building building in _world.Buildings)
         {
@@ -102,13 +92,6 @@ public partial class EnergyOverlay : Node3D
                 _machines[building] = (NewBadge(building), NewBar(building));
             if (building.Moth is not null)
                 _moths[building] = NewMoth(building);
-            if (building.Type.Mana is { Capacity: > 0f })
-            {
-                MeshInstance3D bar = NewBar(building);
-                bar.Position = Center(building.Cell, 2.6f);
-                bar.Scale = new Vector3(1.5f, 1.5f, 1f);
-                _charges[building] = bar;
-            }
         }
     }
 
@@ -160,11 +143,12 @@ public partial class EnergyOverlay : Node3D
     /// <summary>O estado curto da máquina, do jeito da especificação: trabalhando, falta insumo (qual), sem operador, sem mana, saída cheia.</summary>
     public static string StateText(GameData data, Building building, MachineState machine, MachineWait? wait) => wait switch
     {
-        null => building.Type.Mana is { Supply: > 0f } ? "queimando" : "trabalhando",
+        null => building.Type.Mana is { Supply: > 0f } ? "queimando" : building.Type.SpawnsVillager ? "formando aldeão" : "trabalhando",
         MachineWait.PostsEmpty => "sem operador",
         MachineWait.NoMana => "sem mana",
         MachineWait.OutputFull => "saída cheia",
         MachineWait.SourceDepleted => "veio esgotado",
+        MachineWait.NoRoom => "sem espaço ao lado",
         _ => machine.MissingItem is string item ? $"falta {data.Item(item).Name.ToLowerInvariant()}" : "esperando",
     };
 

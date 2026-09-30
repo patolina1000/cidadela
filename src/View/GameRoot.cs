@@ -460,8 +460,8 @@ public partial class GameRoot : Node3D
             lines.Add($"{name}: gera {n.Supply:0.0}/s · consome {Mathf.Min(n.Demand, n.Supply):0.0}/s · {state}");
         }
         foreach (Building b in _world.Buildings)
-            if (b.Type.Mana is { Capacity: > 0f } mana)
-                lines.Add($"{b.Type.Name}: {b.ManaStored:0}/{mana.Capacity:0}");
+            if (b.Type.SpawnsVillager && b.Machine is MachineState m)
+                lines.Add($"{b.Type.Name}: " + (m.IsWorking ? $"formando {m.Progress:P0}" : "parado") + $" · {b.VillagersFormed} formados");
         return string.Join("\n", lines);
     }
 

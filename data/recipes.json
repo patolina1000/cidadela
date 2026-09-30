@@ -10,5 +10,8 @@
   "well":      { "machine": "well",         "inputs": {}, "outputs": { "water_jar": 1 },    "seconds": 8 },
   "clay":      { "machine": "clay_pit",     "inputs": {}, "outputs": { "clay": 1 },         "seconds": 6 },
   "shell":     { "machine": "potter",       "inputs": { "clay": 2, "water_jar": 1 }, "outputs": { "shell": 1 }, "seconds": 15 },
+  // O Cristal-mãe forma 1 aldeão com 1 casca (o corpo) + 1 fragmento puro (o cristal do peito) + 150 s de mana a 4/s
+  //   (o sopro, 600 no total); guarda até 2 cascas e 2 puros (docs/linha_aldeoes.md).
+  "villager":  { "machine": "mother_crystal", "inputs": { "shell": 1, "pure_shard": 1 }, "outputs": {}, "seconds": 150 },
   "purify":    { "machine": "purifier",     "inputs": { "rotten_shard": 2, "water_jar": 1 }, "outputs": { "pure_shard": 1 }, "seconds": 10 }
 }

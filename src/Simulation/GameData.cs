@@ -174,9 +174,9 @@ public sealed class GameData
             ManaType? mana = null;
             if (b.Mana is ManaData md)
             {
-                if (md.Use < 0f || md.IdleUse < 0f || md.Supply < 0f || md.Capacity < 0f)
-                    throw new FormatException($"Mana inválida em \"{kind}\": use, idleUse, supply e capacity não negativos.");
-                mana = new ManaType(md.Use, md.IdleUse, md.Supply, md.Capacity);
+                if (md.Use < 0f || md.IdleUse < 0f || md.Supply < 0f)
+                    throw new FormatException($"Mana inválida em \"{kind}\": use, idleUse e supply não negativos.");
+                mana = new ManaType(md.Use, md.IdleUse, md.Supply);
             }
             MothType? moth = null;
             if (b.Moth is MothData mo)
@@ -186,7 +186,7 @@ public sealed class GameData
                 moth = new MothType(SecondsToTicks(mo.Seconds), mo.Reach);
             }
             buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus, posts, carriers,
-                b.Hotbar, tower, mana, b.OnResource, b.NextToWater, b.Fixed, moth, b.OnBank));
+                b.Hotbar, tower, mana, b.OnResource, b.NextToWater, b.Fixed, moth, b.OnBank, b.SpawnsVillager));
             if (b.OnResource is string onResource && !resources.ContainsKey(onResource))
                 throw new FormatException($"\"{kind}\": onResource \"{onResource}\" não é um recurso.");
         }
@@ -308,6 +308,7 @@ public sealed class GameData
         public bool Fixed { get; set; }
         public MothData? Moth { get; set; }
         public bool OnBank { get; set; }
+        public bool SpawnsVillager { get; set; }
     }
 
     private sealed class MothData
@@ -327,7 +328,6 @@ public sealed class GameData
         public float Use { get; set; }
         public float IdleUse { get; set; }
         public float Supply { get; set; }
-        public float Capacity { get; set; }
     }
 
     private sealed class CarrierData

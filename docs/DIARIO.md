@@ -6018,3 +6018,26 @@ onde errou, correções manuais e quanto tempo levou.
   com operador e mana 1 casca em 15 s; sem mana para). `dotnet build` 0/0; `dotnet test` 247 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:14–19:15 de relógio.
+
+## 2026-09-30 — Linha 2, passo 4: o Cristal-mãe forma aldeões
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 4 do plano da linha 2 (L2, L4, L5, L9).
+- **Feito:**
+  - Cristal-mãe vira máquina: receita "villager" (1 casca + 1 fragmento puro → aldeão em 150 s; guarda até 2 de cada),
+    `"mana": { "use": 4 }` só formando, na mesma fração da rede das outras máquinas; `"spawnsVillager": true`.
+  - Ao terminar o ciclo, o aldeão nasce LIVRE numa célula vizinha livre (de lado primeiro, depois diagonal) e
+    `AssignIdleWorkers` o manda ao posto vazio mais perto. Sem célula livre, espera dentro (`PendingVillagers`,
+    estado `NoRoom` "sem espaço ao lado") e o Cristal-mãe não começa o próximo. `VillagersFormed`, `LastFormedTick`.
+    `MachineState.CompletedThisTick` e `NoRoom`. Aldeão comum (patamar 0), sem limite de população (L4).
+  - **Saiu a reserva de 1.000 de mana** (L2): `ManaType.Capacity`, `Building.ManaStored` e a barra de carga. A sobra da
+    rede se perde; o HUD mostra "Cristal-mãe: formando X% · N formados"; o mouse mostra os aldeões formados.
+  - Ainda falta a view desenhar os aldeões que nascem durante o jogo (passo 7).
+- **Testes:** `VillagerFormingTests` (casca + puro + mana formam um aldeão livre ao lado em 150 s, gastando 4/s só
+  formando; sem casca ou sem puro não forma; sem mana não forma; guarda 2 + 2; rede fraca forma mais devagar; o aldeão
+  novo ocupa o posto vazio; sem espaço espera e nasce quando abre uma célula). `EnergyMachineTests`: a sobra agora é
+  medida na rede. `dotnet build` 0/0; `dotnet test` 255 passaram.
+- **O que deu errado:** o 1º teste falhou porque o Relicário do teste só tinha puro para 100 s (o aldeão leva 150 s);
+  corrigido no teste.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:16–19:18 de relógio.

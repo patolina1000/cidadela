@@ -67,8 +67,14 @@ public sealed class Building
     /// <summary>Mana por segundo que gera neste tick (a simulação atualiza).</summary>
     public float ManaSupply { get; internal set; }
 
-    /// <summary>Mana guardada (reservatório, como o Cristal-mãe).</summary>
-    public float ManaStored { get; internal set; }
+    /// <summary>Aldeões formados que ainda não acharam célula livre ao lado para nascer (o Cristal-mãe espera).</summary>
+    public int PendingVillagers { get; internal set; }
+
+    /// <summary>Quantos aldeões esta construção já formou.</summary>
+    public int VillagersFormed { get; internal set; }
+
+    /// <summary>Tick em que formou o último aldeão (-1 = nenhum).</summary>
+    public long LastFormedTick { get; internal set; } = -1;
 
     public Building(int id, BuildingType type, GridPos cell, Direction direction, RecipeType? recipe = null)
     {
