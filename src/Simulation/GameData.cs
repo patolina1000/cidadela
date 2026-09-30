@@ -94,14 +94,16 @@ public sealed class GameData
             if (r.GatherSeconds <= 0f || r.Amount <= 0)
                 throw new FormatException($"Recurso \"{kind}\" precisa de gatherSeconds e amount positivos.");
             ItemType item = items.Find(i => i.Kind == kind)!;
-            resources[kind] = new ResourceType(kind, item.Name, SecondsToTicks(r.GatherSeconds), r.Amount);
+            if (r.TrunkRadius is float t && (t <= 0f || t >= 0.5f))
+                throw new FormatException($"Recurso \"{kind}\": trunkRadius precisa ficar entre 0 e 0,5 (dentro da célula).");
+            resources[kind] = new ResourceType(kind, item.Name, SecondsToTicks(r.GatherSeconds), r.Amount, r.TrunkRadius);
         }
 
         var c = JsonSerializer.Deserialize<CastellanData>(castellanJson, JsonOptions)
             ?? throw new FormatException("castellan.json vazio.");
         if (c.Speed <= 0f)
             throw new FormatException("castellan.json: speed precisa ser positivo.");
-        var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius);
+        var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius, c.GatherTrunkReach);
 
         var buildings = new List<BuildingType>();
         foreach ((string kind, BuildingData b) in Ordered<BuildingData>(buildingsJson, "buildings.json"))
@@ -245,6 +247,7 @@ public sealed class GameData
     {
         public float GatherSeconds { get; set; }
         public int Amount { get; set; }
+        public float? TrunkRadius { get; set; }
     }
 
     private sealed class CastellanData
@@ -253,5 +256,6 @@ public sealed class GameData
         public float Reach { get; set; } = 10f;
         public float GatherReach { get; set; } = 1f;
         public float Radius { get; set; } = 0.3f;
+        public float GatherTrunkReach { get; set; } = 1.3f;
     }
 }

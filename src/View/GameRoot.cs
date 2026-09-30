@@ -126,7 +126,7 @@ public partial class GameRoot : Node3D
         {
             _leftHeld = click.Pressed;
             _lastBuildCell = null;
-            if (click.Pressed && !_clock.Paused && CellUnder(click.Position) is GridPos cell)
+            if (click.Pressed && !_clock.Paused && TargetUnder(click.Position) is GridPos cell)
                 ActAt(cell);
         }
     }
@@ -277,7 +277,7 @@ public partial class GameRoot : Node3D
             SendMoveInput();
 
         Vector2? cursor = CursorOverWorld();
-        GridPos? hovered = cursor is Vector2 c ? CellUnder(c) : null;
+        GridPos? hovered = cursor is Vector2 c ? TargetUnder(c) : null;
 
         // Segurar o esquerdo e arrastar repete a ação célula a célula (fileira de esteiras, itens em várias).
         if (_leftHeld && !_clock.Paused && (_selected is not null || _heldItem is not null) && hovered is GridPos cell && cell != _lastBuildCell)
@@ -336,6 +336,20 @@ public partial class GameRoot : Node3D
             return;
         _world.Enqueue(new MoveCommand(direction));
         _lastMoveSent = direction;
+    }
+
+    /// <summary>
+    /// Célula apontada: sem construção nem item na mão, um recurso sob o cursor (a copa inteira da árvore conta) aponta
+    /// para a célula dele; senão, a célula do chão sob o cursor (construir e pôr item continuam pelo chão).
+    /// </summary>
+    private GridPos? TargetUnder(Vector2 screenPos)
+    {
+        GridPos? ground = CellUnder(screenPos);
+        if (_selected is not null || _heldItem is not null)
+            return ground;
+        (Vector3 origin, Vector3 direction) = _camera.RayAt(screenPos);
+        float toGround = _camera.GroundUnder(screenPos) is Vector3 g ? origin.DistanceTo(g) : float.MaxValue;
+        return _view.PickResource(origin, direction, toGround)?.Cell ?? ground;
     }
 
     /// <summary>Célula do chão sob uma posição da tela. A célula x ocupa [x, x+1] no mundo.</summary>

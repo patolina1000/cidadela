@@ -18,6 +18,7 @@ public sealed class VisualSettings
     public RimSettings Rim { get; set; } = new();
     public OcclusionSettings Occlusion { get; set; } = new();
     public IconSettings VillagerIcon { get; set; } = new();
+    public PickSettings ResourcePick { get; set; } = new();
 
     public static VisualSettings Current => _current ??=
         JsonSerializer.Deserialize<VisualSettings>(FileAccess.GetFileAsString("res://data/visual.json"), Options) ?? new VisualSettings();
@@ -38,6 +39,12 @@ public sealed class VisualSettings
         material.SetShaderParameter("occlusion_radius", Occlusion.Radius);
         material.SetShaderParameter("occlusion_keep", Occlusion.Keep);
         material.SetShaderParameter("occlusion_softness", Occlusion.Softness);
+    }
+
+    public sealed class PickSettings
+    {
+        public float CanopyFrom { get; set; } = 1.0f;
+        public float TrunkMargin { get; set; } = 0.1f;
     }
 
     public sealed class IconSettings

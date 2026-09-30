@@ -30,6 +30,9 @@ public partial class ResourceModels : Node3D
         public required float Yaw { get; init; }
         public required float Scale { get; init; }
         public required float Height { get; init; }
+        /// <summary>Caixa da malha da variação (espaço do modelo), para o clique pela copa.</summary>
+        public required Aabb Bounds { get; init; }
+        public required float? TrunkRadius { get; init; }
     }
 
     private readonly Dictionary<ResourceNode, Handle> _handles = new();
@@ -74,11 +77,77 @@ public partial class ResourceModels : Node3D
             var handle = new Handle
             {
                 Mesh = meshes[variant], Index = next[variant]++, Yaw = yaw, Scale = scale, Height = variant.Height * scale,
+                Bounds = variant.Mesh.GetAabb(), TrunkRadius = resource.Type.TrunkRadius,
                 Position = new Vector3(resource.Cell.X + 0.5f, 0f, resource.Cell.Z + 0.5f),
             };
             _handles[resource] = handle;
             SetSize(handle, Vector3.One);
         }
+    }
+
+    /// <summary>
+    /// O recurso de pé que o raio (da câmera, pelo cursor) acerta primeiro antes de <paramref name="maxDistance"/> (o
+    /// chão). Árvore: a copa (da altura em que começa até o topo, com o giro e a escala da instância) ou um pilar no
+    /// tronco; pedra e veio: a caixa inteira. Assim clicar na copa, que na tela fica acima e atrás do pé, aponta para a
+    /// célula da árvore, e não para o chão atrás dela.
+    /// </summary>
+    public ResourceNode? Pick(Vector3 origin, Vector3 direction, float maxDistance)
+    {
+        VisualSettings.PickSettings pick = VisualSettings.Current.ResourcePick;
+        ResourceNode? best = null;
+        float bestDistance = maxDistance;
+        foreach ((ResourceNode resource, Handle h) in _handles)
+        {
+            if (resource.IsDepleted)
+                continue;
+            var transform = new Transform3D(new Basis(Vector3.Up, h.Yaw).Scaled(Vector3.One * h.Scale), h.Position);
+            if (h.TrunkRadius is float trunk)
+            {
+                float from = Mathf.Max(h.Bounds.Position.Y, pick.CanopyFrom);
+                var canopy = new Aabb(new Vector3(h.Bounds.Position.X, from, h.Bounds.Position.Z),
+                    new Vector3(h.Bounds.Size.X, h.Bounds.End.Y - from, h.Bounds.Size.Z));
+                float r = trunk + pick.TrunkMargin;
+                var column = new Aabb(new Vector3(-r, 0f, -r), new Vector3(2f * r, from, 2f * r));
+                Test(transform * canopy);
+                Test(transform * column);
+            }
+            else
+            {
+                Test(transform * h.Bounds);
+            }
+
+            void Test(Aabb box)
+            {
+                if (RayHit(box, origin, direction) is float d && d < bestDistance)
+                {
+                    bestDistance = d;
+                    best = resource;
+                }
+            }
+        }
+        return best;
+    }
+
+    /// <summary>Distância ao longo do raio (direção unitária) até entrar na caixa, pelo método das faixas; null se erra.</summary>
+    private static float? RayHit(Aabb box, Vector3 origin, Vector3 direction)
+    {
+        float near = 0f, far = float.MaxValue;
+        for (int axis = 0; axis < 3; axis++)
+        {
+            float o = origin[axis], d = direction[axis], min = box.Position[axis], max = box.End[axis];
+            if (Mathf.Abs(d) < 1e-6f)
+            {
+                if (o < min || o > max)
+                    return null;
+                continue;
+            }
+            float t1 = (min - o) / d, t2 = (max - o) / d;
+            near = Mathf.Max(near, Mathf.Min(t1, t2));
+            far = Mathf.Min(far, Mathf.Max(t1, t2));
+            if (near > far)
+                return null;
+        }
+        return near;
     }
 
     /// <summary>Encolhe e sacode a instância (1 = tamanho sorteado); zero esconde.</summary>

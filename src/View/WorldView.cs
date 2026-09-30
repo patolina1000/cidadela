@@ -23,6 +23,11 @@ public partial class WorldView : Node3D
     private readonly HashSet<int> _seenItems = new();
     private Label3D _chestLabel = null!;
     private VillagerIcons _villagerIcons = null!;
+    private ResourceModels _resourceModels = null!;
+
+    /// <summary>Recurso de pé sob o raio do cursor (a copa inteira conta), antes do chão; null se nenhum.</summary>
+    public ResourceNode? PickResource(Vector3 origin, Vector3 direction, float maxDistance) =>
+        _resourceModels.Pick(origin, direction, maxDistance);
     private VillagerStatusTable _statusTable = null!;
     private readonly List<(Villager, Vector3)> _iconSources = new();
 
@@ -80,6 +85,7 @@ public partial class WorldView : Node3D
         var resourceModels = new ResourceModels { Name = "Resources" };
         AddChild(resourceModels);
         resourceModels.Build(world.Resources, world.Data);
+        _resourceModels = resourceModels;
         foreach (ResourceNode resource in world.Resources)
         {
             var root = new Node3D { Name = $"Resource_{resource.Kind}_{resource.Id}", Position = CellCenter(resource.Cell, 0f) };
@@ -610,7 +616,7 @@ public partial class WorldView : Node3D
         _hover.Position = CellCenter(c, 0.02f);
         Castellan castellan = _world.Castellan;
         if (_world.ResourceAt(c) is not null)
-            _hoverMaterial.AlbedoColor = castellan.CanGather(c)
+            _hoverMaterial.AlbedoColor = castellan.CanGather(c, _world.ResourceAt(c)!.Type.TrunkRadius)
                 ? Palette.Bone with { A = 0.55f }
                 : Palette.Warning with { A = 0.45f };
         else if (castellan.CanReach(c))

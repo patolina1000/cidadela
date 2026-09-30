@@ -8,8 +8,11 @@
   // gatherReach: para coletar, distância máxima do centro do corpo até a borda do recurso;
   //   1.0 = precisa estar encostado, de lado ou na diagonal.
   // radius: raio do corpo para colisão, em células.
+  // gatherTrunkReach: para coletar recurso com tronco (árvore), distância máxima do centro do corpo até a superfície do
+  //   tronco. 1.3 = encostado de lado ou na diagonal da célula da árvore conta; duas células de distância, não.
   "speed": 2.4,
   "reach": 10.0,
   "gatherReach": 1.0,
-  "radius": 0.3
+  "radius": 0.3,
+  "gatherTrunkReach": 1.3
 }

@@ -4470,3 +4470,49 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 125 aprovados.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 22:30–22:41 de relógio.
+
+---
+
+## 2026-09-29 — "A hitbox está bugada": bloqueio pelo tronco, clique pela copa, coleta até o tronco
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** o Arthur achou "a hitbox bugada" nas árvores novas. Investigar o bloqueio (Castelão e aldeões), o clique
+  (coletar, mirar), o alcance "encostado" e o recorte, comparar com o modelo novo (inclina até 12°, copa até 1,06 m
+  fora da célula), reproduzir, corrigir pelo mais simples, números em data/.
+- **Como era (e por que ficou errado com as árvores altas):**
+  - **Bloqueio:** o Castelão colidia com o quadrado inteiro da célula de 1×1 m do recurso. Com o cubo de 0,8 m batia com
+    o que se via; com a árvore, o tronco fino fica no centro, então ela parava a **0,88 m do tronco**, numa parede
+    invisível, e não entrava no bosque (parava na primeira fileira).
+  - **Clique e destaque:** a célula vinha do ponto do **chão** sob o cursor. A copa fica a 1–2,5 m de altura e, na
+    câmera a 55°, aparece acima e atrás do pé da árvore na tela: apontar para a copa pegava a célula do chão **atrás**
+    da árvore (reproduzido: cursor na copa da árvore (8,8) → célula (8,7), a da protagonista; o clique não coletava).
+  - **Coleta:** do centro do corpo até a borda da célula ≤ 1 m (independente do tronco).
+  - **Aldeões:** A* por célula (a célula da árvore é sólida), andando pelos centros das células: não muda.
+  - **Recorte:** círculo em volta do peito dela, independente da célula: estava certo.
+- **Reprodução:** fora do editor, em `scenes/tests/CenarioTeste.tscn` a 3024×1890, com uma chave temporária por
+  variável de ambiente (não commitada) que aponta o cursor para um ponto do mundo (a copa, a 1,8 m), anda com ela para a
+  árvore, clica e captura. **Não precisei reiniciar o jogo do Arthur para reproduzir**; no fim, o jogo do editor já
+  estava fechado, e abri o `Main` de novo com o código novo.
+- **O que foi feito:**
+  - **Bloqueio pelo tronco:** `data/resources.json` ganhou `trunkRadius` (madeira: **0,2 m**, o tronco de ~0,1–0,15 m
+    com folga); recurso com tronco bloqueia o Castelão só nesse círculo no centro da célula (dá para chegar ao pé e
+    passar sob a copa); pedra e veio continuam bloqueando a célula inteira (enchem a célula). `GameData` recusa raio
+    fora de 0–0,5.
+  - **Coleta até o tronco:** `data/castellan.json` ganhou `gatherTrunkReach` (**1,3 m** do centro do corpo à superfície
+    do tronco): encostado de lado ou na diagonal da célula da árvore coleta; duas células de distância, não. O destaque
+    usa a mesma regra.
+  - **Clique pela copa:** sem construção nem item na mão, o raio do cursor é testado contra os recursos antes do chão
+    (`ResourceModels.Pick`): na árvore, a caixa da copa (a partir de 1,0 m, no giro e na escala da instância) e um pilar
+    no tronco (raio do tronco + 0,1, porque o tronco inclina); em pedra e veio, a caixa do modelo. O mais perto vence e
+    aponta para a célula do recurso. Construir e pôr item continuam pela célula do chão (a copa não atrapalha construir
+    ao lado da árvore). Números em `data/visual.json` (`resourcePick`: `canopyFrom` 1,0, `trunkMargin` 0,1).
+  - Testes: 7 novos (`TrunkTests`): para no tronco (~0,5 m) e não na borda (0,8), a pedra continua bloqueando a célula,
+    passa ao lado do tronco dentro da célula da árvore, alcance de lado/diagonal/duas células, raio inválido recusado.
+- **Depois:** o cursor na copa aponta para a árvore (8,8), ela anda até **0,52 m** do tronco e coleta. No `Main`, ela
+  entra no bosque e para encostada num tronco, sob a copa (recortada em volta dela).
+  Prints: `docs/prints/hitbox_antes.png`, `hitbox_depois.png`, `hitbox_antes_depois.png` e `hitbox_bosque_jogo.png`.
+- **Fica de fora (para decidir):** a câmera cinematográfica (C) ainda escolhe o alvo pelo chão sob o cursor (apontar para
+  a copa foca o que estiver atrás); os aldeões continuam desviando da célula inteira da árvore.
+- `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 132 aprovados.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:42–22:58 de relógio.

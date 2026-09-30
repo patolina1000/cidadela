@@ -2,7 +2,10 @@
   // Nós de recurso bruto do mapa (GDD, seções 4 e 10). A chave é o item que o nó dá (data/items.json).
   // gatherSeconds: tempo para o Castelão coletar 1 item à mão.
   // amount: quantos itens cada nó tem antes de se esgotar.
-  "wood":  { "gatherSeconds": 1.0, "amount": 30 },
+  // trunkRadius (opcional): o nó bloqueia só o tronco, um círculo desse raio em metros no centro da célula, e a coleta
+  //   conta até ele (data/castellan.json, gatherTrunkReach). Sem ele, bloqueia a célula inteira (pedra e veio enchem a
+  //   célula). 0,2 = o tronco das árvores do CENÁRIO (~0,1–0,15 m) com folga para o corpo não raspar.
+  "wood":  { "gatherSeconds": 1.0, "amount": 30, "trunkRadius": 0.2 },
   "stone": { "gatherSeconds": 1.5, "amount": 30 },
   "iron":  { "gatherSeconds": 2.0, "amount": 20 }
 }

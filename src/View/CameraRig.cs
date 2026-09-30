@@ -388,6 +388,10 @@ public partial class CameraRig : Node3D
         ApplyTransform();
     }
 
+    /// <summary>Raio da câmera por uma posição da tela (origem e direção unitária).</summary>
+    public (Vector3 Origin, Vector3 Direction) RayAt(Vector2 screenPos) =>
+        (_camera.ProjectRayOrigin(screenPos), _camera.ProjectRayNormal(screenPos));
+
     /// <summary>Ponto do chão (y = 0) sob uma posição da tela, ou null se o raio não chega ao chão.</summary>
     public Vector3? GroundUnder(Vector2 screenPos)
     {

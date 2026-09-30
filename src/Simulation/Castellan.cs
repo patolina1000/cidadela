@@ -45,12 +45,15 @@ public sealed class Castellan
         Vector2.Distance(Position, new Vector2(cell.X, cell.Z)) <= Stats.Reach;
 
     /// <summary>
-    /// Se está perto o bastante para coletar a célula: do centro do corpo até a borda da célula.
-    /// Encostado de lado ou na diagonal conta; uma célula de folga já não.
+    /// Se está perto o bastante para coletar a célula: do centro do corpo até a borda da célula; se o recurso tem tronco
+    /// (<paramref name="trunkRadius"/>), até a superfície do tronco. Encostado de lado ou na diagonal conta; uma célula
+    /// de folga já não.
     /// </summary>
-    public bool CanGather(GridPos cell)
+    public bool CanGather(GridPos cell, float? trunkRadius = null)
     {
         Vector2 center = Position + new Vector2(0.5f, 0.5f);
+        if (trunkRadius is float t)
+            return Vector2.Distance(center, new Vector2(cell.X + 0.5f, cell.Z + 0.5f)) - t <= Stats.GatherTrunkReach;
         var nearest = new Vector2(Math.Clamp(center.X, cell.X, cell.X + 1), Math.Clamp(center.Y, cell.Z, cell.Z + 1));
         return Vector2.Distance(center, nearest) <= Stats.GatherReach;
     }
@@ -67,7 +70,7 @@ public sealed class Castellan
     internal void StartGathering(SimWorld world, GridPos cell)
     {
         ResourceNode? node = world.ResourceAt(cell);
-        if (node is null || !CanGather(cell))
+        if (node is null || !CanGather(cell, node.Type.TrunkRadius))
             return;
         if (node != GatherTarget)
             _gatherTicks = 0;
@@ -108,7 +111,10 @@ public sealed class Castellan
         return Vector2.DistanceSquared(center, nearest) < Stats.Radius * Stats.Radius;
     }
 
-    /// <summary>Círculo do corpo contra os quadrados das células sólidas em volta.</summary>
+    /// <summary>
+    /// Círculo do corpo contra o que bloqueia em volta: o quadrado da célula sólida ou, se o recurso tem tronco, só o
+    /// círculo do tronco no centro da célula (dá para chegar perto do pé da árvore e passar sob a copa).
+    /// </summary>
     private bool Collides(SimWorld world, Vector2 position)
     {
         // Centro do corpo em coordenadas de borda de célula: a célula x ocupa [x, x+1].
@@ -118,7 +124,14 @@ public sealed class Castellan
         for (int z = (int)MathF.Floor(center.Y - r); z <= (int)MathF.Floor(center.Y + r); z++)
         {
             var cell = new GridPos(x, z);
-            if (world.IsSolid(cell) && CircleHitsCell(center, cell))
+            if (!world.IsSolid(cell))
+                continue;
+            if (world.ResourceAt(cell)?.Type.TrunkRadius is float t)
+            {
+                if (Vector2.Distance(center, new Vector2(x + 0.5f, z + 0.5f)) < r + t)
+                    return true;
+            }
+            else if (CircleHitsCell(center, cell))
                 return true;
         }
         return false;
@@ -129,7 +142,7 @@ public sealed class Castellan
         ResourceNode? node = GatherTarget;
         if (node is null)
             return;
-        if (node.IsDepleted || !CanGather(node.Cell))
+        if (node.IsDepleted || !CanGather(node.Cell, node.Type.TrunkRadius))
         {
             StopGathering();
             return;

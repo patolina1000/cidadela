@@ -12,5 +12,9 @@
   // villagerIcon: ícone de estado sobre a cabeça do aldeão (estados e textos em data/villager_status.json).
   //   height: altura da base do ícone acima dos pés (acima do cabelo: não tapa o rosto); worldSize: tamanho em metros
   //   quando cabe entre minPx e maxPx (pixels numa tela de referenceHeight de altura; fora disso, trava no limite).
-  "villagerIcon": { "height": 0.62, "worldSize": 0.3, "minPx": 26, "maxPx": 44, "referenceHeight": 1890 }
+  "villagerIcon": { "height": 0.62, "worldSize": 0.3, "minPx": 26, "maxPx": 44, "referenceHeight": 1890 },
+  // resourcePick: clique e destaque sobre recursos (sem construção nem item na mão). Árvore: a copa conta a partir de
+  //   canopyFrom metros (as do CENÁRIO começam em 1,06–1,09 m) e o tronco é um pilar do raio do tronco
+  //   (data/resources.json) + trunkMargin (o tronco inclina até 12°). Pedra e veio: a caixa inteira do modelo.
+  "resourcePick": { "canopyFrom": 1.0, "trunkMargin": 0.1 }
 }
