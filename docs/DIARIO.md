@@ -3152,3 +3152,17 @@ onde errou, correções manuais e quanto tempo levou.
   metros, +Z, pivô no centro da base, giro livre, material chapado nomeado, sem textura, LOD do Godot, sombra só
   nas massas grandes.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Cenário, tarefa 1, passo 2: árvore piloto, 4 variações por script
+
+- **Pedido:** árvore por script Blender, reproduzível com semente por variação, 4 variações da mesma família,
+  torta, espiral sutil, copa em poucas massas grandes, cores escuras da paleta, ≤ ~400 triângulos, GLBs em
+  metros, frente +Z, pivô no centro da base.
+- **Feito:** `tools/arte/cenario/arvore.py` (Blender 5.1 por linha de comando). Família: tronco de 5–6 lados
+  com pé alargado e anéis girados 60–110° (as facetas planas fazem a espiral); copa em 2–3 "gotas" feitas por
+  anéis, com barriga embaixo e a ponta enrolando para um lado (a espiral grande, que se vê de cima); copa suave,
+  tronco facetado. Materiais só `tronco` e `copa`, cor linear da paleta no GLB, fosco, sem textura.
+- **Resultado** (`assets/cenario/arvore/arvore_1..4.glb` + `arvore_relatorio.json`): 1 gota 192 tri, 1,48 m;
+  2 dupla 240 tri, 1,58 m; 3 tufos (líquen roxo, tronco em forquilha) 328 tri, 1,35 m; 4 alta 192 tri, 1,67 m.
+  Pegada de ~0,75 a 1,05 m, dentro da célula.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.

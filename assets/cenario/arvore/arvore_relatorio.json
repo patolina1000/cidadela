@@ -1,0 +1,83 @@
+{
+  "fonte": "tools/arte/cenario/arvore.py",
+  "unidade": "m",
+  "frente": "+Z",
+  "variacoes": [
+    {
+      "arquivo": "arvore_1.glb",
+      "nome": "gota",
+      "semente": 11,
+      "triangulos": 192,
+      "altura_m": 1.476,
+      "pegada_x_m": [
+        -0.494,
+        0.491
+      ],
+      "pegada_z_m": [
+        -0.478,
+        0.409
+      ],
+      "cores": {
+        "tronco": "#4A3B3A",
+        "copa": "#4E5544"
+      }
+    },
+    {
+      "arquivo": "arvore_2.glb",
+      "nome": "dupla",
+      "semente": 23,
+      "triangulos": 240,
+      "altura_m": 1.584,
+      "pegada_x_m": [
+        -0.444,
+        0.478
+      ],
+      "pegada_z_m": [
+        -0.477,
+        0.46
+      ],
+      "cores": {
+        "tronco": "#2E2931",
+        "copa": "#4E5544"
+      }
+    },
+    {
+      "arquivo": "arvore_3.glb",
+      "nome": "tufos",
+      "semente": 37,
+      "triangulos": 328,
+      "altura_m": 1.353,
+      "pegada_x_m": [
+        -0.524,
+        0.523
+      ],
+      "pegada_z_m": [
+        -0.443,
+        0.362
+      ],
+      "cores": {
+        "tronco": "#3F3342",
+        "copa": "#6B4F7C"
+      }
+    },
+    {
+      "arquivo": "arvore_4.glb",
+      "nome": "alta",
+      "semente": 53,
+      "triangulos": 192,
+      "altura_m": 1.669,
+      "pegada_x_m": [
+        -0.383,
+        0.37
+      ],
+      "pegada_z_m": [
+        -0.298,
+        0.339
+      ],
+      "cores": {
+        "tronco": "#2E2931",
+        "copa": "#4E5544"
+      }
+    }
+  ]
+}
