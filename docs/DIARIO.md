@@ -3191,3 +3191,21 @@ onde errou, correções manuais e quanto tempo levou.
   pendendo para a frente, pés que não avançam) e o B 0,544 m (ereto, nuca atrás, dedos dos pés 6,5 cm à frente); a razão
   1,21 é a dos px. Os px na câmera dependem da pose e ficam para depois do rig.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 15 min.
+
+## 2026-09-29 — Prova de operação: gif_roda.py com um clipe por posto (pendência do aldeão)
+
+- **Pedido:** o `gif_roda.py` ainda tocava o clipe A ao contrário no posto B (atalho proibido pelo contrato); usar um
+  clipe por posto (`girar_roda-loop` e `girar_roda_b-loop`), posicionado pela fase da peça, como o jogo; refazer os GIFs
+  e comparar com os antigos. Sem mexer no corpo aprovado (sha256 3138cbf6… conferido) nem nos clipes.
+- **Feito:** a cena sai do `clipes.json`: cada aldeão na posição e no giro do seu posto no espaço da roda
+  (glTF → Blender), cada um com a sua ação importada do seu GLB de clipe; os dois pela mesma fase, quadro = fase × 48;
+  a roda gira −360° × fase em volta do +Z do glTF. A cena inteira é girada −90° em Z para o enquadramento ficar o dos
+  GIFs anteriores. Refeitos os GIFs de `assets/previews/prova_operacao/` e de `variante_r06/`, com as medidas.
+- **O que deu errado e foi corrigido:** o script já não rodava com o `clipes.json` atual (o raio mudou de `roda` para
+  `peca`); e a segunda metade da pendência: o clipe importado começa no quadro 0 (t = 0), então `frame_set(1 + t)`
+  deixava os aldeões 1 quadro (7,5°) atrás da roda — as faltas palma-manopla subiam de 34/35 para 36/37 mm. Com
+  quadro = fase × 48 voltaram exatamente às antigas.
+- **Comparação com os antigos:** **nada mudou visualmente.** Diferença máxima de 1 pixel por quadro (limiar 24 níveis)
+  nas quatro animações (jogo e lado, raio 0,10 e 0,06), sem defasagem de fase; faltas palma-manopla iguais
+  (0,10 m: 34,3 / 35,4 mm; 0,06 m: 1,5 / 2,4 mm, antes 2,5). O clipe próprio do B reproduz a pose que o atalho dava.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.

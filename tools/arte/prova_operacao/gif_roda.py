@@ -1,8 +1,11 @@
 """Passo 4 da prova de operação: quadros dos GIFs da roda com dois aldeões (Blender headless).
 Cena: roda no centro, eixo em X do mundo; aldeão A de um lado (cabelo 1), aldeão B do outro (cabelo 3). Os dois
-são o aldeao_corpo.glb aprovado; o clipe vem do girar_roda.glb (só esqueleto + clipe), o que também prova que o
-clipe exportado serve no arquivo aprovado. A toca o clipe; B, do outro lado, segura a alça B e toca o clipe ao
-contrário com fase 0,5 − t (clipes.json). A roda gira −360° × fase em volta do seu +Z.
+são o aldeao_corpo.glb aprovado. Como o jogo (contrato de animação): um clipe POR POSTO, do clipes.json —
+A toca girar_roda-loop (clipes/girar_roda.glb), B toca girar_roda_b-loop (clipes/girar_roda_b.glb), cada GLB só
+esqueleto + clipe, o que também prova que os clipes exportados servem no arquivo aprovado. Cada aldeão fica na
+posição e no giro do seu posto, no espaço da roda; os dois são posicionados pela fase da roda (quadro = fase × 48),
+sem inverter nem defasar. A roda gira −360° × fase em volta do seu +Z (glTF). A cena inteira é girada para o eixo
+da roda ficar em X do mundo, como nos GIFs anteriores.
 Mede em cada quadro a distância palma-manopla dos dois aldeões nesta cena (confere a transferência do clipe).
 Material toon do prot_lib (Toon.gdshaderinc), luz do diagnóstico. Duas câmeras, fundo transparente:
   jogo: CameraRig no zoom 2,5 (aldeão ~112 px), 3024x1890 (recortado na montagem);
@@ -25,7 +28,6 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "protagonista_v2"))
 sys.path.insert(0, str(HERE.parent / "aldeao_v2"))
 from prot_lib import ROOT, eevee_scene, game_camera, hex_linear, import_glb, render, toon_material  # noqa: E402
-from rig_lib import action_fcurves  # noqa: E402
 
 ARGS = sys.argv[sys.argv.index("--") + 1:]
 OUT = Path(ARGS[0])
@@ -84,9 +86,8 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     rep = json.loads(REPORT.read_text())
     clips = json.loads((BASE / "clipes.json").read_text())["girar_roda-loop"]
-    frames, radius = clips["quadros"], clips["roda"]["raio_alca_m"]
+    frames, radius = clips["quadros"], clips["peca"]["raio_alca_m"]
     knob_y = rep["roda"]["knob_y_m"]
-    center_clip = Vector(rep["roda"]["centro_no_espaco_do_aldeao_blender_m"])
     grip_half = 0.018
     palm_len = {s: rep["esqueleto"]["comprimentos_m"][f"{s}Hand"] for s in ("Left", "Right")}
 
@@ -101,27 +102,41 @@ def main() -> None:
         patches[name] = toon_material(f"rosto_{key}", light_dir(), SUN_RGB, AMBIENT_RGB,
                                       image=bpy.data.images.load(str(ROSTO / f"{key}.png")), cell=(0, info["colunas"], info["linhas"]))
 
-    # A: espaço do clipe girado 90° em Z (olha para +X), eixo da roda sobre a origem (pés no chão). B: A girado 180° em volta da roda.
-    m_a = Matrix.Rotation(math.radians(90), 4, "Z") @ Matrix.Translation(-Vector((center_clip.x, center_clip.y, 0)))
-    m_b = Matrix.Rotation(math.pi, 4, "Z") @ m_a
-    arm_a, _ = villager(m_a, 1, skin, hair_mat, patches)
-    arm_b, _ = villager(m_b, 3, skin, hair_mat, patches)
+    # Espaço da roda (glTF → Blender: x, −z, y): pivô no eixo, a h acima do chão (os postos ficam com os pés em y = −h).
+    # Girado −90° em Z para o posto A olhar para +X, como antes.
+    all_clips = json.loads((BASE / "clipes.json").read_text())
+    h = -all_clips["girar_roda-loop"]["posto"]["posicao_m"][1]
+    wheel_space = Matrix.Rotation(math.radians(-90), 4, "Z") @ Matrix.Translation((0, 0, h))
 
-    clip_objs = import_glb(BASE / "clipes/girar_roda.glb")
-    clip_info = {"objetos": sorted({o.type for o in clip_objs}), "acoes": [a.name for a in bpy.data.actions]}
-    action = next(a for a in bpy.data.actions if a.name.startswith("girar_roda-loop"))
-    for o in clip_objs:
-        bpy.data.objects.remove(o)
-    arm_a.animation_data_create()
-    arm_a.animation_data.action = action
-    if getattr(action, "slots", None):
-        arm_a.animation_data.action_slot = action.slots[0]
-    curves = action_fcurves(action)
+    def post_matrix(post: dict) -> Matrix:
+        x, y, z = post["posicao_m"]
+        # giro em torno do +Y do glTF = +Z do Blender; giro 0 = olhando +Z do glTF (−Y do Blender, a frente do GLB).
+        return wheel_space @ Matrix.Translation((x, -z, y)) @ Matrix.Rotation(math.radians(post["giro_em_y_graus"]), 4, "Z")
+
+    clip_info = {}
+    arms = {}
+    for key, hair_n in (("girar_roda-loop", 1), ("girar_roda_b-loop", 3)):
+        spec = all_clips[key]
+        arm, _ = villager(post_matrix(spec["posto"]), hair_n, skin, hair_mat, patches)
+        before = set(bpy.data.actions)
+        clip_objs = import_glb(BASE / spec["arquivo"])
+        action = next(a for a in bpy.data.actions if a not in before and a.name.startswith(key))
+        clip_info[key] = {"objetos": sorted({o.type for o in clip_objs}), "acao": action.name,
+                          "posto": spec["posto"]["nome"], "quadros": spec["quadros"]}
+        for o in clip_objs:
+            bpy.data.objects.remove(o)
+        arm.animation_data_create()
+        arm.animation_data.action = action
+        if getattr(action, "slots", None):
+            arm.animation_data.action_slot = action.slots[0]
+        arms[spec["posto"]["nome"]] = arm
+    arm_a, arm_b = arms["A"], arms["B"]
+    m_a, m_b = arm_a.parent.matrix_world, arm_b.parent.matrix_world
 
     wheel = [o for o in import_glb(BASE / "roda.glb") if o.type == "MESH"][0]
     wheel.data.materials.clear()
     wheel.data.materials.append(wood)
-    wheel_base = m_a @ Matrix.Translation(center_clip) @ Matrix.Rotation(math.pi, 4, "Z")
+    wheel_base = wheel_space
 
     lat_a = (m_a.to_3x3() @ Vector((1, 0, 0))).normalized()
     lat_b = (m_b.to_3x3() @ Vector((1, 0, 0))).normalized()
@@ -144,11 +159,8 @@ def main() -> None:
     rows = []
     for t in range(frames):
         p = t / frames
-        scene.frame_set(1 + t)
-        fb = 1 + ((0.5 - p) % 1.0) * frames  # B: ao contrário, fase 0,5 − t
-        for c in curves:
-            arm_b.path_resolve(c.data_path)[c.array_index] = c.evaluate(fb)
-        wheel.matrix_world = wheel_base @ Matrix.Rotation(2 * math.pi * p, 4, "Y")
+        scene.frame_set(t)  # os dois postos pela mesma fase: quadro = fase × 48 (a primeira chave, t = 0, é o quadro 0)
+        wheel.matrix_world = wheel_base @ Matrix.Rotation(2 * math.pi * p, 4, "Y")  # −360° × fase em volta do +Z glTF
         bpy.context.view_layer.update()
         knob_a = wheel.matrix_world @ Vector((0, -knob_y, radius))
         knob_b = wheel.matrix_world @ Vector((0, knob_y, -radius))

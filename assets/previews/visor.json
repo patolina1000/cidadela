@@ -65,5 +65,19 @@
     "tipo": "imagem",
     "caminho": "assets/previews/protagonista_v2/estudo_cabeca.png",
     "nota": "Cabeça (topo ao queixo ÷ altura): v1 18,8%, aldeão 44,4%, bruto B 14,1%. Variações 14,1 / 18 / 18,8 (v1) / 22% em 0,80 e 0,67 m. A v1 a 0,80 m dá 178 px no zoom 2,5 (o alvo): a diferença para o B (212 px) é de pose, não de altura. Recomendação: 18% a 0,80 m."
+  },
+  {
+    "quando": "2026-09-29T21:44:41",
+    "titulo": "Prova de operação — roda, vista de lado (um clipe por posto)",
+    "tipo": "gif",
+    "caminho": "assets/previews/prova_operacao/roda_lado.gif",
+    "nota": "gif_roda.py refeito como o jogo: A toca girar_roda-loop e B girar_roda_b-loop, cada um no seu posto, pela fase da roda (quadro = fase × 48), sem tocar ao contrário. Idêntico ao GIF anterior (≤ 1 px por quadro)."
+  },
+  {
+    "quando": "2026-09-29T21:44:42",
+    "titulo": "Prova de operação — roda na câmera do jogo, zoom 2,5 (um clipe por posto)",
+    "tipo": "gif",
+    "caminho": "assets/previews/prova_operacao/roda_jogo.gif",
+    "nota": "Mesmo refazimento; idêntico ao anterior (≤ 1 px por quadro), sem defasagem. Faltas palma-manopla iguais às antigas."
   }
 ]
