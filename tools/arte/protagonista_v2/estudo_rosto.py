@@ -13,7 +13,7 @@ margem transparente; assim os retalhos usam as mesmas janelas (EYES_FRAC, MOUTH_
 Saída: assets/previews/protagonista_v2/rosto_estudo/<variação>_{olhos,boca}.png (uma célula cada: é estudo, não o
 atlas) e estudo_rosto_2d.png (as três num rosto chapado da cor da pele, 256 e 64 px).
 
-Uso (em tools/arte): uv run protagonista_v2/estudo_rosto.py
+Uso (em tools/arte): uv run protagonista_v2/estudo_rosto.py [rodada]   (1: a, b, c; 2: b1, b2 em rosto_estudo/rodada2/)
 """
 
 import json
@@ -38,11 +38,22 @@ CAVITY = tuple(round(b * 0.62 + s * 0.38) for b, s in zip(BONE, SHADOW))
 # são mais largos que altos.
 LEFT_SCREEN, RIGHT_SCREEN = (84, 128), (172, 128)
 
+ROUNDS = {}
 VARIANTS = {
     # tamanho (meia-largura, altura de cima, de baixo), queda do canto externo em px (+ = caído), olheira (força, largura)
     "a": {"nome": "a: médios, canto caído", "rx": 30, "top": 19, "bot": 13, "queda": 6, "olheira": (125, 0.92)},
     "b": {"nome": "b: grandes, cantos retos", "rx": 35, "top": 22, "bot": 15, "queda": -1, "olheira": (150, 0.95)},
     "c": {"nome": "c: menores, bem caído", "rx": 26, "top": 16, "bot": 11, "queda": 12, "olheira": (180, 1.02)},
+}
+ROUNDS[1] = VARIANTS
+# Rodada 2 (crítica do Diretor): partindo da b, olhos ABERTOS como a tristeza da v1 (grandes, claros, sem pupila):
+# mais branco-osso, pálpebra pesada só no terço de cima, sombra da pálpebra leve, contorno de baixo escuro.
+# b2 ainda sobe a boca e encurta o queixo (na prova: boca_sobe, queixo).
+OPEN = {"rx": 35, "top": 25, "bot": 18, "queda": 1, "olheira": (150, 0.95), "cobre": (0.20, 0.30),
+        "sombra": (0.30, 0.38, 110), "contorno": (1.9, 210)}
+ROUNDS[2] = {
+    "b1": {"nome": "b1: olhos abertos", **OPEN, "boca_sobe": 0.0, "queixo": 1.0},
+    "b2": {"nome": "b2: abertos, boca alta, queixo curto", **OPEN, "boca_sobe": 0.12, "queixo": 0.72},
 }
 
 
@@ -90,16 +101,16 @@ def deep_olheira(face, eye: Almond, strength, spread):
     face.alpha_composite(layer)
 
 
-def draw_almond(face, eye: Almond, seed):
+def draw_almond(face, eye: Almond, seed, cover=(0.28, 0.40), shade=(0.44, 0.54, 170), rim=(1.1, 110)):
     """Esclera sem pupila, sombra da pálpebra por cima, pálpebra pesada (neutra cansada), linha fraca embaixo e três
     cílios longos no canto externo."""
     layer = Image.new("RGBA", face.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
     shape = eye.upper + eye.lower[::-1]
     d.polygon(sp(shape), fill=(*BONE, 255))
-    lid = eye.lid(0.28, 0.40)
+    lid = eye.lid(*cover)
     band = Image.new("RGBA", face.size, (0, 0, 0, 0))
-    ImageDraw.Draw(band).polygon(sp(eye.upper + eye.lid(0.44, 0.54)[::-1]), fill=(*CAVITY, 170))
+    ImageDraw.Draw(band).polygon(sp(eye.upper + eye.lid(shade[0], shade[1])[::-1]), fill=(*CAVITY, shade[2]))
     band = band.filter(ImageFilter.GaussianBlur(2.0 * S))
     sclera = Image.new("L", face.size, 0)
     ImageDraw.Draw(sclera).polygon(sp(shape), fill=255)
@@ -109,7 +120,7 @@ def draw_almond(face, eye: Almond, seed):
     ImageDraw.Draw(mask).polygon(sp(lid + eye.lower[::-1]), fill=255)
     layer.putalpha(ImageChops.multiply(layer.getchannel("A"), mask))
     stroke(layer, lid, taper(5.0, 0.45), seed)
-    stroke(layer, eye.lower[4:-4], lambda t: 1.1 * math.sin(math.pi * t) ** 0.4, seed + 3, alpha=110)
+    stroke(layer, eye.lower[4:-4], lambda t: rim[0] * math.sin(math.pi * t) ** 0.4, seed + 3, alpha=rim[1])
     # três cílios longos saindo do canto externo, abrindo em leque para fora e para cima, curvos
     ox, oy = lid[-1]
     for i, (ang, length) in enumerate(((-8, 17), (-32, 19), (-56, 15))):
@@ -155,8 +166,9 @@ def draw_face(spec) -> Image.Image:
     deep_olheira(under, left, strength, spread)
     deep_olheira(under, right, strength, spread)
     face.alpha_composite(under)
-    draw_almond(face, left, 11)
-    draw_almond(face, right, 23)
+    look = {k: spec[v] for k, v in (("cover", "cobre"), ("shade", "sombra"), ("rim", "contorno")) if v in spec}
+    draw_almond(face, left, 11, **look)
+    draw_almond(face, right, 23, **look)
     fissure(face, right, 41)  # o olho esquerdo DELA fica à direita na tela
     lips = Image.new("RGBA", face.size, (0, 0, 0, 0))
     mouth(lips, 61)
@@ -172,7 +184,7 @@ def cell(face, window, size) -> Image.Image:
     return out
 
 
-def preview(faces) -> Image.Image:
+def preview(faces, variants) -> Image.Image:
     font = ImageFont.truetype(FONT, 18)
     tile = 300
     sheet = Image.new("RGB", (tile * len(faces), 2 * tile + 60), (237, 230, 214))
@@ -190,25 +202,27 @@ def preview(faces) -> Image.Image:
             if twilight:
                 bg = ImageChops.multiply(bg, Image.new("RGB", bg.size, TWILIGHT))
             sheet.paste(bg, (i * tile, 30 + row * (tile + 30)))
-        d.text((i * tile + 6, 6), VARIANTS[name]["nome"], fill=INK, font=font)
+        d.text((i * tile + 6, 6), variants[name]["nome"], fill=INK, font=font)
     d.text((6, tile + 36), "crepúsculo (× #6A5B7C); canto: 64 px", fill=INK, font=font)
     return sheet
 
 
 def main() -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
+    rnd = int(sys.argv[1]) if len(sys.argv) > 1 else 1
+    variants = ROUNDS[rnd]
+    out = OUT if rnd == 1 else OUT / f"rodada{rnd}"
+    out.mkdir(parents=True, exist_ok=True)
     faces = {}
-    for name, spec in VARIANTS.items():
+    for name, spec in variants.items():
         eyes, lips = draw_face(spec)
-        cell(eyes, EYE_WINDOW, EYE_CELL).save(OUT / f"{name}_olhos.png")
-        cell(lips, MOUTH_WINDOW, MOUTH_CELL).save(OUT / f"{name}_boca.png")
+        cell(eyes, EYE_WINDOW, EYE_CELL).save(out / f"{name}_olhos.png")
+        cell(lips, MOUTH_WINDOW, MOUTH_CELL).save(out / f"{name}_boca.png")
         both = eyes.copy()
         both.alpha_composite(lips)
         faces[name] = both
-    preview(faces).save(OUT / "estudo_rosto_2d.png")
-    (OUT / "variacoes.json").write_text(json.dumps({k: {kk: vv for kk, vv in v.items()} for k, v in VARIANTS.items()},
-                                                   indent=2, ensure_ascii=False) + "\n")
-    print(OUT)
+    preview(faces, variants).save(out / "estudo_rosto_2d.png")
+    (out / "variacoes.json").write_text(json.dumps(variants, indent=2, ensure_ascii=False) + "\n")
+    print(out)
 
 
 if __name__ == "__main__":

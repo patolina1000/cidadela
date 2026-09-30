@@ -166,4 +166,5 @@ def main() -> None:
     (out / "estudo_render.json").write_text(json.dumps(report, indent=2) + "\n")
 
 
-main()
+if __name__ == "__main__":
+    main()

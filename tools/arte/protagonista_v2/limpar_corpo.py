@@ -22,6 +22,7 @@ Uso:
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -43,8 +44,10 @@ RAMP = 0.015
 MAX_TRIANGLES = 2500
 # Orçamento da decimação por parte (antes dos cortes do short, que somam ~220 no corpo): as mãos quase somem de cima,
 # a cabeça domina na câmera do jogo e leva a sobra.
+RELAX_ITERATIONS = int(os.environ.get('RELAXAR', 6))
+SOFT_NORMAL_PASSES = int(os.environ.get('PASSES_NORMAIS', 60))  # alisamento da cópia de onde vêm as normais da cabeça
 POST_HEAD_PASSES, POST_HAND_PASSES = 0, 4  # na cabeça piorava a frente (medida e olho)
-BUDGETS = {"maos": 200, "cabeca": 620, "corpo": 1350}  # + ~85 na borda entre as partes
+BUDGETS = {"maos": 200, "cabeca": 780, "corpo": 1190}  # + ~85 na borda entre as partes
 TARGET_RMS_MM, TARGET_MAX_MM = 0.5, 1.5  # calombos na janela do rosto (face_roughness)
 LAMBDA, MU = 0.5, -0.53
 PELE, TECIDO = "#91ADB7", "#3F3342"
@@ -268,7 +271,7 @@ def region_masks(obj, k, neck_z):
     joints |= (z > (Z["axila"] - 0.04) * k) & (z < 0.66 * k) & (ax > 0.045 * k)  # ombros
     joints |= arm & (z > Z["cotovelo"][0] * k) & (z < Z["cotovelo"][1] * k)  # cotovelos
     joints |= arm & (z > (Z["punho"] - 0.015) * k) & (z < (Z["punho"] + 0.02) * k)  # punhos
-    joints |= ~arm & (z > (Z["bainha"] - 0.02) * k) & (z < (Z["cos"] - 0.06) * k)  # quadris
+    joints |= ~arm & (z > (Z["bainha"] - 0.02) * k) & (z < (Z["bainha"] + 0.03) * k)  # virilha (só a dobra, não o short todo)
     joints |= ~arm & (np.abs(z - Z["joelho"] * k) < 0.035 * k)  # joelhos
     joints |= ~arm & (np.abs(z - Z["tornozelo"] * k) < 0.02 * k)  # tornozelos
     head = z >= neck_z
@@ -381,10 +384,66 @@ def regions(obj, k, neck_z, planes):
     return reg
 
 
-def split(obj, reg, mats):
-    """Separa por região; cada peça leva as normais suaves da malha inteira (bordas sem costura de luz)."""
+def relax_head(obj, neck_z, iterations):
+    """Triângulos da cabeça mais iguais entre si, sem mudar o formato nem a contagem: cada vértice anda só no plano
+    tangente rumo à média dos vizinhos e volta para a superfície original (BVH); no fim, troca de diagonais
+    (beautify) para tirar triângulos finos. As bordas das faixas da toon seguem melhor uma malha regular."""
+    from mathutils.bvhtree import BVHTree
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    ref = BVHTree.FromBMesh(bm)
+    bm.verts.ensure_lookup_table()
+    movable = [v for v in bm.verts if v.co.z > neck_z + 0.01 and abs(v.co.x) > 1e-5]  # linha do meio fica: simetria
+    for _ in range(iterations):
+        new = {}
+        for v in movable:
+            nb = [e.other_vert(v).co for e in v.link_edges]
+            avg = sum(nb, Vector()) / len(nb)
+            d = avg - v.co
+            d -= v.normal * d.dot(v.normal)
+            new[v] = v.co + 0.5 * d
+        for v, co in new.items():
+            loc, _n, _i, _d = ref.find_nearest(co)
+            v.co = loc if loc is not None else co
+        bm.normal_update()
+    head_faces = [f for f in bm.faces if all(v.co.z > neck_z + 0.01 for v in f.verts)]
+    edges = list({e for f in head_faces for e in f.edges if all(ff in head_faces for ff in e.link_faces)})
+    bmesh.ops.beautify_fill(bm, faces=head_faces, edges=edges)
+    bmesh.ops.triangulate(bm, faces=bm.faces)
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.update()
+
+
+def smoothed_normals(obj, weight, passes):
+    """Normais de uma cópia alisada (Taubin) da malha, misturadas às verdadeiras pelo peso por vértice. A toon de
+    3 faixas mostra a triangulação irregular da decimação como bordas de faixa quebradas; com as normais de uma
+    superfície mais lisa, as faixas ficam redondas sem mudar a silhueta nem a contagem."""
     mesh = obj.data
-    vnorm = np.array([v.normal[:] for v in mesh.vertices])
+    true_n = np.array([v.normal[:] for v in mesh.vertices])
+    pos = pts_of(obj)
+    edges = np.array([e.vertices[:] for e in mesh.edges])
+    n = len(pos)
+    deg = np.bincount(edges.ravel(), minlength=n).astype(float)
+    deg[deg == 0] = 1
+    for _ in range(passes):  # Taubin: alisa sem encolher (o Laplaciano puro deformava a cópia e virava as normais)
+        for f in (LAMBDA, MU):
+            acc = np.zeros_like(pos)
+            np.add.at(acc, edges[:, 0], pos[edges[:, 1]])
+            np.add.at(acc, edges[:, 1], pos[edges[:, 0]])
+            pos = pos + f * weight[:, None] * (acc / deg[:, None] - pos)
+    tmp = mesh.copy()
+    tmp.vertices.foreach_set("co", pos.ravel())
+    tmp.update()
+    soft_n = np.array([v.normal[:] for v in tmp.vertices])
+    bpy.data.meshes.remove(tmp)
+    out = true_n * (1 - weight[:, None]) + soft_n * weight[:, None]
+    return out / np.linalg.norm(out, axis=1, keepdims=True)
+
+
+def split(obj, reg, mats, vnorm):
+    """Separa por região; cada peça leva as normais da malha inteira (bordas sem costura de luz)."""
+    mesh = obj.data
     vpos = pts_of(obj)
     names = ["cabeca", "tronco", "bracos", "maos", "quadril", "roupa_intima", "coxas", "canelas", "pes"]
     out = {}
@@ -480,8 +539,15 @@ def main() -> None:
     for f in obj.data.polygons:
         f.use_smooth = True
     obj.data.update()
+    # antes das regiões: a troca de diagonais reordena as faces
+    relax_head(obj, neck_z, RELAX_ITERATIONS)
+    report["cabeca_relaxada_iteracoes"] = RELAX_ITERATIONS
     reg = regions(obj, k, neck_z, planes)
-    report["regioes"] = split(obj, reg, mats)
+    p = pts_of(obj)
+    head_w = np.clip((p[:, 2] - (neck_z - 0.01)) / 0.02, 0, 1)  # só a cabeça; transição de 2 cm no pescoço
+    vnorm = smoothed_normals(obj, head_w, SOFT_NORMAL_PASSES)
+    report["normais_suaves_cabeca_passes"] = SOFT_NORMAL_PASSES
+    report["regioes"] = split(obj, reg, mats, vnorm)
     report["triangulos_total"] = sum(r["triangulos"] for r in report["regioes"].values())
     assert report["triangulos_total"] <= MAX_TRIANGLES, report["triangulos_total"]
 

@@ -1,0 +1,376 @@
+{
+  "prova": {
+    "estudo": "assets/previews/protagonista_v2/rosto_estudo/rodada2",
+    "variacoes": {
+      "b1": {
+        "jogo": {
+          "0.4": {
+            "protagonista_px": 31.3,
+            "cabeca_px": [
+              7.5,
+              10.4
+            ],
+            "caixa_px": [
+              1500.1336069107056,
+              915.8153825998306,
+              1545.5451135635376,
+              947.1132534742355
+            ],
+            "cabeca_caixa_px": [
+              1508.2455081939697,
+              915.8153825998306,
+              1515.7544918060303,
+              926.1767345666885
+            ],
+            "tela": [
+              3024,
+              1890
+            ]
+          },
+          "1.0": {
+            "protagonista_px": 79.9,
+            "cabeca_px": [
+              19.2,
+              26.6
+            ],
+            "caixa_px": [
+              1482.0205721855164,
+              870.3470313549042,
+              1596.1534280776978,
+              950.2902871370316
+            ],
+            "cabeca_caixa_px": [
+              1502.3952240943909,
+              870.3470313549042,
+              1521.604866027832,
+              896.9366919994354
+            ],
+            "tela": [
+              3024,
+              1890
+            ]
+          },
+          "2.5": {
+            "protagonista_px": 211.4,
+            "cabeca_px": [
+              51.0,
+              71.2
+            ],
+            "caixa_px": [
+              1434.932792186737,
+              746.8863451480865,
+              1724.2234153747559,
+              958.2695397734642
+            ],
+            "cabeca_caixa_px": [
+              1486.5036120414734,
+              746.8863451480865,
+              1537.4964780807495,
+              818.0620604753494
+            ],
+            "tela": [
+              3024,
+              1890
+            ]
+          }
+        },
+        "janela_olhos": [
+          -0.04533792960659816,
+          0.7587704359408609,
+          0.04533826488272501,
+          0.6919617890665641
+        ],
+        "janela_boca": [
+          -0.010610555518757218,
+          0.6902034001153404,
+          0.027116460149938418,
+          0.6679661116483858
+        ],
+        "cabeca": {
+          "pescoco_z": 0.6360000094771385,
+          "x": [
+            -0.06484314054250717,
+            0.06484347581863403
+          ],
+          "y": [
+            -0.06699536740779877,
+            0.08315787464380264
+          ],
+          "z": [
+            0.6360000094771385,
+            0.800000011920929
+          ]
+        },
+        "cabeca_largura_sobre_altura": 0.898
+      },
+      "b2": {
+        "jogo": {
+          "0.4": {
+            "protagonista_px": 31.5,
+            "cabeca_px": [
+              8.6,
+              11.8
+            ],
+            "caixa_px": [
+              1500.6359481811523,
+              915.5132478475571,
+              1545.5451135635376,
+              947.0243141055107
+            ],
+            "cabeca_caixa_px": [
+              1507.716941356659,
+              915.5132478475571,
+              1516.283148765564,
+              927.3317635059357
+            ],
+            "tela": [
+              3024,
+              1890
+            ]
+          },
+          "1.0": {
+            "protagonista_px": 80.5,
+            "cabeca_px": [
+              21.9,
+              30.3
+            ],
+            "caixa_px": [
+              1483.3023805618286,
+              869.5975524187088,
+              1596.1534280776978,
+              950.0673472881317
+            ],
+            "cabeca_caixa_px": [
+              1501.046184539795,
+              869.5975524187088,
+              1522.953815460205,
+              899.9109506607056
+            ],
+            "tela": [
+              3024,
+              1890
+            ]
+          },
+          "2.5": {
+            "protagonista_px": 212.6,
+            "cabeca_px": [
+              58.1,
+              81.0
+            ],
+            "caixa_px": [
+              1438.320216178894,
+              745.063059926033,
+              1724.2234153747559,
+              957.7086415886879
+            ],
+            "cabeca_caixa_px": [
+              1482.9456768035889,
+              745.063059926033,
+              1541.054503440857,
+              826.0951048135757
+            ],
+            "tela": [
+              3024,
+              1890
+            ]
+          }
+        },
+        "queixo": {
+          "queixo_antes_z": 0.6556,
+          "queixo_depois_z": 0.656,
+          "fator_queixo": 0.72,
+          "fator_cabeca": 1.1911,
+          "escala_figura": 0.958,
+          "cabeca_sobre_altura": 0.18
+        },
+        "janela_olhos": [
+          -0.05173035819006187,
+          0.7527368393259899,
+          0.05173074562025291,
+          0.676151317559323
+        ],
+        "janela_boca": [
+          -0.012106590650298385,
+          0.6966956036019123,
+          0.030939753759991043,
+          0.6712040777983302
+        ],
+        "cabeca": {
+          "pescoco_z": 0.6120000091195107,
+          "x": [
+            -0.07398571074008942,
+            0.07398609817028046
+          ],
+          "y": [
+            -0.07773268222808838,
+            0.09359145164489746
+          ],
+          "z": [
+            0.6120000091195107,
+            0.800000011920929
+          ]
+        },
+        "cabeca_largura_sobre_altura": 1.028
+      }
+    },
+    "v1": {
+      "jogo": {
+        "0.4": {
+          "protagonista_px": 26.1,
+          "cabeca_px": [
+            13.1,
+            11.8
+          ],
+          "caixa_px": [
+            1490.3123574256897,
+            918.9747297763824,
+            1545.5451135635376,
+            946.8650794029236
+          ],
+          "cabeca_caixa_px": [
+            1505.3585329055786,
+            918.9747297763824,
+            1518.4972715377808,
+            930.7766854763031
+          ],
+          "tela": [
+            3024,
+            1890
+          ]
+        },
+        "1.0": {
+          "protagonista_px": 66.9,
+          "cabeca_px": [
+            33.4,
+            30.5
+          ],
+          "caixa_px": [
+            1456.7869806289673,
+            878.353151679039,
+            1596.1534280776978,
+            949.6670919656754
+          ],
+          "cabeca_caixa_px": [
+            1495.0951437950134,
+            878.353151679039,
+            1528.537968635559,
+            908.8730424642563
+          ],
+          "tela": [
+            3024,
+            1890
+          ]
+        },
+        "2.5": {
+          "protagonista_px": 178.1,
+          "cabeca_px": [
+            87.6,
+            83.3
+          ],
+          "caixa_px": [
+            1367.3378806114197,
+            767.5864058732986,
+            1724.2234153747559,
+            956.6946539282799
+          ],
+          "cabeca_caixa_px": [
+            1467.729350566864,
+            767.5864058732986,
+            1555.308053970337,
+            850.9209609031677
+          ],
+          "tela": [
+            3024,
+            1890
+          ]
+        }
+      },
+      "cabeca": {
+        "pescoco_z": 0.4759999654451764,
+        "x": [
+          -0.37573665380477905,
+          0.37573689222335815
+        ],
+        "y": [
+          -0.10924564301967621,
+          0.06535963714122772
+        ],
+        "z": [
+          0.4759999654451764,
+          0.7999999523162842
+        ]
+      }
+    }
+  },
+  "variacoes": {
+    "b1": {
+      "nome": "b1: olhos abertos",
+      "rx": 35,
+      "top": 25,
+      "bot": 18,
+      "queda": 1,
+      "olheira": [
+        150,
+        0.95
+      ],
+      "cobre": [
+        0.2,
+        0.3
+      ],
+      "sombra": [
+        0.3,
+        0.38,
+        110
+      ],
+      "contorno": [
+        1.9,
+        210
+      ],
+      "boca_sobe": 0.0,
+      "queixo": 1.0
+    },
+    "b2": {
+      "nome": "b2: abertos, boca alta, queixo curto",
+      "rx": 35,
+      "top": 25,
+      "bot": 18,
+      "queda": 1,
+      "olheira": [
+        150,
+        0.95
+      ],
+      "cobre": [
+        0.2,
+        0.3
+      ],
+      "sombra": [
+        0.3,
+        0.38,
+        110
+      ],
+      "contorno": [
+        1.9,
+        210
+      ],
+      "boca_sobe": 0.12,
+      "queixo": 0.72
+    }
+  },
+  "notas": {
+    "titulo": "Protagonista v2 — rosto, rodada 2 (a partir da b): b1 e b2, com a v1 de referência; corpo com a cabeça redistribuída",
+    "leitura": [
+      "Olhos abertos (b1 e b2): mais branco-osso, pálpebra pesada só no terço de cima, amendoados, contorno de baixo escuro como na v1.",
+      "b2: boca 12% da cabeça mais alta (perto dos olhos) e queixo encurtado (a parte de baixo do rosto × 0,72); para manter a cabeça em 18%, a cabeça",
+      "   inteira cresceu × 1,19 a partir da base do pescoço — ficou 19% mais larga: largura ÷ altura 1,03 (b1 0,90; a folha dava 0,935).",
+      "Corpo: cabeça com 810 triângulos (short 458 → 318), vértices da cabeça relaxados e normais de uma cópia alisada (Taubin 60): faixas da toon redondas.",
+      "Leitura no jogo: zoom 2,5 — olhos como amêndoas brancas nítidas nas duas, olheira lê; cílios 1–2 px; fissura e boca não. Zoom 1 — os olhos",
+      "   leem como dois traços claros (antes, pares de pixels); b2 um pouco mais (cabeça 22 px contra 19). Zoom 0,4 — um pixel claro por olho.",
+      "   A v1, no zoom 1, é só cabelo e o brilho do cristal: o rosto dela também não lia de cima."
+    ],
+    "variacoes": {
+      "b1": "só os olhos abertos; boca e queixo como na b",
+      "b2": "olhos abertos + boca mais alta + queixo curto; cabeça 19% mais larga",
+      "v1": "olhos grandes, claros, sem pupila; boca perto do nariz; queixo curto"
+    }
+  }
+}

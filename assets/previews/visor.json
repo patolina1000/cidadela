@@ -131,5 +131,33 @@
     "tipo": "imagem",
     "caminho": "assets/previews/protagonista_v2/rosto_prova.png",
     "nota": "Zoom 2,5: olhos nítidos, olheira lê, cílios 1–2 px, fissura e boca não. Zoom 1: só os olhos (b melhor). Zoom 0,4: nada do rosto. Recomendação: b."
+  },
+  {
+    "quando": "2026-09-29T22:16:24",
+    "titulo": "Protagonista v2 — corpo limpo, cabeça com 810 triângulos",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/corpo_limpo.png",
+    "nota": "Short 458 → 318, cabeça 652 → 810; cabeça relaxada e normais de uma cópia alisada (faixas da toon redondas); total 2.482, cabeça 18%."
+  },
+  {
+    "quando": "2026-09-29T22:16:25",
+    "titulo": "Protagonista v2 — rosto rodada 2 em 2D (b1, b2)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_estudo/rodada2/estudo_rosto_2d.png",
+    "nota": "Olhos abertos como a v1: mais branco-osso, pálpebra só no terço de cima."
+  },
+  {
+    "quando": "2026-09-29T22:16:26",
+    "titulo": "Protagonista v2 — rosto rodada 2 (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_prova_r2_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T22:16:27",
+    "titulo": "Protagonista v2 — rosto rodada 2: b1, b2 e a v1",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_prova_r2.png",
+    "nota": "b1 olhos abertos; b2 + boca alta e queixo curto (cabeça 19% mais larga para manter 18%). Zoom 1: os olhos agora leem como dois traços claros."
   }
 ]

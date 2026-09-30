@@ -3285,3 +3285,27 @@ onde errou, correções manuais e quanto tempo levou.
   olheiras pareciam óculos (reduzidas e suavizadas); na primeira prova cada rosto tinha duas bocas, porque a janela dos
   olhos também cobre a altura da boca (camadas separadas).
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 15 min.
+
+## 2026-09-29 — Protagonista v2: rosto, rodada 2 (b1, b2) e cabeça sem facetas
+
+- **Pedido (crítica do Diretor):** olhos fechados demais (lê sono, não a tristeza da v1): abrir, mais branco-osso,
+  pálpebra só no terço de cima; rosto baixo e queixo longo = alienígena: subir a boca e encurtar o queixo sem mudar os
+  18%; cabeça ainda facetada na testa e no crânio: conferir o sombreamento; b1 (só olhos) e b2 (olhos + boca + queixo),
+  com a v1 ao lado.
+- **Cabeça (limpar_corpo.py):** o serrilhado não era aresta dura (normais já suaves): era a triangulação irregular da
+  decimação, que a toon de 3 faixas mostra nas bordas das faixas (o aldeão também tem, menos). Três mudanças:
+  (1) a junta do quadril segurava o short inteiro; agora só a virilha → short 458 → 318 e cabeça 652 → **810**
+  (orçamento 780); (2) relaxamento tangencial dos vértices da cabeça (6 iterações, reprojetando na superfície original,
+  com troca de diagonais), sem mudar formato nem contagem; (3) normais da cabeça tiradas de uma cópia alisada por Taubin
+  (60 passes), gravadas como normais do GLB. Total 2.482, cabeça 18,05%.
+- **Rosto:** `estudo_rosto.py 2` → `rosto_estudo/rodada2/` (b1 e b2: olhos da b maiores na altura, pálpebra 20–30%, sombra
+  leve, contorno de baixo escuro). `prova_rosto.py` ganhou boca_sobe, queixo e `--v1`; b2 só na memória: parte de baixo
+  do rosto × 0,72 e a cabeça de volta a 18% (× 1,19 a partir da base do pescoço) — **fica 19% mais larga** (largura ÷
+  altura 1,03; b1 0,90; folha 0,935). Folha `rosto_prova_r2.png` (+ crepúsculo, .json), notas em `notas_rosto_r2.json`.
+- **Leitura no jogo:** zoom 2,5 — olhos como amêndoas brancas nítidas nas duas, olheira lê, cílios 1–2 px, fissura e boca
+  não; zoom 1 — olhos como dois traços claros (antes, pares de pixels), b2 um pouco mais (cabeça 22 px contra 19); zoom
+  0,4 — um pixel por olho. A v1 no zoom 1: só cabelo e o brilho do cristal.
+- **O que deu errado e foi corrigido:** normais de uma cópia alisada por Laplaciano puro deformavam a cópia e viravam as
+  faixas (trocado por Taubin); o relaxamento com troca de diagonais rodava depois da classificação das regiões e
+  embaralhou os índices (cacos de tecido no tronco) — passou para antes; a caixa da cabeça da v1 pegava os braços em pose T.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~2 h.
