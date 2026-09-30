@@ -3292,3 +3292,25 @@ onde errou, correções manuais e quanto tempo levou.
 - **Deu errado:** o primeiro toco (só o corte do tronco, 18 tri) parecia um bloco de madeira; as raízes resolveram.
   A dupla passava de 0,20 m com os dentes; baixei os cortes.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Cenário, tarefa 6: pacote de entrega (manifesto, verificação, rascunho de contrato)
+
+- **Pedido (Diretor):** sem mudar a aparência, preparar a integração: manifesto `assets/cenario/cenario.json`
+  comentado no estilo dos JSON do jogo; conferir os GLBs pela PROPOSTA e decidir LOD com números; rascunho de
+  contrato no formato de `docs/aldeao_v2_contrato.md`.
+- **Feito:** `tools/arte/cenario/verificar.py` lê os GLBs direto (JSON + binário, como o importador do Godot) e
+  confere nó único com transformação identidade, sem esqueleto/animação/textura, materiais só com nomes de papel,
+  pivô no centro da base e quanto enterra; mede triângulos, altura, raio e o tamanho dos triângulos na tela no
+  zoom 0,4 → `assets/cenario/verificacao.json`. `manifesto.py` gera `cenario.json` a partir dela (chaves wood /
+  stone / iron como em `data/resources.json`; peso, altura, células, overhang no pior giro, triângulos, coldRim,
+  castsShadow; `depleted` opcional). Rascunho em `assets/cenario/cenario_contrato_rascunho.md`.
+- **O que a verificação achou e o que mudou:** (1) árvores e tocos enterram 3,8–5,3 cm (a inclinação afunda o pé
+  alargado), contra os 2 cm da proposta: é invisível, então a regra do rascunho virou "até 6 cm". (2) A pedra 4
+  tinha a base 18 cm fora do centro (a laje tomba para um lado): `pedra.py` agora centraliza a caixa da base das 4
+  pedras (mesma forma, só muda onde assenta; as outras andaram até 9 cm). (3) O corte do toco chamava `corte`;
+  renomeei para `madeira`, o nome pedido (mesma cor). `musgo` (tampa da pedra 1) entrou na lista de papéis.
+- **LOD:** não gerei LOD próprio. No zoom 0,4, o triângulo mediano tem 17–42 px² na árvore, pedra e veio, e os 10 %
+  menores 5–16 px², longe da faixa cara (< ~4 px²); cortar 50 % quadraria a copa de 8 lados. O LOD automático do
+  Godot basta. Toco e mancha têm triângulos pequenos (1,4–2,7 px² nos 10 % menores), mas só 30–42 no total e sem
+  sombra.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.

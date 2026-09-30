@@ -74,6 +74,13 @@ def build(spec, index):
     obj = join(parts, f"pedra_{index}")
     obj.rotation_euler = (0.0, 0.0, math.radians(rng.uniform(0, 360)))  # lado sorteado pela semente
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+    # Pivô no centro da base (contrato): centraliza a caixa do que toca o chão; a laje (4) ficava 18 cm de lado.
+    base = [v.co for v in obj.data.vertices if v.co.z < 0.05]
+    cx = (min(c.x for c in base) + max(c.x for c in base)) / 2
+    cy = (min(c.y for c in base) + max(c.y for c in base)) / 2
+    for v in obj.data.vertices:
+        v.co.x -= cx
+        v.co.y -= cy
     return obj
 
 

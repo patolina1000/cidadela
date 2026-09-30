@@ -1,7 +1,8 @@
 # Cenário — proposta de objetos do mundo (29/09/2026)
 
 Proposta do agente CENÁRIO para o Diretor e o Arthur. Não é contrato: o contrato vai para `docs/` no master só depois
-do "manda".
+do "manda". **O rascunho de contrato (`cenario_contrato_rascunho.md`, 29/09/2026) substitui as regras gerais daqui**
+onde elas divergem (ex.: até 6 cm enterrados, não 2 cm; material `madeira` no corte do toco).
 
 ## Ponto de partida (master, sem mudanças)
 

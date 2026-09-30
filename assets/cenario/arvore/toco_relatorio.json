@@ -20,7 +20,7 @@
       "corte_m": 0.11,
       "cores": {
         "tronco": null,
-        "corte": "#6B5B4B"
+        "madeira": "#6B5B4B"
       }
     },
     {
@@ -40,7 +40,7 @@
       "corte_m": 0.14,
       "cores": {
         "tronco": null,
-        "corte": "#6B5B4B"
+        "madeira": "#6B5B4B"
       }
     },
     {
@@ -60,7 +60,7 @@
       "corte_m": 0.13,
       "cores": {
         "tronco": null,
-        "corte": "#6B5B4B"
+        "madeira": "#6B5B4B"
       }
     },
     {
@@ -80,7 +80,7 @@
       "corte_m": 0.1,
       "cores": {
         "tronco": null,
-        "corte": "#6B5B4B"
+        "madeira": "#6B5B4B"
       }
     }
   ]

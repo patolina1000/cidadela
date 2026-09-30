@@ -33,7 +33,7 @@ RAIZES = 3  # raízes curtas e pontudas saindo do pé: sem elas o toco parece um
 
 def cut(obj, height):
     """Corta a árvore em z = height, serrilha a borda e fecha com um leque na cor da madeira."""
-    mat_corte = material("corte", CORTE)
+    mat_corte = material("madeira", CORTE)  # papel "madeira" (contrato): a face do corte
     obj.data.materials.append(mat_corte)
     corte_idx = len(obj.data.materials) - 1
     bm = bmesh.new()
@@ -101,7 +101,7 @@ def main():
         obj = roots(obj, spec["semente"])
         rows.append(export(obj, OUT / f"toco_{index}.glb", MAX_TRIS, {
             "nome": spec["nome"], "semente": spec["semente"], "corte_m": ALTURA[spec["nome"]],
-            "cores": {"tronco": None, "corte": CORTE}}))
+            "cores": {"tronco": None, "madeira": CORTE}}))
     write_report(OUT / "toco_relatorio.json", "tools/arte/cenario/toco.py", rows)
 
 
