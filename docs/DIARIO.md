@@ -6064,3 +6064,15 @@ onde errou, correções manuais e quanto tempo levou.
   `dotnet test` 262 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:19–19:20 de relógio.
+
+## 2026-09-30 — Linha 2, passo 6: carregadores com argila e casca
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 6 do plano da linha 2.
+- **Feito:** nenhuma mudança de código: a lógica do passo 8 da energia (carregador tira da saída de uma máquina e leva
+  à entrada de outra, pela carga do peso) já cobre Barreiro → Oleiro (argila) e Oleiro → Cristal-mãe (casca). Confirmado
+  com os dados do jogo; prioridade não precisou de ajuste (L8: medir no teste A).
+- **Testes:** `ClayCarrierTests` (1 por viagem; argila chega ao Oleiro e a casca ao Cristal-mãe). O primeiro rodar
+  falhou por erro do teste (Barreiro fora da área da torre); corrigido no teste. `dotnet test` 263 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:21–19:20 de relógio.
