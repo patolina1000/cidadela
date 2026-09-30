@@ -115,6 +115,7 @@ public class CastellanHandTests
     public void APostTakenByAVillagerIsNotFree()
     {
         SimWorld world = PoweredPurifier("""[{ "x": 6, "z": 7 }]""");
+        TestWorlds.OperateNearest(world); // a ladainha dele manda operar o Purificador
         TestWorlds.Run(world, 2);
         world.Enqueue(new OperatePostCommand());
         world.Tick();
@@ -122,16 +123,15 @@ public class CastellanHandTests
     }
 
     [Fact]
-    public void WhenSheLeavesAnIdleVillagerTakesThePost()
+    public void WhenSheLeavesNobodyTakesThePostAlone()
     {
-        // Ela ocupa o posto antes do aldeão chegar ao mapa? Não: o aldeão nasce depois e fica livre enquanto ela opera.
-        SimWorld world = PoweredPurifier();
+        // O aldeão não faz nada sozinho: o posto que ela larga fica vago.
+        SimWorld world = PoweredPurifier("""[{ "x": 12, "z": 12 }]""");
         world.Enqueue(new OperatePostCommand());
         world.Tick();
-        Villager villager = world.AddVillager(new Vector2(12f, 12f));
-        world.AssignIdleWorkers();
-        Assert.Null(villager.Home);
         TestWorlds.Move(world, -1f, 0f, ticks: 2);
-        Assert.Same(world.BuildingAt(new GridPos(6, 6)), villager.Home);
+        TestWorlds.Run(world, 60);
+        Assert.Null(world.Villagers[0].Home);
+        Assert.Null(world.BuildingAt(new GridPos(6, 6))!.Crew[0]);
     }
 }

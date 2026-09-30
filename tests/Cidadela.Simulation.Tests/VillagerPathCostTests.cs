@@ -8,8 +8,8 @@ using Xunit.Abstractions;
 namespace Cidadela.Simulation.Tests;
 
 /// <summary>
-/// Custo do caminho dos aldeões por tick: 100 lenhadores trabalhando num bosque denso (60×60, ~30 % de árvores com
-/// tronco). Mede a média de tempo de <see cref="SimWorld.Tick"/> e imprime no resultado do teste; o limite só pega
+/// Custo do caminho dos aldeões por tick: 100 aldeões com a ladainha "colher tora perto e pôr no baú" num bosque denso
+/// (60×60, ~30 % de árvores com tronco). Mede a média de tempo de <see cref="SimWorld.Tick"/> e imprime no resultado do teste; o limite só pega
 /// regressão grosseira.
 /// </summary>
 public class VillagerPathCostTests
@@ -18,18 +18,18 @@ public class VillagerPathCostTests
 
     public VillagerPathCostTests(ITestOutputHelper output) => _output = output;
 
-    internal static SimWorld Forest(int huts)
+    internal static SimWorld Forest(int villagerCount)
     {
         var rng = new Random(42);
         var resources = new List<string>();
         var buildings = new List<string>();
         var villagers = new List<string>();
         var taken = new HashSet<(int, int)>();
-        for (int i = 0; i < huts; i++)
+        for (int i = 0; i < villagerCount; i++)
         {
             int x = 3 + (i % 10) * 5, z = 3 + (i / 10) * 5;
             taken.Add((x, z));
-            buildings.Add($$"""{ "kind": "lumber_hut", "x": {{x}}, "z": {{z}} }""");
+            buildings.Add($$"""{ "kind": "chest", "x": {{x}}, "z": {{z}} }""");
             villagers.Add($$"""{ "x": {{x + 1}}, "z": {{z + 1}} }""");
             taken.Add((x + 1, z + 1));
         }
@@ -37,18 +37,23 @@ public class VillagerPathCostTests
         for (int z = 0; z < 60; z++)
             if (!taken.Contains((x, z)) && rng.NextDouble() < 0.3)
                 resources.Add($$"""{ "kind": "wood", "x": {{x}}, "z": {{z}} }""");
-        return MapLoader.Parse($$"""
+        SimWorld world = MapLoader.Parse($$"""
             { "width": 60, "height": 60, "castellan": { "x": 58, "z": 58 },
               "resources": [{{string.Join(",", resources)}}], "buildings": [{{string.Join(",", buildings)}}],
               "villagers": [{{string.Join(",", villagers)}}] }
             """, ForestData());
+        // Cada um colhe tora perto do seu baú e põe nele: trabalham (e planejam caminhos) o tempo todo.
+        for (int i = 0; i < villagerCount; i++)
+        {
+            int x = 3 + (i % 10) * 5, z = 3 + (i / 10) * 5;
+            TestWorlds.Teach(world, world.Villagers[i], TestWorlds.Litany(TestWorlds.Gather("wood", x, z), TestWorlds.Put("wood", x, z)));
+        }
+        return world;
     }
 
-    // Cabanas que não enchem: os aldeões trabalham (e planejam caminhos) o tempo todo.
     private static GameData ForestData() => GameData.Parse(TestWorlds.Items,
         TestWorlds.Resources.Replace("\"amount\": 30 }", "\"amount\": 30, \"trunkRadius\": 0.2 }"),
-        TestWorlds.CastellanStats, TestWorlds.VillagerStats,
-        TestWorlds.Buildings.Replace("\"capacity\": 3", "\"capacity\": 100000"), TestWorlds.Recipes);
+        TestWorlds.CastellanStats, TestWorlds.VillagerStats, TestWorlds.Buildings, TestWorlds.Recipes);
 
 
     [Fact]
@@ -62,7 +67,7 @@ public class VillagerPathCostTests
         double msPerTick = watch.Elapsed.TotalMilliseconds / ticks;
         int stored = 0;
         foreach (Building b in world.Buildings)
-            stored += b.Workplace?.Stored.Count("wood") ?? 0;
+            stored += b.Storage?.Count("wood") ?? 0;
         _output.WriteLine($"100 aldeões, bosque 60×60: {msPerTick:0.000} ms por tick; {stored} madeiras entregues em {ticks} ticks");
         Assert.True(msPerTick < 5.0, $"{msPerTick:0.000} ms por tick");
         Assert.True(stored > 0);

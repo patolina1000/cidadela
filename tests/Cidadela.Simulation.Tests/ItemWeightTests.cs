@@ -53,15 +53,15 @@ public class ItemWeightTests
     }
 
     [Fact]
-    public void HutFillsTheChestInFront()
+    public void AHutNeverPushesAnythingOut()
     {
+        // A cabana não dá ordem nem solta nada (docs/ladainhas.md): o baú à frente continua vazio.
         SimWorld world = TestWorlds.Open(x: 1, z: 1, data: TestWorlds.RealData(), buildings: """
             [{ "kind": "lumber_hut", "x": 5, "z": 9, "direction": "east" }, { "kind": "chest", "x": 6, "z": 9 }]
             """);
-        Building chestHut = world.BuildingAt(new GridPos(5, 9))!;
-        chestHut.Workplace!.Stored.Add("wood", 4);
+        world.BuildingAt(new GridPos(5, 9))!.Workplace!.Stored.Add("wood", 4);
         TestWorlds.Run(world, 10);
-        Assert.Equal(4, world.BuildingAt(new GridPos(6, 9))!.Storage!.Count("wood"));
+        Assert.True(world.BuildingAt(new GridPos(6, 9))!.Storage!.IsEmpty);
     }
 
     [Fact]
@@ -69,11 +69,12 @@ public class ItemWeightTests
     {
         SimWorld world = TestWorlds.Open(x: 1, z: 1, data: TestWorlds.RealData(),
             resources: """[{ "kind": "wood", "x": 8, "z": 5 }]""",
-            buildings: """[{ "kind": "lumber_hut", "x": 5, "z": 5 }]""", villagers: """[{ "x": 6, "z": 5 }]""");
+            buildings: """[{ "kind": "chest", "x": 5, "z": 5 }]""", villagers: """[{ "x": 6, "z": 5 }]""");
         Villager v = world.Villagers[0];
-        for (int i = 0; i < 60 * SimClock.TicksPerSecond && v.Task != VillagerTask.ReturningHome; i++)
+        TestWorlds.Teach(world, v, TestWorlds.Litany(TestWorlds.Gather("wood", 5, 5), TestWorlds.Put("wood", 5, 5)));
+        for (int i = 0; i < 60 * SimClock.TicksPerSecond && v.CommandIndex == 0; i++)
             world.Tick();
-        Assert.Equal(VillagerTask.ReturningHome, v.Task);
+        Assert.Equal(1, v.CommandIndex); // colheu e foi pôr
         Assert.Equal(1, v.CarryingCount);
     }
 }

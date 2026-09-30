@@ -1,25 +1,10 @@
 {
-  // Estado do aldeão para o ícone sobre a cabeça (VillagerStatus). Por padrão só quem tem problema
-  // ("problem": true) mostra o ícone; segurando Alt (modo de informação, GDD seção 17), todos mostram.
-  // text: o que aparece ao passar o mouse sobre o aldeão; icon: forma desenhada por código (VillagerIcons.cs):
-  //   dots, house, cross, empty, moon, diamond, box, arrow, pause.
-  // Fome e moral entram aqui quando existirem na simulação.
-  "sem_trabalho":    { "text": "Sem trabalho",                            "problem": true,  "icon": "dots" },
-  "cabana_cheia":    { "text": "Cabana cheia: recolha o que está guardado", "problem": true,  "icon": "house" },
-  "sem_caminho":     { "text": "Sem caminho até o recurso ou a cabana",   "problem": true,  "icon": "cross" },
-  "sem_recurso":     { "text": "Nada para coletar no raio da cabana",     "problem": true,  "icon": "empty" },
-  "descansando":     { "text": "Descansando",                             "problem": false, "icon": "moon" },
-  "coletando":       { "text": "Coletando",                               "problem": false, "icon": "diamond" },
-  "levando_carga":   { "text": "Levando a carga para a cabana",           "problem": false, "icon": "box" },
-  "indo_ao_recurso": { "text": "Indo ao recurso",                         "problem": false, "icon": "arrow" },
-  "esperando":       { "text": "Esperando",                               "problem": false, "icon": "pause" },
-  "indo_ao_posto":   { "text": "Indo ao posto da máquina",                "problem": false, "icon": "arrow" },
-  "no_posto":        { "text": "Trabalhando no posto da máquina",         "problem": false, "icon": "diamond" },
-  "buscando_carga":  { "text": "Carregador: indo buscar carga",           "problem": false, "icon": "arrow" },
-  "levando_para_maquina": { "text": "Carregador: levando carga para a máquina", "problem": false, "icon": "box" },
-  "sem_o_que_carregar":   { "text": "Carregador: nada para levar no raio",      "problem": false, "icon": "pause" },
-  // Ladainhas (docs/ladainhas.md): sem ladainha (parado), rezando (o comando atual) e travado (o motivo aparece no texto).
-  "sem_ladainha":   { "text": "Sem ladainha: parado",                    "problem": false, "icon": "dots" },
-  "ladainha":       { "text": "Rezando a ladainha",                      "problem": false, "icon": "diamond" },
-  "travado":        { "text": "Travado",                                 "problem": true,  "icon": "cross" }
+  // Estado do aldeão para o ícone sobre a cabeça (VillagerStatus; docs/ladainhas.md, "Estados visíveis"). Por padrão só
+  // quem tem problema ("problem": true) mostra o ícone; segurando Alt (modo de informação, GDD seção 17), todos mostram.
+  // text: o que aparece ao passar o mouse; icon: forma desenhada por código (VillagerIcons.cs): dots, house, cross, empty,
+  //   moon, diamond, box, arrow, pause. O motivo da trava vem da ladainha (a view diz em palavras).
+  "descansando":  { "text": "Descansando",          "problem": false, "icon": "moon" },
+  "sem_ladainha": { "text": "Sem ladainha: parado", "problem": false, "icon": "dots" },
+  "ladainha":     { "text": "Rezando a ladainha",   "problem": false, "icon": "diamond" },
+  "travado":      { "text": "Travado",              "problem": true,  "icon": "cross" }
 }

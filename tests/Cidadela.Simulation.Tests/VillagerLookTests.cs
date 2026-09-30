@@ -7,8 +7,14 @@ namespace Cidadela.Simulation.Tests;
 public class VillagerLookTests
 {
     private static SimWorld World(string resources = "[]", string villagers = """[{ "x": 2, "z": 2 }]""",
-        string buildings = """[{ "kind": "lumber_hut", "x": 4, "z": 4, "direction": "east" }]""") =>
-        TestWorlds.Open(x: 1, z: 18, resources: resources, buildings: buildings, villagers: villagers);
+        string buildings = """[{ "kind": "chest", "x": 4, "z": 4 }]""")
+    {
+        SimWorld world = TestWorlds.Open(x: 1, z: 18, resources: resources, buildings: buildings, villagers: villagers);
+        // Com baú: a ladainha de colher tora perto dele e pôr nele (sem baú, fica sem ladainha, ocioso).
+        if (buildings.Contains("chest"))
+            TestWorlds.Teach(world, world.Villagers[0], TestWorlds.Litany(TestWorlds.Gather("wood", 4, 4), TestWorlds.Put("wood", 4, 4)));
+        return world;
+    }
 
     [Fact]
     public void HairVariantIsBetweenOneAndFiveAndFixedByTheId()
@@ -57,13 +63,13 @@ public class VillagerLookTests
     {
         // Árvore longe (8 células): a próxima entrega demora mais que a alegria dura.
         SimWorld world = World("""[{ "kind": "wood", "x": 12, "z": 4 }]""");
-        Workplace hut = world.BuildingAt(new GridPos(4, 4))!.Workplace!;
-        int before = hut.Stored.Count("wood");
+        Inventory chest = world.BuildingAt(new GridPos(4, 4))!.Storage!;
+        int before = chest.Count("wood");
         int deliveredAt = -1;
         for (int i = 0; i < 400; i++)
         {
             world.Tick();
-            if (hut.Stored.Count("wood") > before) { deliveredAt = i; break; }
+            if (chest.Count("wood") > before) { deliveredAt = i; break; }
         }
         Assert.True(deliveredAt >= 0, "nenhuma entrega em 400 ticks");
         Assert.Equal(VillagerExpression.Happy, world.Villagers[0].Expression);
@@ -74,7 +80,7 @@ public class VillagerLookTests
     [Fact]
     public void SleepyAfterALongIdleAndSleepingWhenResting()
     {
-        SimWorld world = World(buildings: "[]"); // sem cabana: ocioso
+        SimWorld world = World(buildings: "[]"); // sem ladainha: ocioso
         TestWorlds.Run(world, Villager.SleepyAfterTicks - 1);
         Assert.Equal(VillagerExpression.Distracted, world.Villagers[0].Expression);
         world.Tick();
@@ -89,21 +95,12 @@ public class VillagerLookTests
     }
 
     [Fact]
-    public void WorriedWhenTheHutIsFull()
+    public void WorriedWhenTheLitanyIsStuck()
     {
-        // Cabana de teste guarda 3; com 6 madeiras perto, enche e o aldeão fica esperando.
-        SimWorld world = World("""[{ "kind": "wood", "x": 7, "z": 4 }]""");
-        Workplace hut = world.BuildingAt(new GridPos(4, 4))!.Workplace!;
-        bool sawWorried = false;
-        for (int i = 0; i < 1500 && !sawWorried; i++)
-        {
-            world.Tick();
-            if (hut.Free <= 0 && world.Villagers[0].Task == VillagerTask.Waiting)
-            {
-                TestWorlds.Run(world, 2);
-                sawWorried = world.Villagers[0].Expression == VillagerExpression.Worried;
-            }
-        }
-        Assert.True(sawWorried, "o aldeão devia ficar preocupado com a cabana cheia");
+        // Sem árvore no raio: a ladainha trava e ele fica preocupado.
+        SimWorld world = World("""[{ "kind": "wood", "x": 18, "z": 18 }]""");
+        TestWorlds.Run(world, 3);
+        Assert.NotNull(world.Villagers[0].Stuck);
+        Assert.Equal(VillagerExpression.Worried, world.Villagers[0].Expression);
     }
 }

@@ -11,13 +11,18 @@ public class ClayMachineTests
     /// Mapa 20×20: água em x = 0, margem em x = 1 (z 2–12); torre em (3, 6) (área x 1–5, z 4–8) e Relicário cheio em
     /// (4, 7); as construções e aldeões dados.
     /// </summary>
-    private static SimWorld World(string buildings, string villagers = "[]") => MapLoader.Parse($$"""
+    private static SimWorld World(string buildings, string villagers = "[]")
+    {
+        SimWorld world = MapLoader.Parse($$"""
         { "width": 20, "height": 20, "castellan": { "x": 10, "z": 10 },
           "buildings": [{ "kind": "mana_tower", "x": 3, "z": 6 }, { "kind": "reliquary", "x": 4, "z": 7, "items": { "pure_shard": 5 } }{{buildings}}],
           "villagers": {{villagers}},
           "terrain": { "default": "grass", "patches": [{ "kind": "water", "x": 0, "z": 0, "width": 1, "height": 20 },
                                                       { "kind": "bank", "x": 1, "z": 2, "width": 1, "height": 11 }] } }
         """, TestWorlds.RealData());
+        TestWorlds.OperateNearest(world); // os aldeões do teste são os operadores das máquinas encostadas neles
+        return world;
+    }
 
     [Fact]
     public void TheClayPitIsBuiltOnlyOnTheBank()
@@ -40,7 +45,8 @@ public class ClayMachineTests
         Assert.Equal(3, pit.Output.Count("clay"));
         TestWorlds.Run(world, Seconds(60f));
         Assert.Equal(5, pit.Output.Count("clay")); // guarda até 5 e para: ninguém tira
-        Assert.Equal(MachineWait.OutputFull, pit.Waiting);
+        Assert.False(pit.IsWorking);
+        Assert.False(pit.CanStart); // saída cheia (o operador solta o posto e a ladainha dele segue)
     }
 
     [Fact]
@@ -71,6 +77,7 @@ public class ClayMachineTests
             { "width": 20, "height": 20, "castellan": { "x": 10, "z": 10 },
               "buildings": [{ "kind": "potter", "x": 3, "z": 5 }], "villagers": [{ "x": 3, "z": 4 }] }
             """, TestWorlds.RealData());
+        TestWorlds.OperateNearest(world);
         MachineState potter = world.BuildingAt(new GridPos(3, 5))!.Machine!;
         potter.Input.Add("clay", 2);
         potter.Input.Add("water_jar", 1);

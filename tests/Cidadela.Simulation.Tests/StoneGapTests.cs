@@ -80,16 +80,17 @@ public class StoneGapTests
     [InlineData("stone", "wood")]  // vão 0,55
     public void VillagerCrossesBetweenNeighbours(string a, string b)
     {
-        // O muro é de serrarias (construção sólida: célula inteira); a cabana fica ao norte, a madeira a coletar ao sul, e
+        // O muro é de serrarias (construção sólida: célula inteira); o baú fica ao norte, a madeira a coletar ao sul, e
         // só um vizinho do vão é madeira quando b = wood; senão, a árvore a coletar fica ao sul do muro.
-        var walls = new List<string> { """{ "kind": "lumber_hut", "x": 4, "z": 1 }""" };
+        var walls = new List<string> { """{ "kind": "chest", "x": 4, "z": 1 }""" };
         for (int x = 0; x < 20; x++)
             if (x != 4 && x != 5)
                 walls.Add($$"""{ "kind": "sawmill", "x": {{x}}, "z": 4 }""");
         string resources = $$"""[{ "kind": "{{a}}", "x": 4, "z": 4 }, { "kind": "{{b}}", "x": 5, "z": 4 }, { "kind": "wood", "x": 4, "z": 7 }]""";
         SimWorld world = Open(18f, 18f, resources, "[" + string.Join(",", walls) + "]", """[{ "x": 8, "z": 2 }]""");
+        LumberLitany(world, 4, 1);
         TestWorlds.Run(world, 900);
-        Assert.True(world.BuildingAt(new GridPos(4, 1))!.Workplace!.Stored.Count("wood") >= 2,
+        Assert.True(world.BuildingAt(new GridPos(4, 1))!.Storage!.Count("wood") >= 2,
             $"estado {world.Villagers[0].Status}, em {world.Villagers[0].Position}");
     }
 
@@ -101,4 +102,8 @@ public class StoneGapTests
         Assert.False(world.BlocksVillager(new GridPos(4, 4)));
         Assert.Equal(0.3f, world.ShapeAt(new GridPos(4, 4))!.Circles[0].Radius, 3);
     }
+
+    /// <summary>O aldeão colhe tora perto do baú e põe nele (o que a cabana de lenhador fazia sozinha antes das ladainhas).</summary>
+    private static void LumberLitany(SimWorld world, int x, int z) =>
+        TestWorlds.Teach(world, world.Villagers[0], TestWorlds.Litany(TestWorlds.Gather("wood", x, z), TestWorlds.Put("wood", x, z)));
 }

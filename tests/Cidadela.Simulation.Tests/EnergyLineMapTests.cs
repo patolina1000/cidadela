@@ -16,16 +16,17 @@ public class EnergyLineMapTests
     private static SimWorld Load() => MapLoader.Parse(TestWorlds.DataFile("maps/linha_energia.json"), TestWorlds.RealData());
 
     [Fact]
-    public void EveryPostIsTakenAndEverythingIsPowered()
+    public void EverythingIsPoweredAndNobodyMovesWithoutALitany()
     {
+        // O mapa será refeito com ladainhas (passo 11). Por ora: tudo na rede, e sem ladainha ninguém sai do lugar.
         SimWorld world = Load();
+        var start = world.Villagers.Select(v => v.Cell).ToList();
         TestWorlds.Run(world, 5 * SimClock.TicksPerSecond);
         Assert.Single(world.ManaNetworks);
         foreach (Building b in world.Buildings.Where(b => b.Type.Mana is not null))
             Assert.NotNull(b.Network);
-        foreach (Building b in world.Buildings.Where(b => b.Type.Posts is not null))
-            Assert.True(b.CrewReady, $"{b.Kind} sem operador");
-        Assert.Equal(9, world.Villagers.Count(v => v.Home is not null)); // o mínimo das duas linhas (L3)
+        Assert.Equal(start, world.Villagers.Select(v => v.Cell).ToList());
+        Assert.All(world.Villagers, v => Assert.Null(v.Home));
     }
 
     [Fact]

@@ -23,6 +23,7 @@ public class EnergyMachineTests
               "buildings": [{{buildings}}], "villagers": {{villagers}},
               "terrain": { "default": "grass", "patches": [{ "kind": "water", "x": 0, "z": 0, "width": 1, "height": 20 }] } }
             """, TestWorlds.RealData());
+        TestWorlds.OperateNearest(world); // os aldeões do teste são os operadores das máquinas encostadas neles
         return world;
     }
 

@@ -6234,3 +6234,29 @@ onde errou, correções manuais e quanto tempo levou.
   passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 20:10–20:11 de relógio.
+
+## 2026-09-30 — Ladainhas, passo 6: fim da chamada automática
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 6 do plano (regra absoluta: o aldeão não faz nada sozinho; postos ficam, inclusive acoplados; cabanas
+  e Posto de Carregadores perdem o automático mas não são apagados).
+- **Feito:**
+  - Saíram `SimWorld.AssignIdleWorkers`, a lista de construções que chamavam gente, `TickWorkplaces` (a cabana soltando
+    no baú), e no `Villager` todo o trabalho sozinho: o lenhador/pedreiro da cabana, o carregador do Posto de
+    Carregadores e o operador chamado para o posto. `Workplace.Worker` saiu. O mapa não atribui ninguém ao carregar.
+  - O aldeão sem ladainha fica parado (só a expressão muda: distraído, sonolento). `VillagerTask` ficou com parado,
+    indo, colhendo e no posto; `VillagerStatus` com descansando, sem ladainha, rezando e travado (e
+    `data/villager_status.json` junto). Preocupado agora é "a ladainha travou".
+  - Postos continuam (a máquina só anda com todos ocupados); só "operar" (ou a protagonista com E) ocupa. O Posto de
+    Carregadores não tem mais vagas de carregador (`Crew` só para postos de máquina).
+  - Desmontar uma máquina com operador: a ladainha dele trava com "lugar sumiu" e ele solta o posto; ninguém é chamado.
+  - Comentários de `data/buildings.json` reescritos com a regra absoluta.
+- **Testes:** saíram `CarrierTests`, `ClayCarrierTests` e `EnergyCarrierTests` (o carregador automático não existe mais;
+  o transporte é coberto pelos testes de ladainha). Os que usavam cabana, carregador ou operador automático passaram a
+  usar ladainhas (`TestWorlds.Teach`, `OperateNearest`, `Gather`, `Put`, `GoTo`): aldeão, estados, expressões,
+  velocidade, vãos entre troncos e pedras, custo de caminho com 100 aldeões, postos, máquinas das duas linhas.
+  Novos: nenhuma cabana/posto/posto de carregadores chama alguém; sem ladainha nada acontece mesmo com trabalho em volta;
+  ninguém assume o posto que a protagonista larga. `dotnet build` 0/0; `dotnet test` 256 passaram. Main, Biography,
+  LinhaEnergia e Aldeoes200 em headless, sem erro.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 20:12–20:16 de relógio.

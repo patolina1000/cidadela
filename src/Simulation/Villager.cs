@@ -4,31 +4,23 @@ using System.Numerics;
 
 namespace Cidadela.Simulation;
 
-/// <summary>O que o aldeão está fazendo agora.</summary>
+/// <summary>O que o aldeão está fazendo agora (para a animação e o estado).</summary>
 public enum VillagerTask
 {
-    /// <summary>Sem cabana: parado esperando trabalho.</summary>
-    Unemployed,
-    /// <summary>Tem cabana, mas não achou recurso alcançável (ou a cabana está cheia).</summary>
+    /// <summary>Parado: sem ladainha, entre dois comandos, ou esperando depois de travar.</summary>
     Waiting,
+    /// <summary>Andando até o alvo do comando.</summary>
     GoingToResource,
+    /// <summary>Colhendo, arrancando ou cavando.</summary>
     Gathering,
-    ReturningHome,
-    /// <summary>Chamado para um posto de máquina: andando até encostar nela.</summary>
-    GoingToPost,
-    /// <summary>Encostado na máquina, no posto: conta para a equipe dela.</summary>
+    /// <summary>Encostado na máquina, no posto (comando "operar"): conta para a equipe dela.</summary>
     AtPost,
-    /// <summary>Carregador indo buscar um item num baú, cabana ou saída de máquina.</summary>
-    Fetching,
-    /// <summary>Carregador levando o item até a máquina.</summary>
-    Hauling,
 }
 
 /// <summary>
-/// Aldeão trabalhador (GDD, seção 6). Com uma cabana, repete sozinho: acha o recurso do ofício mais
-/// perto dentro do raio, anda até encostar (caminho A*), coleta até encher a carga e volta para entregar.
-/// Aldeões não colidem entre si nem com o Castelão. A célula de árvore não bloqueia o caminho (só o tronco): eles passam
-/// sob a copa, deslizando em volta do tronco, e coletam encostados nele.
+/// Aldeão (GDD, seção 6; docs/ladainhas.md). NÃO FAZ NADA SOZINHO: sem ladainha fica parado; com ela, repete os comandos
+/// (caminho A*). Aldeões não colidem entre si nem com o Castelão. A célula de árvore não bloqueia o caminho (só o tronco):
+/// eles passam sob a copa, deslizando em volta do tronco, e colhem encostados nele.
 /// </summary>
 public sealed class Villager
 {
@@ -97,34 +89,16 @@ public sealed class Villager
     public Vector2 PreviousPosition { get; private set; }
 
     public Vector2 Facing { get; private set; } = new(0f, 1f);
+    /// <summary>A máquina em cujo posto ele está (só enquanto o comando "operar" dura), ou null.</summary>
     public Building? Home { get; private set; }
-    public VillagerTask Task { get; private set; } = VillagerTask.Unemployed;
+    public VillagerTask Task { get; private set; } = VillagerTask.Waiting;
 
-    /// <summary>
-    /// Estado para o ícone, do mais forte para o mais fraco: descansando, sem trabalho, cabana cheia, sem caminho,
-    /// sem recurso no raio, e então o que está fazendo (coletando, levando a carga, indo, esperando).
-    /// </summary>
+    /// <summary>Estado para o ícone: descansando, sem ladainha, travado (o motivo em <see cref="Stuck"/>) ou rezando.</summary>
     public VillagerStatus Status =>
         Resting ? VillagerStatus.Resting
-        : Litany is not null ? (Stuck is not null ? VillagerStatus.Stuck : VillagerStatus.Chanting)
-        : Blank ? VillagerStatus.NoLitany
-        : Home is null ? VillagerStatus.Unemployed
-        : Task == VillagerTask.AtPost ? VillagerStatus.AtPost
-        : Task == VillagerTask.Fetching ? VillagerStatus.Fetching
-        : Task == VillagerTask.Hauling ? VillagerStatus.Hauling
-        : Home.Workplace is null && _noPath ? VillagerStatus.NoPath
-        : Home.Type.Carriers is not null ? VillagerStatus.NothingToHaul
-        : Task == VillagerTask.GoingToPost || Home.Workplace is null ? VillagerStatus.GoingToPost
-        : _hutFull ? VillagerStatus.HutFull
-        : _noPath ? VillagerStatus.NoPath
-        : _noResource ? VillagerStatus.NoResource
-        : Task switch
-        {
-            VillagerTask.Gathering => VillagerStatus.Gathering,
-            VillagerTask.ReturningHome => VillagerStatus.Carrying,
-            VillagerTask.GoingToResource => VillagerStatus.GoingToResource,
-            _ => VillagerStatus.Waiting,
-        };
+        : Litany is null ? VillagerStatus.NoLitany
+        : Stuck is not null ? VillagerStatus.Stuck
+        : VillagerStatus.Chanting;
     public ResourceNode? Target { get; private set; }
     public string? CarryingKind { get; private set; }
     public int CarryingCount { get; private set; }
@@ -140,15 +114,8 @@ public sealed class Villager
     /// <summary>Célula onde fica encostado no posto (escolhida ao ir), ou null.</summary>
     public GridPos? PostCell { get; private set; }
 
-    /// <summary>Carregador: de onde está buscando (baú, cabana ou máquina), ou null.</summary>
-    public Building? HaulFrom { get; private set; }
-
-    /// <summary>Carregador: a máquina para onde leva, ou null.</summary>
-    public Building? HaulTo { get; private set; }
-
-    /// <summary>Carregador: o item e quantos ele leva (ou vai buscar) para <see cref="HaulTo"/>; conta como já a caminho.</summary>
-    public string? HaulKind { get; private set; }
-    public int HaulAmount { get; private set; }
+    /// <summary>O baú onde vai soltar a carga ao começar uma ladainha, ou null.</summary>
+    private Building? _dropAt;
 
     private readonly Queue<GridPos> _path = new();
     // Ladainha: estado do comando atual (começou? ticks nele) e a espera depois de travar (1 s dobrando até 8 s).
@@ -164,12 +131,8 @@ public sealed class Villager
     /// <summary>A célula de margem que ele está cavando (reservada: outro aldeão não escolhe a mesma).</summary>
     public GridPos? DigCell { get; private set; }
     private int _gatherTicks;
-    private int _retryIn;
     private int _idleTicks;
     private int _happyTicks;
-    private bool _hutFull;
-    private bool _noPath;
-    private bool _noResource;
 
     public Villager(int id, Vector2 position, VillagerStats stats)
     {
@@ -191,24 +154,6 @@ public sealed class Villager
     /// <summary>Liga ou desliga a penalidade de velocidade (fome ou moral baixa, quando existirem).</summary>
     public void SetPenalized(bool penalized) => Penalized = penalized;
 
-    internal void AssignHome(Building? home)
-    {
-        Home = home;
-        Target = null;
-        _path.Clear();
-        _gatherTicks = 0;
-        _retryIn = 0;
-        _hutFull = false;
-        _noPath = false;
-        _noResource = false;
-        _idleTicks = 0;
-        PostCell = null;
-        HaulFrom = HaulTo = null;
-        HaulKind = null;
-        HaulAmount = 0;
-        Task = home is null ? VillagerTask.Unemployed : VillagerTask.Waiting;
-    }
-
     /// <summary>Põe itens na mão dele (testes).</summary>
     internal void GiveForTests(string kind, int count)
     {
@@ -216,7 +161,7 @@ public sealed class Villager
         CarryingCount = count;
     }
 
-    /// <summary>Esvazia a carga (a cabana sumiu: os itens vão para quem desmontou).</summary>
+    /// <summary>Esvazia a carga no inventário dado.</summary>
     internal void DropCarryInto(Inventory target)
     {
         if (CarryingKind is string kind && CarryingCount > 0)
@@ -238,57 +183,15 @@ public sealed class Villager
             UpdateExpression();
             return;
         }
-        if (Home is null)
-        {
-            _idleTicks++;
-            UpdateExpression();
-            return;
-        }
-        if (Home.Type.Carriers is not null)
-        {
-            TickCarrier(world);
-            UpdateExpression();
-            return;
-        }
-        if (Home.Workplace is not Workplace work)
-        {
-            TickPost(world);
-            UpdateExpression();
-            return;
-        }
-
-        if (Task == VillagerTask.Waiting || Task == VillagerTask.Unemployed)
-            _idleTicks++;
-        else
-            _idleTicks = 0;
-
-        switch (Task)
-        {
-            case VillagerTask.Waiting:
-                if (--_retryIn <= 0)
-                    Plan(world, work);
-                break;
-            case VillagerTask.GoingToResource:
-                if (Target is null || Target.IsDepleted)
-                    Plan(world, work);
-                else if (FollowPath(world))
-                    Task = VillagerTask.Gathering;
-                break;
-            case VillagerTask.Gathering:
-                Gather(world, work);
-                break;
-            case VillagerTask.ReturningHome:
-                if (FollowPath(world))
-                    Deliver(world, work);
-                break;
-        }
+        // Sem ladainha: parado (o aldeão não faz nada sozinho).
+        _idleTicks++;
         UpdateExpression();
     }
 
     /// <summary>
     /// Tabela do GDD, do mais forte para o mais fraco: dormindo, feliz (acabou de entregar), esforço
-    /// (coletando ou levando a carga), preocupado (trabalho parado: cabana cheia, mesmo com carga na mão),
-    /// sonolento (ocioso há muito tempo), distraído. Espantado, chorando e bravo ainda não têm gatilho
+    /// (colhendo, no posto ou levando carga), preocupado (a ladainha travou), sonolento (ocioso há muito tempo),
+    /// distraído. Espantado, chorando e bravo ainda não têm gatilho
     /// (horda, ferimento, interrupção).
     /// </summary>
     private void UpdateExpression()
@@ -297,331 +200,9 @@ public sealed class Villager
             : _happyTicks > 0 ? VillagerExpression.Happy
             : Task == VillagerTask.Gathering || Task == VillagerTask.AtPost || (CarryingCount > 0 && Task != VillagerTask.Waiting)
                 ? VillagerExpression.Effort
-            : _hutFull ? VillagerExpression.Worried
+            : Stuck is not null ? VillagerExpression.Worried
             : _idleTicks >= SleepyAfterTicks ? VillagerExpression.Sleepy
             : VillagerExpression.Distracted;
-    }
-
-    private void Replan(SimWorld world)
-    {
-        if (Home?.Workplace is Workplace work)
-            Plan(world, work);
-        else if (Home?.Type.Carriers is not null)
-            PlanHaul(world);
-        else
-            PlanPost(world);
-    }
-
-    /// <summary>
-    /// Carregador: busca um item num baú, cabana ou saída de máquina dentro do raio do posto e leva até a máquina, no
-    /// raio, que ainda aceita esse item (descontando o que outros carregadores já levam para ela). Leva pesado e leve
-    /// (D5 do Arthur, 30/09), pela carga do peso: 1 pesado ou 10 leves por viagem, a pé. Sobra na mão vai para a
-    /// próxima máquina que aceitar.
-    /// </summary>
-    private void TickCarrier(SimWorld world)
-    {
-        switch (Task)
-        {
-            case VillagerTask.Waiting:
-                if (--_retryIn <= 0)
-                    PlanHaul(world);
-                break;
-            case VillagerTask.Fetching:
-                if (HaulFrom is null || world.BuildingAt(HaulFrom.Cell) != HaulFrom)
-                    PlanHaul(world);
-                else if (FollowPath(world))
-                    PickUp(world);
-                break;
-            case VillagerTask.Hauling:
-                if (HaulTo is null || world.BuildingAt(HaulTo.Cell) != HaulTo)
-                    PlanHaul(world);
-                else if (FollowPath(world))
-                    DropOff(world);
-                break;
-        }
-    }
-
-    private void PlanHaul(SimWorld world)
-    {
-        _retryIn = RetryTicks;
-        HaulFrom = HaulTo = null;
-        HaulKind = null;
-        HaulAmount = 0;
-        Building post = Home!;
-        float radius = post.Type.Carriers!.Radius;
-        bool InRange(Building b) => Vector2.Distance(new Vector2(post.Cell.X, post.Cell.Z), new Vector2(b.Cell.X, b.Cell.Z)) <= radius;
-
-        var machines = new List<Building>();
-        var sources = new List<Building>();
-        // Fontes (e o baú de devolução) do mais perto ao mais longe dele.
-        foreach (Building b in world.Buildings)
-        {
-            if (!InRange(b))
-                continue;
-            if (b.Machine is not null)
-                machines.Add(b);
-            if (b.Storage is not null || b.Workplace is not null || b.Machine is not null)
-                sources.Add(b);
-        }
-        machines.Sort((a, b) => Distance(a.Cell).CompareTo(Distance(b.Cell)));
-        sources.Sort((a, b) => Distance(a.Cell).CompareTo(Distance(b.Cell)));
-
-        // Já com carga: leva para a máquina mais perto que aceita.
-        if (CarryingKind is string carried && CarryingCount > 0)
-        {
-            foreach (Building m in machines)
-            {
-                int need = Need(world, m, carried);
-                if (need > 0 && TrySetPath(world, FreeNeighbors(world, m.Cell)))
-                {
-                    HaulTo = m;
-                    HaulKind = carried;
-                    HaulAmount = Math.Min(CarryingCount, need);
-                    Task = VillagerTask.Hauling;
-                    _noPath = false;
-                    return;
-                }
-            }
-            // Nenhuma máquina quer o que está na mão (alguém encheu antes): devolve ao baú mais perto no raio, para não
-            // ficar preso com a carga.
-            foreach (Building src in sources)
-                if (src.Storage is not null && TrySetPath(world, FreeNeighbors(world, src.Cell)))
-                {
-                    HaulTo = src;
-                    HaulKind = carried;
-                    HaulAmount = CarryingCount;
-                    Task = VillagerTask.Hauling;
-                    _noPath = false;
-                    return;
-                }
-            Task = VillagerTask.Waiting;
-            return;
-        }
-
-        foreach (Building m in machines)
-        {
-            foreach (string kind in m.Machine!.Recipe.Inputs.Keys)
-            {
-                int need = Need(world, m, kind);
-                if (need <= 0)
-                    continue;
-                Building? best = null;
-                foreach (Building src in sources)
-                    if (src != m && Stock(src, kind) > 0 && (best is null || Distance(src.Cell) < Distance(best.Cell)))
-                        best = src;
-                if (best is null || !TrySetPath(world, FreeNeighbors(world, best.Cell)))
-                    continue;
-                HaulFrom = best;
-                HaulTo = m;
-                HaulKind = kind;
-                HaulAmount = Math.Min(CarryFor(world, kind), need);
-                Task = VillagerTask.Fetching;
-                _noPath = false;
-                return;
-            }
-        }
-        Task = VillagerTask.Waiting;
-    }
-
-    /// <summary>Quanto de <paramref name="kind"/> ainda cabe na máquina, descontando o que outros carregadores já levam.</summary>
-    private int Need(SimWorld world, Building machine, string kind)
-    {
-        int need = machine.Machine!.Room(kind);
-        foreach (Villager other in world.Villagers)
-            if (other != this && other.HaulTo == machine && other.HaulKind == kind)
-                need -= other.HaulAmount;
-        return need;
-    }
-
-    /// <summary>Quanto desse item a fonte tem para dar: baú, cabana, ou a saída (nunca a entrada) de uma máquina.</summary>
-    private static int Stock(Building source, string kind) =>
-        source.Storage?.Count(kind) ?? source.Workplace?.Stored.Count(kind) ?? source.Machine?.Output.Count(kind) ?? 0;
-
-    private void PickUp(SimWorld world)
-    {
-        Building src = HaulFrom!;
-        Inventory? stock = src.Storage ?? src.Workplace?.Stored ?? src.Machine?.Output;
-        int taken = 0;
-        while (stock is not null && taken < HaulAmount && stock.TryRemoveOne(HaulKind!))
-            taken++;
-        if (taken == 0)
-        {
-            PlanHaul(world); // alguém levou antes
-            return;
-        }
-        CarryingKind = HaulKind;
-        CarryingCount = taken;
-        HaulAmount = taken;
-        HaulFrom = null;
-        if (TrySetPath(world, FreeNeighbors(world, HaulTo!.Cell)))
-            Task = VillagerTask.Hauling;
-        else
-            PlanHaul(world);
-    }
-
-    private void DropOff(SimWorld world)
-    {
-        int given = 0;
-        if (HaulTo!.Machine is MachineState machine)
-            while (CarryingCount > 0 && machine.Accepts(CarryingKind!))
-            {
-                machine.Input.Add(CarryingKind!);
-                CarryingCount--;
-                given++;
-            }
-        else if (HaulTo.Storage is Inventory storage && CarryingCount > 0)
-        {
-            storage.Add(CarryingKind!, CarryingCount);
-            given = CarryingCount;
-            CarryingCount = 0;
-        }
-        if (CarryingCount == 0)
-            CarryingKind = null;
-        if (given > 0)
-            _happyTicks = HappyTicks;
-        Vector2 toMachine = new Vector2(HaulTo.Cell.X, HaulTo.Cell.Z) - Position;
-        if (toMachine != Vector2.Zero)
-            Facing = Vector2.Normalize(toMachine);
-        PlanHaul(world);
-    }
-
-    /// <summary>
-    /// Posto de máquina: vai até uma célula livre encostada nela (de preferência de lado, não na diagonal, e não a de um
-    /// colega de posto) e fica lá. Se a célula fechar (alguém construiu em cima), escolhe outra.
-    /// </summary>
-    private void TickPost(SimWorld world)
-    {
-        switch (Task)
-        {
-            case VillagerTask.Waiting:
-                if (--_retryIn <= 0)
-                    PlanPost(world);
-                break;
-            case VillagerTask.GoingToPost:
-                if (FollowPath(world))
-                    ArriveAtPost();
-                break;
-            case VillagerTask.AtPost:
-                if (PostCell is GridPos cell && world.BlocksVillager(cell))
-                    PlanPost(world);
-                break;
-        }
-    }
-
-    private void PlanPost(SimWorld world)
-    {
-        _retryIn = RetryTicks;
-        Building home = Home!;
-        var taken = new HashSet<GridPos>();
-        foreach (Villager? mate in home.Crew)
-            if (mate is not null && mate != this && mate.PostCell is GridPos c)
-                taken.Add(c);
-        List<GridPos> goals = FreeNeighbors(world, home.Cell);
-        goals.RemoveAll(taken.Contains);
-        // Chão livre antes de cima de esteira; de lado (encostado de verdade) antes da diagonal.
-        List<GridPos> sides = goals.FindAll(g => g.X == home.Cell.X || g.Z == home.Cell.Z);
-        List<GridPos> clearSides = sides.FindAll(g => world.BuildingAt(g) is null);
-        List<GridPos> clear = goals.FindAll(g => world.BuildingAt(g) is null);
-        foreach (List<GridPos> choice in new[] { clearSides, clear, sides, goals })
-        {
-            if (choice.Count == 0 || !TrySetPath(world, choice))
-                continue;
-            PostCell = _path.Count > 0 ? LastOf(_path) : Cell;
-            _noPath = false;
-            Task = VillagerTask.GoingToPost;
-            if (_path.Count == 0)
-                ArriveAtPost();
-            return;
-        }
-        _noPath = true;
-        PostCell = null;
-        Task = VillagerTask.Waiting;
-    }
-
-    private void ArriveAtPost()
-    {
-        Task = VillagerTask.AtPost;
-        Vector2 toMachine = new Vector2(Home!.Cell.X, Home.Cell.Z) - Position;
-        if (toMachine != Vector2.Zero)
-            Facing = Vector2.Normalize(toMachine);
-    }
-
-    private static GridPos LastOf(Queue<GridPos> queue)
-    {
-        GridPos last = default;
-        foreach (GridPos g in queue)
-            last = g;
-        return last;
-    }
-
-    /// <summary>Decide o próximo passo: entregar a carga, ou buscar o recurso mais perto dentro do raio.</summary>
-    private void Plan(SimWorld world, Workplace work)
-    {
-        _retryIn = RetryTicks;
-        if (CarryingCount > 0)
-        {
-            GoHome(world);
-            return;
-        }
-        _hutFull = work.Free <= 0;
-        if (_hutFull)
-        {
-            Task = VillagerTask.Waiting;
-            return;
-        }
-
-        // Do mais perto (em linha reta) ao mais longe, o primeiro que tiver caminho.
-        var candidates = new List<ResourceNode>();
-        var homeCenter = new Vector2(Home!.Cell.X, Home.Cell.Z);
-        foreach (ResourceNode node in world.Resources)
-        {
-            if (!node.IsDepleted && node.Kind == work.Job.Resource && world.BuildingAt(node.Cell) is null &&
-                Vector2.Distance(homeCenter, new Vector2(node.Cell.X, node.Cell.Z)) <= work.Job.Radius)
-                candidates.Add(node);
-        }
-        candidates.Sort((a, b) => Distance(a.Cell).CompareTo(Distance(b.Cell)));
-        _noResource = candidates.Count == 0;
-
-        foreach (ResourceNode node in candidates)
-        {
-            if (TrySetPath(world, FreeNeighbors(world, node.Cell)))
-            {
-                Target = node;
-                Task = VillagerTask.GoingToResource;
-                _noPath = false;
-                return;
-            }
-        }
-        _noPath = candidates.Count > 0;
-        Target = null;
-        Task = VillagerTask.Waiting;
-    }
-
-    private void Gather(SimWorld world, Workplace work)
-    {
-        ResourceNode? node = Target;
-        if (node is null || node.IsDepleted)
-        {
-            Plan(world, work);
-            return;
-        }
-        if (!Touching(world, node))
-            return;
-
-        Vector2 toNode = new Vector2(node.Cell.X, node.Cell.Z) - Position;
-        if (toNode != Vector2.Zero)
-            Facing = Vector2.Normalize(toNode);
-
-        if (++_gatherTicks < GatherTicksFor(node))
-            return;
-        _gatherTicks = 0;
-        if (node.TakeOne())
-        {
-            CarryingKind = node.Kind;
-            CarryingCount++;
-        }
-        if (CarryingCount >= CarryFor(world, node.Kind) || node.IsDepleted)
-            GoHome(world);
     }
 
     /// <summary>
@@ -643,30 +224,6 @@ public sealed class Villager
         return false;
     }
 
-    private void GoHome(SimWorld world)
-    {
-        _noPath = !TrySetPath(world, FreeNeighbors(world, Home!.Cell));
-        Task = _noPath ? VillagerTask.Waiting : VillagerTask.ReturningHome;
-    }
-
-    private void Deliver(SimWorld world, Workplace work)
-    {
-        if (CarryingKind is string kind && CarryingCount > 0)
-        {
-            int amount = Math.Min(CarryingCount, work.Free);
-            work.Stored.Add(kind, amount);
-            CarryingCount -= amount;
-            if (CarryingCount == 0)
-                CarryingKind = null;
-            if (amount > 0)
-                _happyTicks = HappyTicks;
-        }
-        _hutFull = CarryingCount > 0; // sobrou carga: a cabana está cheia
-        // Se a cabana encheu, espera com o resto da carga.
-        Task = VillagerTask.Waiting;
-        _retryIn = CarryingCount > 0 ? RetryTicks : 0;
-    }
-
     /// <summary>
     /// Anda pelo caminho; true quando chegou. Se a próxima célula virou sólida, replaneja. Célula de árvore no caminho
     /// conta como atingida ao encostar no tronco; dali, rumo à próxima, o aldeão escorrega em volta do tronco.
@@ -680,10 +237,7 @@ public sealed class Villager
             if (world.BlocksVillager(next))
             {
                 _path.Clear();
-                if (Litany is not null)
-                    _commandStarted = false; // a ladainha recalcula o caminho no próximo tick
-                else
-                    Replan(world);
+                _commandStarted = false; // a ladainha recalcula o caminho no próximo tick
                 return false;
             }
             var target = new Vector2(next.X, next.Z);
@@ -828,14 +382,10 @@ public sealed class Villager
             for (int i = 0; i < home.Crew.Length; i++)
                 if (home.Crew[i] == this)
                     home.Crew[i] = null;
-            if (home.Workplace is Workplace work && work.Worker == this)
-                work.Worker = null;
         }
         Home = null;
         PostCell = null;
-        HaulFrom = HaulTo = null;
-        HaulKind = null;
-        HaulAmount = 0;
+        _dropAt = null;
         Target = null;
         _path.Clear();
     }
@@ -908,16 +458,16 @@ public sealed class Villager
                 ResetCommand();
                 return;
             }
-            HaulTo = chest;
+            _dropAt = chest;
             _commandStarted = true;
         }
         if (!FollowPath(world))
             return;
-        if (HaulTo is { Storage: Inventory storage } && world.BuildingAt(HaulTo.Cell) == HaulTo && CarryingKind is string kind)
+        if (_dropAt is { Storage: Inventory storage } && world.BuildingAt(_dropAt.Cell) == _dropAt && CarryingKind is string kind)
             storage.Add(kind, CarryingCount);
         CarryingKind = null;
         CarryingCount = 0;
-        HaulTo = null;
+        _dropAt = null;
         _dropFirst = false;
         ResetCommand();
     }

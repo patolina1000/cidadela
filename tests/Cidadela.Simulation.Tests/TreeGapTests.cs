@@ -72,15 +72,16 @@ public class TreeGapTests
         return "[" + string.Join(",", list) + "]";
     }
 
-    // A cabana fica ao norte do muro e o aldeão nasce ao sul: as árvores do muro são as mais perto, ele as coleta pelo
+    // O baú fica ao norte do muro e o aldeão nasce ao sul: as árvores do muro são as mais perto, ele as coleta pelo
     // lado sul e, para entregar, precisa atravessar o muro pelo vão entre os troncos.
     [Fact]
     public void VillagerCrossesBetweenSideBySideTrunks()
     {
         SimWorld world = Open(18f, 18f, WallWith((4, 4), (5, 4)),
-            buildings: """[{ "kind": "lumber_hut", "x": 4, "z": 1 }]""", villagers: """[{ "x": 4, "z": 8 }]""");
+            buildings: """[{ "kind": "chest", "x": 4, "z": 1 }]""", villagers: """[{ "x": 4, "z": 8 }]""");
+        LumberLitany(world, 4, 1);
         TestWorlds.Run(world, 600);
-        Assert.True(world.BuildingAt(new GridPos(4, 1))!.Workplace!.Stored.Count("wood") >= 2,
+        Assert.True(world.BuildingAt(new GridPos(4, 1))!.Storage!.Count("wood") >= 2,
             $"estado {world.Villagers[0].Status}, em {world.Villagers[0].Position}");
     }
 
@@ -89,9 +90,10 @@ public class TreeGapTests
     {
         // Muro em z = 4 com um buraco em (4, 4) fechado por uma árvore, e outra árvore em (5, 5) logo depois.
         SimWorld world = Open(18f, 18f, WallWith((4, 4)).Replace("]", """, { "kind": "wood", "x": 5, "z": 5 }]"""),
-            buildings: """[{ "kind": "lumber_hut", "x": 6, "z": 1 }]""", villagers: """[{ "x": 7, "z": 8 }]""");
+            buildings: """[{ "kind": "chest", "x": 6, "z": 1 }]""", villagers: """[{ "x": 7, "z": 8 }]""");
+        LumberLitany(world, 6, 1);
         TestWorlds.Run(world, 900);
-        Assert.True(world.BuildingAt(new GridPos(6, 1))!.Workplace!.Stored.Count("wood") >= 2,
+        Assert.True(world.BuildingAt(new GridPos(6, 1))!.Storage!.Count("wood") >= 2,
             $"estado {world.Villagers[0].Status}, em {world.Villagers[0].Position}");
     }
 
@@ -99,7 +101,8 @@ public class TreeGapTests
     public void VillagerGathersTouchingTheTrunk()
     {
         SimWorld world = Open(18f, 18f, """[{ "kind": "wood", "x": 4, "z": 2 }]""",
-            buildings: """[{ "kind": "lumber_hut", "x": 4, "z": 6 }]""", villagers: """[{ "x": 4, "z": 7 }]""");
+            buildings: """[{ "kind": "chest", "x": 4, "z": 6 }]""", villagers: """[{ "x": 4, "z": 7 }]""");
+        LumberLitany(world, 4, 6);
         for (int i = 0; i < 300 && world.Villagers[0].Task != VillagerTask.Gathering; i++)
             world.Tick();
         TestWorlds.Run(world, 5);
@@ -108,4 +111,8 @@ public class TreeGapTests
         float d = Vector2.Distance(v.Position, new Vector2(4f, 2f));
         Assert.InRange(d, 0.2f, 0.45f); // tronco + corpo do aldeão, não a célula vizinha (1 m)
     }
+
+    /// <summary>O aldeão colhe tora perto do baú e põe nele (o que a cabana de lenhador fazia sozinha antes das ladainhas).</summary>
+    private static void LumberLitany(SimWorld world, int x, int z) =>
+        TestWorlds.Teach(world, world.Villagers[0], TestWorlds.Litany(TestWorlds.Gather("wood", x, z), TestWorlds.Put("wood", x, z)));
 }

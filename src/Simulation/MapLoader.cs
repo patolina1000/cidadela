@@ -53,7 +53,6 @@ public static class MapLoader
         foreach ((Villager villager, Litany litany) in withLitany)
             if (villager.Learn(world, litany) is var fit && fit != LitanyFit.Ok)
                 throw new FormatException($"Aldeão em ({villager.Cell.X}, {villager.Cell.Z}) recusa a ladainha \"{litany.Name}\": {fit}.");
-        world.AssignIdleWorkers();
 
         return world;
     }

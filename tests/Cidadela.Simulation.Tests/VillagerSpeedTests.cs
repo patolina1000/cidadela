@@ -68,9 +68,9 @@ public class VillagerSpeedTests
     [Fact]
     public void TheFinalSpeedDrivesTheMovement()
     {
-        // Cabana e árvore como nos testes do aldeão; com o patamar 1 ele anda 6 células/s (0,3 por tick).
-        SimWorld world = TestWorlds.Open(x: 1, z: 18, resources: """[{ "kind": "wood", "x": 12, "z": 4 }]""",
-            buildings: """[{ "kind": "lumber_hut", "x": 4, "z": 4, "direction": "east" }]""", villagers: """[{ "x": 2, "z": 2 }]""");
+        // Uma ladainha que o faz andar longe; com o patamar 1 ele anda 6 células/s (0,3 por tick).
+        SimWorld world = TestWorlds.Open(x: 1, z: 18, villagers: """[{ "x": 2, "z": 2 }]""");
+        TestWorlds.Teach(world, world.Villagers[0], TestWorlds.Litany(TestWorlds.GoTo(16, 2)));
         world.Enqueue(new SetSpeedTierCommand(1));
         TestWorlds.Run(world, 3);
         System.Numerics.Vector2 before = world.Villagers[0].Position;

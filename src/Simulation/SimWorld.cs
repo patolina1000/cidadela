@@ -36,9 +36,6 @@ public sealed class SimWorld
     private readonly Dictionary<GridPos, ResourceNode> _resourceByCell = new();
     private readonly Dictionary<GridPos, Building> _buildingByCell = new();
     private readonly List<Building> _machines = new();
-    private readonly List<Building> _workplaces = new();
-    /// <summary>Construções que chamam aldeões (cabanas e postos), na ordem em que foram construídas.</summary>
-    private readonly List<Building> _staffed = new();
     private readonly List<ManaNetwork> _networks = new();
     private int _networksVersion = -1;
     private readonly Queue<ISimCommand> _commands = new();
@@ -55,18 +52,14 @@ public sealed class SimWorld
 
     public void Tick()
     {
-        Building? postBefore = Castellan.Post;
         while (_commands.TryDequeue(out ISimCommand? command))
             command.Apply(this);
 
         Castellan.Tick(this);
-        if (postBefore is not null && Castellan.Post != postBefore && _buildingByCell.ContainsValue(postBefore))
-            AssignIdleWorkers(); // ela saiu do posto: um aldeão livre pode ocupar
         UpdateMana();
         TickMachines();
         foreach (Villager villager in _villagers)
             villager.Tick(this);
-        TickWorkplaces();
         TickCount++;
     }
 
@@ -213,33 +206,6 @@ public sealed class SimWorld
         return dx * dx + dz * dz <= reach * reach + 1e-4f;
     }
 
-    /// <summary>Cabana com algo guardado solta 1 item por tick na esteira ou baú à sua frente, como uma máquina.</summary>
-    private void TickWorkplaces()
-    {
-        foreach (Building building in _workplaces)
-        {
-            Workplace work = building.Workplace!;
-            string kind = work.Job.Resource;
-            if (work.Stored.Count(kind) > 0 && PushForward(building, kind))
-                work.Stored.TryRemoveOne(kind);
-        }
-    }
-
-    /// <summary>
-    /// Tenta pôr 1 item na esteira (que não aponte de volta) ou baú à frente da cabana. Item pesado não entra em
-    /// esteira: só no baú.
-    /// </summary>
-    private bool PushForward(Building from, string kind)
-    {
-        Building? front = BuildingAt(from.Cell.Step(from.Direction));
-        if (front?.Storage is Inventory storage)
-        {
-            storage.Add(kind);
-            return true;
-        }
-        return false;
-    }
-
     /// <summary>
     /// O aldeão formado nasce VAZIO na célula ao lado e fica parado ali, sem ir para posto nenhum, até receber uma
     /// ladainha (docs/ladainhas.md; substitui o "vai sozinho para o posto vazio").
@@ -266,49 +232,6 @@ public sealed class SimWorld
                 return diagonal;
         }
         return null;
-    }
-
-    /// <summary>
-    /// Cada cabana sem trabalhador e cada posto vago chama o aldeão livre mais perto, na ordem em que as construções
-    /// foram feitas (quem construiu primeiro é atendido primeiro).
-    /// </summary>
-    internal void AssignIdleWorkers()
-    {
-        foreach (Building building in _staffed)
-        {
-            if (building.Workplace is Workplace work)
-            {
-                if (work.Worker is not null)
-                    continue;
-                if (NearestIdle(building) is not Villager worker)
-                    return;
-                work.Worker = worker;
-                worker.AssignHome(building);
-                continue;
-            }
-            for (int i = 0; i < building.Crew.Length; i++)
-            {
-                if (building.Crew[i] is not null || building.CastellanSlot == i)
-                    continue;
-                if (NearestIdle(building) is not Villager crew)
-                    return;
-                building.Crew[i] = crew;
-                crew.AssignHome(building);
-            }
-        }
-    }
-
-    private Villager? NearestIdle(Building building)
-    {
-        var home = new System.Numerics.Vector2(building.Cell.X, building.Cell.Z);
-        Villager? nearest = null;
-        foreach (Villager v in _villagers)
-        {
-            if (v.Home is null && !v.Blank && v.Litany is null && (nearest is null ||
-                System.Numerics.Vector2.Distance(v.Position, home) < System.Numerics.Vector2.Distance(nearest.Position, home)))
-                nearest = v;
-        }
-        return nearest;
     }
 
     internal void TryInsertItem(GridPos cell, string kind)
@@ -488,31 +411,13 @@ public sealed class SimWorld
             Castellan.LeavePost();
         _buildingByCell.Remove(cell);
         _machines.Remove(building);
-        _workplaces.Remove(building);
-        _staffed.Remove(building);
         BuildingsVersion++;
         Castellan.Inventory.Add(building.Type.Cost);
         // O que estava dentro volta junto.
         building.Storage?.MoveAllTo(Castellan.Inventory);
         building.Machine?.EmptyInto(Castellan.Inventory);
-        if (building.Workplace is Workplace work)
-        {
-            work.Stored.MoveAllTo(Castellan.Inventory);
-            work.Worker?.DropCarryInto(Castellan.Inventory);
-            work.Worker?.AssignHome(null);
-            work.Worker = null;
-            AssignIdleWorkers(); // o aldeão liberado pode ir para outra cabana vazia
-        }
-        if (building.Crew.Length > 0)
-        {
-            for (int i = 0; i < building.Crew.Length; i++)
-            {
-                building.Crew[i]?.DropCarryInto(Castellan.Inventory); // carregador com carga na mão
-                building.Crew[i]?.AssignHome(null);
-                building.Crew[i] = null;
-            }
-            AssignIdleWorkers(); // quem saiu do posto pode ir para outro vago
-        }
+        building.Workplace?.Stored.MoveAllTo(Castellan.Inventory);
+        // Quem operava nela percebe no próximo tick (a ladainha trava com "lugar sumiu") e solta o posto.
     }
 
     internal void SetCastellan(Vector2 position)
@@ -582,14 +487,7 @@ public sealed class SimWorld
         _buildingByCell[cell] = building;
         if (building.Machine is not null)
             _machines.Add(building);
-        if (building.Workplace is not null)
-            _workplaces.Add(building);
         BuildingsVersion++;
-        if (building.Workplace is not null || building.Crew.Length > 0)
-        {
-            _staffed.Add(building);
-            AssignIdleWorkers();
-        }
         return building;
     }
 

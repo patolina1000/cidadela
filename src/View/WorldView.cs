@@ -458,12 +458,8 @@ public partial class WorldView : Node3D
             : "Castelão";
     }
 
-    private string DescribeVillager(Villager villager)
-    {
-        if (villager.Home?.Workplace is not Workplace work)
-            return "Aldeão  —  sem ofício";
-        return $"Aldeão {work.Job.Name}  —  {VillagerTaskText(villager, work)}";
-    }
+    private string DescribeVillager(Villager villager) =>
+        "Aldeão  —  " + (villager.Litany is Litany l ? $"ladainha \"{l.Name}\", comando {villager.CommandIndex + 1}/{l.Commands.Count}" : "sem ladainha");
 
     private List<string> ShowableLines(Building building) => building switch
     {
@@ -473,19 +469,6 @@ public partial class WorldView : Node3D
         _ => new List<string> { building.Type.Name },
     };
 
-    private string VillagerTaskText(Villager worker, Workplace work)
-    {
-        string resource = _world.Data.Item(work.Job.Resource).Name;
-        return worker.Task switch
-        {
-            VillagerTask.GoingToResource => $"indo buscar {resource}",
-            VillagerTask.Gathering => $"coletando ({worker.CarryingCount}/{worker.CarryFor(_world, work.Job.Resource)})",
-            VillagerTask.ReturningHome => $"levando {worker.CarryingCount} {resource}",
-            _ when work.Free <= 0 => "parado: cabana cheia",
-            _ => $"parado: sem {resource} no raio de {work.Job.Radius:0} células",
-        };
-    }
-
     private List<string> WorkplaceLines(Building building, Workplace work)
     {
         string resource = _world.Data.Item(work.Job.Resource).Name;
@@ -494,12 +477,6 @@ public partial class WorldView : Node3D
             building.Type.Name,
             $"Guardado: {work.Stored.Count(work.Job.Resource)}/{work.Job.Capacity} {resource}",
         };
-        if (work.Worker is not Villager worker)
-        {
-            lines.Add("Sem trabalhador: nenhum aldeão livre");
-            return lines;
-        }
-        lines.Add($"{work.Job.Name}: {VillagerTaskText(worker, work)}");
         return lines;
     }
 

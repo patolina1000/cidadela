@@ -39,7 +39,7 @@ public sealed class Building
         }
     }
 
-    /// <summary>Se todos os postos estão ocupados por quem já chegou (sem postos: sempre; carregadores não contam).</summary>
+    /// <summary>Se todos os postos estão ocupados por quem já chegou (sem postos: sempre).</summary>
     public bool CrewReady => Type.Posts is null || CrewPresent == Crew.Length;
 
     public string Kind => Type.Kind;
@@ -82,6 +82,6 @@ public sealed class Building
             Machine = new MachineState(recipe);
         if (type.Job is not null)
             Workplace = new Workplace(type.Job);
-        Crew = new Villager?[type.Posts?.Count ?? type.Carriers?.Count ?? 0];
+        Crew = new Villager?[type.Posts?.Count ?? 0];
     }
 }

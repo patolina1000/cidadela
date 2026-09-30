@@ -83,6 +83,47 @@ internal static class TestWorlds
         DataFile("castellan.json"), DataFile("villagers.json"), DataFile("buildings.json"), DataFile("recipes.json"),
         DataFile("terrain.json"));
 
+    // ---- Ladainhas nos testes -----------------------------------------------------------------------------------
+
+    public static Litany Litany(params LitanyCommand[] commands) => new("teste", commands);
+
+    public static LitanyCommand Operate(int x, int z) =>
+        new(LitanyVerb.Operate, new LitanyTarget(LitanyTargetKind.Building, new GridPos(x, z)));
+
+    public static LitanyCommand Gather(string resource, int nearX, int nearZ, float radius = 8f) =>
+        new(LitanyVerb.Gather, new LitanyTarget(LitanyTargetKind.Resource, new GridPos(nearX, nearZ), resource, radius));
+
+    public static LitanyCommand Put(string item, int x, int z) =>
+        new(LitanyVerb.Put, new LitanyTarget(LitanyTargetKind.Building, new GridPos(x, z)), item);
+
+    public static LitanyCommand GoTo(int x, int z) =>
+        new(LitanyVerb.GoTo, new LitanyTarget(LitanyTargetKind.Cell, new GridPos(x, z)));
+
+    /// <summary>Dá uma ladainha ao aldeão (falha o teste se ele recusar).</summary>
+    public static void Teach(SimWorld world, Villager villager, Litany litany)
+    {
+        if (villager.Learn(world, litany) != LitanyFit.Ok)
+            throw new InvalidOperationException("O aldeão recusou a ladainha de teste.");
+    }
+
+    /// <summary>
+    /// Cada aldeão ganha a ladainha "operar" da máquina com postos mais perto dele (os testes põem o operador encostado
+    /// nela). O aldeão não faz nada sozinho: é assim que um teste diz "este é o operador".
+    /// </summary>
+    public static void OperateNearest(SimWorld world)
+    {
+        foreach (Villager v in world.Villagers)
+        {
+            Building? best = null;
+            foreach (Building b in world.Buildings)
+                if (b.Type.Posts is not null && (best is null || Dist(v, b) < Dist(v, best)))
+                    best = b;
+            if (best is not null)
+                Teach(world, v, Litany(Operate(best.Cell.X, best.Cell.Z)));
+        }
+        static float Dist(Villager v, Building b) => Vector2.Distance(v.Position, new Vector2(b.Cell.X, b.Cell.Z));
+    }
+
     public static void Move(SimWorld world, float x, float z, int ticks)
     {
         world.Enqueue(new MoveCommand(new Vector2(x, z)));
