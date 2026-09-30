@@ -1,0 +1,19 @@
+[
+  {
+    "quando": "2026-09-29T21:08:30",
+    "titulo": "Protagonista v2 — conferência dos recortes",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/recortes.png",
+    "nota": "Corpo coerente e rosto liso. Chifres e cabelo: frente, perfil e costas coerentes; topo incoerente (vista oblíqua) → Meshy com frente, perfil e costas, sem o topo. Cabeça L÷A: corpo 0,935; chifres 0,889; cabelo 0,694–0,782."
+  },
+  {
+    "quando": "2026-09-29T21:08:31",
+    "titulo": "Aldeão v2 com cabelo 4 — prova do visor 3D",
+    "tipo": "glb",
+    "caminho": "assets/modelos/aldeao_v2/aldeao_corpo.glb",
+    "nota": "Prova do 3D, dos clipes (idle-loop e run-loop) e da câmera do jogo. Cabelo 4 preso no osso Head compensando o repouso, como no jogo. Aldeão com cabelo em repouso: 19 / 48 / 123 px nos zooms 0,4 / 1 / 2,5 (nota 01: 19 / 44 / 112 px, só o corpo). Luz aproximada, sem calibrar contra o jogo.",
+    "junto": [
+      "assets/modelos/aldeao_v2/cabelos/cabelo_4.glb"
+    ]
+  }
+]

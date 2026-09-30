@@ -3104,3 +3104,16 @@ onde errou, correções manuais e quanto tempo levou.
   `assets/../.env`, PNG como glb e `--junto` em imagem, sem criar o `visor.json`.
 - **Daqui em diante toda prévia vai para o visor por este script.**
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~10 min.
+
+## 2026-09-29 — Visor de arte, passo 4: primeiro conteúdo
+
+- **Pedido:** publicar a folha de conferência dos recortes e o `aldeao_corpo.glb` com o `cabelo_4` junto, como prova
+  do 3D, dos clipes e da câmera do jogo.
+- **Feito:** dois itens em `assets/previews/visor.json` pelo `publicar.py`. No portal "Visor" do Maestri: o visor
+  trocou sozinho para o item novo na sondagem; conferência em tamanho real; aldeão com cabelo 4 no osso Head, idle e
+  run tocando, câmera do jogo nos três zooms, 1:1 desenhando 3024×1890 pixels de tela (1512×945 CSS com dpr 2).
+  Servidor derrubado no fim; o portal fica aberto no canvas apontando para http://127.0.0.1:8765/.
+- **Pendente:** calibrar a luz do visor contra uma captura do jogo (hoje é aproximação com as cores do
+  `Main.tscn` e o sol de cima); o piso 0,5 e a borda fria da protagonista ainda não existem no shader do jogo, então
+  o visor usa 0,35 para os dois.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
