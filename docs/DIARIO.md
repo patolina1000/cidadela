@@ -4063,3 +4063,29 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:37–21:41 de relógio.
+
+---
+
+## 2026-09-29 — Menu de pausa no jogo (Esc)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 2b: menu de pausa com Esc, sem conflito com o Esc da câmera cinematográfica: Continuar,
+  Configurações, Menu inicial, Sair, no visual do menu inicial.
+- **O que foi feito:**
+  - `MenuStyle` (painel escuro no terço esquerdo, título, botões) e `SettingsPanel` (o painel de Configurações que
+    estava dentro do `MenuRoot`) viraram classes próprias; o menu inicial passou a usá-las, sem mudança visual
+    (o título do painel perdeu o "(esboço)").
+  - `PauseMenu` (CanvasLayer acima do HUD, `ProcessMode.Always`): ao abrir pausa a árvore inteira
+    (`GetTree().Paused`: simulação, câmera, animações); fundo escurecido, título com "pausado" e os quatro botões.
+    Menu inicial despausa antes de trocar de cena.
+  - Ordem do Esc no jogo: 1) sai da cinematográfica; 2) solta a construção ou o item da mão; 3) sem nada disso, abre
+    o menu. No menu: 1) fecha as Configurações; 2) fecha o menu (igual a Continuar). O Esc que abre é marcado como
+    tratado, para não chegar ao menu e fechá-lo no mesmo quadro.
+- **Conferido no jogo:** Esc abriu o menu; Configurações abriu o painel ao lado; Esc fechou o painel, Esc fechou o
+  menu e os ticks voltaram a contar (86 → 335); Menu inicial carregou `Menu.tscn`. Log sem erros.
+  Print: `docs/prints/menu_pausa.png`.
+- **O que deu errado:** nada. (O godot-ai marca as capturas com a árvore pausada como "quadro velho"; o quadro
+  mostrado é o certo.)
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:41–21:43 de relógio.

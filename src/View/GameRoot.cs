@@ -10,7 +10,7 @@ namespace Cidadela.View;
 /// WASD move o Castelão (ela só corre; não há andar nem botão de correr).
 /// Mouse: esquerdo coleta, recolhe de um baú, constrói (com uma construção escolhida) ou põe o item da mão
 /// numa esteira ou baú (com um item segurado); segurar e arrastar repete célula a célula.
-/// Direito sem arrastar solta o que está escolhido ou desmonta. Teclado: WASD anda, 1–9 escolhem, R gira, Esc solta,
+/// Direito sem arrastar solta o que está escolhido ou desmonta. Teclado: WASD anda, 1–9 escolhem, R gira, Esc solta (sem nada na mão, abre o menu de pausa),
 /// C entra/sai da câmera cinematográfica no que está sob o cursor (ou no Castelão).
 /// Depuração dos aldeões: V alterna o patamar de velocidade, B liga/desliga a penalidade (fome ou moral baixa).
 /// Tempo do jogo (GDD, seção 3): Espaço pausa e continua; - e = (a tecla do +) diminuem e aumentam a velocidade
@@ -40,6 +40,7 @@ public partial class GameRoot : Node3D
     private PerfOverlay _perf = null!;
     private Label _inventoryLabel = null!;
     private Label _speedLabel = null!;
+    private PauseMenu _pauseMenu = null!;
     private GameSpeeds _speeds = null!;
     private int _speedIndex;
 
@@ -112,6 +113,9 @@ public partial class GameRoot : Node3D
         GetNode("DebugHud").AddChild(_speedLabel);
         UpdateSpeedLabel();
 
+        _pauseMenu = new PauseMenu { Name = "PauseMenu" };
+        AddChild(_pauseMenu);
+
         // A linha de status desce para baixo dos botões do inventário.
         _inventoryLabel.OffsetTop = 72f;
         _inventoryLabel.OffsetBottom = 98f;
@@ -181,9 +185,22 @@ public partial class GameRoot : Node3D
                 ToggleCinematic();
                 return;
             }
+            if (_selected is null && _heldItem is null)
+            {
+                OpenPauseMenu();
+                return;
+            }
             Select(null);
             Hold(null);
         }
+    }
+
+    /// <summary>Abre o menu de pausa. O Esc que abriu não pode chegar ao menu, senão ele fecharia na hora.</summary>
+    private void OpenPauseMenu()
+    {
+        GetViewport().SetInputAsHandled();
+        _leftHeld = false; // o soltar do botão não chega com a árvore pausada
+        _pauseMenu.Open();
     }
 
     /// <summary>

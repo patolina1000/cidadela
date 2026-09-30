@@ -7,7 +7,7 @@ namespace Cidadela.View;
 /// Menu inicial (scenes/Menu.tscn): o crepúsculo do jogo ao fundo, com a protagonista parada em idle e o
 /// cristal aceso, sobre um pedaço de grama (aguardando o novo aldeão: os aldeões em volta dela voltam com ele).
 /// Botões: Novo jogo, Continuar
-/// (desativado sem save), Biografia, Configurações (esboço) e Sair.
+/// (desativado sem save), Biografia, Configurações (<see cref="SettingsPanel"/>) e Sair.
 /// </summary>
 public partial class MenuRoot : Node3D
 {
@@ -67,41 +67,20 @@ public partial class MenuRoot : Node3D
         vignette.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         layer.AddChild(vignette);
 
-        var panel = new PanelContainer { Name = "Panel" };
-        panel.AnchorTop = 0f; panel.AnchorBottom = 1f; panel.AnchorLeft = 0f; panel.AnchorRight = 0f;
-        panel.OffsetLeft = 0f; panel.OffsetRight = 400f;
-        panel.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = new Color(0.06f, 0.05f, 0.09f, 0.72f),
-            ContentMarginLeft = 44, ContentMarginRight = 44, ContentMarginTop = 60, ContentMarginBottom = 40,
-        });
-        layer.AddChild(panel);
+        VBoxContainer column = MenuStyle.AddLeftPanel(layer);
+        MenuStyle.AddTitle(column, "protótipo, crepúsculo eterno");
 
-        var column = new VBoxContainer();
-        column.AddThemeConstantOverride("separation", 10);
-        panel.AddChild(column);
-
-        var title = new Label { Text = "Engrenagens da\nCidadela" };
-        title.AddThemeFontSizeOverride("font_size", 40);
-        title.AddThemeColorOverride("font_color", Palette.Bone);
-        column.AddChild(title);
-        var subtitle = new Label { Text = "protótipo, crepúsculo eterno" };
-        subtitle.AddThemeFontSizeOverride("font_size", 15);
-        subtitle.AddThemeColorOverride("font_color", new Color(Palette.Bone, 0.55f));
-        column.AddChild(subtitle);
-        column.AddChild(new Control { CustomMinimumSize = new Vector2(0, 30) });
-
-        AddButton(column, "Novo jogo", () => GetTree().ChangeSceneToFile(GameFiles.GameScene));
-        Button resume = AddButton(column, "Continuar", () => GetTree().ChangeSceneToFile(GameFiles.GameScene));
+        MenuStyle.AddButton(column, "Novo jogo", () => GetTree().ChangeSceneToFile(GameFiles.GameScene));
+        Button resume = MenuStyle.AddButton(column, "Continuar", () => GetTree().ChangeSceneToFile(GameFiles.GameScene));
         resume.Disabled = !GameFiles.HasSave();
         resume.TooltipText = resume.Disabled ? "Nenhum jogo salvo." : "";
-        AddButton(column, "Biografia", () =>
+        MenuStyle.AddButton(column, "Biografia", () =>
         {
             if (ResourceLoader.Exists(GameFiles.BiographyScene))
                 GetTree().ChangeSceneToFile(GameFiles.BiographyScene);
         });
-        AddButton(column, "Configurações", () => _settings.Visible = !_settings.Visible);
-        AddButton(column, "Sair", () => GetTree().Quit());
+        MenuStyle.AddButton(column, "Configurações", () => _settings.Visible = !_settings.Visible);
+        MenuStyle.AddButton(column, "Sair", () => GetTree().Quit());
 
         var spacer = new Control { SizeFlagsVertical = Control.SizeFlags.ExpandFill };
         column.AddChild(spacer);
@@ -110,64 +89,7 @@ public partial class MenuRoot : Node3D
         version.AddThemeColorOverride("font_color", new Color(Palette.Bone, 0.4f));
         column.AddChild(version);
 
-        _settings = BuildSettings();
+        _settings = new SettingsPanel();
         layer.AddChild(_settings);
-    }
-
-    private static Button AddButton(Control parent, string text, System.Action onPressed)
-    {
-        var button = new Button { Text = text, Alignment = HorizontalAlignment.Left, CustomMinimumSize = new Vector2(0, 46) };
-        button.AddThemeFontSizeOverride("font_size", 22);
-        button.AddThemeColorOverride("font_color", Palette.Bone);
-        button.AddThemeColorOverride("font_hover_color", Colors.White);
-        button.AddThemeColorOverride("font_disabled_color", new Color(Palette.Bone, 0.3f));
-        var normal = new StyleBoxFlat { BgColor = new Color(0, 0, 0, 0), ContentMarginLeft = 14 };
-        var hover = new StyleBoxFlat { BgColor = new Color(Palette.PurpleLichen, 0.35f), ContentMarginLeft = 14, CornerRadiusTopLeft = 4, CornerRadiusTopRight = 4, CornerRadiusBottomLeft = 4, CornerRadiusBottomRight = 4 };
-        button.AddThemeStyleboxOverride("normal", normal);
-        button.AddThemeStyleboxOverride("disabled", normal);
-        button.AddThemeStyleboxOverride("hover", hover);
-        button.AddThemeStyleboxOverride("pressed", hover);
-        button.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
-        button.Pressed += onPressed;
-        parent.AddChild(button);
-        return button;
-    }
-
-    /// <summary>Esboço das configurações: tela cheia e V-Sync funcionam; volume ainda não tem som para controlar.</summary>
-    private Control BuildSettings()
-    {
-        var box = new PanelContainer { Name = "Settings", Visible = false };
-        box.AnchorLeft = 0f; box.AnchorRight = 0f; box.AnchorTop = 0.5f; box.AnchorBottom = 0.5f;
-        box.OffsetLeft = 420f; box.OffsetRight = 800f; box.OffsetTop = -120f; box.OffsetBottom = 120f;
-        box.AddThemeStyleboxOverride("panel", new StyleBoxFlat
-        {
-            BgColor = new Color(0.06f, 0.05f, 0.09f, 0.85f), BorderColor = new Color(Palette.PurpleLichen, 0.6f),
-            BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
-            ContentMarginLeft = 24, ContentMarginRight = 24, ContentMarginTop = 18, ContentMarginBottom = 18,
-        });
-        var column = new VBoxContainer();
-        column.AddThemeConstantOverride("separation", 10);
-        box.AddChild(column);
-
-        var title = new Label { Text = "Configurações (esboço)" };
-        title.AddThemeFontSizeOverride("font_size", 20);
-        title.AddThemeColorOverride("font_color", Palette.Bone);
-        column.AddChild(title);
-
-        var fullscreen = new CheckBox { Text = "Tela cheia", ButtonPressed = DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Fullscreen };
-        fullscreen.Toggled += on => DisplayServer.WindowSetMode(on ? DisplayServer.WindowMode.Fullscreen : DisplayServer.WindowMode.Windowed);
-        column.AddChild(fullscreen);
-
-        var vsync = new CheckBox { Text = "V-Sync", ButtonPressed = DisplayServer.WindowGetVsyncMode() != DisplayServer.VSyncMode.Disabled };
-        vsync.Toggled += on => DisplayServer.WindowSetVsyncMode(on ? DisplayServer.VSyncMode.Enabled : DisplayServer.VSyncMode.Disabled);
-        column.AddChild(vsync);
-
-        column.AddChild(new Label { Text = "Volume (ainda sem som)" });
-        column.AddChild(new HSlider { MinValue = 0, MaxValue = 100, Value = 80, Editable = false });
-
-        var close = new Button { Text = "Fechar" };
-        close.Pressed += () => box.Visible = false;
-        column.AddChild(close);
-        return box;
     }
 }
