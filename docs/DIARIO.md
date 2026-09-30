@@ -5354,3 +5354,42 @@ onde errou, correções manuais e quanto tempo levou.
   - `cristal.glb`: `24d50792ff19b36e0bcca3c13a1be1125f75bcbb4a4b2e856d602d75831e893c`
 - **Créditos da Meshy na protagonista v2:** 121 de 300 (corpo 40, rig 5, clipes 36, chifres 20, cabelo 20).
 - **ARTE travada** por decisão do Arthur até nova ordem.
+
+---
+
+## 2026-09-30 — Merge da arte (20d486a): protagonista v2; reimportação e conferência contra os contratos
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido (ordem de merge, manda do Arthur):** passos 1 a 3 da troca para a protagonista v2: mesclar a `arte` até
+  20d486a, reimportar e conferir as datas em `.godot/imported`, conferir o `.import` do corpo e contra
+  `docs/protagonista_v2_contrato.md` e `docs/animacao_contrato.md`, anotando divergências antes de corrigir.
+- **Merge (3d9f1f6):** `origin/arte` = 20d486a (33 commits). Conflito só em `docs/DIARIO.md`, resolvido mantendo os
+  dois lados. Fora de `assets/` e `tools/`, a arte só mexeu no diário; `assets/cenario` intacto (45 arquivos, nenhum
+  tocado pelo merge). Push feito.
+- **Reimportação:** scan do editor + `reimport` dos 24 GLB/PNG de `assets/modelos/protagonista_v2/`; conferido pelo
+  caminho exato de cada `.import` (não pelo nome: `rosto/boca.png` e `olhos.png` têm o mesmo nome do rosto do aldeão):
+  todos importados às 00:52:48–59, depois do merge. O editor trocou 4 `.import` de PNG (`protagonista_corpo*_boca/olhos`)
+  para compressão de VRAM por "detectar 3D"; voltei à versão da arte (para os `.import` não oscilarem entre editores) e
+  reimportei.
+- **`.import` do corpo pelo contrato:** `animation/fps=24`, `optimizer/enabled: false`,
+  `animation/remove_immutable_tracks=false`, `nodes/root_scale=1.0`: confere. Cabelo, chifres e cristal no padrão do
+  Godot (30 fps, trilhas imutáveis removidas): não têm animação, a regra não se aplica.
+- **Conferência (confere):** sha256 dos 4 GLBs igual ao `aprovado.json`; corpo com 24 ossos (`Head`, `Spine`), 8 regiões
+  (`cabeca`, `tronco`, `bracos`, `maos`, `quadril`, `coxas`, `canelas`, `pes`) + `roupa_intima` + retalhos `Olhos` e
+  `Boca`; materiais `pele`, `tecido`, `rosto_olhos`, `rosto_boca`; 2.482 triângulos nas regiões (≤ 2.500; os retalhos
+  somam mais 1.536, fora da conta); `idle-loop` (11,25 s) e `run-loop` (0,79 s) começando em t = 0; 0,80 m, pés em
+  y = 0; Armature em escala 1. Cabelo com pele nos mesmos 24 ossos (material `cabelo`); chifres 291 triângulos
+  (`chifre`), cristal 24 (`Cristal`); `rosto.json` no formato do aldeão com as 5 expressões do contrato;
+  `clipes.json` com `passada_m_s` 1,267.
+- **Divergências anotadas (antes de corrigir):**
+  1. Cabelo com **927** triângulos no GLB; o `aprovado.json` diz 932 (dentro do limite de 1.000; diferença pequena na
+     contagem da arte).
+  2. Chifres e cristal vêm **no espaço do corpo em repouso** (não na origem do osso): o jogo precisa prendê-los aos
+     encaixes compensando a pose de repouso do osso (`Head` e `Spine`), como diz o `cristal.json`.
+  3. O cabelo tem **pele própria** (os mesmos 24 ossos): o jogo precisa ligá-lo ao esqueleto do corpo (pelo nome dos ossos).
+  4. `rosto.json` usa a expressão `piscar` (quadro `fechado`) no lugar do campo `piscar` do aldeão; o piscar da
+     protagonista usa `meio_fechado` → `fechado` → `meio_fechado`, como o do aldeão.
+  5. `dor` e `olhar_cristal` não têm gatilho no jogo hoje (não há dano; `olhar_cristal` não tem regra no GDD).
+- `.uid` do `ResourceShape.cs` (gerado pelo Godot) incluído.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 00:51–00:55 de relógio.
