@@ -30,51 +30,55 @@ PALETA = {  # GDD, seção 17
     "liquen": "#6B4F7C",
 }
 
-# Cada massa da copa: base (x, y, z) e topo relativos ao chão, raio máximo, onde fica a barriga (0..1 da altura),
-# quanto a ponta enrola (m) e para que lado (graus), giro das facetas (graus, a espiral) e lados.
+# A árvore é desenhada inclinando para +X ("inclina", graus) e no fim gira em Z pelo ângulo sorteado pela semente.
+# Cada massa da copa: base (x, y, z), comprimento ao longo do eixo, raio máximo, barriga (0..1 do comprimento),
+# quanto o eixo dobra até a ponta ("dobra", graus; > 90 cai como chapéu de bruxa) e para que lado ("lado", graus,
+# 0 = para onde a árvore inclina), "assim" (quanto um lado da massa é mais gordo que o outro), lados e anéis.
 VARIACOES = [
     {
-        "nome": "gota", "semente": 11, "tronco": "terra", "copa": "musgo",
-        "troncos": [{"de": (0, 0, -0.02), "ate": (0.06, 0.02, 0.72), "r": 0.075, "entorta": 0.05, "giro": 80}],
+        "nome": "gota", "semente": 11, "inclina": 8, "tronco": "terra", "copa": "musgo",
+        "troncos": [{"de": (0, 0, -0.02), "ate": (0.0, 0.0, 0.72), "r": 0.075, "entorta": 0.06, "giro": 80}],
         "massas": [
-            {"base": (0.04, 0.02, 0.42), "topo": 1.50, "r": 0.46, "barriga": 0.30, "enrola": 0.22, "lado": 200},
-            {"base": (-0.30, 0.10, 0.52), "topo": 0.90, "r": 0.20, "barriga": 0.45, "enrola": 0.06, "lado": 150,
-             "lados": 6, "aneis": 4},
+            {"base": (0.0, 0.0, 0.42), "comp": 1.10, "r": 0.46, "barriga": 0.30, "dobra": 60, "lado": 180,
+             "assim": 0.14},
+            {"base": (-0.28, 0.14, 0.50), "comp": 0.38, "r": 0.20, "barriga": 0.45, "dobra": 35, "lado": 140,
+             "assim": 0.1, "lados": 6, "aneis": 4},
         ],
     },
     {
-        "nome": "dupla", "semente": 23, "tronco": "lama", "copa": "musgo",
-        "troncos": [{"de": (0, 0, -0.02), "ate": (-0.05, 0.03, 0.95), "r": 0.07, "entorta": 0.06, "giro": 70}],
+        "nome": "dupla", "semente": 23, "inclina": 6, "tronco": "lama", "copa": "musgo",
+        "troncos": [{"de": (0, 0, -0.02), "ate": (0.0, 0.0, 0.95), "r": 0.07, "entorta": 0.07, "giro": 70}],
         "massas": [
-            {"base": (0.0, 0.0, 0.42), "topo": 1.00, "r": 0.47, "barriga": 0.42, "enrola": 0.0, "lado": 0,
-             "ponta": 0.55},
-            {"base": (-0.06, 0.05, 0.90), "topo": 1.60, "r": 0.30, "barriga": 0.30, "enrola": 0.18, "lado": 20},
+            {"base": (0.0, 0.0, 0.42), "comp": 0.58, "r": 0.47, "barriga": 0.42, "dobra": 10, "lado": 90,
+             "assim": 0.16, "ponta": 0.55},
+            {"base": (0.02, 0.05, 0.90), "comp": 0.72, "r": 0.30, "barriga": 0.30, "dobra": 65, "lado": 200,
+             "assim": 0.12},
         ],
     },
     {
-        "nome": "tufos", "semente": 37, "tronco": "terra_roxa", "copa": "liquen",
+        "nome": "tufos", "semente": 37, "inclina": 5, "tronco": "terra_roxa", "copa": "liquen",
         "troncos": [
             {"de": (0, 0, -0.02), "ate": (0.02, 0.0, 0.52), "r": 0.08, "entorta": 0.04, "giro": 60},
-            {"de": (0.02, 0.0, 0.48), "ate": (0.26, 0.06, 0.82), "r": 0.05, "entorta": 0.05, "giro": 50, "lados": 5},
-            {"de": (0.02, 0.0, 0.48), "ate": (-0.22, -0.08, 0.92), "r": 0.05, "entorta": 0.05, "giro": -50,
+            {"de": (0.02, 0.0, 0.48), "ate": (0.28, 0.06, 0.80), "r": 0.05, "entorta": 0.05, "giro": 50, "lados": 5},
+            {"de": (0.02, 0.0, 0.48), "ate": (-0.20, -0.08, 0.94), "r": 0.05, "entorta": 0.05, "giro": -50,
              "lados": 5},
         ],
         "massas": [
-            {"base": (0.26, 0.06, 0.62), "topo": 1.12, "r": 0.29, "barriga": 0.40, "enrola": 0.08, "lado": 0,
-             "lados": 7, "aneis": 5},
-            {"base": (-0.22, -0.08, 0.72), "topo": 1.36, "r": 0.30, "barriga": 0.38, "enrola": 0.12, "lado": 160,
-             "lados": 7, "aneis": 5},
-            {"base": (0.02, 0.22, 0.66), "topo": 1.05, "r": 0.24, "barriga": 0.42, "enrola": 0.06, "lado": 80,
-             "lados": 6, "aneis": 5},
+            {"base": (0.28, 0.06, 0.60), "comp": 0.50, "r": 0.29, "barriga": 0.40, "dobra": 45, "lado": 10,
+             "assim": 0.14, "lados": 7, "aneis": 5},
+            {"base": (-0.20, -0.08, 0.74), "comp": 0.62, "r": 0.30, "barriga": 0.38, "dobra": 55, "lado": 170,
+             "assim": 0.14, "lados": 7, "aneis": 5},
+            {"base": (0.02, 0.22, 0.66), "comp": 0.40, "r": 0.24, "barriga": 0.42, "dobra": 35, "lado": 80,
+             "assim": 0.12, "lados": 6, "aneis": 5},
         ],
     },
     {
-        "nome": "alta", "semente": 53, "tronco": "lama", "copa": "musgo",
-        "troncos": [{"de": (0, 0, -0.02), "ate": (-0.08, -0.03, 0.90), "r": 0.065, "entorta": 0.09, "giro": 110}],
+        # Chapéu de bruxa dobrado: fina, a mais inclinada, a ponta passa da horizontal e cai.
+        "nome": "alta", "semente": 53, "inclina": 12, "tronco": "lama", "copa": "musgo",
+        "troncos": [{"de": (0, 0, -0.02), "ate": (0.0, 0.0, 0.85), "r": 0.058, "entorta": 0.08, "giro": 110}],
         "massas": [
-            {"base": (-0.06, -0.02, 0.55), "topo": 1.72, "r": 0.36, "barriga": 0.26, "enrola": 0.32, "lado": 30},
-            {"base": (0.20, 0.08, 0.62), "topo": 0.98, "r": 0.17, "barriga": 0.45, "enrola": 0.05, "lado": 330,
-             "lados": 6, "aneis": 4},
+            {"base": (0.0, 0.0, 0.52), "comp": 1.62, "r": 0.27, "barriga": 0.20, "dobra": 125, "lado": 0,
+             "assim": 0.1, "aneis": 8},
         ],
     },
 ]
@@ -116,7 +120,7 @@ def frames(path):
     return out
 
 
-def lathe(path, radii, sides, twist_deg, rng, jitter, top_point=True, bottom_point=False, name="peca"):
+def lathe(path, radii, sides, twist_deg, rng, jitter, asym=0.0, asym_deg=0.0, name="peca"):
     """Tubo por anéis ao longo de um eixo torto. Raio 0 no fim vira ponta (um vértice só)."""
     bm = bmesh.new()
     rings = []
@@ -130,7 +134,7 @@ def lathe(path, radii, sides, twist_deg, rng, jitter, top_point=True, bottom_poi
         ring = []
         for k in range(sides):
             a = twist + 2 * math.pi * k / sides
-            rr = r * (1 + rng.uniform(-jitter, jitter))
+            rr = r * (1 + rng.uniform(-jitter, jitter)) * (1 + asym * math.cos(a - math.radians(asym_deg)))
             ring.append(bm.verts.new(p + (n * math.cos(a) + b * math.sin(a)) * rr))
         rings.append(ring)
     for r0, r1 in zip(rings, rings[1:]):
@@ -173,33 +177,37 @@ def trunk(spec, rng, idx):
 
 
 def mass(spec, rng, idx):
-    """Massa da copa: gota torta de anéis, barriga embaixo, ponta que enrola para um lado."""
+    """Massa da copa: gota torta de anéis, barriga embaixo, eixo que dobra para um lado até a ponta."""
     base = Vector(spec["base"])
-    height = spec["topo"] - base.z
+    length = spec["comp"]
     rings = spec.get("aneis", 6)
     sides = spec.get("lados", 8)
     belly = spec["barriga"]
     tip = spec.get("ponta", 0.0)  # 0 = ponta fina; > 0 = topo arredondado
     lado = math.radians(spec["lado"])
-    curl_dir = Vector((math.cos(lado), math.sin(lado), 0))
+    side = Vector((math.cos(lado), math.sin(lado), 0))
+    bend = math.radians(spec["dobra"])
+    n = rings + 1
     path, radii = [base.copy()], [0.0]
-    for i in range(1, rings + 1):
-        u = i / (rings + 1)
-        if u <= belly:
+    p = base.copy()
+    for i in range(1, n + 1):
+        u = i / n
+        # o eixo sobe e vai virando para o lado: dobra pouco embaixo e muito na ponta
+        theta = bend * (u - 0.5 / n) ** 2.2
+        p = p + (Vector((0, 0, math.cos(theta))) + side * math.sin(theta)) * (length / n)
+        if i == n:
+            prof = 0.0
+        elif u <= belly:
             prof = math.sin(0.5 * math.pi * u / belly) ** 0.8
         else:
             v = (u - belly) / (1 - belly)
             prof = (1 - v) ** (1.3 - 0.8 * tip) * (1 - 0.15 * v)
             prof = max(prof, tip * 0.35 * (1 - v ** 3))
-        # a ponta enrola: desloca o eixo cada vez mais para o lado e o abaixa um pouco no fim
-        p = base + Vector((0, 0, height * u)) + curl_dir * spec["enrola"] * u ** 3
-        path.append(p)
+        path.append(p.copy())
         radii.append(spec["r"] * prof)
-    top = base + Vector((0, 0, height)) + curl_dir * spec["enrola"] - Vector((0, 0, 0.5 * spec["enrola"] ** 2))
-    path.append(top)
-    radii.append(0.0)
     twist = rng.choice((-1, 1)) * rng.uniform(25, 45)
-    obj = lathe(path, radii, sides, twist, rng, 0.07, name=f"copa_{idx}")
+    obj = lathe(path, radii, sides, twist, rng, 0.07, spec.get("assim", 0.0), rng.uniform(0, 360),
+                name=f"copa_{idx}")
     for p in obj.data.polygons:
         p.use_smooth = True
     return obj
@@ -230,6 +238,9 @@ def build(spec, index):
     bpy.ops.object.join()
     obj = bpy.context.view_layer.objects.active
     obj.name = obj.data.name = f"arvore_{index}"
+    # Torta de propósito: inclina para +X em volta do pé e gira para o lado sorteado pela semente.
+    obj.rotation_euler = (0.0, math.radians(spec["inclina"]), math.radians(rng.uniform(0, 360)))
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
     # Nomes de material só pelo papel (contrato proposto): tronco e copa.
     mat_t.name, mat_c.name = "tronco", "copa"
     return obj
@@ -253,7 +264,7 @@ def main():
                                   export_apply=True, export_animations=False, export_skins=False)
         # Blender -Y é a frente +Z do glTF: a pegada vai em metros no chão, x e z do jogo.
         report["variacoes"].append({
-            "arquivo": path.name, "nome": spec["nome"], "semente": spec["semente"], "triangulos": tris,
+            "arquivo": path.name, "nome": spec["nome"], "semente": spec["semente"], "triangulos": tris, "inclinacao_graus": spec["inclina"],
             "altura_m": round(max(zs), 3),
             "pegada_x_m": [round(min(xs), 3), round(max(xs), 3)],
             "pegada_z_m": [round(-max(ys), 3), round(-min(ys), 3)],

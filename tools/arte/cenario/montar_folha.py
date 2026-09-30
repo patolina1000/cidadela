@@ -67,7 +67,8 @@ def main():
     crop = lambda name, key=None: Image.open(src / f"{name}.png").convert("RGB").crop(m["recortes"][key or name])
 
     s = Sheet()
-    s.text("Árvore piloto — 4 variações da mesma família (tools/arte/cenario/arvore.py, sem créditos)", 44)
+    s.text("Árvore piloto, revisão 2 — mais torta (tronco inclinado 5–12°, pontas dobradas, massas assimétricas); "
+           "4 alta vira chapéu de bruxa dobrado", 40)
     s.text("Material fosco, luz de crepúsculo fria de cima (corpo_lib.twilight_lights), chão chapado terra arroxeada "
            "#3F3342. Aldeão v2 (0,40 m, só corpo) e protagonista (bruto v2 da Meshy escalado a 0,80 m) para escala.",
            26, (70, 70, 70))
@@ -77,7 +78,8 @@ def main():
         for v in rep["variacoes"]:
             i = v["arquivo"].split("_")[1].split(".")[0]
             im = Image.open(src / f"arvore_{i}_{vista}.png").convert("RGB").resize((tile, tile), Image.LANCZOS)
-            label = (f"{i} {v['nome']}: {v['triangulos']} tri, {v['altura_m']:.2f} m" if vista == "frente"
+            label = (f"{i} {v['nome']}: {v['triangulos']} tri, {v['altura_m']:.2f} m, {v['inclinacao_graus']}°"
+                     if vista == "frente"
                      else f"{i} {v['nome']} — {titulo}")
             items.append((im, label))
         s.images(items, gap=34)
@@ -95,10 +97,19 @@ def main():
     s.images([(twilight(z04), "zoom 0,4"), (twilight(big04), "zoom 0,4 ×3"), (twilight(z1), "zoom 1")])
     s.images([(twilight(z25), "zoom 2,5")])
 
-    s.text("Bosque: 8 árvores misturadas, uma por célula, giro e escala (0,9–1,1) sorteados — zoom 1", 38)
-    b = crop("bosque_zoom_1.0", "bosque_1.0")
-    b2 = b.resize((b.width * 2, b.height * 2), Image.LANCZOS)
-    s.images([(b2, "zoom 1 ampliado ×2"), (twilight(b2), "crepúsculo")])
+    s.text("Bosque: 8 árvores, uma por célula, giro e escala (0,9–1,1) sorteados, líquen 1 em 8 — zoom 1, "
+           "ampliado ×1,2", 38)
+    s.text("Saídas para a copa musgo no crepúsculo: (a) copa #5A5847, o extremo claro da faixa pedida; "
+           "(b) musgo #4E5544 com borda de luz fria (aproximação: o Toon do jogo e o visor ainda não têm borda)",
+           26, (70, 70, 70))
+    cols = []
+    for suf, label in (("", "atual: musgo #4E5544"), ("_a", "(a) copa #5A5847"), ("_b", "(b) musgo + borda fria")):
+        b = crop(f"bosque{suf}_zoom_1.0", "bosque_1.0")
+        cols.append((b.resize((int(b.width * 1.2), int(b.height * 1.2)), Image.LANCZOS), label))
+    s.images(cols)
+    s.images([(twilight(im), label + " — crepúsculo") for im, label in cols])
+    s.text("Sorteio proposto por célula de árvore: 1 gota 30 %, 2 dupla 30 %, 4 alta 30 %, 3 tufos (líquen) 10 %.",
+           30, (40, 40, 40))
 
     s.text("Personagem atrás da árvore (mais longe da câmera) — zoom 1, ampliado ×2; % = quanto do corpo aparece", 38)
     items, items_t = [], []

@@ -35,6 +35,10 @@ ALTURA_PROTAGONISTA = 0.80
 W, H, FOV, PITCH, DIST = 3024, 1890, 45.0, 55.0, 16.0
 CHAO = "#3F3342"  # terra arroxeada (GDD, seção 17)
 PELE_ALDEAO = "#AEBFD3"
+COPA_ATUAL = "#4E5544"   # musgo acinzentado
+COPA_CLARA = "#5A5847"   # grama morta: o extremo claro da faixa pedida (o meio, #545645, quase não muda nada)
+RIM_COR = tuple(c * 0.10 for c in (0.72, 0.78, 0.9))  # a cor do sol frio do Main.tscn, fraca
+RIM_LARGURA = 0.25
 PELE_PROTAGONISTA = "#91ADB7"  # cor provisória do visor
 
 
@@ -55,6 +59,27 @@ def fosco(nome, hex_color):
     if "Specular IOR Level" in bsdf.inputs:
         bsdf.inputs["Specular IOR Level"].default_value = 0.0
     return mat
+
+
+def add_rim(mat):
+    """Borda de luz fria em faixa dura (aproximação: nem o Toon do jogo nem o visor têm borda ainda)."""
+    nt = mat.node_tree
+    out = nt.nodes["Material Output"]
+    surface = out.inputs["Surface"].links[0].from_node
+    lw = nt.nodes.new("ShaderNodeLayerWeight")
+    lw.inputs["Blend"].default_value = RIM_LARGURA
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.interpolation = "CONSTANT"
+    ramp.color_ramp.elements[1].position = 0.62
+    emit = nt.nodes.new("ShaderNodeEmission")
+    emit.inputs["Color"].default_value = (*RIM_COR, 1.0)
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    add = nt.nodes.new("ShaderNodeAddShader")
+    nt.links.new(lw.outputs["Facing"], ramp.inputs["Fac"])
+    nt.links.new(ramp.outputs["Color"], emit.inputs["Strength"])
+    nt.links.new(surface.outputs[0], add.inputs[0])
+    nt.links.new(emit.outputs[0], add.inputs[1])
+    nt.links.new(add.outputs[0], out.inputs["Surface"])
 
 
 def place(path, location, yaw_deg=0.0, scale=1.0, color=None):
@@ -218,7 +243,7 @@ def main():
     rng = random.Random(7)
     celulas = [(0, 0), (1, 0), (2, 0), (0, 1), (1, 1), (3, 1), (1, 2), (2, 2)]
     bosque = []
-    ordem = [0, 1, 2, 3, 0, 1, 2, 3]
+    ordem = [0, 0, 0, 1, 1, 3, 3, 2]  # líquen (3) só uma vez: destaque raro
     rng.shuffle(ordem)
     for (cx, cy), v in zip(celulas, ordem):
         bosque += place(ARVORES[v], (cx - 1.5, cy - 1.0, 0), rng.uniform(0, 360), rng.uniform(0.9, 1.1))
@@ -227,6 +252,19 @@ def main():
     cam = game_camera(scene, (0.0, 0.0, 0), 1.0)
     medidas["recortes"]["bosque_1.0"] = pixel_box(scene, cam, bosque, margin=40)
     render(scene, OUT / "bosque_zoom_1.0.png")
+    # Saídas para a copa musgo sumir no crepúsculo: (a) copa mais clara dentro da paleta; (b) borda de luz fria.
+    musgo = [m for m in bpy.data.materials if m.name.startswith("copa") and m.use_nodes
+             and abs(m.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value[1]
+                     - linear(COPA_ATUAL)[1]) < 0.01]
+    for m in musgo:
+        m.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = linear(COPA_CLARA)
+    render(scene, OUT / "bosque_a_zoom_1.0.png")
+    for m in musgo:
+        m.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = linear(COPA_ATUAL)
+    for m in {s.material for o in bosque if o.type == "MESH" for s in o.material_slots
+              if s.material and s.material.name.startswith("copa")}:
+        add_rim(m)
+    render(scene, OUT / "bosque_b_zoom_1.0.png")
 
     # 4. Personagem atrás da árvore (mais longe da câmera = +Y no Blender): 0,5 m e 1 m.
     casos = [("aldeao", ALDEAO, PELE_ALDEAO, 0, 0.5), ("aldeao", ALDEAO, PELE_ALDEAO, 0, 1.0),

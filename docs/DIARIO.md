@@ -3188,3 +3188,23 @@ onde errou, correções manuais e quanto tempo levou.
 - **Deu errado:** no laço do zsh o array começa em 1 e os títulos das árvores saíram deslocados; corrigi os 4
   títulos direto no `visor.json`.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~5 min.
+
+## 2026-09-29 — Cenário, tarefa 2: revisão da árvore (mais torta, alta diferente, crepúsculo)
+
+- **Pedido (Diretor):** mais torta (tronco inclinado 5–12° com direção pela semente, ponta da gota dobrada para um
+  lado, massas assimétricas) sem subir triângulos; a 4 (alta) claramente diferente da 1 vista de cima (mais fina,
+  mais inclinada, ponta caída de chapéu de bruxa); testar no crepúsculo (a) copa entre #4E5544 e #5A5847 e (b)
+  musgo com borda de luz fria, lado a lado no bosque; líquen só na 3, com peso de sorteio; refazer a folha.
+- **Feito:** `arvore.py`: a árvore é desenhada inclinando para +X (`inclina`: gota 8°, dupla 6°, tufos 5°,
+  alta 12°) e gira em Z pelo ângulo da semente; o eixo de cada massa agora é uma curva que dobra até a ponta
+  (`dobra` em graus; a alta tem 125°, passa da horizontal e cai); `assim` engorda um lado de cada massa. Alta: uma
+  massa só, raio 0,27 m, tronco 0,058 m. Triângulos: 192 / 240 / 328 / 176; alturas 1,45 / 1,55 / 1,34 / 1,53 m.
+- **Folha:** mesma forma, com o bosque em três colunas (atual, a, b) e o crepúsculo embaixo; no bosque, o líquen
+  aparece 1 vez em 8. (a) usa #5A5847 (o meio da faixa, #545645, não se distingue); (b) é uma borda por
+  Layer Weight em faixa dura, cor do sol frio do `Main.tscn` × 0,10, só na copa. É uma aproximação: nem o Toon do
+  jogo nem o visor têm borda hoje.
+- **Medido:** aldeão 0,5 m / 1 m atrás da gota: 0 % / 51 % visível; protagonista atrás da alta: 0 % / 52 %. Piorou
+  em relação à revisão 1 (88 % / 67 % a 1 m), porque a inclinação sorteada joga a copa para trás.
+- **Deu errado:** a primeira borda (× 0,22, largura 0,35, também no tronco) virou contorno de desenho animado e
+  listras brancas no tronco; afinei e deixei só na copa.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~30 min.
