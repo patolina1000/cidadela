@@ -4017,3 +4017,21 @@ onde errou, correções manuais e quanto tempo levou.
   (`assets/modelos/protagonista_v2/equipamento/`).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:58–20:03 de relógio.
+
+---
+
+## 2026-09-29 — Auditoria de menus e mecânicas (`docs/auditoria_menus_mecanicas.md`)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`. Só documentação.
+- **Pedido:** passo 1 da tarefa "polir mecânicas e menus": comparar menu, Biografia, jogo e código com o GDD
+  (seções 3, 12 e 20) e com as pendências do diário; listar lacunas e defeitos por valor, separando o que o GDD
+  já decide do que precisa de decisão do Arthur.
+- **O que foi feito:** 15 itens em ordem de valor. Os três primeiros (pausa e velocidade, menu de pausa,
+  configurações salvas) são design decidido e entram nos próximos commits. Achado principal: as teclas 1, 2 e 3
+  aparecem para três coisas no GDD (barra de construção, andares e, no pedido, velocidade); proponho `-`/`=` para
+  a velocidade e Espaço para a pausa. O menu inicial ainda não tem os aldeões que o GDD pede (0 crédito, fica
+  como sugestão). Fabricar à mão, chamar aldeões, colisão dos aldeões, receitas por máquina, save, volume e a
+  linha de debug ficam para o Arthur decidir.
+- **O que deu errado:** nada.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:25–21:37 de relógio.
