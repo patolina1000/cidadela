@@ -3382,3 +3382,20 @@ onde errou, correções manuais e quanto tempo levou.
 - **O que deu errado:** a emissão por uma imagem de 1 pixel no material toon não entrava no render (gema apagada no
   crepúsculo); a prova passou a usar um material de emissão direto.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.
+
+## 2026-09-29 — Protagonista v2, passo 7A: rig da Meshy e clipes candidatos (41 créditos)
+
+- **Manda do Arthur (29/09/2026):** teto de 300 créditos da Meshy para a protagonista inteira (corpo, rig, clipes,
+  chifres, cabelo), qualidade antes de economia, saldo e custo conferidos antes de cada pedido, paradas do
+  `plano_creditos.md`. Uthana à parte.
+- **Feito:** `tools/arte/protagonista_v2/preparar_rig.py` (corpo limpo juntado numa malha, sem o cristal, vértices das
+  bordas fundidos → `meshy/corpo_para_rig.glb`, 2.482 triângulos) e `meshy_rig.py` (teto de 300 contando os 40 do corpo;
+  saldo e custo antes de cada pedido; registro público `meshy/rig_meshy.json`, sem chave).
+- **Rig direto no corpo limpo:** passou de primeira (no aldeão, esse pedido foi recusado) — **5 créditos**, saldo
+  2.258 → 2.253. 24 ossos, armature a 0,01 (a exportação pelo contrato leva a 1), malha remontada pela Meshy com 2.426
+  triângulos a 0,80 m; Spine a 0,549 m (o cristal fica a 0,559), Head a 0,604. Vieram grátis a caminhada e a corrida
+  básicas. A tarefa original do B não foi usada.
+- **Clipes candidatos (2 pedidos, 36 créditos, saldo 2.253 → 2.217):** corridas Run 2 (14), Run 3 (15), Run Fast (16),
+  Lean Forward Sprint (509), Run Fast 2 (539), Run Fast 3 (530); idles Idle (0), Idle 1 (11), Idle 3 (243), Idle 12
+  (252), Catching Breath (31), Long Breathe and Look Around (336). Brutos em `assets/modelos/protagonista_v2/meshy/rig/`.
+- **Créditos:** 41 (na protagonista: 81 de 300). **Correções manuais:** nenhuma. **Tempo:** ~30 min.

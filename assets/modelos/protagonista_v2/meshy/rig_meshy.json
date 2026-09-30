@@ -1,0 +1,51 @@
+{
+  "teto_protagonista": 300,
+  "pedidos": [
+    {
+      "tipo": "rig",
+      "entrada": "assets/modelos/protagonista_v2/meshy/corpo_para_rig.glb",
+      "task_id": "01a0f007-f103-770d-b6af-7c87a5272ac0",
+      "status": "SUCCEEDED",
+      "saldo_antes": 2258,
+      "saldo_depois": 2253,
+      "creditos": 5,
+      "erro": null
+    },
+    {
+      "tipo": "clipes",
+      "nome": "corridas",
+      "action_ids": [
+        14,
+        15,
+        16,
+        509,
+        539,
+        530
+      ],
+      "task_id": "01a0f008-fd39-72f6-8e07-3c9c535830d6",
+      "status": "SUCCEEDED",
+      "saldo_antes": 2253,
+      "saldo_depois": 2235,
+      "creditos": 18,
+      "erro": null
+    },
+    {
+      "tipo": "clipes",
+      "nome": "idles",
+      "action_ids": [
+        0,
+        11,
+        243,
+        252,
+        31,
+        336
+      ],
+      "task_id": "01a0f009-5651-72da-ac38-afcf3bd2a83f",
+      "status": "SUCCEEDED",
+      "saldo_antes": 2235,
+      "saldo_depois": 2217,
+      "creditos": 18,
+      "erro": null
+    }
+  ]
+}
