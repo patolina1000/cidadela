@@ -72,10 +72,28 @@ public static class BuildingModels
                 Add(model, new SphereMesh { Radius = 0.12f, Height = 0.34f, RadialSegments = 6, Rings = 3 }, Palette.ManaBlue, new Vector3(0f, 0.72f, 0f));
                 break;
             case "mother_crystal":
-                // Cristal alto azul-frio, provisório (D3 do Arthur).
-                Add(model, new CylinderMesh { TopRadius = 0.0f, BottomRadius = 0.32f, Height = 2.2f, RadialSegments = 6 }, Palette.ManaBlue, new Vector3(0f, 1.1f, 0f));
-                Add(model, new CylinderMesh { TopRadius = 0.0f, BottomRadius = 0.16f, Height = 1.0f, RadialSegments = 5 }, Palette.ManaBlue.Darkened(0.2f), new Vector3(0.3f, 0.5f, 0.1f));
+            {
+                // Cristal alto azul-frio, provisório (D3 do Arthur), translúcido: dentro, a forma de um aldeão ("Silhouette",
+                // uma cápsula) aparece escura quando ele começa a formar e clareia com o progresso (WorldView).
+                var glass = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(Palette.ManaBlue, 0.45f),
+                    Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                    Roughness = 0.2f,
+                };
+                var body = new MeshInstance3D { Mesh = new CylinderMesh { TopRadius = 0.0f, BottomRadius = 0.36f, Height = 2.2f, RadialSegments = 6, Material = glass }, Position = new Vector3(0f, 1.1f, 0f) };
+                model.AddChild(body);
+                Add(model, new CylinderMesh { TopRadius = 0.0f, BottomRadius = 0.16f, Height = 1.0f, RadialSegments = 5 }, Palette.ManaBlue.Darkened(0.2f), new Vector3(0.36f, 0.5f, 0.1f));
+                var silhouette = new MeshInstance3D
+                {
+                    Name = "Silhouette",
+                    Mesh = new CapsuleMesh { Radius = 0.1f, Height = 0.42f, Material = new StandardMaterial3D { AlbedoColor = new Color("1B1620") } },
+                    Position = new Vector3(0f, 0.45f, 0f),
+                    Visible = false,
+                };
+                model.AddChild(silhouette);
                 break;
+            }
             case "clay_pit":
                 // Buraco de barro com uma pá enfiada (provisório).
                 Add(model, new CylinderMesh { TopRadius = 0.4f, BottomRadius = 0.36f, Height = 0.12f }, new Color("7A5A4A"), new Vector3(0f, 0.06f, 0f));

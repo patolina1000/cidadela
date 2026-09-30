@@ -45,6 +45,8 @@ public class VillagerFormingTests
         TestWorlds.Run(world, Seconds(160f));
         Assert.Empty(world.Villagers);
         Assert.Equal(MachineWait.MissingInput, MotherCrystal(world).Machine!.Waiting);
+        // O estado diz qual falta (a etiqueta mostra "falta casca" ou "falta fragmento puro").
+        Assert.Equal(only == "shell" ? "pure_shard" : "shell", MotherCrystal(world).Machine!.MissingItem);
     }
 
     [Fact]

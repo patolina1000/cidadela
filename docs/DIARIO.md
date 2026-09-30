@@ -6076,3 +6076,21 @@ onde errou, correções manuais e quanto tempo levou.
   falhou por erro do teste (Barreiro fora da área da torre); corrigido no teste. `dotnet test` 263 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:21–19:20 de relógio.
+
+## 2026-09-30 — Linha 2, passo 7: feedback visual das duas linhas
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 7 do plano da linha 2.
+- **Feito:**
+  - Aldeões que nascem no Cristal-mãe ganham o seu nó na hora (`WorldView.SyncVillagers`, com um brilho azul-frio) e
+    lugar para o ícone (`VillagerIcons.EnsureCapacity`).
+  - Cristal-mãe translúcido; dentro, a forma escura de um aldeão (cápsula) aparece quando ele começa a formar e clareia
+    até o osso com a barra de progresso; fica clara enquanto o aldeão pronto espera espaço.
+  - Estados do Barreiro, Oleiro e Cristal-mãe pela mesma etiqueta das outras máquinas: "falta casca", "falta fragmento
+    puro", "sem mana", "sem operador", "formando aldeão", "sem espaço ao lado".
+  - HUD: "Cristal-mãe: formando X% · N formados (último há T s)"; o texto de mana desceu para não cobrir o inventário.
+  - Barra de construção em páginas de 9 (Tab troca; 1–9 dentro da página): agora são 11 construções.
+- **Testes:** `VillagerFormingTests` confere qual item falta (o que a etiqueta mostra). `dotnet build` 0/0;
+  `dotnet test` 264 passaram. Print `docs/prints/linha2_passo7_hud.png` (teste A novo, godot-ai, sem erro no log).
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:23–19:26 de relógio.

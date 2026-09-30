@@ -92,6 +92,7 @@ public partial class GameRoot : Node3D
             if (type.Hotbar)
                 _hotbarTypes.Add(type);
         _hotbar.Build(_hotbarTypes, data);
+        _hotbar.ShowPage(0);
         _hotbar.SlotClicked += Select;
 
         // Mana no canto de cima à direita (docs/linha_energia.md: geração × consumo e a carga do Cristal-mãe).
@@ -99,7 +100,7 @@ public partial class GameRoot : Node3D
         {
             Name = "ManaLabel",
             HorizontalAlignment = HorizontalAlignment.Right,
-            AnchorLeft = 1f, AnchorRight = 1f, OffsetLeft = -620f, OffsetRight = -16f, OffsetTop = 40f, OffsetBottom = 100f,
+            AnchorLeft = 1f, AnchorRight = 1f, OffsetLeft = -720f, OffsetRight = -16f, OffsetTop = 104f, OffsetBottom = 170f,
         };
         _manaLabel.AddThemeColorOverride("font_color", Palette.ManaBlue);
         _manaLabel.AddThemeColorOverride("font_outline_color", Colors.Black);
@@ -160,9 +161,13 @@ public partial class GameRoot : Node3D
             return;
         if (k >= Key.Key1 && k <= Key.Key9)
         {
-            int index = (int)(k - Key.Key1);
+            int index = _hotbar.Page * Hotbar.PageSize + (int)(k - Key.Key1);
             if (index < _hotbarTypes.Count)
                 Select(_selected == _hotbarTypes[index] ? null : index); // mesma tecla desmarca
+        }
+        else if (k == Key.Tab)
+        {
+            _hotbar.ShowPage(_hotbar.Page + 1); // próxima página da barra de construção
         }
         else if (k == Key.R && _selected is not null)
         {
@@ -465,7 +470,8 @@ public partial class GameRoot : Node3D
         }
         foreach (Building b in _world.Buildings)
             if (b.Type.SpawnsVillager && b.Machine is MachineState m)
-                lines.Add($"{b.Type.Name}: " + (m.IsWorking ? $"formando {m.Progress:P0}" : "parado") + $" · {b.VillagersFormed} formados");
+                lines.Add($"{b.Type.Name}: " + (m.IsWorking ? $"formando {m.Progress:P0}" : "parado") + $" · {b.VillagersFormed} formados" +
+                    (b.LastFormedTick >= 0 ? $" (último há {(_world.TickCount - b.LastFormedTick) / SimClock.TicksPerSecond} s)" : ""));
         return string.Join("\n", lines);
     }
 
@@ -485,7 +491,7 @@ public partial class GameRoot : Node3D
                 + (castellan.HandQueue > 0 ? $" (+{castellan.HandQueue} na fila)" : "");
         }
         if (castellan.GatherTarget is null && castellan.DigCell is null && castellan.Post is null && !castellan.HandBusy)
-            yield return "E opera a máquina encostada  ·  P purifica (2 podres → 1 puro)  ·  M molda casca perto da água (2 argilas)";
+            yield return "E opera a máquina encostada  ·  P purifica (2 podres → 1 puro)  ·  M molda casca perto da água (2 argilas)  ·  Tab: mais construções";
     }
 
     private static string DirectionName(Direction d) => d switch

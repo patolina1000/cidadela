@@ -163,6 +163,7 @@ public partial class WorldView : Node3D
         _energy.LabelsVisible = IconsVisible;
         _energy.Render(dt);
 
+        SyncVillagers();
         _iconSources.Clear();
         foreach ((Villager villager, VillagerVisual visual) in _villagerNodes)
         {
@@ -179,6 +180,23 @@ public partial class WorldView : Node3D
         ResourceModels.SetOcclusionCenter(_castellan.Visible
             ? _castellan.GlobalPosition + new Vector3(0f, VisualSettings.Current.Occlusion.ChestHeight, 0f)
             : null);
+    }
+
+    /// <summary>Aldeão que nasceu no Cristal-mãe durante o jogo ganha o seu nó (com um brilho azul-frio ao nascer).</summary>
+    private void SyncVillagers()
+    {
+        if (_villagerNodes.Count == _world.Villagers.Count)
+            return;
+        foreach (Villager villager in _world.Villagers)
+        {
+            if (_villagerNodes.ContainsKey(villager))
+                continue;
+            var visual = new VillagerVisual { Name = $"Villager_{villager.Id}", Seed = villager.Id };
+            AddChild(visual);
+            _villagerNodes[villager] = visual;
+            _effects.Burst(new Vector3(villager.Position.X + 0.5f, 0.4f, villager.Position.Y + 0.5f), Palette.ManaBlue, amount: 24, speed: 2.5f);
+        }
+        _villagerIcons.EnsureCapacity(_world.Villagers.Count);
     }
 
     /// <summary>
@@ -305,6 +323,13 @@ public partial class WorldView : Node3D
             var model = node.GetNode<Node3D>("Model");
             float pulse = machine.IsWorking ? 1f + 0.04f * Mathf.Sin(_time * 10f) : 1f;
             model.Scale = new Vector3(1f, pulse, 1f);
+            // Cristal-mãe: a forma escura do aldeão dentro vai clareando com o progresso (docs/linha_aldeoes.md).
+            if (model.GetNodeOrNull<MeshInstance3D>("Silhouette") is MeshInstance3D silhouette)
+            {
+                silhouette.Visible = machine.IsWorking || building.PendingVillagers > 0;
+                float t = building.PendingVillagers > 0 ? 1f : machine.Progress;
+                ((StandardMaterial3D)((PrimitiveMesh)silhouette.Mesh).Material).AlbedoColor = new Color("1B1620").Lerp(Palette.Bone, t);
+            }
 
         }
     }

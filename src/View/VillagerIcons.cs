@@ -46,6 +46,15 @@ public partial class VillagerIcons : MultiMeshInstance3D
         _buffer = new float[Multimesh.InstanceCount * FloatsPerInstance];
     }
 
+    /// <summary>Garante lugar para <paramref name="count"/> ícones (aldeões que nascem no Cristal-mãe durante o jogo).</summary>
+    public void EnsureCapacity(int count)
+    {
+        if (count <= Multimesh.InstanceCount)
+            return;
+        Multimesh.InstanceCount = Math.Max(count, Multimesh.InstanceCount * 2);
+        _buffer = new float[Multimesh.InstanceCount * FloatsPerInstance];
+    }
+
     /// <summary>Um ícone por aldeão que deve mostrar (com problema, ou todos com <paramref name="showAll"/>).</summary>
     public void UpdateFrom(IEnumerable<(Villager Villager, Vector3 Position)> villagers, bool showAll)
     {

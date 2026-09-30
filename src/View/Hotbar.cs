@@ -6,11 +6,19 @@ using Godot;
 namespace Cidadela.View;
 
 /// <summary>
-/// Barra de construção no pé da tela: um botão por construção, na ordem de data/buildings.json
-/// (teclas 1, 2, 3...). Clicar no escolhido de novo desmarca.
+/// Barra de construção no pé da tela: um botão por construção, na ordem de data/buildings.json, em páginas de
+/// <see cref="PageSize"/> (teclas 1 a 9 dentro da página; Tab troca de página). Clicar no escolhido de novo desmarca.
 /// </summary>
 public partial class Hotbar : HBoxContainer
 {
+    public const int PageSize = 9;
+
+    /// <summary>A página à vista (0 = a primeira).</summary>
+    public int Page { get; private set; }
+
+    /// <summary>Quantas páginas há.</summary>
+    public int PageCount => Math.Max(1, (_buttons.Count + PageSize - 1) / PageSize);
+
     /// <summary>Índice escolhido pelo clique, ou null se desmarcou.</summary>
     public event Action<int?>? SlotClicked;
 
@@ -54,7 +62,7 @@ public partial class Hotbar : HBoxContainer
             int index = i;
             var button = new Button
             {
-                Text = $"{i + 1}  {type.Name}\n{string.Join(", ", costs)}",
+                Text = $"{i % PageSize + 1}  {type.Name}\n{string.Join(", ", costs)}",
                 ToggleMode = true,
                 FocusMode = FocusModeEnum.None,
                 CustomMinimumSize = new Vector2(104f, 62f),
@@ -69,6 +77,15 @@ public partial class Hotbar : HBoxContainer
             AddChild(button);
             _buttons.Add(button);
         }
+    }
+
+    /// <summary>Mostra só os botões de uma página (Tab); com mais de uma, o último botão da página diz "Tab".</summary>
+    public void ShowPage(int page)
+    {
+        Page = ((page % PageCount) + PageCount) % PageCount;
+        for (int i = 0; i < _buttons.Count; i++)
+            _buttons[i].Visible = i / PageSize == Page;
+        TooltipText = PageCount > 1 ? $"Página {Page + 1}/{PageCount} (Tab troca)" : "";
     }
 
     /// <summary>Marca o botão escolhido (ou nenhum) sem disparar <see cref="SlotClicked"/>.</summary>
