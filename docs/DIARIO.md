@@ -6207,3 +6207,30 @@ onde errou, correções manuais e quanto tempo levou.
   `dotnet test` 253 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 20:05–20:09 de relógio.
+
+## 2026-09-30 — Ladainhas, passo 5: comandos da Inteligência 1
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 5 do plano: pegar, pôr, colher/arrancar/cavar, operar, esperar; travas com motivo; reserva de alvo;
+  soltar a carga ao começar (Q2, Q3, Q5, Q6, Q7).
+- **Feito (`Villager`):**
+  - **Pegar [item] de [lugar]** (baú, saída de máquina, cabana): vai encostar e pega o quanto couber pela carga (pesado 1
+    por ponto de Força, leve 10), reservando a quantidade para outro aldeão não contar com ela.
+  - **Pôr [item] em [lugar]** (baú sempre cabe; entrada de máquina até 2 ciclos; cabana até a capacidade).
+  - **Colher/arrancar/cavar** o recurso mais perto dele dentro do raio em volta do ponto gravado (padrão 8), sem construção
+    em cima e sem reserva de outro aldeão, até encher a carga ou o recurso acabar; "clay" cava a célula de margem livre
+    mais perto (4,5 s por argila, a margem não esgota).
+  - **Operar [máquina]**: ocupa um posto vago (como a protagonista), vai encostar e fica enquanto a máquina trabalha ou
+    pode começar (sem mana, espera); quando ela fica sem insumo ou com a saída cheia, solta o posto e segue a ladainha.
+  - Travas com motivo (`LitanyStuck`): sem caminho, lugar sumiu, sem recurso no raio, mãos ocupadas, sem o item na mão,
+    lugar vazio, lugar cheio, máquina não usa o item, sem posto, posto ocupado, pesado demais. Espera 1 s dobrando até 8 s.
+  - Ao receber uma ladainha carregando algo, solta no baú mais perto dentro do raio antes de começar.
+- **O que deu errado:** 3 testes falharam por erro deles (o Poço fora da área de qualquer torre; tempos de ida e volta
+  subestimados para 1 pesado por viagem a 0,8 cél/s). Corrigidos nos testes.
+- **Testes:** `LitanyCommandTests` (pegar e pôr leves de 10 em 10; pesados 1 por Força; saída de máquina → entrada de
+  outra; cada motivo de trava; máquina que não usa o item e máquina cheia; mãos ocupadas; dois aldeões não colhem a mesma
+  árvore nem contam com o mesmo item; cavar argila; operar até a saída encher e soltar o posto; posto ocupado; a linha
+  curta Poço → baú anda sozinha com 2 aldeões; soltar a carga ao começar). `dotnet build` 0/0; `dotnet test` 270
+  passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 20:10–20:11 de relógio.

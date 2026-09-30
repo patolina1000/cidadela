@@ -156,6 +156,13 @@ public sealed class Villager
     private int _commandTicks;
     private int _stuckWait;
     private int _stuckCount;
+    private bool _dropFirst;
+
+    /// <summary>Quantos itens ele reservou no lugar de onde vai pegar (outros aldeões não contam com eles).</summary>
+    internal int ReservedAmount { get; private set; }
+
+    /// <summary>A célula de margem que ele está cavando (reservada: outro aldeão não escolhe a mesma).</summary>
+    public GridPos? DigCell { get; private set; }
     private int _gatherTicks;
     private int _retryIn;
     private int _idleTicks;
@@ -200,6 +207,13 @@ public sealed class Villager
         HaulKind = null;
         HaulAmount = 0;
         Task = home is null ? VillagerTask.Unemployed : VillagerTask.Waiting;
+    }
+
+    /// <summary>Põe itens na mão dele (testes).</summary>
+    internal void GiveForTests(string kind, int count)
+    {
+        CarryingKind = kind;
+        CarryingCount = count;
     }
 
     /// <summary>Esvazia a carga (a cabana sumiu: os itens vão para quem desmontou).</summary>
@@ -801,6 +815,7 @@ public sealed class Villager
         Stuck = null;
         _stuckCount = 0;
         _stuckWait = 0;
+        _dropFirst = litany is not null && CarryingCount > 0;
         Task = VillagerTask.Waiting;
         return LitanyFit.Ok;
     }
@@ -830,7 +845,12 @@ public sealed class Villager
         _commandStarted = false;
         _commandTicks = 0;
         _gatherTicks = 0;
+        ReservedAmount = 0;
+        Target = null;
+        DigCell = null;
         _path.Clear();
+        if (Task != VillagerTask.AtPost)
+            Task = VillagerTask.Waiting;
     }
 
     /// <summary>Um comando por vez; terminou, passa ao próximo (depois do último, volta ao primeiro).</summary>
@@ -839,6 +859,11 @@ public sealed class Villager
         if (_stuckWait > 0)
         {
             _stuckWait--;
+            return;
+        }
+        if (_dropFirst)
+        {
+            DropFirst(world);
             return;
         }
         LitanyCommand command = Litany!.Commands[CommandIndex];
@@ -856,8 +881,340 @@ public sealed class Villager
         ResetCommand();
     }
 
-    /// <summary>Os comandos com item e alvo (pegar, pôr, colher, operar): passo 5.</summary>
-    private bool DoAction(SimWorld world, LitanyCommand command) => true;
+    private bool DoAction(SimWorld world, LitanyCommand command) => command.Verb switch
+    {
+        LitanyVerb.Take => DoTake(world, command.Item!, command.Target!.Cell),
+        LitanyVerb.Put => DoPut(world, command.Item!, command.Target!.Cell),
+        LitanyVerb.Gather => DoGather(world, command.Target!),
+        LitanyVerb.Operate => DoOperate(world, command.Target!.Cell),
+        _ => true,
+    };
+
+    /// <summary>
+    /// Estado inicial previsível (docs/ladainhas.md): ao começar uma ladainha, solta o que carrega no baú mais perto dentro
+    /// do raio; sem baú, começa carregando.
+    /// </summary>
+    private void DropFirst(SimWorld world)
+    {
+        if (!_commandStarted)
+        {
+            Building? chest = null;
+            foreach (Building b in world.Buildings)
+                if (b.Storage is not null && Distance(b.Cell) <= Stats.LitanyRadius && (chest is null || Distance(b.Cell) < Distance(chest.Cell)))
+                    chest = b;
+            if (chest is null || CarryingCount == 0 || !TrySetPath(world, FreeNeighbors(world, chest.Cell)))
+            {
+                _dropFirst = false;
+                ResetCommand();
+                return;
+            }
+            HaulTo = chest;
+            _commandStarted = true;
+        }
+        if (!FollowPath(world))
+            return;
+        if (HaulTo is { Storage: Inventory storage } && world.BuildingAt(HaulTo.Cell) == HaulTo && CarryingKind is string kind)
+            storage.Add(kind, CarryingCount);
+        CarryingKind = null;
+        CarryingCount = 0;
+        HaulTo = null;
+        _dropFirst = false;
+        ResetCommand();
+    }
+
+    /// <summary>O estoque de onde se pega: baú, saída de máquina ou cabana.</summary>
+    private static Inventory? StockOf(Building b) => b.Storage ?? b.Machine?.Output ?? b.Workplace?.Stored;
+
+    /// <summary>Pegar [item] de [lugar]: vai até ele e pega o quanto couber (reservando, para outro não contar com isso).</summary>
+    private bool DoTake(SimWorld world, string item, GridPos cell)
+    {
+        if (world.BuildingAt(cell) is not Building place || StockOf(place) is not Inventory stock)
+        {
+            Fail(LitanyStuck.NoPlace);
+            return false;
+        }
+        int capacity = CarryFor(world, item);
+        if (capacity <= 0)
+        {
+            Fail(LitanyStuck.TooHeavy);
+            return false;
+        }
+        if (CarryingKind is string other && other != item && CarryingCount > 0)
+        {
+            Fail(LitanyStuck.HandsFull);
+            return false;
+        }
+        int room = capacity - CarryingCount;
+        if (room <= 0)
+            return true; // já está com a carga cheia desse item
+        if (!_commandStarted)
+        {
+            int free = stock.Count(item) - ReservedBy(world, place, item);
+            if (free <= 0)
+            {
+                Fail(LitanyStuck.SourceEmpty);
+                return false;
+            }
+            ReservedAmount = Math.Min(room, free);
+        }
+        if (!WalkTo(world, FreeNeighbors(world, place.Cell)))
+            return false;
+        int taken = 0;
+        while (taken < room && stock.TryRemoveOne(item))
+            taken++;
+        ReservedAmount = 0;
+        if (taken == 0)
+        {
+            Fail(LitanyStuck.SourceEmpty);
+            return false;
+        }
+        CarryingKind = item;
+        CarryingCount += taken;
+        Face(place.Cell);
+        return true;
+    }
+
+    /// <summary>Quanto desse item no lugar já está reservado por outros aldeões a caminho.</summary>
+    private int ReservedBy(SimWorld world, Building place, string item)
+    {
+        int reserved = 0;
+        foreach (Villager other in world.Villagers)
+            if (other != this && other.ReservedAmount > 0 && other.CurrentCommand is { Verb: LitanyVerb.Take } c &&
+                c.Item == item && c.Target!.Cell == place.Cell)
+                reserved += other.ReservedAmount;
+        return reserved;
+    }
+
+    /// <summary>Pôr [item] em [lugar]: baú (sempre cabe), entrada de máquina (até 2 ciclos) ou cabana.</summary>
+    private bool DoPut(SimWorld world, string item, GridPos cell)
+    {
+        if (world.BuildingAt(cell) is not Building place)
+        {
+            Fail(LitanyStuck.NoPlace);
+            return false;
+        }
+        if (CarryingKind != item || CarryingCount <= 0)
+        {
+            Fail(LitanyStuck.HandsEmpty);
+            return false;
+        }
+        int Room() => place.Storage is not null ? int.MaxValue
+            : place.Machine is MachineState m ? m.Room(item)
+            : place.Workplace is Workplace w ? w.Free
+            : -1;
+        int room = Room();
+        if (room < 0 || (place.Machine is MachineState mm && !mm.Recipe.Inputs.ContainsKey(item)))
+        {
+            Fail(LitanyStuck.NotAccepted);
+            return false;
+        }
+        if (room == 0)
+        {
+            Fail(LitanyStuck.TargetFull);
+            return false;
+        }
+        if (!WalkTo(world, FreeNeighbors(world, place.Cell)))
+            return false;
+        int amount = Math.Min(CarryingCount, Room());
+        if (amount <= 0)
+        {
+            Fail(LitanyStuck.TargetFull);
+            return false;
+        }
+        Inventory target = place.Storage ?? place.Machine?.Input ?? place.Workplace!.Stored;
+        target.Add(item, amount);
+        CarryingCount -= amount;
+        if (CarryingCount == 0)
+            CarryingKind = null;
+        _happyTicks = HappyTicks;
+        Face(place.Cell);
+        return true;
+    }
+
+    /// <summary>
+    /// Colher, arrancar ou cavar o recurso mais perto dele dentro do raio em volta do ponto gravado (reservando o alvo),
+    /// até encher a carga ou o recurso acabar. "Argila" cava a margem, que não esgota.
+    /// </summary>
+    private bool DoGather(SimWorld world, LitanyTarget target)
+    {
+        string kind = target.Resource!;
+        int capacity = CarryFor(world, kind);
+        if (capacity <= 0)
+        {
+            Fail(LitanyStuck.TooHeavy);
+            return false;
+        }
+        if (CarryingKind is string other && other != kind && CarryingCount > 0)
+        {
+            Fail(LitanyStuck.HandsFull);
+            return false;
+        }
+        if (CarryingCount >= capacity)
+            return true;
+        bool digging = world.Data.Castellan.Dig is DigType dig && dig.Item == kind;
+        if (!_commandStarted)
+        {
+            if (digging ? !PickBank(world, target) : !PickResource(world, target))
+            {
+                Fail(LitanyStuck.NoResource);
+                return false;
+            }
+        }
+        if (Task != VillagerTask.Gathering)
+        {
+            GridPos cell = digging ? DigCell!.Value : Target!.Cell;
+            List<GridPos> goals = FreeNeighbors(world, cell);
+            if (digging && !world.IsSolid(cell))
+                goals.Add(cell);
+            if (!WalkTo(world, goals))
+                return false;
+            _commandStarted = true; // chegou: continua com o mesmo alvo
+            Task = VillagerTask.Gathering;
+        }
+        if (!digging)
+        {
+            if (Target is null || Target.IsDepleted)
+                return CarryingCount > 0 || FailAndFalse(LitanyStuck.NoResource);
+            if (!Touching(world, Target))
+                return false;
+            Face(Target.Cell);
+            if (++_gatherTicks < GatherTicksFor(Target))
+                return false;
+            _gatherTicks = 0;
+            if (Target.TakeOne())
+            {
+                CarryingKind = kind;
+                CarryingCount++;
+            }
+            return CarryingCount >= capacity || Target.IsDepleted;
+        }
+        Face(DigCell!.Value);
+        int digTicks = Math.Max(1, (int)MathF.Round(world.Data.Castellan.Dig!.Ticks * Stats.GatherMultiplier));
+        if (++_gatherTicks < digTicks)
+            return false;
+        _gatherTicks = 0;
+        CarryingKind = kind;
+        CarryingCount++;
+        return CarryingCount >= capacity;
+    }
+
+    private bool FailAndFalse(LitanyStuck reason)
+    {
+        Fail(reason);
+        return false;
+    }
+
+    /// <summary>O recurso livre mais perto dele no raio em volta do ponto gravado (sem construção em cima, sem reserva).</summary>
+    private bool PickResource(SimWorld world, LitanyTarget target)
+    {
+        var center = new Vector2(target.Cell.X, target.Cell.Z);
+        ResourceNode? best = null;
+        foreach (ResourceNode node in world.Resources)
+        {
+            if (node.IsDepleted || node.Kind != target.Resource || world.BuildingAt(node.Cell) is not null ||
+                Vector2.Distance(center, new Vector2(node.Cell.X, node.Cell.Z)) > target.Radius)
+                continue;
+            bool reserved = false;
+            foreach (Villager other in world.Villagers)
+                if (other != this && other.Target == node)
+                    reserved = true;
+            if (!reserved && (best is null || Distance(node.Cell) < Distance(best.Cell)))
+                best = node;
+        }
+        Target = best;
+        return best is not null;
+    }
+
+    /// <summary>A célula de margem livre mais perto dele no raio em volta do ponto gravado (sem construção, sem reserva).</summary>
+    private bool PickBank(SimWorld world, LitanyTarget target)
+    {
+        int r = (int)MathF.Ceiling(target.Radius);
+        var center = new Vector2(target.Cell.X, target.Cell.Z);
+        GridPos? best = null;
+        for (int dx = -r; dx <= r; dx++)
+        for (int dz = -r; dz <= r; dz++)
+        {
+            var cell = new GridPos(target.Cell.X + dx, target.Cell.Z + dz);
+            if (!world.IsBank(cell) || world.BuildingAt(cell) is not null || Vector2.Distance(center, new Vector2(cell.X, cell.Z)) > target.Radius)
+                continue;
+            bool reserved = false;
+            foreach (Villager other in world.Villagers)
+                if (other != this && other.DigCell == cell)
+                    reserved = true;
+            if (!reserved && (best is null || Distance(cell) < Distance(best.Value)))
+                best = cell;
+        }
+        DigCell = best;
+        return best is not null;
+    }
+
+    /// <summary>
+    /// Operar [máquina] até ela ficar sem insumo ou com a saída cheia: ocupa um posto vago (como a protagonista), vai
+    /// até encostar e fica; depois solta o posto e segue a ladainha.
+    /// </summary>
+    private bool DoOperate(SimWorld world, GridPos cell)
+    {
+        if (world.BuildingAt(cell) is not Building machine)
+        {
+            LeaveHome(world);
+            Fail(LitanyStuck.NoPlace);
+            return false;
+        }
+        if (machine.Type.Posts is null || machine.Machine is null)
+        {
+            Fail(LitanyStuck.NoPost);
+            return false;
+        }
+        if (Home != machine)
+        {
+            int slot = -1;
+            for (int i = 0; i < machine.Crew.Length && slot < 0; i++)
+                if (machine.Crew[i] is null && machine.CastellanSlot != i)
+                    slot = i;
+            if (slot < 0)
+            {
+                Fail(LitanyStuck.PostTaken);
+                return false;
+            }
+            machine.Crew[slot] = this;
+            Home = machine;
+        }
+        if (Task != VillagerTask.AtPost)
+        {
+            var taken = new HashSet<GridPos>();
+            foreach (Villager? mate in machine.Crew)
+                if (mate is not null && mate != this && mate.Task == VillagerTask.AtPost)
+                    taken.Add(mate.Cell);
+            List<GridPos> goals = FreeNeighbors(world, machine.Cell);
+            goals.RemoveAll(taken.Contains);
+            List<GridPos> sides = goals.FindAll(g => g.X == machine.Cell.X || g.Z == machine.Cell.Z);
+            if (!WalkTo(world, sides.Count > 0 ? sides : goals))
+            {
+                if (Stuck is not null)
+                    LeaveHome(world);
+                return false;
+            }
+            Task = VillagerTask.AtPost;
+            PostCell = Cell;
+            Face(machine.Cell);
+            _commandTicks = 0;
+            return false;
+        }
+        // Encostado: fica enquanto a máquina trabalha ou pode começar (sem mana, espera).
+        MachineState m = machine.Machine;
+        if (++_commandTicks < 2 || m.IsWorking || m.CanStart)
+            return false;
+        LeaveHome(world);
+        Task = VillagerTask.Waiting;
+        return true;
+    }
+
+    private void Face(GridPos cell)
+    {
+        Vector2 to = new Vector2(cell.X, cell.Z) - Position;
+        if (to.LengthSquared() > 1e-6f)
+            Facing = Vector2.Normalize(to);
+    }
 
     /// <summary>Travou: guarda o motivo e espera 1 s, dobrando a cada vez até 8 s, antes de tentar de novo.</summary>
     private void Fail(LitanyStuck reason)
