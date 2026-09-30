@@ -4,5 +4,9 @@
   //   color: cor da borda (o sol frio do Main.tscn); strength: intensidade (emissão); width: acende onde
   //   |N·V| < width. 0,144 = a faixa da aproximação do CENÁRIO no Blender (Layer Weight "Facing" com blend 0,25
   //   dá 1 − |N·V|^0,5; o corte da rampa em 0,62 acende onde |N·V| < 0,38² = 0,144).
-  "rim": { "color": "#B8C7E6", "strength": 0.1, "width": 0.144 }
+  "rim": { "color": "#B8C7E6", "strength": 0.1, "width": 0.144 },
+  // occlusion: o que fica entre a câmera e a protagonista, num círculo em volta do peito dela, é recortado em
+  //   pontilhado. radius: raio em metros; keep: fração dos pixels que ficam no miolo (a "opacidade");
+  //   softness: fração do raio em que o recorte some aos poucos; chestHeight: altura do centro acima dos pés.
+  "occlusion": { "radius": 0.6, "keep": 0.35, "softness": 0.3, "chestHeight": 0.45 }
 }

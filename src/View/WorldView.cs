@@ -124,6 +124,10 @@ public partial class WorldView : Node3D
 
         _castellan.UpdateFrom(_world.Castellan, (float)alpha, dt);
         _grass.SetPusher(_castellan.GlobalPosition);
+        // O que tapa a protagonista esmaece em volta dela (a Biografia esconde o Castelão: desliga).
+        ResourceModels.SetOcclusionCenter(_castellan.Visible
+            ? _castellan.GlobalPosition + new Vector3(0f, VisualSettings.Current.Occlusion.ChestHeight, 0f)
+            : null);
     }
 
     /// <summary>

@@ -4274,3 +4274,42 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. `dotnet test`: 117 aprovados. Sem mudança na simulação.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 22:03–22:10 de relógio.
+
+---
+
+## 2026-09-29 — Esmaecer o que tapa a protagonista (recorte pontilhado em círculo)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** tarefa 4, passo 2: quando a protagonista (e, se barato, aldeões) estiver atrás de um recurso ou
+  construção alto, na linha da câmera, o objeto fica semitransparente ou recortado num círculo em volta dela; escolher
+  o mais barato que funcione com MultiMesh e dizer por quê; testar com um recurso provisório de 2,4 m; números em data/.
+- **Escolha: recorte pontilhado (screen-door) no shader, num círculo em volta do peito dela.** Por quê:
+  - o material continua opaco: descarta pixels num padrão Bayer 4×4 em vez de misturar alfa. Sem ordenação de
+    transparentes, sem perder a escrita de profundidade, sem trocar de material por objeto;
+  - funciona com MultiMesh de graça: o teste é por pixel e o centro é um uniform do material (um por cor, compartilhado),
+    então não há estado por instância nem trabalho de CPU por objeto (só um `SetShaderParameter` por material por quadro);
+  - só recorta o que está entre a câmera e ela (comparação de profundidade no espaço da câmera, com 0,3 m de folga), e o
+    círculo tem tamanho fixo em metros na distância dela (vale em qualquer zoom);
+  - a sombra fica inteira: no passe de sombra do sol a projeção é ortográfica, e aí o shader não recorta.
+  A transparência de verdade (alfa) exigiria o objeto no passe transparente, com ordenação por objeto (não por instância
+  do MultiMesh), sem sombra correta e mais cara em tela cheia; a troca de material por objeto não serve para MultiMesh.
+- **O que foi feito:**
+  - `Toon.gdshaderinc`: `toon_occluded(VERTEX, FRAGCOORD.xy, VIEW_MATRIX, PROJECTION_MATRIX)` e os uniforms
+    `occlusion_enabled` (padrão false: o aldeão não muda), `occlusion_center`, `occlusion_radius`, `occlusion_keep`,
+    `occlusion_softness`; `Toon.gdshader` descarta onde ele manda.
+  - `data/visual.json`: `occlusion` com raio 0,6 m, `keep` 0,35 (fração dos pixels que ficam no miolo: a "opacidade"),
+    borda suave em 30 % do raio e o centro a 0,45 m dos pés.
+  - `ResourceModels` liga nos recursos e `SetOcclusionCenter` põe o centro nos materiais; a `WorldView` chama a cada
+    quadro com o peito da protagonista (e desliga quando o Castelão está escondido, como na Biografia).
+- **Não entrou:** aldeões (cada personagem a mais precisa de mais um centro no shader, um laço por pixel ou uma textura
+  de posições; com centenas de aldeões não é barato; fica para decidir se vale para os poucos mais perto da câmera) e
+  construções (ainda usam `StandardMaterial3D`, e a mais alta tem 1,16 m; ganham o recorte quando passarem ao material
+  toon, com uma linha).
+- **Conferido no jogo** (`scenes/tests/CenarioTeste.tscn`, árvore provisória de 2,4 m entre ela e a câmera): antes a
+  protagonista sumia atrás da copa; agora aparece através dela, com a copa pontilhada só em volta dela e inteira no
+  resto; a sombra da árvore continua cheia. Log sem erros. Prints: `docs/prints/esmaecer_antes_depois.png` e
+  `esmaecer_perto.png`.
+- **O que deu errado:** nada.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 22:10–22:15 de relógio.

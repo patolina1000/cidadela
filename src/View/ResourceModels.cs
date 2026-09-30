@@ -7,7 +7,9 @@ namespace Cidadela.View;
 /// <summary>
 /// Formas provisórias dos recursos, nas medidas da proposta do CENÁRIO (até os modelos dele entrarem): árvore de
 /// 2,4 m (tronco até 1,2 m e copa redonda a partir de 1 m), pedra de 0,45 m e veio de 0,4 m, todos numa célula.
-/// Material toon com a borda de luz fria (data/visual.json), um por cor e compartilhado entre todos os recursos.
+/// Material toon com a borda de luz fria e o esmaecimento do que tapa a protagonista (data/visual.json), um por cor e
+/// compartilhado entre todos os recursos: o centro do esmaecimento é um uniform do material, então vale para
+/// qualquer quantidade de instâncias (MultiMesh incluso).
 /// </summary>
 public static class ResourceModels
 {
@@ -45,6 +47,17 @@ public static class ResourceModels
         parent.AddChild(new MeshInstance3D { Mesh = mesh, Position = position });
     }
 
+    /// <summary>Põe o centro do esmaecimento (o peito da protagonista) em todos os materiais; null desliga.</summary>
+    public static void SetOcclusionCenter(Vector3? center)
+    {
+        foreach (ShaderMaterial material in Materials.Values)
+        {
+            material.SetShaderParameter("occlusion_enabled", center is not null);
+            if (center is Vector3 c)
+                material.SetShaderParameter("occlusion_center", c);
+        }
+    }
+
     public static ShaderMaterial MaterialFor(Color color)
     {
         if (Materials.TryGetValue(color, out ShaderMaterial? material))
@@ -52,6 +65,7 @@ public static class ResourceModels
         material = new ShaderMaterial { Shader = GD.Load<Shader>(VillagerLooks.ToonShaderPath) };
         material.SetShaderParameter("albedo", color);
         VisualSettings.Current.ApplyRim(material);
+        VisualSettings.Current.ApplyOcclusion(material);
         Materials[color] = material;
         return material;
     }

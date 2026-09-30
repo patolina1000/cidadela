@@ -3,7 +3,7 @@ using Godot;
 
 namespace Cidadela.View;
 
-/// <summary>Parâmetros de desenho de data/visual.json (borda de luz fria), lidos uma vez.</summary>
+/// <summary>Parâmetros de desenho de data/visual.json (borda de luz fria, esmaecer o que tapa personagem), lidos uma vez.</summary>
 public sealed class VisualSettings
 {
     private static readonly JsonSerializerOptions Options = new()
@@ -16,6 +16,7 @@ public sealed class VisualSettings
     private static VisualSettings? _current;
 
     public RimSettings Rim { get; set; } = new();
+    public OcclusionSettings Occlusion { get; set; } = new();
 
     public static VisualSettings Current => _current ??=
         JsonSerializer.Deserialize<VisualSettings>(FileAccess.GetFileAsString("res://data/visual.json"), Options) ?? new VisualSettings();
@@ -27,6 +28,23 @@ public sealed class VisualSettings
         material.SetShaderParameter("rim_color", new Color(Rim.Color));
         material.SetShaderParameter("rim_strength", Rim.Strength);
         material.SetShaderParameter("rim_width", Rim.Width);
+    }
+
+    /// <summary>Liga o esmaecimento do que tapa a protagonista num material do Toon.gdshader.</summary>
+    public void ApplyOcclusion(ShaderMaterial material)
+    {
+        material.SetShaderParameter("occlusion_enabled", true);
+        material.SetShaderParameter("occlusion_radius", Occlusion.Radius);
+        material.SetShaderParameter("occlusion_keep", Occlusion.Keep);
+        material.SetShaderParameter("occlusion_softness", Occlusion.Softness);
+    }
+
+    public sealed class OcclusionSettings
+    {
+        public float Radius { get; set; } = 0.6f;
+        public float Keep { get; set; } = 0.35f;
+        public float Softness { get; set; } = 0.3f;
+        public float ChestHeight { get; set; } = 0.45f;
     }
 
     public sealed class RimSettings
