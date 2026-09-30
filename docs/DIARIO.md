@@ -4750,4 +4750,4 @@ onde errou, correções manuais e quanto tempo levou.
 - **No jogo:** não reabri (o Arthur estava jogando); o círculo branco da tecla H mostra o raio novo na próxima abertura.
 - `dotnet build`: 0 erros, 0 avisos.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 23:37–23:41 de relógio.
+- **Tempo:** 23:37–23:38 de relógio.
