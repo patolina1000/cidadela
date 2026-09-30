@@ -418,5 +418,12 @@
     "tipo": "imagem",
     "caminho": "assets/previews/cenario/cenario_contato.png",
     "nota": "Árvore revisão 3, pedra #57535F centralizada, veio com lascas engordadas; borda fria (b); fila e mapa nos zooms 0,4/1/2,5 com crepúsculo."
+  },
+  {
+    "quando": "2026-09-29T23:01:19",
+    "titulo": "ESTUDO — copa sem borda no crepúsculo",
+    "tipo": "imagem",
+    "caminho": "assets/previews/cenario/copa_sem_borda.png",
+    "nota": "0 atual sem borda × A tronco terra × B A + massa de cima #5A5847 × C B + contorno escuro (aproximação). Zooms 1 e 2,5, luz e crepúsculo. Nada aplicado ao jogo."
   }
 ]
