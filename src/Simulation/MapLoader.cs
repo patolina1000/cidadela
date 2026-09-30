@@ -32,9 +32,10 @@ public static class MapLoader
         foreach (PlacedData b in data.Buildings)
         {
             Building building = world.AddBuilding(gameData.Building(b.Kind), Checked(world, b.X, b.Z), DirectionExtensions.Parse(b.Direction));
-            // Baú que já começa com itens (mapas de teste): "items": { "wood": 30 }.
+            // Baú ou máquina que já começa com itens (mapas de teste): "items": { "wood": 30 }. Na máquina, vão para a
+            // entrada (o Relicário começando com fragmentos puros).
             foreach ((string kind, int amount) in b.Items)
-                (building.Storage ?? throw new FormatException($"\"{b.Kind}\" não guarda itens."))
+                (building.Storage ?? building.Machine?.Input ?? throw new FormatException($"\"{b.Kind}\" não guarda itens."))
                     .Add(gameData.Item(kind).Kind, amount);
         }
 

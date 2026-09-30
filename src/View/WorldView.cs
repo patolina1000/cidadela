@@ -369,6 +369,8 @@ public partial class WorldView : Node3D
             null => $"Trabalhando {machine.Progress:P0}",
             MachineWait.OutputFull => "Parada: saída cheia",
             MachineWait.PostsEmpty => $"Parada: postos {building.CrewPresent}/{building.Crew.Length}",
+            MachineWait.NoMana => "Parada: sem mana",
+            MachineWait.SourceDepleted => "Parada: veio esgotado",
             _ => "Esperando " + ItemsText(recipe.Inputs),
         });
         return lines;

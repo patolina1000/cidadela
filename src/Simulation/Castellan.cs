@@ -79,7 +79,7 @@ public sealed class Castellan
 
     internal void StartGathering(SimWorld world, GridPos cell)
     {
-        ResourceNode? node = world.ResourceAt(cell);
+        ResourceNode? node = world.GatherableAt(cell);
         if (node is null || !CanGather(cell, node.Shape))
             return;
         if (node != GatherTarget)

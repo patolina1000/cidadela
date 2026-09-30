@@ -5835,3 +5835,35 @@ onde errou, correções manuais e quanto tempo levou.
   headless sem erro.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 16:40–16:41 de relógio.
+
+## 2026-09-30 — Linha da energia, passo 5: máquinas, Relicário e Cristal-mãe
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 5 do plano: Relicário, Mina, Poço, Purificador e Cristal-mãe com os números da especificação; máquina
+  só anda com mana E alguém no posto; saída guardada nela (D6); Mina no veio, esgotado para (D7); Cristal-mãe 1.000 (D2).
+- **Feito:**
+  - `data/buildings.json` + `data/recipes.json`: Relicário (10 pedras + 5 puros; queima 1 puro a cada 20 s e gera
+    10/s enquanto queima; guarda até 5 esperando, `inputCycles`), Mina de Cristal (10 pedras + 5 toras; sobre o veio,
+    `onResource`; 2/s; 1 posto; 1 podre a cada 5 s), Poço (10 pedras; encostado de lado na água, `nextToWater`; 1/s;
+    1 posto; 1 jarro a cada 8 s), Purificador (5 pedras + 5 toras + 2 puros; 3/s; 1 posto; 2 podres + 1 jarro → 1 puro em
+    10 s), Cristal-mãe (fora da barra, `fixed`: não se desmonta; guarda até 1.000 da sobra).
+  - Receita sem saída (só queima) e `inputCycles` por receita. `MachineState`: `CanStart`, `Exhausted`,
+    `StartedThisTick`; sem mana não começa ciclo (não gasta entradas à toa); estados novos `NoMana` e
+    `SourceDepleted`. A mina tira 1 do veio a cada ciclo que começa (`Building.Source`).
+  - **Máquinas nunca empurram** a saída (D6) e **esteira não entra em máquina** (regra 4). As cabanas continuam soltando
+    no baú à frente.
+  - Construir sobre recurso só com `onResource` do mesmo tipo; com construção em cima, a célula bloqueia inteira e
+    ninguém coleta dali (`SimWorld.GatherableAt`). Poço precisa de água numa das 4 vizinhas; nada se constrói na água.
+  - Mapa: `"items"` numa máquina vai para a entrada (o Relicário começando com puros).
+  - Modelos provisórios (formas simples): Relicário, Mina (armação aberta sobre o veio), Poço, Purificador, Cristal-mãe
+    (cristal alto azul-frio, D3). Etiqueta da máquina mostra "sem mana" e "veio esgotado".
+- **Escolhas do mais simples (registradas):** o Relicário queima sempre que tem puro, mesmo sem consumo (a sobra vai ao
+  Cristal-mãe ou se perde); guarda até 5 puros esperando. A geração aparece na soma do tick seguinte ao que o ciclo
+  começa (1 tick de atraso, 50 ms).
+- **Testes:** `EnergyMachineTests` (sem operador para; sem mana para e não gasta entradas; com os dois, 1 puro em 10 s;
+  metade da mana = dobro do tempo; Relicário 3 puros/min e para vazio; sobra 8/s enche o Cristal-mãe até 1.000;
+  Cristal-mãe não se desmonta; Mina só no veio e Poço só ao lado da água; a Mina tira do veio e para esgotada; ninguém
+  coleta sob a Mina; Poço 1/8 s e Mina 1/5 s). `MachineTests`: não empurra para esteira nem baú; esteira não alimenta
+  máquina. `dotnet build` 0/0; `dotnet test` 214 passaram. Main em headless sem erro.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 16:42–16:45 de relógio.

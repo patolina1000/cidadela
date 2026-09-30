@@ -3,13 +3,13 @@ using System.Collections.Generic;
 namespace Cidadela.Simulation;
 
 /// <summary>
-/// Uma máquina trabalhando uma receita. Guarda entradas até 2 ciclos, trabalha quando tem tudo e a equipe completa
-/// (<see cref="CrewReady"/>), e acumula saídas até <see cref="OutputCycles"/> ciclos (depois para, esperando alguém
-/// tirar). O progresso anda <c>speed</c> ticks por tick (1 = normal).
+/// Uma máquina trabalhando uma receita. Guarda entradas até <see cref="RecipeType.InputCycles"/> ciclos, trabalha quando
+/// tem tudo e a equipe completa (<see cref="CrewReady"/>), e acumula saídas até <see cref="OutputCycles"/> ciclos (depois
+/// para, esperando alguém tirar: a máquina nunca solta nada sozinha). O progresso anda <c>speed</c> ticks por tick (a
+/// fração de mana da rede; 1 = normal, 0 = parada).
 /// </summary>
 public sealed class MachineState
 {
-    public const int InputCycles = 2;
     public const int OutputCycles = 5;
 
     public RecipeType Recipe { get; }
@@ -25,6 +25,12 @@ public sealed class MachineState
 
     public float Progress => IsWorking ? _progress / Recipe.Ticks : 0f;
 
+    /// <summary>A fonte embaixo acabou (a mina sobre o veio esgotado): não começa ciclo novo. A simulação atualiza.</summary>
+    public bool Exhausted { get; internal set; }
+
+    /// <summary>Se começou um ciclo neste tick (a mina tira 1 do veio nessa hora).</summary>
+    public bool StartedThisTick { get; private set; }
+
     private float _progress;
 
     public MachineState(RecipeType recipe)
@@ -37,14 +43,16 @@ public sealed class MachineState
 
     /// <summary>Quantos desse item ainda cabem na entrada (até 2 ciclos).</summary>
     public int Room(string kind) =>
-        Recipe.Inputs.TryGetValue(kind, out int perCycle) ? System.Math.Max(0, perCycle * InputCycles - Input.Count(kind)) : 0;
+        Recipe.Inputs.TryGetValue(kind, out int perCycle) ? System.Math.Max(0, perCycle * Recipe.InputCycles - Input.Count(kind)) : 0;
 
     /// <summary>
-    /// Por que está parada, do mais forte ao mais fraco: posto vazio, saída cheia, falta de entrada; null se está
-    /// trabalhando.
+    /// Por que está parada, do mais forte ao mais fraco: posto vazio, veio esgotado, sem mana, saída cheia, falta de
+    /// entrada; null se está trabalhando.
     /// </summary>
     public MachineWait? Waiting =>
         !CrewReady ? MachineWait.PostsEmpty
+        : Exhausted && !IsWorking ? MachineWait.SourceDepleted
+        : (IsWorking || CanStart) && Speed <= 0f ? MachineWait.NoMana
         : IsWorking ? null
         : OutputFull ? MachineWait.OutputFull
         : MachineWait.MissingInput;
@@ -62,7 +70,7 @@ public sealed class MachineState
     }
 
     /// <summary>Se começaria um ciclo agora (tem as entradas e a saída tem espaço), sem olhar a equipe.</summary>
-    public bool CanStart => !OutputFull && Input.Has(Recipe.Inputs);
+    public bool CanStart => !Exhausted && !OutputFull && Input.Has(Recipe.Inputs);
 
     private bool OutputFull
     {
@@ -78,13 +86,16 @@ public sealed class MachineState
     internal void Tick(float speed = 1f)
     {
         Speed = speed;
+        StartedThisTick = false;
         if (!CrewReady)
             return;
         if (!IsWorking)
         {
-            if (OutputFull || !Input.TryRemove(Recipe.Inputs))
+            // Sem mana não começa (não gasta as entradas à toa).
+            if (speed <= 0f || !CanStart || !Input.TryRemove(Recipe.Inputs))
                 return;
             IsWorking = true;
+            StartedThisTick = true;
             _progress = 0f;
         }
 
@@ -97,8 +108,8 @@ public sealed class MachineState
         _progress = 0f;
     }
 
-    /// <summary>Um item de saída para empurrar para fora (na ordem da receita), ou null.</summary>
-    internal string? NextOutput()
+    /// <summary>Um item pronto para tirar (na ordem da receita), ou null.</summary>
+    public string? NextOutput()
     {
         foreach (string kind in Recipe.Outputs.Keys)
             if (Output.Count(kind) > 0)
@@ -124,4 +135,8 @@ public enum MachineWait
     OutputFull,
     /// <summary>Falta gente nos postos (ou quem foi chamado ainda não chegou).</summary>
     PostsEmpty,
+    /// <summary>A rede não manda mana (fora de rede, ou rede sem geração).</summary>
+    NoMana,
+    /// <summary>A fonte embaixo acabou (veio esgotado).</summary>
+    SourceDepleted,
 }

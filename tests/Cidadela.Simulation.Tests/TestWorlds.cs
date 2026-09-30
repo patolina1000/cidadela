@@ -24,14 +24,15 @@ internal static class TestWorlds
 
     /// <summary>
     /// Máquinas de teste: serraria (1 madeira → 2 hastes em 1 s, sem postos); forno (10 madeiras → 20 hastes em 120 s, sem
-    /// postos); serraria com 2 postos (1 madeira → 2 hastes em 2 s); prensa com 1 posto (1 haste → 1 pedra em 5 s).
+    /// postos); serraria com 2 postos (1 madeira → 2 hastes em 2 s); prensa com 1 posto (1 haste → 1 pedra em 5 s); serraria a mana (gasta 20/s; 1 madeira → 1 haste em 1 s).
     /// </summary>
     public const string Recipes = """
         {
           "shafts": { "machine": "sawmill",     "inputs": { "wood": 1 },  "outputs": { "shaft": 2 },  "seconds": 1 },
           "kiln":   { "machine": "kiln",        "inputs": { "wood": 10 }, "outputs": { "shaft": 20 }, "seconds": 120 },
           "crewed": { "machine": "crewed_mill", "inputs": { "wood": 1 },  "outputs": { "shaft": 2 },  "seconds": 2 },
-          "press":  { "machine": "press",       "inputs": { "shaft": 1 }, "outputs": { "stone": 1 },  "seconds": 5 }
+          "press":  { "machine": "press",       "inputs": { "shaft": 1 }, "outputs": { "stone": 1 },  "seconds": 5 },
+          "powered": { "machine": "powered_mill", "inputs": { "wood": 1 }, "outputs": { "shaft": 1 }, "seconds": 1 }
         }
         """;
 
@@ -55,6 +56,7 @@ internal static class TestWorlds
           "tower": { "name": "Torre", "cost": { "wood": 1 }, "solid": true, "tower": { "wire": 7, "area": 5 } },
           "generator": { "name": "Gerador", "cost": { "wood": 1 }, "solid": true, "mana": { "supply": 10 } },
           "lamp": { "name": "Lâmpada", "cost": { "wood": 1 }, "solid": true, "mana": { "use": 4 } },
+          "powered_mill": { "name": "Serraria a mana", "cost": { "wood": 1 }, "solid": true, "mana": { "use": 20 } },
           "floor": { "name": "Piso de teste", "cost": { "wood": 1 }, "solid": false, "speedBonus": 1.2 },
           "lumber_hut": { "name": "Cabana do Lenhador", "cost": { "wood": 2 }, "solid": true,
                           "job": { "name": "Lenhador", "resource": "wood", "radius": 8, "capacity": 3 } }

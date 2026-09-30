@@ -44,6 +44,38 @@ public static class BuildingModels
                 Add(model, new CylinderMesh { TopRadius = 0.06f, BottomRadius = 0.1f, Height = 1.1f }, Palette.Wood.Darkened(0.3f), new Vector3(0f, 0.55f, 0f));
                 Add(model, new SphereMesh { Radius = 0.13f, Height = 0.36f, RadialSegments = 6, Rings = 3 }, Palette.ManaBlue, new Vector3(0f, 1.25f, 0f));
                 break;
+            case "reliquary":
+                // Altar baixo de pedra com o cristal puro que queima em cima.
+                Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.35f, 0.8f) }, Palette.Stone.Darkened(0.35f), new Vector3(0f, 0.175f, 0f));
+                Add(model, new CylinderMesh { TopRadius = 0.3f, BottomRadius = 0.36f, Height = 0.15f }, Palette.Stone, new Vector3(0f, 0.42f, 0f));
+                Add(model, new SphereMesh { Radius = 0.18f, Height = 0.5f, RadialSegments = 6, Rings = 3 }, Palette.ManaBlue, new Vector3(0f, 0.72f, 0f));
+                break;
+            case "crystal_mine":
+                // Armação de madeira aberta em cima do veio (o veio aparece por baixo).
+                foreach (float lx in new[] { -0.36f, 0.36f })
+                foreach (float lz in new[] { -0.36f, 0.36f })
+                    Add(model, new BoxMesh { Size = new Vector3(0.08f, 0.9f, 0.08f) }, Palette.Wood, new Vector3(lx, 0.45f, lz));
+                Add(model, new BoxMesh { Size = new Vector3(0.84f, 0.08f, 0.84f) }, Palette.Wood.Darkened(0.3f), new Vector3(0f, 0.92f, 0f));
+                Add(model, new BoxMesh { Size = new Vector3(0.06f, 0.5f, 0.06f) }, Palette.PurpleLichen, new Vector3(0f, 0.65f, 0f));
+                break;
+            case "well":
+                Add(model, new CylinderMesh { TopRadius = 0.38f, BottomRadius = 0.4f, Height = 0.4f }, Palette.Stone, new Vector3(0f, 0.2f, 0f));
+                Add(model, new CylinderMesh { TopRadius = 0.3f, BottomRadius = 0.3f, Height = 0.02f }, new Color("4F7C7A"), new Vector3(0f, 0.38f, 0f));
+                Add(model, new BoxMesh { Size = new Vector3(0.9f, 0.06f, 0.06f) }, Palette.Wood, new Vector3(0f, 0.85f, 0f));
+                foreach (float lx in new[] { -0.4f, 0.4f })
+                    Add(model, new BoxMesh { Size = new Vector3(0.06f, 0.5f, 0.06f) }, Palette.Wood, new Vector3(lx, 0.6f, 0f));
+                break;
+            case "purifier":
+                // Cuba de pedra com um cristal puro em cima.
+                Add(model, new CylinderMesh { TopRadius = 0.42f, BottomRadius = 0.3f, Height = 0.5f }, Palette.Stone.Darkened(0.2f), new Vector3(0f, 0.25f, 0f));
+                Add(model, new CylinderMesh { TopRadius = 0.36f, BottomRadius = 0.36f, Height = 0.02f }, new Color("4F7C7A"), new Vector3(0f, 0.5f, 0f));
+                Add(model, new SphereMesh { Radius = 0.12f, Height = 0.34f, RadialSegments = 6, Rings = 3 }, Palette.ManaBlue, new Vector3(0f, 0.72f, 0f));
+                break;
+            case "mother_crystal":
+                // Cristal alto azul-frio, provisório (D3 do Arthur).
+                Add(model, new CylinderMesh { TopRadius = 0.0f, BottomRadius = 0.32f, Height = 2.2f, RadialSegments = 6 }, Palette.ManaBlue, new Vector3(0f, 1.1f, 0f));
+                Add(model, new CylinderMesh { TopRadius = 0.0f, BottomRadius = 0.16f, Height = 1.0f, RadialSegments = 5 }, Palette.ManaBlue.Darkened(0.2f), new Vector3(0.3f, 0.5f, 0.1f));
+                break;
             case "carrier_post":
                 // Tablado com sacos e uma vara de carregar.
                 Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.1f, 0.8f) }, Palette.Wood, new Vector3(0f, 0.05f, 0f));

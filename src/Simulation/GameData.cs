@@ -170,7 +170,9 @@ public sealed class GameData
                 mana = new ManaType(md.Use, md.IdleUse, md.Supply, md.Capacity);
             }
             buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus, posts, carriers,
-                b.Hotbar, tower, mana));
+                b.Hotbar, tower, mana, b.OnResource, b.NextToWater, b.Fixed));
+            if (b.OnResource is string onResource && !resources.ContainsKey(onResource))
+                throw new FormatException($"\"{kind}\": onResource \"{onResource}\" não é um recurso.");
         }
 
         var recipes = new List<RecipeType>();
@@ -180,11 +182,11 @@ public sealed class GameData
                 throw new FormatException($"Receita \"{id}\": máquina desconhecida \"{r.Machine}\".");
             if (recipes.Exists(x => x.Machine == r.Machine))
                 throw new FormatException($"Receita \"{id}\": \"{r.Machine}\" já tem receita (por enquanto, uma por máquina).");
-            if (r.Seconds <= 0f || r.Outputs.Count == 0)
-                throw new FormatException($"Receita \"{id}\" precisa de saídas e seconds positivos (entradas podem faltar).");
+            if (r.Seconds <= 0f || (r.Outputs.Count == 0 && r.Inputs.Count == 0) || r.InputCycles <= 0)
+                throw new FormatException($"Receita \"{id}\" precisa de entradas ou saídas, seconds e inputCycles positivos.");
             CheckItems(itemKinds, r.Inputs, $"entradas de \"{id}\"");
             CheckItems(itemKinds, r.Outputs, $"saídas de \"{id}\"");
-            recipes.Add(new RecipeType(id, r.Machine, r.Inputs, r.Outputs, SecondsToTicks(r.Seconds)));
+            recipes.Add(new RecipeType(id, r.Machine, r.Inputs, r.Outputs, SecondsToTicks(r.Seconds), r.InputCycles));
         }
 
         var v = JsonSerializer.Deserialize<VillagerData>(villagersJson, JsonOptions)
@@ -268,6 +270,7 @@ public sealed class GameData
         public Dictionary<string, int> Inputs { get; set; } = new();
         public Dictionary<string, int> Outputs { get; set; } = new();
         public float Seconds { get; set; }
+        public int InputCycles { get; set; } = 2;
     }
 
     private sealed class BuildingData
@@ -284,6 +287,9 @@ public sealed class GameData
         public bool Hotbar { get; set; } = true;
         public TowerData? Tower { get; set; }
         public ManaData? Mana { get; set; }
+        public string? OnResource { get; set; }
+        public bool NextToWater { get; set; }
+        public bool Fixed { get; set; }
     }
 
     private sealed class TowerData

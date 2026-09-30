@@ -14,11 +14,23 @@
   //   e a área de abastecimento "area"×"area" em volta dela liga à rede o que gasta, gera ou guarda mana.
   // mana: mana por segundo. use: gasta trabalhando (máquina só gasta trabalhando: D1 do Arthur); idleUse: gasta parada
   //   (mariposa); supply: gera (Relicário, enquanto queima); capacity: guarda a sobra da rede (Cristal-mãe).
+  // onResource: só se constrói sobre esse recurso e tira dele 1 a cada ciclo (a mina sobre o veio; esgotado, para).
+  // nextToWater: só se constrói encostada de lado na água (o poço). fixed: já vem no mapa e não se desmonta.
   // hotbar: false tira da barra de construção (o código e os dados ficam; mapas e testes ainda podem usar).
   //   Fora da barra desde a mudança de rumo de 30/09 (linha da energia, docs/linha_energia.md): as cabanas.
   "belt":       { "name": "Esteira",  "cost": { "wood": 1 },                         "solid": false, "beltSpeed": 1.5 },
   "mana_tower": { "name": "Torre de Mana", "cost": { "wood": 2, "pure_shard": 1 },   "solid": true,
                   "tower": { "wire": 7, "area": 5 } },
+  "reliquary":  { "name": "Relicário", "cost": { "stone": 10, "pure_shard": 5 },   "solid": true,
+                  "mana": { "supply": 10 } },
+  "crystal_mine": { "name": "Mina de Cristal", "cost": { "stone": 10, "wood": 5 }, "solid": true, "onResource": "rotten_shard",
+                    "mana": { "use": 2 }, "posts": { "count": 1, "name": "Minerador", "tool": "pick" } },
+  "well":       { "name": "Poço", "cost": { "stone": 10 },                          "solid": true, "nextToWater": true,
+                  "mana": { "use": 1 }, "posts": { "count": 1, "name": "Aguadeiro", "tool": "bucket" } },
+  "purifier":   { "name": "Purificador", "cost": { "stone": 5, "wood": 5, "pure_shard": 2 }, "solid": true,
+                  "mana": { "use": 3 }, "posts": { "count": 1, "name": "Purificador", "tool": "purify" } },
+  "mother_crystal": { "name": "Cristal-mãe", "cost": {},                             "solid": true, "hotbar": false,
+                      "fixed": true, "mana": { "capacity": 1000 } },
   "chest":      { "name": "Baú",      "cost": { "wood": 5 },                         "solid": true,  "storage": true },
   "carrier_post": { "name": "Posto de Carregadores", "cost": { "wood": 4 },            "solid": true,
                     "carriers": { "count": 2, "radius": 12 } },

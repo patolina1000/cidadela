@@ -70,34 +70,34 @@ public class MachineTests
     }
 
     [Fact]
-    public void PushesOutputOntoTheBeltInFront()
+    public void NeverPushesOutputOntoABeltOrIntoAChest()
     {
-        SimWorld world = World(extra: """, { "kind": "belt", "x": 7, "z": 4, "direction": "east" }""");
-        Insert(world, Mill);
-        TestWorlds.Run(world, 40);
-        BeltLane lane = world.BuildingAt(new GridPos(7, 4))!.Belt!;
-        Assert.Equal(2, lane.Items.Count);
-        Assert.All(lane.Items, i => Assert.Equal("shaft", i.Kind));
-        Assert.Equal(0, Machine(world).Output.Count("shaft"));
+        // D6 do Arthur (30/09): a saída fica guardada até uma mariposa ou alguém tirar.
+        SimWorld belt = World(extra: """, { "kind": "belt", "x": 7, "z": 4, "direction": "east" }""");
+        Insert(belt, Mill);
+        TestWorlds.Run(belt, 40);
+        Assert.Empty(belt.BuildingAt(new GridPos(7, 4))!.Belt!.Items);
+        Assert.Equal(2, Machine(belt).Output.Count("shaft"));
+
+        SimWorld chest = World(extra: """, { "kind": "chest", "x": 7, "z": 4 }""");
+        Insert(chest, Mill);
+        TestWorlds.Run(chest, 40);
+        Assert.True(chest.BuildingAt(new GridPos(7, 4))!.Storage!.IsEmpty);
+        Assert.Equal(2, Machine(chest).Output.Count("shaft"));
     }
 
     [Fact]
-    public void DoesNotPushOntoABeltPointingBackAtIt()
+    public void ABeltDoesNotFeedTheMachine()
     {
-        SimWorld world = World(extra: """, { "kind": "belt", "x": 7, "z": 4, "direction": "west" }""");
-        Insert(world, Mill);
-        TestWorlds.Run(world, 40);
-        Assert.Empty(world.BuildingAt(new GridPos(7, 4))!.Belt!.Items);
-        Assert.Equal(2, Machine(world).Output.Count("shaft"));
-    }
-
-    [Fact]
-    public void PushesOutputIntoAChestInFront()
-    {
-        SimWorld world = World(extra: """, { "kind": "chest", "x": 7, "z": 4 }""");
-        Insert(world, Mill);
-        TestWorlds.Run(world, 40);
-        Assert.Equal(2, world.BuildingAt(new GridPos(7, 4))!.Storage!.Count("shaft"));
+        // Regra 4: item só entra em máquina por mariposa ou mão. A haste para no fim da esteira.
+        SimWorld world = TestWorlds.Open(x: 4, z: 4, buildings: """
+            [{ "kind": "press", "x": 7, "z": 4 }, { "kind": "belt", "x": 6, "z": 4, "direction": "east" }]
+            """);
+        world.Castellan.Inventory.Add("shaft", 1);
+        world.Enqueue(new InsertItemCommand(new GridPos(6, 4), "shaft"));
+        TestWorlds.Run(world, 60);
+        Assert.Equal(0, world.BuildingAt(new GridPos(7, 4))!.Machine!.Input.Count("shaft"));
+        Assert.Single(world.BuildingAt(new GridPos(6, 4))!.Belt!.Items);
     }
 
     [Fact]

@@ -105,8 +105,7 @@ public sealed class SimWorld
                 nextLane.AddAtEntry(lane.RemoveFront());
             else if (next?.Storage is Inventory storage)
                 storage.Add(lane.RemoveFront().Kind);
-            else if (next?.Machine is MachineState machine && machine.Accepts(lane.Items[0].Kind))
-                machine.Input.Add(lane.RemoveFront().Kind);
+            // Esteira não entra em máquina: só mariposa ou mão (docs/linha_energia.md, regra 4).
         }
 
         foreach (Building belt in _belts)
@@ -115,18 +114,18 @@ public sealed class SimWorld
     }
 
     /// <summary>
-    /// Cada máquina trabalha e empurra 1 item pronto por tick para a frente: numa esteira que não aponte
-    /// de volta para ela, ou num baú.
+    /// Cada máquina trabalha na fração de mana da rede. Nunca solta nada sozinha: a saída fica guardada até uma mariposa
+    /// ou alguém tirar (docs/linha_energia.md, regra 4; D6 do Arthur). A mina tira 1 do veio a cada ciclo que começa.
     /// </summary>
     private void TickMachines()
     {
         foreach (Building building in _machines)
         {
             MachineState machine = building.Machine!;
+            machine.Exhausted = building.Source is { IsDepleted: true };
             machine.Tick(building.ManaSatisfaction);
-
-            if (machine.NextOutput() is string kind && PushForward(building, kind))
-                machine.Output.TryRemoveOne(kind);
+            if (machine.StartedThisTick)
+                building.Source?.TakeOne();
         }
     }
 
@@ -259,7 +258,7 @@ public sealed class SimWorld
     }
 
     /// <summary>
-    /// Tenta pôr 1 item na esteira (que não aponte de volta) ou baú à frente da construção. Item pesado não entra em
+    /// Tenta pôr 1 item na esteira (que não aponte de volta) ou baú à frente da cabana. Item pesado não entra em
     /// esteira: só no baú.
     /// </summary>
     private bool PushForward(Building from, string kind)
@@ -388,8 +387,14 @@ public sealed class SimWorld
     public Building? BuildingAt(GridPos cell) => _buildingByCell.GetValueOrDefault(cell);
 
     /// <summary>Se a célula bloqueia a passagem (fora do mapa, recurso ou construção sólida).</summary>
-    /// <summary>Forma que o recurso da célula bloqueia (tronco, base da pedra ou do veio), ou null.</summary>
-    public ResourceShape? ShapeAt(GridPos cell) => ResourceAt(cell)?.Shape;
+    /// <summary>
+    /// Forma que o recurso da célula bloqueia (tronco, base da pedra ou do veio), ou null. Com uma construção em cima (a
+    /// mina sobre o veio), a célula inteira bloqueia: null.
+    /// </summary>
+    public ResourceShape? ShapeAt(GridPos cell) => BuildingAt(cell) is null ? ResourceAt(cell)?.Shape : null;
+
+    /// <summary>Recurso que se pode coletar à mão ou por cabana: sem construção em cima.</summary>
+    public ResourceNode? GatherableAt(GridPos cell) => BuildingAt(cell) is null ? ResourceAt(cell) : null;
 
     /// <summary>
     /// Se a célula bloqueia o caminho dos aldeões: como <see cref="IsSolid"/>, menos a célula de recurso que só bloqueia um
@@ -472,9 +477,17 @@ public sealed class SimWorld
             return BuildCheck.OutOfBounds;
         if (!Castellan.CanReach(cell))
             return BuildCheck.OutOfReach;
-        if (ResourceAt(cell) is not null || BuildingAt(cell) is not null)
+        if (BuildingAt(cell) is not null)
             return BuildCheck.Occupied;
-        if (IsWater(cell))
+        ResourceNode? resource = ResourceAt(cell);
+        if (type.OnResource is string needed)
+        {
+            if (resource?.Kind != needed)
+                return BuildCheck.WrongGround;
+        }
+        else if (resource is not null)
+            return BuildCheck.Occupied;
+        if (IsWater(cell) || (type.NextToWater && !TouchesWater(cell)))
             return BuildCheck.WrongGround;
         if (type.Solid && Castellan.BodyOverlaps(cell))
             return BuildCheck.Occupied;
@@ -493,7 +506,7 @@ public sealed class SimWorld
 
     internal void TryDeconstruct(GridPos cell)
     {
-        if (BuildingAt(cell) is not Building building || !Castellan.CanReach(cell))
+        if (BuildingAt(cell) is not Building building || building.Type.Fixed || !Castellan.CanReach(cell))
             return;
         _buildingByCell.Remove(cell);
         _belts.Remove(building);
@@ -544,9 +557,20 @@ public sealed class SimWorld
         return node;
     }
 
+    /// <summary>Se alguma das 4 vizinhas é água (o poço fica de lado para ela).</summary>
+    public bool TouchesWater(GridPos cell)
+    {
+        foreach (Direction d in DirectionExtensions.All)
+            if (IsWater(cell.Step(d)))
+                return true;
+        return false;
+    }
+
     internal Building AddBuilding(BuildingType type, GridPos cell, Direction direction)
     {
         var building = new Building(_nextId++, type, cell, direction, Data.RecipeFor(type.Kind));
+        if (type.OnResource is not null)
+            building.Source = _resourceByCell.GetValueOrDefault(cell);
         _buildingByCell[cell] = building;
         if (building.Belt is not null)
             _belts.Add(building);

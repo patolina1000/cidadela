@@ -499,7 +499,7 @@ public sealed class Villager
         var homeCenter = new Vector2(Home!.Cell.X, Home.Cell.Z);
         foreach (ResourceNode node in world.Resources)
         {
-            if (!node.IsDepleted && node.Kind == work.Job.Resource &&
+            if (!node.IsDepleted && node.Kind == work.Job.Resource && world.BuildingAt(node.Cell) is null &&
                 Vector2.Distance(homeCenter, new Vector2(node.Cell.X, node.Cell.Z)) <= work.Job.Radius)
                 candidates.Add(node);
         }

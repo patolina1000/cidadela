@@ -44,6 +44,9 @@ public sealed class Building
 
     public string Kind => Type.Kind;
 
+    /// <summary>O recurso embaixo, de onde ela tira (a mina sobre o veio), ou null.</summary>
+    public ResourceNode? Source { get; internal set; }
+
     /// <summary>A rede de mana em que está (dentro da área de uma torre, ou a própria torre), ou null.</summary>
     public ManaNetwork? Network { get; internal set; }
 

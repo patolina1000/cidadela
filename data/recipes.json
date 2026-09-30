@@ -1,5 +1,12 @@
 {
   // Receitas das máquinas (GDD, seção 5; linha da energia: docs/linha_energia.md).
   // machine: construção que faz a receita (data/buildings.json). Por enquanto, uma receita por máquina.
-  // inputs/outputs: itens por ciclo (sem inputs: produz sozinha). seconds: duração de um ciclo.
+  // inputs/outputs: itens por ciclo (sem inputs: produz sozinha; sem outputs: só queima, como o Relicário, que gera mana
+  //   enquanto o ciclo anda). seconds: duração de um ciclo.
+  // inputCycles: quantos ciclos de entrada a máquina guarda esperando (padrão 2). A saída guarda até 5 ciclos e a máquina
+  //   nunca solta nada sozinha: só mariposa ou mão tiram (D6 do Arthur, 30/09).
+  "reliquary": { "machine": "reliquary",    "inputs": { "pure_shard": 1 }, "outputs": {}, "seconds": 20, "inputCycles": 5 },
+  "mine":      { "machine": "crystal_mine", "inputs": {}, "outputs": { "rotten_shard": 1 }, "seconds": 5 },
+  "well":      { "machine": "well",         "inputs": {}, "outputs": { "water_jar": 1 },    "seconds": 8 },
+  "purify":    { "machine": "purifier",     "inputs": { "rotten_shard": 2, "water_jar": 1 }, "outputs": { "pure_shard": 1 }, "seconds": 10 }
 }
