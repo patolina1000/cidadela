@@ -404,5 +404,19 @@
     "tipo": "imagem",
     "caminho": "assets/previews/cenario/esgotado_contato.png",
     "nota": "(a) tocos das 4 árvores (42 tri, 0,15–0,19 m); (b) manchas do veio: placa (36 tri) ou lascas (30 tri). Mapa depois da coleta: some tudo × tocos e manchas, zooms 0,4/1/2,5 e crepúsculo."
+  },
+  {
+    "quando": "2026-09-29T22:17:22",
+    "titulo": "Quando o recurso esgota — opções (final)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/cenario/esgotado_contato.png",
+    "nota": "Tocos das 4 árvores (42 tri, material madeira no corte) e manchas do veio (placa 36 tri, lascas 30 tri); mapa some tudo × tocos e manchas, zooms 0,4/1/2,5 e crepúsculo."
+  },
+  {
+    "quando": "2026-09-29T22:17:23",
+    "titulo": "Cenário — três famílias para aprovação (final, tarefa 7)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/cenario/cenario_contato.png",
+    "nota": "Árvore revisão 3, pedra #57535F centralizada, veio com lascas engordadas; borda fria (b); fila e mapa nos zooms 0,4/1/2,5 com crepúsculo."
   }
 ]
