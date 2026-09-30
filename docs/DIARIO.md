@@ -3209,3 +3209,30 @@ onde errou, correções manuais e quanto tempo levou.
   nas quatro animações (jogo e lado, raio 0,10 e 0,06), sem defasagem de fase; faltas palma-manopla iguais
   (0,10 m: 34,3 / 35,4 mm; 0,06 m: 1,5 / 2,4 mm, antes 2,5). O clipe próprio do B reproduz a pose que o atalho dava.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Protagonista v2, passo 3A: limpeza do corpo (B, cabeça 18%, 0,80 m)
+
+- **Pedido:** limpar o bruto B com o aval do Arthur (cabeça 18%, 0,80 m): escala, simetria, cabeça escalada a partir da
+  base do pescoço, Taubin com passe extra nas pernas, tirar clavícula/esterno/joelhos marcados e a borda do short
+  gravada, um pouco de glúteo e costas no perfil, 8 regiões + roupa_intima, materiais pele e tecido, mãos meio fechadas,
+  ≤ 2.500 triângulos, frente da cabeça lisa. Sem rosto e sem rig.
+- **Feito:** `tools/arte/protagonista_v2/limpar_corpo.py` → `assets/modelos/protagonista_v2/protagonista_corpo_limpo.glb`
+  (sem rig) e `protagonista_corpo_limpeza.json`. Fundidos 2.141 vértices duplicados da Meshy; simetria pelo lado +x
+  (frente da cabeça mais lisa); cabeça × 1,355 a partir da base do pescoço (marcos do estudo ebb6705) e o corpo inteiro
+  × 0,940 de volta a 0,80 m → **cabeça 18,05%**; glúteo até 6 mm para trás e lombar 3 mm para dentro (só deslocando
+  vértices); Taubin 6 passes no corpo, +10 nas pernas, +25 na clavícula/esterno, joelhos, cotovelos, bordas do short e
+  base do pescoço; mãos fora do alisamento; cabeça subdividida e 90 passes; decimação com simetria segurando juntas e
+  mãos; cortes retos no cós e na bainha (a borda pele/tecido). Normais suaves da malha inteira copiadas para as peças.
+- **Resultado:** 0,80 m, **2.474 triângulos**: cabeca 386, tronco 394, bracos 284, maos 442, quadril 32, roupa_intima
+  462, coxas 232, canelas 136, pes 106. Materiais "pele" #91ADB7 e "tecido" #3F3342, 9 malhas com os nomes do contrato.
+- **Frente da cabeça:** a medida do aldeão (desvio contra elipsoide) não serve para a cabeça em ovo com queixo (dá 3 mm
+  de RMS só pelo formato); criei uma que só pega calombos: resíduo de uma superfície cúbica na janela do rosto (±45°, do
+  queixo a 70% da cabeça): **RMS 0,76 mm, máx 1,64 mm** depois de decimar (antes de decimar, com a cabeça densa, 0,93 /
+  4,49 mm no canto do queixo; a meta de 0,5 / 1,5 mm não chegou em 90 passes). A olho, lisa.
+- **Escolhas (não estavam no pedido):** `roupa_intima` é o próprio short (material tecido) e `quadril` é a faixa de
+  pele da bacia acima do cós, sem casca duplicada (a calça esconde as duas juntas no `equipment.json`); as outras
+  bordas de região seguem as faces (só aparecem com a roupa que esconde a região; cortá-las retas custava ~700
+  triângulos). As mãos ficaram com 18% do orçamento para manter o meio fechado.
+- **O que deu errado e foi corrigido:** cortes retos em todas as bordas somavam 896 triângulos (e o do ombro pegava a
+  cabeça); ficaram só os do short. A primeira medida da cabeça (a do aldeão) não convergia por causa do formato.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 30 min.
