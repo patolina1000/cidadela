@@ -1,7 +1,7 @@
 """Acrescenta uma prévia ao visor (assets/previews/visor.json). O visor mostra a mais nova em até 2 s.
 
 Uso, na raiz da worktree da arte:
-  python3 tools/arte/visor/publicar.py <caminho> <imagem|gif|glb> "<título>" "<nota>" [--junto a.glb b.glb] [--altura 0.80]
+  python3 tools/arte/visor/publicar.py <caminho> <imagem|gif|glb|texto> "<título>" "<nota>" [--junto a.glb b.glb] [--altura 0.80]
 
 O caminho (e os do --junto) precisa estar dentro de assets/, que é o que o servidor do visor entrega.
 """
@@ -15,7 +15,7 @@ import tempfile
 
 ROOT = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
 VISOR = os.path.join(ROOT, "assets", "previews", "visor.json")
-EXTENSOES = {"imagem": (".png", ".jpg", ".jpeg", ".webp"), "gif": (".gif",), "glb": (".glb",)}
+EXTENSOES = {"imagem": (".png", ".jpg", ".jpeg", ".webp"), "gif": (".gif",), "glb": (".glb",), "texto": (".md", ".txt")}
 
 
 def relativo(caminho, extensoes):

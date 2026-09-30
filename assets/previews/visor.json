@@ -208,5 +208,12 @@
     "tipo": "imagem",
     "caminho": "assets/previews/protagonista_v2/rosto_atlas_prova.png",
     "nota": "Close de frente e 3/4, zoom 2,5 com o aldeão e a cabeça ampliada 6×. No zoom 2,5 as expressões se separam pela quantidade de branco do olho."
+  },
+  {
+    "quando": "2026-09-29T22:50:56",
+    "titulo": "Protagonista v2 — plano de créditos (rig, clipes, chifres, cabelo)",
+    "tipo": "texto",
+    "caminho": "assets/previews/protagonista_v2/plano_creditos.md",
+    "nota": "Mínimo 51, máximo 146 créditos; sugestão de teto 150 com paradas. Saldo 2.258. Uthana é dinheiro, não crédito."
   }
 ]

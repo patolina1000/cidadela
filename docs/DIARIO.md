@@ -3344,3 +3344,21 @@ onde errou, correções manuais e quanto tempo levou.
   `desenhar_rosto.py`) e o Python importava o errado; o script da protagonista virou `atlas_rosto.py` e carrega os dois
   módulos pelo caminho. A primeira dor quase não se diferenciava da neutra (inclinação reforçada).
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-29 — Protagonista v2: plano de créditos para o "manda" (0 créditos)
+
+- **Pedido:** plano com custo, sem gastar, para rig e clipes, chifres (piloto rígido) e cabelo com pesos; tabela com
+  mínimo/máximo e as paradas para o Arthur; em `assets/previews/protagonista_v2/plano_creditos.md`, no visor. Nota do
+  Diretor para depois: no zoom 2,5, dor e esforço ficaram quase iguais; na próxima volta, a dor ganha assimetria.
+- **Levantado (grátis):** saldo **2.258**; tabela de preços da API (docs.meshy.ai, hoje): modelo só malha 20, rig 5 por
+  pedido (recusa não cobra), animação 3 por ação (até 10 por pedido), remesh 5; biblioteca de animações (678 ações):
+  corridas Run 2 (14), Run 3 (15), Run Fast (16), Lean Forward Sprint (509) e idles calmos Idle 3 (243), Idle 12 (252),
+  Catching Breath (31), Long Breathe and Look Around (336). Custos do aldeão no diário: rig + clipes 20, cabelos 100.
+  Uthana: sem conta nem chave; o GDD dá "preço a confirmar" e é dinheiro, não crédito.
+- **Plano:** rig 5–10 (direto no corpo limpo; se recusar, pela tarefa original do B até ~02/10, quando o bruto expira,
+  com transferência de pesos e os ossos da cabeça acompanhando a limpeza); corridas 3–12; idles 3–12; reserva de
+  clipes 0–12; chifres 20–60; cabelo 20–40; ergonomia, retalhos no GLB, cristal e `clipes.json` sem crédito.
+  **Total 51–146**; sugestão de teto de 150 para a protagonista inteira, com paradas.
+- **Visor:** novo tipo "texto" (.md): o `publicar.py` aceita, e o visor desenha títulos, listas, tabelas, negrito e
+  código com um conversor pequeno (sem biblioteca nova).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.

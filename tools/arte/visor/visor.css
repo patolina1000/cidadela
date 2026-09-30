@@ -49,7 +49,7 @@ main { flex: 1; display: flex; min-height: 0; }
 .info { margin-left: 6px; font-variant-numeric: tabular-nums; }
 
 #vista { position: relative; flex: 1; min-height: 0; background: var(--palco); overflow: hidden; }
-#vista-imagem, #vista-3d { position: absolute; inset: 0; overflow: auto; }
+#vista-imagem, #vista-3d, #vista-texto { position: absolute; inset: 0; overflow: auto; }
 #vista-imagem { cursor: grab; }
 #vista-imagem.arrastando { cursor: grabbing; }
 #vista-imagem img { display: block; margin: auto; }
@@ -60,7 +60,7 @@ main { flex: 1; display: flex; min-height: 0; }
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   color: var(--apagado);
 }
-#vazio[hidden], #vista-imagem[hidden], #vista-3d[hidden], #clipes[hidden], #filtro-crepusculo[hidden] { display: none; }
+#vazio[hidden], #vista-imagem[hidden], #vista-texto[hidden], #vista-3d[hidden], #clipes[hidden], #filtro-crepusculo[hidden] { display: none; }
 #filtro-crepusculo {
   position: absolute; inset: 0; pointer-events: none;
   background: var(--crepusculo); mix-blend-mode: multiply;
@@ -93,3 +93,12 @@ h2 { font-size: 13px; margin: 2px 0 8px; color: var(--apagado); font-weight: 600
   #lista-lado { width: auto; max-height: 30vh; border-left: 0; border-top: 1px solid var(--borda); }
   #palco { min-height: 60vh; }
 }
+
+#vista-texto { background: var(--fundo); }
+#texto { max-width: 1000px; margin: 0 auto; padding: 16px 20px 40px; line-height: 1.5; }
+#texto h1 { font-size: 22px; } #texto h2 { font-size: 18px; margin-top: 22px; } #texto h3 { font-size: 15px; }
+#texto table { border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+#texto th, #texto td { border: 1px solid var(--borda); padding: 4px 8px; vertical-align: top; text-align: left; }
+#texto th { background: var(--painel); }
+#texto code { background: var(--painel); padding: 0 4px; border-radius: 3px; }
+#texto td.num, #texto th.num { text-align: right; font-variant-numeric: tabular-nums; }

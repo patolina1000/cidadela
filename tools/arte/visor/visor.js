@@ -69,6 +69,7 @@ function mostrar(it) {
   $('nota').textContent = it.nota || '';
   $('vazio').hidden = true;
   if (it.tipo === 'glb') mostrar3d(it);
+  else if (it.tipo === 'texto') mostrarTexto(it);
   else mostrarImagem(it);
 }
 
@@ -90,8 +91,57 @@ const img = $('imagem');
 const caixaImg = $('vista-imagem');
 let escala = 1; // 1 = tamanho real
 
+// ---------- texto (Markdown simples: títulos, listas, tabelas, negrito, código) ----------
+
+function escapar(t) {
+  return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function inline(t) {
+  return escapar(t).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+}
+
+function markdown(md) {
+  const out = [];
+  const linhas = md.split('\n');
+  for (let i = 0; i < linhas.length; i++) {
+    const l = linhas[i];
+    if (/^\s*\|/.test(l)) { // tabela: cabeçalho, separador, linhas
+      const bloco = [];
+      while (i < linhas.length && /^\s*\|/.test(linhas[i])) bloco.push(linhas[i++]);
+      i--;
+      const cel = (r) => r.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
+      const alin = cel(bloco[1] || '').map((c) => /-:$/.test(c) ? ' class="num"' : '');
+      const cab = cel(bloco[0]).map((c, k) => `<th${alin[k] || ''}>${inline(c)}</th>`).join('');
+      const corpo = bloco.slice(2).map((r) => '<tr>' + cel(r).map((c, k) => `<td${alin[k] || ''}>${inline(c)}</td>`).join('') + '</tr>').join('');
+      out.push(`<table><thead><tr>${cab}</tr></thead><tbody>${corpo}</tbody></table>`);
+    } else if (/^\s*[-*] /.test(l)) {
+      const itens = [];
+      while (i < linhas.length && /^\s*[-*] /.test(linhas[i])) itens.push(linhas[i++].replace(/^\s*[-*] /, ''));
+      i--;
+      out.push('<ul>' + itens.map((x) => `<li>${inline(x)}</li>`).join('') + '</ul>');
+    } else if (/^#{1,3} /.test(l)) {
+      const n = l.match(/^#+/)[0].length;
+      out.push(`<h${n}>${inline(l.slice(n + 1))}</h${n}>`);
+    } else if (l.trim()) {
+      out.push(`<p>${inline(l)}</p>`);
+    }
+  }
+  return out.join('\n');
+}
+
+async function mostrarTexto(it) {
+  pararCena();
+  $('vista-3d').hidden = true; $('barra-3d').hidden = true; $('clipes').hidden = true;
+  caixaImg.hidden = true; $('barra-imagem').hidden = true;
+  $('vista-texto').hidden = false;
+  const r = await fetch(url(it.caminho), { cache: 'no-store' });
+  $('texto').innerHTML = r.ok ? markdown(await r.text()) : `<p>não carregou (${r.status})</p>`;
+}
+
 function mostrarImagem(it) {
   pararCena();
+  $('vista-texto').hidden = true;
   $('vista-3d').hidden = true; $('barra-3d').hidden = true; $('clipes').hidden = true;
   caixaImg.hidden = false; $('barra-imagem').hidden = false;
   escala = 1;
@@ -309,7 +359,7 @@ function pararCena() {
 }
 
 async function mostrar3d(it) {
-  caixaImg.hidden = true; $('barra-imagem').hidden = true;
+  caixaImg.hidden = true; $('barra-imagem').hidden = true; $('vista-texto').hidden = true;
   caixa3d.hidden = false; $('barra-3d').hidden = false;
   pararCena();
   const minha = ++geracao;
