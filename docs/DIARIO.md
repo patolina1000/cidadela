@@ -3399,3 +3399,25 @@ onde errou, correções manuais e quanto tempo levou.
   Lean Forward Sprint (509), Run Fast 2 (539), Run Fast 3 (530); idles Idle (0), Idle 1 (11), Idle 3 (243), Idle 12
   (252), Catching Breath (31), Long Breathe and Look Around (336). Brutos em `assets/modelos/protagonista_v2/meshy/rig/`.
 - **Créditos:** 41 (na protagonista: 81 de 300). **Correções manuais:** nenhuma. **Tempo:** ~30 min.
+
+## 2026-09-29 — Protagonista v2, parada 1: corpo com rig, retalhos e GIFs dos clipes candidatos
+
+- **Feito:** `montar_rig.py` (rig.glb da Meshy → armature; pesos transferidos da malha da Meshy para as 9 malhas do
+  corpo limpo, 0 vértices sem peso; pele da frente da cabeça 100% Head em 115 vértices; retalhos "Olhos" e "Boca" nas
+  janelas da b3 com o atlas, 100% Head; conferência em 6 quadros de cada clipe; exportação pelo contrato) →
+  `assets/modelos/protagonista_v2/protagonista_corpo_prova.glb` + `.json`. Clipes PROVISÓRIOS nesse GLB (Idle e a corrida
+  básica), só para a conferência. `gif_clipes.py` e `gif_montar.py` (versões da protagonista dos do aldeão: 0,80 m, GIF
+  do jogo a 80 px ampliado 2×, lado 320 px, grade do chão na passada) → `assets/previews/protagonista_v2/clipes/` (13
+  opções × jogo e lado, `_opcoes.png`, `_tira_corridas.png`, `_tira_idles.png`); `folha_rig.py` → `rig_parada1.png`.
+- **Conferência:** retalhos a 2 mm, folga entre 1,9 e 2,35 mm nos quadros conferidos (nunca atravessam); Armature escala
+  1, 2.482 triângulos no corpo, materiais pele, tecido, rosto_olhos, rosto_boca.
+- **Defeito visto, a corrigir na montagem final:** na corrida, uma ponta do short sai atrás da coxa (peso de um vértice
+  da bainha perto da virilha vindo da perna errada).
+- **Clipes (medidas do `_opcoes.png`):** corridas — corrida básica 16 q, 1,86 m/s, laço 4,0 cm; Run 2 17 q, 1,19 m/s,
+  13,1 cm; **Run 3 19 q, 1,19 m/s, 3,5 cm**; Run Fast 11 q, 2,58 m/s, 6,1 cm; Run Fast 2 e 3 e Lean Forward Sprint com
+  avanço de raiz (3,0 / 1,5 / 2,3 m/s), laços de 13 a 37 cm. Idles — Idle 96 q (pernas abertas, balanço pesado); Idle_02
+  56 q (mãos na frente); Idle 3 239 q, laço 10,3 cm; Idle 12 144 q, 1,7 cm; **Long Breathe and Look Around 270 q (11 s),
+  1,4 cm**; Catching Breath anda (raiz 0,44 m/s, sai de quadro): não serve de idle.
+- **Recomendação:** run = **Run 3** (leve, ereta, o laço mais limpo; segunda: Run Fast 3, mais delicada); idle = **Long
+  Breathe and Look Around** (cabeça baixa, olha em volta, melancólica, combina com a neutra_cansada; segunda: Idle 12).
+- **Créditos:** 0 nesta parte (na protagonista: 81 de 300; saldo 2.217). **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.

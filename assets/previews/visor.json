@@ -233,5 +233,215 @@
     "junto": [
       "assets/modelos/protagonista_v2/cristal.glb"
     ]
+  },
+  {
+    "quando": "2026-09-29T23:15:33",
+    "titulo": "Protagonista v2 — catching_breath, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/catching_breath_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:34",
+    "titulo": "Protagonista v2 — catching_breath, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/catching_breath_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:35",
+    "titulo": "Protagonista v2 — long_breathe, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/long_breathe_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:36",
+    "titulo": "Protagonista v2 — long_breathe, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/long_breathe_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:37",
+    "titulo": "Protagonista v2 — idle_12, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_12_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:38",
+    "titulo": "Protagonista v2 — idle_12, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_12_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:39",
+    "titulo": "Protagonista v2 — idle_3, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_3_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:40",
+    "titulo": "Protagonista v2 — idle_3, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_3_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:41",
+    "titulo": "Protagonista v2 — idle_02, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_02_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:42",
+    "titulo": "Protagonista v2 — idle_02, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_02_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:43",
+    "titulo": "Protagonista v2 — idle, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:44",
+    "titulo": "Protagonista v2 — idle, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/idle_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:45",
+    "titulo": "Protagonista v2 — lean_forward_sprint, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/lean_forward_sprint_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:46",
+    "titulo": "Protagonista v2 — lean_forward_sprint, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/lean_forward_sprint_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:47",
+    "titulo": "Protagonista v2 — run_fast_3, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_fast_3_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:48",
+    "titulo": "Protagonista v2 — run_fast_3, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_fast_3_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:49",
+    "titulo": "Protagonista v2 — run_fast_2, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_fast_2_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:50",
+    "titulo": "Protagonista v2 — run_fast_2, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_fast_2_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:51",
+    "titulo": "Protagonista v2 — run_fast, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_fast_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:52",
+    "titulo": "Protagonista v2 — run_fast, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_fast_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:53",
+    "titulo": "Protagonista v2 — run_02, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_02_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:54",
+    "titulo": "Protagonista v2 — run_02, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_02_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:55",
+    "titulo": "Protagonista v2 — corrida_basica, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/corrida_basica_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:56",
+    "titulo": "Protagonista v2 — corrida_basica, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/corrida_basica_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:57",
+    "titulo": "Protagonista v2 — run_03, de lado",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_03_lado.gif",
+    "nota": "Grade do chão na passada; laço e passada em _opcoes.png."
+  },
+  {
+    "quando": "2026-09-29T23:15:58",
+    "titulo": "Protagonista v2 — run_03, câmera do jogo (80 px, 2×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/clipes/run_03_jogo.gif",
+    "nota": "Candidato da parada 1."
+  },
+  {
+    "quando": "2026-09-29T23:15:59",
+    "titulo": "Protagonista v2 — clipes candidatos: medidas",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/clipes/_opcoes.png",
+    "nota": "Quadros, duração, passada e laço de cada opção. Catching Breath anda (sai de quadro): não serve de idle."
+  },
+  {
+    "quando": "2026-09-29T23:16:00",
+    "titulo": "Protagonista v2 — idles, 8 quadros de lado",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/clipes/_tira_idles.png",
+    "nota": "Recomendação: Long Breathe and Look Around (cabeça baixa, olha em volta, 11 s, laço 1,4 cm); segunda: Idle 12."
+  },
+  {
+    "quando": "2026-09-29T23:16:01",
+    "titulo": "Protagonista v2 — corridas, 8 quadros de lado",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/clipes/_tira_corridas.png",
+    "nota": "Recomendação: Run 3 (leve, ereta, laço 3,5 cm, 1,19 m/s); segunda: Run Fast 3."
+  },
+  {
+    "quando": "2026-09-29T23:16:02",
+    "titulo": "Protagonista v2 — parada 1: rig, pesos e retalhos",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rig_parada1.png",
+    "nota": "Rig direto no corpo limpo (5 créditos), 0 vértices sem peso, retalhos com folga 1,9–2,35 mm. Créditos na protagonista: 81/300."
   }
 ]
