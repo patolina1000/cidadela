@@ -6131,3 +6131,31 @@ onde errou, correções manuais e quanto tempo levou.
   264 passaram. Print `docs/prints/linha2_passo8_testeA.png`.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:26–19:36 de relógio.
+
+## 2026-09-30 — Ladainhas, passo 1: descarte das esteiras e mariposas
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** ordem do Arthur (manda, 30/09): mudança de rumo, sem esteiras; toda a automação por aldeões programados com
+  LADAINHAS (referência: Autonauts). Passo 1: arquivar e descartar esteiras, mariposas e a regra "item entra e sai de
+  máquina por mariposa"; aldeão nasce vazio; carga de pesado por ponto de Força.
+- **Feito:**
+  - Tag `esteiras-mariposas-arquivadas` em `385dc7a`, com push.
+  - **Saíram:** `BeltLane`, `BeltItem`, `MothType`, `MothState` e os `.uid`; esteira e mariposa em
+    `data/buildings.json` (e os campos `beltSpeed`/`moth`), `SimWorld.TickBelts`, `BeltItems`, `TickMoths` e o que
+    punha item em esteira (mão, cabana, alimentador); desenho dos itens na esteira, das mariposas e dos modelos; a entrada
+    "Esteira" da Biografia; `BeltTests`, `MothTests` e as partes de esteira/mariposa de outros testes.
+  - **Ficaram:** GridPath, postos, inventário, baú, carregadores e Posto de Carregadores, rede de torres de mana, todas as
+    máquinas das duas linhas com os seus números, pesos dos itens, ações à mão da protagonista, cabanas (fora da barra).
+    O `StressWorld` (banco de desempenho com itens em circuitos, cena Stress) não é a esteira do jogo e ficou.
+  - **Regras novas:** as máquinas guardam entrada e saída (já era assim desde a linha da energia; a vitrine da Biografia
+    agora alimenta a máquina direto e descarta a saída); o aldeão formado nasce VAZIO (`Villager.Blank`): fica parado ao
+    lado do Cristal-mãe e nenhuma construção o chama para posto; carga por viagem: pesado 1 por ponto de Força
+    (`Villager.Strength`, nasce 1), leve 10.
+  - Barra de construção: Torre, Relicário, Mina, Poço, Purificador, Barreiro, Oleiro, Baú, Posto de Carregadores (9).
+  - **Mapas:** `linha_energia.json` (teste A) ficou sem esteiras e mariposas e consistente, mas a linha NÃO anda sozinha:
+    **será refeito com ladainhas**. `linha_energia_zero.json` (teste B) não tinha esteira.
+- **Testes:** `dotnet build` 0/0; `dotnet test` 240 passaram (saíram os de esteira/mariposa e os de ponta a ponta do
+  teste A; entraram `HeavyCarryGrowsWithStrength`, `TheNewVillagerIsBornBlankAndStaysBesideTheCrystal` e os do
+  alimentador direto na máquina). Main, Biography e LinhaEnergia em headless, sem erro.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:48–19:51 de relógio.

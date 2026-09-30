@@ -8,7 +8,8 @@
   //   0,7125, aplicado a qualquer patamar; a tecla B do jogo liga a penalidade enquanto fome e moral não existem).
   // maxSpeed: teto da velocidade final.
   // gatherMultiplier: quanto mais devagar coletam que o Castelão (1.5 = 50% mais lento).
-  // carry: quantos itens levam por viagem nas costas, pelo peso do item (docs/linha_energia.md, regra 7).
+  // carry: quantos itens levam por viagem nas costas, pelo peso do item (docs/ladainhas.md): "pesado" é POR PONTO DE
+  //   FORÇA (o aldeão nasce com Força 1); "leve" é fixo.
   // radius: raio do corpo, em células, para desviar dos troncos (o aldeão tem 0,40 m de altura).
   // resourceCellCost: custo extra de caminho para atravessar a célula de um recurso que só bloqueia um círculo
   //   (1 = uma célula a mais): preferem o chão aberto, mas passam sob a copa ou rente à pedra quando é mais curto.

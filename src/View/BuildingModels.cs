@@ -28,13 +28,6 @@ public static class BuildingModels
 
         switch (type.Kind)
         {
-            case "belt":
-                Add(model, new BoxMesh { Size = new Vector3(0.94f, 0.08f, 0.94f) }, Palette.Wood.Darkened(0.35f), new Vector3(0f, 0.04f, 0f));
-                // Seta apontando para -Z local (a frente); o prisma deitado tem a ponta em -Z.
-                Add(model, new BoxMesh { Size = new Vector3(0.12f, 0.03f, 0.34f) }, Palette.Wheat, new Vector3(0f, 0.095f, 0.12f));
-                var head = Add(model, new PrismMesh { Size = new Vector3(0.38f, 0.26f, 0.03f) }, Palette.Wheat, new Vector3(0f, 0.095f, -0.16f));
-                head.Rotation = new Vector3(-Mathf.Pi / 2f, 0f, 0f);
-                break;
             case "chest":
                 Add(model, new BoxMesh { Size = new Vector3(0.62f, 0.42f, 0.5f) }, Palette.Wood, new Vector3(0f, 0.21f, 0f));
                 Add(model, new BoxMesh { Size = new Vector3(0.66f, 0.08f, 0.54f) }, Palette.Wheat, new Vector3(0f, 0.46f, 0f));
@@ -106,11 +99,6 @@ public static class BuildingModels
                 Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.4f, 0.6f) }, Palette.Wood, new Vector3(0f, 0.2f, 0f));
                 Add(model, new CylinderMesh { TopRadius = 0.22f, BottomRadius = 0.22f, Height = 0.05f }, Palette.Stone, new Vector3(0f, 0.43f, 0f));
                 Add(model, new SphereMesh { Radius = 0.14f, Height = 0.3f }, Palette.Wheat, new Vector3(0f, 0.6f, 0f));
-                break;
-            case "moth":
-                // Pouso baixo com a seta da direção; a mariposa (pontinho de luz) é desenhada à parte pela WorldView.
-                Add(model, new CylinderMesh { TopRadius = 0.18f, BottomRadius = 0.22f, Height = 0.12f, RadialSegments = 8 }, Palette.Stone.Darkened(0.3f), new Vector3(0f, 0.06f, 0f));
-                AddOutputArrow(model);
                 break;
             case "carrier_post":
                 // Tablado com sacos e uma vara de carregar.

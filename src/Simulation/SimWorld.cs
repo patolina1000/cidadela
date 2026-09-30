@@ -18,7 +18,7 @@ public sealed class SimWorld
     public IReadOnlyList<ResourceNode> Resources => _resources;
     public IReadOnlyCollection<Building> Buildings => _buildingByCell.Values;
 
-    /// <summary>Vitrine (palco da Biografia): máquinas andam sem gente nos postos. O jogo nunca liga.</summary>
+    /// <summary>Vitrine (palco da Biografia): máquinas andam sem gente nos postos e a saída some. O jogo nunca liga.</summary>
     public bool FreeMachines { get; internal set; }
 
     /// <summary>As redes de mana atuais (refeitas só quando uma construção entra ou sai).</summary>
@@ -35,13 +35,10 @@ public sealed class SimWorld
     private readonly List<Villager> _villagers = new();
     private readonly Dictionary<GridPos, ResourceNode> _resourceByCell = new();
     private readonly Dictionary<GridPos, Building> _buildingByCell = new();
-    private readonly List<Building> _belts = new();
     private readonly List<Building> _machines = new();
     private readonly List<Building> _workplaces = new();
-    private readonly List<Building> _moths = new();
     /// <summary>Construções que chamam aldeões (cabanas e postos), na ordem em que foram construídas.</summary>
     private readonly List<Building> _staffed = new();
-    private int _nextItemId = 1;
     private readonly List<ManaNetwork> _networks = new();
     private int _networksVersion = -1;
     private readonly Queue<ISimCommand> _commands = new();
@@ -65,57 +62,12 @@ public sealed class SimWorld
         Castellan.Tick(this);
         if (postBefore is not null && Castellan.Post != postBefore && _buildingByCell.ContainsValue(postBefore))
             AssignIdleWorkers(); // ela saiu do posto: um aldeão livre pode ocupar
-        TickBelts();
         UpdateMana();
         TickMachines();
-        TickMoths();
         foreach (Villager villager in _villagers)
             villager.Tick(this);
         TickWorkplaces();
         TickCount++;
-    }
-
-    /// <summary>Todos os itens em esteiras agora, para a cena desenhar.</summary>
-    public IEnumerable<BeltItem> BeltItems
-    {
-        get
-        {
-            foreach (Building belt in _belts)
-                foreach (BeltItem item in belt.Belt!.Items)
-                    yield return item;
-        }
-    }
-
-    /// <summary>
-    /// Duas fases: primeiro todos andam dentro da própria esteira; depois quem chegou na saída tenta
-    /// passar para a esteira (ou baú) à frente. Esteira de frente contra esta não aceita.
-    /// </summary>
-    private void TickBelts()
-    {
-        foreach (Building belt in _belts)
-            foreach (BeltItem item in belt.Belt!.Items)
-                item.PreviousPosition = item.Position;
-
-        foreach (Building belt in _belts)
-            belt.Belt!.Advance(belt.Type.BeltSpeed / SimClock.TicksPerSecond);
-
-        foreach (Building belt in _belts)
-        {
-            BeltLane lane = belt.Belt!;
-            if (lane.Items.Count == 0 || lane.Items[0].Progress < 1f)
-                continue;
-
-            Building? next = BuildingAt(belt.Cell.Step(belt.Direction));
-            if (next?.Belt is BeltLane nextLane && next.Direction != belt.Direction.Opposite() && nextLane.HasRoomAtEntry)
-                nextLane.AddAtEntry(lane.RemoveFront());
-            else if (next?.Storage is Inventory storage)
-                storage.Add(lane.RemoveFront().Kind);
-            // Esteira não entra em máquina: só mariposa ou mão (docs/linha_energia.md, regra 4).
-        }
-
-        foreach (Building belt in _belts)
-            foreach (BeltItem item in belt.Belt!.Items)
-                item.Position = PositionOnBelt(belt, item.Progress);
     }
 
     /// <summary>
@@ -135,6 +87,8 @@ public sealed class SimWorld
                 machine.NoRoom = building.PendingVillagers > 0;
             }
             machine.Tick(building.ManaSatisfaction);
+            if (FreeMachines)
+                machine.Output.MoveAllTo(new Inventory()); // vitrine da Biografia: a saída some, a máquina segue
             if (machine.StartedThisTick)
                 building.Source?.TakeOne();
             if (machine.CompletedThisTick && building.Type.SpawnsVillager)
@@ -181,13 +135,10 @@ public sealed class SimWorld
         : b.Machine is null || b.Machine.IsWorking || b.Machine.CanStart ? mana.Supply : 0f;
 
     /// <summary>
-    /// Consumidor: máquina só trabalhando ou prestes a começar (com gente no posto); mariposa, a mana de voo voando e a de
-    /// espera parada; sem receita, sempre.
+    /// Consumidor: máquina só trabalhando ou prestes a começar (com gente no posto); sem receita, sempre.
     /// </summary>
     private static float DemandOf(Building b)
     {
-        if (b.Moth is MothState moth && b.Type.Mana is ManaType mothMana)
-            return moth.Flying ? mothMana.Use : mothMana.IdleUse;
         if (b.Type.Mana is not { Use: > 0f } mana)
             return 0f;
         if (b.Machine is not MachineState m)
@@ -262,95 +213,6 @@ public sealed class SimWorld
         return dx * dx + dz * dz <= reach * reach + 1e-4f;
     }
 
-    /// <summary>
-    /// Mariposas (docs/linha_energia.md): parada, pega o primeiro item leve da célula de trás (saída de máquina, baú ou a
-    /// ponta de uma esteira) que a célula da frente aceita (entrada de máquina, baú ou esteira), e voa na fração de mana da
-    /// rede; chegando, entrega se ainda couber (senão espera parada no ar). Sem mana, pousa.
-    /// </summary>
-    private void TickMoths()
-    {
-        foreach (Building building in _moths)
-        {
-            MothState moth = building.Moth!;
-            float speed = building.ManaSatisfaction;
-            moth.Landed = speed <= 0f;
-            if (moth.Landed)
-                continue;
-            GridPos from = building.Cell.Step(building.Direction.Opposite(), moth.Type.Reach);
-            GridPos to = building.Cell.Step(building.Direction, moth.Type.Reach);
-            if (moth.Carrying is null)
-            {
-                if (TakeForMoth(from, to) is not string kind)
-                    continue;
-                moth.Carrying = kind;
-                moth.FlightTicks = 0f;
-            }
-            if (moth.FlightTicks < moth.Type.Ticks)
-                moth.FlightTicks += speed;
-            if (moth.FlightTicks >= moth.Type.Ticks - 0.0001f && TryPut(to, moth.Carrying!))
-            {
-                moth.Carrying = null;
-                moth.FlightTicks = 0f;
-            }
-        }
-    }
-
-    /// <summary>Tira da célula de origem o primeiro item leve que o destino aceita agora, ou null.</summary>
-    private string? TakeForMoth(GridPos from, GridPos to)
-    {
-        if (BuildingAt(from) is not Building source)
-            return null;
-        if (source.Machine is MachineState machine)
-        {
-            foreach (string kind in machine.Recipe.Outputs.Keys)
-                if (machine.Output.Count(kind) > 0 && !IsHeavy(kind) && Accepts(to, kind))
-                    return machine.Output.TryRemoveOne(kind) ? kind : null;
-            return null;
-        }
-        if (source.Storage is Inventory storage)
-        {
-            foreach (ItemType item in Data.Items)
-                if (storage.Count(item.Kind) > 0 && !item.IsHeavy && Accepts(to, item.Kind))
-                    return storage.TryRemoveOne(item.Kind) ? item.Kind : null;
-            return null;
-        }
-        if (source.Belt is BeltLane lane && lane.Items.Count > 0 && lane.Items[0].Progress >= 0.5f)
-        {
-            string kind = lane.Items[0].Kind;
-            if (!IsHeavy(kind) && Accepts(to, kind))
-                return lane.RemoveFront().Kind;
-        }
-        return null;
-    }
-
-    /// <summary>Se a célula aceita 1 desse item agora: entrada de máquina, baú, ou a entrada de uma esteira (só leve).</summary>
-    private bool Accepts(GridPos cell, string kind) => BuildingAt(cell) switch
-    {
-        { Machine: MachineState m } => m.Accepts(kind),
-        { Storage: not null } => true,
-        { Belt: BeltLane lane } => lane.HasRoomAtEntry && !IsHeavy(kind),
-        _ => false,
-    };
-
-    private bool TryPut(GridPos cell, string kind)
-    {
-        if (!Accepts(cell, kind))
-            return false;
-        Building target = BuildingAt(cell)!;
-        if (target.Machine is MachineState m)
-            m.Input.Add(kind);
-        else if (target.Storage is Inventory storage)
-            storage.Add(kind);
-        else
-        {
-            var item = new BeltItem(_nextItemId++, kind);
-            target.Belt!.AddAtEntry(item);
-            item.Position = PositionOnBelt(target, 0f);
-            item.PreviousPosition = item.Position;
-        }
-        return true;
-    }
-
     /// <summary>Cabana com algo guardado solta 1 item por tick na esteira ou baú à sua frente, como uma máquina.</summary>
     private void TickWorkplaces()
     {
@@ -370,14 +232,6 @@ public sealed class SimWorld
     private bool PushForward(Building from, string kind)
     {
         Building? front = BuildingAt(from.Cell.Step(from.Direction));
-        if (front?.Belt is BeltLane lane && front.Direction != from.Direction.Opposite() && lane.HasRoomAtEntry && !IsHeavy(kind))
-        {
-            var item = new BeltItem(_nextItemId++, kind);
-            lane.AddAtEntry(item);
-            item.Position = PositionOnBelt(front, 0f);
-            item.PreviousPosition = item.Position;
-            return true;
-        }
         if (front?.Storage is Inventory storage)
         {
             storage.Add(kind);
@@ -387,15 +241,15 @@ public sealed class SimWorld
     }
 
     /// <summary>
-    /// O aldeão formado nasce LIVRE na célula ao lado e vai sozinho para o posto vazio mais perto (docs/linha_aldeoes.md).
+    /// O aldeão formado nasce VAZIO na célula ao lado e fica parado ali, sem ir para posto nenhum, até receber uma
+    /// ladainha (docs/ladainhas.md; substitui o "vai sozinho para o posto vazio").
     /// </summary>
     private void SpawnVillager(Building from, GridPos cell)
     {
         from.PendingVillagers--;
         from.VillagersFormed++;
         from.LastFormedTick = TickCount;
-        AddVillager(new Vector2(cell.X, cell.Z));
-        AssignIdleWorkers();
+        AddVillager(new Vector2(cell.X, cell.Z)).Blank = true;
     }
 
     /// <summary>Uma célula livre encostada (de lado primeiro, depois na diagonal), ou null (L5 do Arthur).</summary>
@@ -450,29 +304,19 @@ public sealed class SimWorld
         Villager? nearest = null;
         foreach (Villager v in _villagers)
         {
-            if (v.Home is null && (nearest is null ||
+            if (v.Home is null && !v.Blank && (nearest is null ||
                 System.Numerics.Vector2.Distance(v.Position, home) < System.Numerics.Vector2.Distance(nearest.Position, home)))
                 nearest = v;
         }
         return nearest;
     }
 
-    private static System.Numerics.Vector2 PositionOnBelt(Building belt, float progress) =>
-        new System.Numerics.Vector2(belt.Cell.X, belt.Cell.Z) + belt.Direction.ToVector() * (progress - 0.5f);
-
     internal void TryInsertItem(GridPos cell, string kind)
     {
         if (BuildingAt(cell) is not Building target || !Castellan.CanReach(cell))
             return;
 
-        if (target.Belt is BeltLane lane && lane.HasRoomAtEntry && !IsHeavy(kind) && Castellan.Inventory.TryRemoveOne(kind))
-        {
-            var item = new BeltItem(_nextItemId++, kind);
-            lane.AddAtEntry(item);
-            item.Position = PositionOnBelt(target, 0f);
-            item.PreviousPosition = item.Position;
-        }
-        else if (target.Storage is Inventory storage && Castellan.Inventory.TryRemoveOne(kind))
+        if (target.Storage is Inventory storage && Castellan.Inventory.TryRemoveOne(kind))
         {
             storage.Add(kind);
         }
@@ -482,21 +326,19 @@ public sealed class SimWorld
         }
     }
 
-    /// <summary>Se o item é pesado (não entra em esteira nem em mariposa; só nas costas).</summary>
+    /// <summary>Se o item é pesado (carga por viagem: 1 por ponto de Força; o leve vai de 10 em 10).</summary>
     public bool IsHeavy(string kind) => Data.Item(kind).IsHeavy;
 
     /// <summary>
-    /// Item nascendo na entrada de uma esteira (alimentador do palco da Biografia e de testes). Não olha a regra do
-    /// peso: é um alimentador de cena, não o jogo.
+    /// Item posto direto na entrada da máquina (se ela aceita) ou no baú da célula, sem Castelão nem alcance: alimentador
+    /// da vitrine da Biografia e de testes. Não é o jogo.
     /// </summary>
     internal void TrySpawnItem(GridPos cell, string kind)
     {
-        if (BuildingAt(cell) is not { Belt: BeltLane lane } target || !lane.HasRoomAtEntry)
-            return;
-        var item = new BeltItem(_nextItemId++, kind);
-        lane.AddAtEntry(item);
-        item.Position = PositionOnBelt(target, 0f);
-        item.PreviousPosition = item.Position;
+        if (BuildingAt(cell) is { Machine: MachineState machine } && machine.Accepts(kind))
+            machine.Input.Add(kind);
+        else if (BuildingAt(cell)?.Storage is Inventory storage)
+            storage.Add(kind);
     }
 
     internal void TryTakeAll(GridPos cell)
@@ -645,24 +487,14 @@ public sealed class SimWorld
         if (Castellan.Post == building)
             Castellan.LeavePost();
         _buildingByCell.Remove(cell);
-        _belts.Remove(building);
         _machines.Remove(building);
         _workplaces.Remove(building);
-        _moths.Remove(building);
         _staffed.Remove(building);
         BuildingsVersion++;
         Castellan.Inventory.Add(building.Type.Cost);
-        // O que estava em cima ou dentro volta junto.
-        if (building.Belt is BeltLane lane)
-        {
-            foreach (BeltItem item in lane.Items)
-                Castellan.Inventory.Add(item.Kind);
-            lane.Clear();
-        }
+        // O que estava dentro volta junto.
         building.Storage?.MoveAllTo(Castellan.Inventory);
         building.Machine?.EmptyInto(Castellan.Inventory);
-        if (building.Moth?.Carrying is string carried)
-            Castellan.Inventory.Add(carried);
         if (building.Workplace is Workplace work)
         {
             work.Stored.MoveAllTo(Castellan.Inventory);
@@ -748,14 +580,10 @@ public sealed class SimWorld
         if (type.OnResource is not null)
             building.Source = _resourceByCell.GetValueOrDefault(cell);
         _buildingByCell[cell] = building;
-        if (building.Belt is not null)
-            _belts.Add(building);
         if (building.Machine is not null)
             _machines.Add(building);
         if (building.Workplace is not null)
             _workplaces.Add(building);
-        if (building.Moth is not null)
-            _moths.Add(building);
         BuildingsVersion++;
         if (building.Workplace is not null || building.Crew.Length > 0)
         {

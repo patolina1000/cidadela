@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Cidadela.Simulation.Tests;
 
-/// <summary>O Cristal-mãe forma aldeões (docs/linha_aldeoes.md): casca + puro + mana; o aldeão nasce livre e vai ao posto.</summary>
+/// <summary>O Cristal-mãe forma aldeões (docs/linha_aldeoes.md): casca + puro + mana; o aldeão nasce vazio (docs/ladainhas.md).</summary>
 public class VillagerFormingTests
 {
     private static int Seconds(float s) => (int)System.MathF.Round(s * SimClock.TicksPerSecond);
@@ -86,8 +86,9 @@ public class VillagerFormingTests
     }
 
     [Fact]
-    public void TheNewVillagerTakesAnEmptyPost()
+    public void TheNewVillagerIsBornBlankAndStaysBesideTheCrystal()
     {
+        // docs/ladainhas.md: nasce VAZIO e fica parado ao lado, sem ir para posto nenhum (mesmo com a prensa vaga).
         SimWorld world = TestWorlds.Open(x: 1, z: 1, buildings: """
             [{ "kind": "tower", "x": 10, "z": 10 }, { "kind": "generator", "x": 9, "z": 9 }, { "kind": "cradle", "x": 11, "z": 11 },
              { "kind": "press", "x": 15, "z": 11 }]
@@ -97,9 +98,18 @@ public class VillagerFormingTests
         cradle.Input.Add("shaft", 1);
         TestWorlds.Run(world, Seconds(25f));
         Villager born = Assert.Single(world.Villagers);
-        Assert.Same(world.BuildingAt(new GridPos(15, 11)), born.Home);
-        TestWorlds.Run(world, Seconds(5f));
-        Assert.Equal(VillagerTask.AtPost, born.Task);
+        Assert.True(born.Blank);
+        Assert.Null(born.Home);
+        GridPos bornAt = born.Cell;
+        TestWorlds.Run(world, Seconds(10f));
+        Assert.Equal(bornAt, born.Cell);
+        Assert.True(System.Math.Abs(born.Cell.X - 11) <= 1 && System.Math.Abs(born.Cell.Z - 11) <= 1);
+
+        // Nem uma construção nova com posto o chama.
+        world.Castellan.Inventory.Add("wood", 2);
+        world.Enqueue(new BuildCommand("press", new GridPos(3, 1), Direction.North));
+        TestWorlds.Run(world, 2);
+        Assert.Null(born.Home);
     }
 
     [Fact]

@@ -19,7 +19,8 @@ public class DataTests
         SimWorld world = MapLoader.Parse(TestWorlds.DataFile("maps/mapa_teste.json"), data);
 
         Assert.Contains("wood", data.Resources.Keys);
-        Assert.Equal("belt", data.Buildings[0].Kind); // a esteira é a tecla 1
+        Assert.Equal("mana_tower", data.Buildings[0].Kind); // a torre é a tecla 1 (sem esteiras desde 30/09)
+        Assert.DoesNotContain(data.Buildings, b => b.Kind is "belt" or "moth");
         Assert.NotEmpty(world.Resources);
         Assert.False(world.IsSolid(new GridPos((int)world.Castellan.Position.X, (int)world.Castellan.Position.Y)));
         Assert.Equal("grass", data.Terrains[0].Kind); // o primeiro terreno é o padrão
@@ -51,7 +52,7 @@ public class DataTests
     public void BuildingCostMustUseKnownResources()
     {
         Assert.Throws<FormatException>(() => GameData.Parse(TestWorlds.Items, TestWorlds.Resources, TestWorlds.CastellanStats, TestWorlds.VillagerStats,
-            """{ "belt": { "name": "Esteira", "cost": { "gold": 1 }, "solid": false } }""", "{}"));
+            """{ "chest": { "name": "Baú", "cost": { "gold": 1 }, "solid": true } }""", "{}"));
     }
 
     [Theory]

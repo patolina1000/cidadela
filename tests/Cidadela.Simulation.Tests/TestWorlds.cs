@@ -44,7 +44,6 @@ internal static class TestWorlds
 
     public const string Buildings = """
         {
-          "belt":  { "name": "Esteira", "cost": { "wood": 1 }, "solid": false, "beltSpeed": 1.5 },
           "chest": { "name": "Baú",     "cost": { "wood": 4 }, "solid": true,  "storage": true },
           "sawmill": { "name": "Serraria", "cost": { "wood": 8 }, "solid": true },
           "kiln": { "name": "Forno", "cost": { "wood": 4 }, "solid": true },

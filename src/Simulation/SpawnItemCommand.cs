@@ -1,9 +1,8 @@
 namespace Cidadela.Simulation;
 
 /// <summary>
-/// Faz nascer 1 item na entrada de uma esteira, sem Castelão nem alcance: é o alimentador do palco da
-/// Biografia (máquinas trabalhando de verdade) e de cenas de teste. Sem esteira na célula, ou sem espaço
-/// na entrada, não faz nada.
+/// Põe 1 item direto na entrada da máquina (ou no baú) da célula, sem Castelão nem alcance: é o alimentador do palco da
+/// Biografia (máquinas trabalhando de verdade) e de testes.
 /// </summary>
 public sealed record SpawnItemCommand(GridPos Cell, string Kind) : ISimCommand
 {

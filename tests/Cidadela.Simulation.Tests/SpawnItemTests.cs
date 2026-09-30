@@ -1,42 +1,41 @@
-using System.Linq;
 using Xunit;
 
 namespace Cidadela.Simulation.Tests;
 
-/// <summary>Alimentador do palco da Biografia: itens nascem na entrada de uma esteira sem o Castelão.</summary>
+/// <summary>Alimentador da vitrine da Biografia: põe o item direto na máquina (ou no baú), sem o Castelão.</summary>
 public class SpawnItemTests
 {
     private static SimWorld World() => TestWorlds.Open(x: 10, z: 10,
-        buildings: """[{ "kind": "belt", "x": 2, "z": 2, "direction": "east" }, { "kind": "chest", "x": 5, "z": 5 }]""");
+        buildings: """[{ "kind": "press", "x": 2, "z": 2 }, { "kind": "chest", "x": 5, "z": 5 }]""");
 
     [Fact]
-    public void SpawnsOnABeltFarFromTheCastellan()
+    public void PutsTheItemIntoTheMachineFarFromTheCastellan()
     {
         SimWorld world = World();
-        world.Enqueue(new SpawnItemCommand(new GridPos(2, 2), "wood"));
+        world.Enqueue(new SpawnItemCommand(new GridPos(2, 2), "shaft"));
         world.Tick();
-        Assert.Single(world.BeltItems);
-        Assert.Equal("wood", world.BeltItems.First().Kind);
+        Assert.Equal(1, world.BuildingAt(new GridPos(2, 2))!.Machine!.Input.Count("shaft"));
     }
 
     [Fact]
-    public void DoesNothingOnAChestOrEmptyCell()
+    public void RespectsWhatTheMachineAccepts()
+    {
+        SimWorld world = World();
+        for (int i = 0; i < 5; i++)
+            world.Enqueue(new SpawnItemCommand(new GridPos(2, 2), "shaft"));
+        world.Enqueue(new SpawnItemCommand(new GridPos(2, 2), "wood")); // a prensa não usa madeira
+        world.Tick();
+        Assert.Equal(2, world.BuildingAt(new GridPos(2, 2))!.Machine!.Input.Count("shaft")); // 2 ciclos
+        Assert.Equal(0, world.BuildingAt(new GridPos(2, 2))!.Machine!.Input.Count("wood"));
+    }
+
+    [Fact]
+    public void FillsAChestAndIgnoresAnEmptyCell()
     {
         SimWorld world = World();
         world.Enqueue(new SpawnItemCommand(new GridPos(5, 5), "wood"));
         world.Enqueue(new SpawnItemCommand(new GridPos(7, 7), "wood"));
         world.Tick();
-        Assert.Empty(world.BeltItems);
-        Assert.Equal(0, world.BuildingAt(new GridPos(5, 5))!.Storage!.Count("wood"));
-    }
-
-    [Fact]
-    public void RespectsTheSpacingAtTheEntry()
-    {
-        SimWorld world = World();
-        world.Enqueue(new SpawnItemCommand(new GridPos(2, 2), "wood"));
-        world.Enqueue(new SpawnItemCommand(new GridPos(2, 2), "wood")); // mesmo tick: sem espaço ainda
-        world.Tick();
-        Assert.Single(world.BeltItems);
+        Assert.Equal(1, world.BuildingAt(new GridPos(5, 5))!.Storage!.Count("wood"));
     }
 }

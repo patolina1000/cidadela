@@ -19,8 +19,6 @@ public partial class WorldView : Node3D
     private readonly Dictionary<Villager, VillagerVisual> _villagerNodes = new();
     private readonly Dictionary<ResourceNode, ResourceVisual> _resourceVisuals = new();
     private readonly Dictionary<Building, Node3D> _buildingNodes = new();
-    private readonly Dictionary<int, MeshInstance3D> _itemNodes = new();
-    private readonly HashSet<int> _seenItems = new();
     private Label3D _chestLabel = null!;
     private VillagerIcons _villagerIcons = null!;
     private ResourceModels _resourceModels = null!;
@@ -156,7 +154,6 @@ public partial class WorldView : Node3D
             RenderResource(resource, visual, dt);
         if (_world.BuildingsVersion != _buildingsVersion)
             SyncBuildings(withEffects: true);
-        RenderBeltItems((float)alpha);
         RenderChestTakes();
         RenderMachines(dt);
         _energy.InfoMode = InfoMode;
@@ -244,37 +241,6 @@ public partial class WorldView : Node3D
     }
 
     /// <summary>
-    /// Um cubinho da cor do recurso por item em esteira, deslizando entre o tick anterior e o atual.
-    /// Item que sumiu (entrou num baú ou voltou ao Castelão) tem o cubinho apagado.
-    /// </summary>
-    private void RenderBeltItems(float alpha)
-    {
-        _seenItems.Clear();
-        foreach (BeltItem item in _world.BeltItems)
-        {
-            _seenItems.Add(item.Id);
-            if (!_itemNodes.TryGetValue(item.Id, out MeshInstance3D? node))
-            {
-                var cube = new BoxMesh { Size = new Vector3(0.24f, 0.24f, 0.24f) };
-                cube.Material = new StandardMaterial3D { AlbedoColor = Palette.ForItem(_world.Data, item.Kind), Roughness = 0.9f };
-                node = new MeshInstance3D { Name = $"Item_{item.Id}", Mesh = cube };
-                AddChild(node);
-                _itemNodes[item.Id] = node;
-            }
-            System.Numerics.Vector2 p = System.Numerics.Vector2.Lerp(item.PreviousPosition, item.Position, alpha);
-            node.Position = new Vector3(p.X + 0.5f, 0.22f, p.Y + 0.5f);
-        }
-
-        foreach (int id in new List<int>(_itemNodes.Keys))
-        {
-            if (_seenItems.Contains(id))
-                continue;
-            _itemNodes[id].QueueFree();
-            _itemNodes.Remove(id);
-        }
-    }
-
-    /// <summary>
     /// Quando um baú, a saída de uma máquina ou uma cabana perde itens (o Castelão recolheu), os itens
     /// voam até ele, como no desmontar. Compara com o que cada um tinha no frame anterior. Máquinas e
     /// cabanas que empurram para uma esteira também perdem itens, mas 1 por tick: só grupos de 2 ou mais
@@ -346,7 +312,6 @@ public partial class WorldView : Node3D
             { Storage: Inventory storage } => ChestLines(building, storage),
             { Machine: MachineState machine } => MachineLines(building, machine),
             { Workplace: Workplace work } => WorkplaceLines(building, work),
-            { Moth: MothState moth } => MothLines(building, moth),
             { Type.Tower: not null } => new List<string> { building.Type.Name, NetworkText(building.Network) },
             _ => null,
         };
@@ -429,14 +394,6 @@ public partial class WorldView : Node3D
         ? "Fora da rede de mana"
         : $"Rede: gera {network.Supply:0.#}/s, pede {network.Demand:0.#}/s ({network.Satisfaction:P0})";
 
-    private List<string> MothLines(Building building, MothState moth)
-    {
-        string state = moth.Landed ? "pousada: sem mana"
-            : moth.Carrying is string kind ? $"levando {_world.Data.Item(kind).Name.ToLowerInvariant()}"
-            : "parada: nada leve para levar";
-        return new List<string> { building.Type.Name, char.ToUpper(state[0]) + state[1..], NetworkText(building.Network) };
-    }
-
     /// <summary>
     /// O que dá para focar perto de um ponto do chão: Castelão ou aldeão a menos de ~1 célula,
     /// senão a construção ou o recurso da célula. null se não há nada.
@@ -464,8 +421,7 @@ public partial class WorldView : Node3D
         var cell = new GridPos(Mathf.FloorToInt(ground.X), Mathf.FloorToInt(ground.Z));
         if (_world.BuildingAt(cell) is Building building && _buildingNodes.TryGetValue(building, out Node3D? bNode))
         {
-            float height = building.Type.IsBelt ? 0.15f : 0.6f;
-            return new FocusTarget(bNode, height, building.Type.IsBelt ? 2.2f : 3.4f,
+            return new FocusTarget(bNode, 0.6f, 3.4f,
                 () => string.Join("  —  ", ShowableLines(building)));
         }
         return _world.ResourceAt(cell) is ResourceNode resource ? ResourceFocus(resource) : null;

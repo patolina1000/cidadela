@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Cidadela.Simulation.Tests;
 
-/// <summary>Peso dos itens (docs/linha_energia.md, regras 3 e 7): pesado só nas costas, leve na esteira; carga por peso.</summary>
+/// <summary>Peso dos itens: carga por viagem, pesado 1 por ponto de Força e leve 10 (docs/ladainhas.md).</summary>
 public class ItemWeightTests
 {
     [Fact]
@@ -18,6 +18,19 @@ public class ItemWeightTests
         Assert.Equal(ItemWeight.Heavy, data.Item("clay").Weight);
         Assert.Equal(ItemWeight.Heavy, data.Item("shell").Weight);
         Assert.Equal(7, data.Items.Count); // os itens antigos (minério, haste, lingote, espada) saíram
+    }
+
+    [Fact]
+    public void HeavyCarryGrowsWithStrength()
+    {
+        SimWorld world = TestWorlds.Open(x: 1, z: 1, data: TestWorlds.RealData(), villagers: """[{ "x": 5, "z": 5 }]""");
+        Villager v = world.Villagers[0];
+        Assert.Equal(1, v.Strength); // nasce com Força 1
+        Assert.Equal(1, v.CarryFor(world, "rotten_shard"));
+        Assert.Equal(10, v.CarryFor(world, "pure_shard"));
+        v.Strength = 3;
+        Assert.Equal(3, v.CarryFor(world, "rotten_shard"));
+        Assert.Equal(10, v.CarryFor(world, "pure_shard"));
     }
 
     [Fact]
@@ -40,37 +53,14 @@ public class ItemWeightTests
     }
 
     [Fact]
-    public void CastellanCannotPutHeavyOnABelt()
-    {
-        SimWorld world = TestWorlds.Open(x: 4, z: 4, data: TestWorlds.RealData(),
-            buildings: """[{ "kind": "belt", "x": 6, "z": 4, "direction": "east" }]""");
-        world.Castellan.Inventory.Add("rotten_shard", 3);
-        world.Castellan.Inventory.Add("pure_shard", 3);
-        world.Enqueue(new InsertItemCommand(new GridPos(6, 4), "rotten_shard"));
-        world.Tick();
-        Assert.Empty(world.BuildingAt(new GridPos(6, 4))!.Belt!.Items);
-        Assert.Equal(3, world.Castellan.Inventory.Count("rotten_shard"));
-
-        world.Enqueue(new InsertItemCommand(new GridPos(6, 4), "pure_shard"));
-        world.Tick();
-        Assert.Single(world.BuildingAt(new GridPos(6, 4))!.Belt!.Items);
-    }
-
-    [Fact]
-    public void HutDoesNotPushHeavyOntoABeltButFillsAChest()
+    public void HutFillsTheChestInFront()
     {
         SimWorld world = TestWorlds.Open(x: 1, z: 1, data: TestWorlds.RealData(), buildings: """
-            [{ "kind": "lumber_hut", "x": 5, "z": 5, "direction": "east" },
-             { "kind": "belt", "x": 6, "z": 5, "direction": "east" },
-             { "kind": "lumber_hut", "x": 5, "z": 9, "direction": "east" },
-             { "kind": "chest", "x": 6, "z": 9 }]
+            [{ "kind": "lumber_hut", "x": 5, "z": 9, "direction": "east" }, { "kind": "chest", "x": 6, "z": 9 }]
             """);
-        Building beltHut = world.BuildingAt(new GridPos(5, 5))!, chestHut = world.BuildingAt(new GridPos(5, 9))!;
-        beltHut.Workplace!.Stored.Add("wood", 4);
+        Building chestHut = world.BuildingAt(new GridPos(5, 9))!;
         chestHut.Workplace!.Stored.Add("wood", 4);
         TestWorlds.Run(world, 10);
-        Assert.Empty(world.BuildingAt(new GridPos(6, 5))!.Belt!.Items);
-        Assert.Equal(4, beltHut.Workplace.Stored.Count("wood"));
         Assert.Equal(4, world.BuildingAt(new GridPos(6, 9))!.Storage!.Count("wood"));
     }
 

@@ -144,8 +144,6 @@ public sealed class GameData
         foreach ((string kind, BuildingData b) in Ordered<BuildingData>(buildingsJson, "buildings.json"))
         {
             CheckItems(itemKinds, b.Cost, $"custo de \"{kind}\"");
-            if (b.BeltSpeed < 0f)
-                throw new FormatException($"beltSpeed negativo em \"{kind}\".");
             if (b.SpeedBonus <= 0f)
                 throw new FormatException($"speedBonus de \"{kind}\" precisa ser positivo.");
             JobType? job = null;
@@ -185,15 +183,8 @@ public sealed class GameData
                     throw new FormatException($"Mana inválida em \"{kind}\": use, idleUse e supply não negativos.");
                 mana = new ManaType(md.Use, md.IdleUse, md.Supply);
             }
-            MothType? moth = null;
-            if (b.Moth is MothData mo)
-            {
-                if (mo.Seconds <= 0f || mo.Reach <= 0)
-                    throw new FormatException($"Mariposa inválida em \"{kind}\": seconds e reach positivos.");
-                moth = new MothType(SecondsToTicks(mo.Seconds), mo.Reach);
-            }
-            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.BeltSpeed, b.Storage, job, b.SpeedBonus, posts, carriers,
-                b.Hotbar, tower, mana, b.OnResource, b.NextToWater, b.Fixed, moth, b.OnBank, b.SpawnsVillager));
+            buildings.Add(new BuildingType(kind, b.Name, b.Cost, b.Solid, b.Storage, job, b.SpeedBonus, posts, carriers,
+                b.Hotbar, tower, mana, b.OnResource, b.NextToWater, b.Fixed, b.OnBank, b.SpawnsVillager));
             if (b.OnResource is string onResource && !resources.ContainsKey(onResource))
                 throw new FormatException($"\"{kind}\": onResource \"{onResource}\" não é um recurso.");
         }
@@ -301,7 +292,6 @@ public sealed class GameData
         public string Name { get; set; } = "";
         public Dictionary<string, int> Cost { get; set; } = new();
         public bool Solid { get; set; } = true;
-        public float BeltSpeed { get; set; }
         public bool Storage { get; set; }
         public JobData? Job { get; set; }
         public float SpeedBonus { get; set; } = 1f;
@@ -313,15 +303,8 @@ public sealed class GameData
         public string? OnResource { get; set; }
         public bool NextToWater { get; set; }
         public bool Fixed { get; set; }
-        public MothData? Moth { get; set; }
         public bool OnBank { get; set; }
         public bool SpawnsVillager { get; set; }
-    }
-
-    private sealed class MothData
-    {
-        public float Seconds { get; set; }
-        public int Reach { get; set; } = 1;
     }
 
     private sealed class TowerData

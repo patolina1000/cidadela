@@ -52,6 +52,14 @@ public sealed class Villager
     /// <summary>Descansando (dormindo). Ainda não há noite na simulação; quem for criar a noite liga isto.</summary>
     public bool Resting { get; private set; }
 
+    /// <summary>
+    /// Nasceu vazio no Cristal-mãe e espera uma ladainha (docs/ladainhas.md): nenhuma construção o chama para posto.
+    /// </summary>
+    public bool Blank { get; internal set; }
+
+    /// <summary>Força (docs/ladainhas.md): quantos pesados leva por viagem, 1 por ponto. Nasce com 1.</summary>
+    public int Strength { get; internal set; } = 1;
+
     /// <summary>Patamar de velocidade (índice em <see cref="VillagerStats.SpeedTiers"/>): 0 = base; as melhorias sobem.</summary>
     public int SpeedTier { get; private set; }
 
@@ -733,8 +741,9 @@ public sealed class Villager
         return list;
     }
 
-    /// <summary>Quantos desse item cabem numa viagem (pelo peso: docs/linha_energia.md, regra 7).</summary>
-    public int CarryFor(SimWorld world, string kind) => Stats.CarryFor(world.Data.Item(kind).Weight);
+    /// <summary>Quantos desse item cabem numa viagem: pesado, 1 por ponto de Força; leve, 10 (docs/ladainhas.md).</summary>
+    public int CarryFor(SimWorld world, string kind) =>
+        world.Data.Item(kind).IsHeavy ? Stats.CarryHeavy * Strength : Stats.CarryLight;
 
     private float Distance(GridPos cell) => Vector2.Distance(Position, new Vector2(cell.X, cell.Z));
 

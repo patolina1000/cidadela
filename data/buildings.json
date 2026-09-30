@@ -1,7 +1,9 @@
 {
   // O que o Castelão pode construir (GDD, seções 4, 7 e 10). A ordem aqui é a ordem da barra (teclas 1, 2, 3...).
+  // Sem esteiras nem mariposas (mudança de rumo de 30/09: ladainhas, docs/ladainhas.md; arquivadas na tag
+  // esteiras-mariposas-arquivadas). As máquinas guardam o que recebem e o que produzem: tudo entra e sai pela mão.
   // cost: itens gastos (devolvidos ao desmontar). solid: se bloqueia a passagem.
-  // beltSpeed: se é esteira, quantas células por segundo os itens andam. storage: se guarda itens (baú).
+  // storage: se guarda itens (baú: o ponto de troca entre aldeões; docs/ladainhas.md).
   // speedBonus: multiplicador da velocidade de quem anda sobre a construção (pisos construídos do GDD; só vale
   //   em construção não sólida; 1 = nenhum). Nenhum piso existe ainda.
   // job: cabana de trabalho; um aldeão livre vira o trabalhador e coleta "resource" num raio de "radius"
@@ -20,12 +22,8 @@
   // nextToWater: só se constrói encostada de lado na água (o poço). fixed: já vem no mapa e não se desmonta.
   // spawnsVillager: cada ciclo da receita forma um aldeão, que nasce LIVRE numa célula vizinha livre e vai sozinho para
   //   o posto vazio mais perto; sem célula livre, espera (o Cristal-mãe, docs/linha_aldeoes.md).
-  // moth: mariposa de cristal: pega um item LEVE da célula a "reach" células atrás e põe na célula à mesma distância na
-  //   frente (R gira ao construir), "seconds" por item, na fração de mana da rede; sem mana, pousa. Nível 1: reach 1.
-  //   O nível 2 (alcance 2) está "a definir" na especificação e não existe ainda.
   // hotbar: false tira da barra de construção (o código e os dados ficam; mapas e testes ainda podem usar).
   //   Fora da barra desde a mudança de rumo de 30/09 (linha da energia, docs/linha_energia.md): as cabanas.
-  "belt":       { "name": "Esteira",  "cost": { "wood": 1 },                         "solid": false, "beltSpeed": 1.5 },
   "mana_tower": { "name": "Torre de Mana", "cost": { "wood": 2, "pure_shard": 1 },   "solid": true,
                   "tower": { "wire": 7, "area": 5 } },
   "reliquary":  { "name": "Relicário", "cost": { "stone": 10, "pure_shard": 5 },   "solid": true,
@@ -42,8 +40,6 @@
                   "mana": { "use": 2 }, "posts": { "count": 1, "name": "Oleiro", "tool": "potter" } },
   "mother_crystal": { "name": "Cristal-mãe", "cost": {},                             "solid": true, "hotbar": false,
                       "fixed": true, "mana": { "use": 4 }, "spawnsVillager": true },
-  "moth":       { "name": "Mariposa de Cristal", "cost": { "pure_shard": 1 },       "solid": true,
-                  "mana": { "use": 0.5, "idleUse": 0.1 }, "moth": { "seconds": 1.2, "reach": 1 } },
   "chest":      { "name": "Baú",      "cost": { "wood": 5 },                         "solid": true,  "storage": true },
   "carrier_post": { "name": "Posto de Carregadores", "cost": { "wood": 4 },            "solid": true,
                     "carriers": { "count": 2, "radius": 12 } },

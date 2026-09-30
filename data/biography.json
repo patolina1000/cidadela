@@ -32,12 +32,6 @@
     },
 
     {
-      "id": "esteira", "nome": "Esteira", "categoria": "construcoes",
-      "descricao": "Madeira que anda. Leva o que se põe em cima e não pergunta para onde.",
-      "historia": "Antes, carregar era coisa de braço. Agora é coisa de tábua e roda. Os aldeões olham os itens passando como quem olha um rio. Às vezes um deles põe a mão. Tira em seguida.",
-      "modelo": "building:belt", "animacoes": [], "descoberto": true
-    },
-    {
       "id": "bau", "nome": "Baú", "categoria": "construcoes",
       "descricao": "Guarda o que ainda não serve. Um dia serve.",
       "historia": "Um caixote com tampa. Dentro, madeira que espera, pedra que espera. Ele fecha a tampa mesmo sem chuva. Diz que é para as coisas não olharem para fora.",

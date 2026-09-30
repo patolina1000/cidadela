@@ -40,8 +40,8 @@ public class BuildTests
     public void OutOfReachNothingIsBuilt()
     {
         SimWorld world = WorldWithWood(10);
-        Assert.Equal(BuildCheck.OutOfReach, world.CanBuild(world.Data.Building("belt"), new GridPos(18, 18)));
-        Build(world, "belt", 18, 18);
+        Assert.Equal(BuildCheck.OutOfReach, world.CanBuild(world.Data.Building("floor"), new GridPos(18, 18)));
+        Build(world, "floor", 18, 18);
         Assert.Null(world.BuildingAt(new GridPos(18, 18)));
     }
 
@@ -50,9 +50,9 @@ public class BuildTests
     {
         SimWorld world = TestWorlds.Open(x: 4, z: 4, resources: """[{ "kind": "wood", "x": 6, "z": 4 }]""");
         world.Castellan.Inventory.Add("wood", 10);
-        Assert.Equal(BuildCheck.Occupied, world.CanBuild(world.Data.Building("belt"), new GridPos(6, 4)));
+        Assert.Equal(BuildCheck.Occupied, world.CanBuild(world.Data.Building("floor"), new GridPos(6, 4)));
 
-        Build(world, "belt", 7, 4);
+        Build(world, "floor", 7, 4);
         Assert.Equal(BuildCheck.Occupied, world.CanBuild(world.Data.Building("chest"), new GridPos(7, 4)));
     }
 
@@ -62,19 +62,19 @@ public class BuildTests
         SimWorld world = WorldWithWood(10);
         var underFeet = new GridPos(4, 4);
         Assert.Equal(BuildCheck.Occupied, world.CanBuild(world.Data.Building("chest"), underFeet));
-        Assert.Equal(BuildCheck.Ok, world.CanBuild(world.Data.Building("belt"), underFeet));
+        Assert.Equal(BuildCheck.Ok, world.CanBuild(world.Data.Building("floor"), underFeet));
     }
 
     [Fact]
-    public void BeltsCanBeWalkedOverButChestsBlock()
+    public void FloorsCanBeWalkedOverButChestsBlock()
     {
         SimWorld world = WorldWithWood(10);
-        Build(world, "belt", 6, 4);
+        Build(world, "floor", 6, 4);
         Assert.False(world.IsSolid(new GridPos(6, 4)));
         Build(world, "chest", 6, 5);
         Assert.True(world.IsSolid(new GridPos(6, 5)));
 
-        TestWorlds.Move(world, 1f, 0f, ticks: 20); // atravessa a esteira
+        TestWorlds.Move(world, 1f, 0f, ticks: 20); // atravessa o piso
         Assert.True(world.Castellan.Position.X > 7f);
     }
 
@@ -82,7 +82,7 @@ public class BuildTests
     public void KeepsTheChosenDirection()
     {
         SimWorld world = WorldWithWood(1);
-        Build(world, "belt", 5, 4, Direction.East);
+        Build(world, "floor", 5, 4, Direction.East);
         Assert.Equal(Direction.East, world.BuildingAt(new GridPos(5, 4))!.Direction);
     }
 

@@ -1,18 +1,8 @@
 {
-  // TESTE A das duas linhas (docs/linha_energia.md e docs/linha_aldeoes.md, "Testes com o Arthur"): energia e aldeões
-  // montadas, 2 Relicários começando com 5 puros cada, e o mínimo de aldeões para tudo andar (L3 do Arthur): operadores
-  // das 2 Minas, do Poço, dos 2 Purificadores, do Barreiro e do Oleiro, e 2 carregadores = 9 aldeões.
-  // Cena: scenes/tests/LinhaEnergia.tscn. A câmera fica ao sul (z maior). Gerado por script e conferido à mão.
-  // Layout estilo Factorio: UMA esteira sai do Poço (2, 12), corre a leste em z 12 (ao sul das máquinas), sobe em x 19 e
-  // volta a oeste em z 8 (ao norte delas) até o baú de sobras (3, 8). Mariposas entre a esteira e cada máquina:
-  //   (4, 13), virada ao sul: o jarro entra no Oleiro (4, 14), ao lado do Barreiro;
-  //   z 11, viradas ao norte: o jarro entra nos Purificadores (6, 10) e (9, 10);
-  //   z 9, viradas ao norte: o puro sai dos Purificadores para a esteira de z 8;
-  //   z 7, viradas ao norte: o puro entra no Cristal-mãe (7, 6) e nos Relicários (5, 6) e (4, 6).
-  // Pesados nas costas (Posto de Carregadores em (11, 14), 2 carregadores): podres das Minas (7, 10) e (10, 10), coladas
-  // nos Purificadores; argila do Barreiro (2, 14, na margem) ao Oleiro; casca do Oleiro ao Cristal-mãe.
-  // Torres (3, 13), (8, 10), (6, 5). Margem em x 2, z 13–17, perto do Poço; o Barreiro (2, 14) e o Oleiro (4, 14) ficam
-  // lado a lado para a argila andar 1 célula.
+  // TESTE A das duas linhas (docs/linha_energia.md e docs/linha_aldeoes.md): máquinas, torres, Relicários e 9 aldeões.
+  // MUDANÇA DE RUMO (30/09, ladainhas): as esteiras e mariposas deste mapa saíram (arquivadas na tag
+  // esteiras-mariposas-arquivadas). Sem elas a linha NÃO anda sozinha: este mapa será refeito com aldeões carregando
+  // ladainhas prontas (docs/ladainhas.md, teste A). O baú (3, 8) fica como ponto de troca.
   "width": 22,
   "height": 18,
   "castellan": { "x": 12, "z": 6 },
@@ -48,50 +38,6 @@
     { "kind": "carrier_post", "x": 11, "z": 14 },
     { "kind": "reliquary", "x": 5, "z": 6, "items": { "pure_shard": 5 } },
     { "kind": "reliquary", "x": 4, "z": 6, "items": { "pure_shard": 5 } },
-    { "kind": "moth", "x": 3, "z": 12, "direction": "east" },
-    { "kind": "moth", "x": 6, "z": 11, "direction": "north" },
-    { "kind": "moth", "x": 9, "z": 11, "direction": "north" },
-    { "kind": "moth", "x": 4, "z": 13, "direction": "south" },
-    { "kind": "moth", "x": 6, "z": 9, "direction": "north" },
-    { "kind": "moth", "x": 9, "z": 9, "direction": "north" },
-    { "kind": "moth", "x": 4, "z": 7, "direction": "north" },
-    { "kind": "moth", "x": 5, "z": 7, "direction": "north" },
-    { "kind": "moth", "x": 7, "z": 7, "direction": "north" },
-    { "kind": "belt", "x": 4, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 5, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 6, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 7, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 8, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 9, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 10, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 11, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 12, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 13, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 14, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 15, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 16, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 17, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 18, "z": 12, "direction": "east" },
-    { "kind": "belt", "x": 19, "z": 12, "direction": "north" },
-    { "kind": "belt", "x": 19, "z": 11, "direction": "north" },
-    { "kind": "belt", "x": 19, "z": 10, "direction": "north" },
-    { "kind": "belt", "x": 19, "z": 9, "direction": "north" },
-    { "kind": "belt", "x": 19, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 18, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 17, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 16, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 15, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 14, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 13, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 12, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 11, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 10, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 9, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 8, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 7, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 6, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 5, "z": 8, "direction": "west" },
-    { "kind": "belt", "x": 4, "z": 8, "direction": "west" },
     { "kind": "chest", "x": 3, "z": 8 },
     { "kind": "mana_tower", "x": 3, "z": 13 },
     { "kind": "mana_tower", "x": 8, "z": 10 },

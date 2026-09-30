@@ -39,10 +39,10 @@ public partial class BiographyRoot : Node3D
     private bool _machineRunning = true;
     private float _defaultYaw = Mathf.Pi;
 
-    // Máquinas trabalham de verdade: um mundo pequeno da simulação (esteira → máquina → esteira → baú),
-    // desenhado pelo WorldView do jogo, com um alimentador que faz nascer os insumos da receita.
+    // Máquinas trabalham de verdade: um mundo pequeno da simulação com só a máquina, desenhado pelo WorldView do jogo, com
+    // um alimentador que põe os insumos da receita direto nela (a vitrine descarta a saída).
     private const int FeedEveryTicks = 10;
-    private static readonly GridPos MachineCell = new(4, 3), FeedCell = new(1, 3);
+    private static readonly GridPos MachineCell = new(4, 3), FeedCell = MachineCell;
     private Node3D? _machineRoot;
     private SimWorld? _machineWorld;
     private WorldView? _machineView;
@@ -204,7 +204,7 @@ public partial class BiographyRoot : Node3D
             case "building":
                 BuildingType type = _data.Building(entry.ModelArg);
                 _model = BuildingModels.Create(type, Direction.North, _data);
-                _targetHeight = type.IsBelt ? 0.1f : 0.45f; _distance = type.IsBelt ? 2f : 3f;
+                _targetHeight = 0.45f; _distance = 3f;
                 break;
             case "item":
             {
@@ -231,9 +231,8 @@ public partial class BiographyRoot : Node3D
     }
 
     /// <summary>
-    /// Mundo 9×7 de terra com esteira de entrada (x 1..3), a máquina em (4,3) virada para leste, esteira de
-    /// saída (x 5..7) e um baú em (8,3). O Castelão fica escondido em (4,1) só porque o mapa exige um. O
-    /// alimentador faz nascer os insumos da receita na primeira esteira, na proporção da receita.
+    /// Mundo 9×7 de terra com só a máquina em (4,3). O Castelão fica escondido em (4,1) só porque o mapa exige um. O
+    /// alimentador põe os insumos da receita direto na máquina, na proporção da receita.
     /// </summary>
     private void BuildMachineWorld(string kind, RecipeType recipe)
     {
@@ -243,14 +242,7 @@ public partial class BiographyRoot : Node3D
               "castellan": { "x": 4, "z": 1 },
               "resources": [],
               "buildings": [
-                { "kind": "belt", "x": 1, "z": 3, "direction": "east" },
-                { "kind": "belt", "x": 2, "z": 3, "direction": "east" },
-                { "kind": "belt", "x": 3, "z": 3, "direction": "east" },
-                { "kind": "{{kind}}", "x": 4, "z": 3, "direction": "east" },
-                { "kind": "belt", "x": 5, "z": 3, "direction": "east" },
-                { "kind": "belt", "x": 6, "z": 3, "direction": "east" },
-                { "kind": "belt", "x": 7, "z": 3, "direction": "east" },
-                { "kind": "chest", "x": 8, "z": 3 }
+                { "kind": "{{kind}}", "x": 4, "z": 3, "direction": "east" }
               ],
               "terrain": { "default": "dirt", "patches": [] },
               "freeMachines": true
@@ -273,8 +265,8 @@ public partial class BiographyRoot : Node3D
         _machineView.CastellanNode.Visible = false;
         GetNode<Node3D>("Pedestal").Visible = false;
 
-        _targetHeight = 0.45f; _distance = 7f; // longe o bastante para o vão estreito mostrar as esteiras dos dois lados
-        _defaultYaw = 0f; // câmera ao sul, olhando para o norte: a esteira corre da esquerda para a direita
+        _targetHeight = 0.45f; _distance = 3f;
+        _defaultYaw = 0f; // câmera ao sul, olhando para o norte
     }
 
     // ---- Interface ----------------------------------------------------------------------------------------
