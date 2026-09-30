@@ -110,5 +110,26 @@
     "tipo": "imagem",
     "caminho": "assets/previews/protagonista_v2/corpo_limpo.png",
     "nota": "Mãos 442 → 226 (meio fechadas), cabeça 386 → 652 (crânio e frente mais redondos), total 2.480; cabeça 18,05%, 0,80 m. Decimação por orçamento em etapas (mãos, cabeça, corpo)."
+  },
+  {
+    "quando": "2026-09-29T22:04:51",
+    "titulo": "Protagonista v2 — estudo do rosto em 2D (3 variações)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_estudo/estudo_rosto_2d.png",
+    "nota": "neutra_cansada: olhos amendoados sem pupila, 3 cílios no canto externo, olheira funda, fissura sob o olho esquerdo dela, boca reta e curta. a médios/caído, b grandes/retos, c menores/bem caído."
+  },
+  {
+    "quando": "2026-09-29T22:04:52",
+    "titulo": "Protagonista v2 — prova do rosto (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_prova_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T22:04:53",
+    "titulo": "Protagonista v2 — prova do rosto antes do rig (a, b, c)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_prova.png",
+    "nota": "Zoom 2,5: olhos nítidos, olheira lê, cílios 1–2 px, fissura e boca não. Zoom 1: só os olhos (b melhor). Zoom 0,4: nada do rosto. Recomendação: b."
   }
 ]

@@ -1,0 +1,35 @@
+{
+  "a": {
+    "nome": "a: médios, canto caído",
+    "rx": 30,
+    "top": 19,
+    "bot": 13,
+    "queda": 6,
+    "olheira": [
+      125,
+      0.92
+    ]
+  },
+  "b": {
+    "nome": "b: grandes, cantos retos",
+    "rx": 35,
+    "top": 22,
+    "bot": 15,
+    "queda": -1,
+    "olheira": [
+      150,
+      0.95
+    ]
+  },
+  "c": {
+    "nome": "c: menores, bem caído",
+    "rx": 26,
+    "top": 16,
+    "bot": 11,
+    "queda": 12,
+    "olheira": [
+      180,
+      1.02
+    ]
+  }
+}

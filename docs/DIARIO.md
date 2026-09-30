@@ -3263,3 +3263,25 @@ onde errou, correções manuais e quanto tempo levou.
   (cabeça 1.236 e mãos 16; quadril sumindo; pesos diferentes com o mesmo resultado) — daí as etapas. Um Taubin extra na
   cabeça depois de decimar piorou a medida (1,14 / 3,78 mm) sem ganho visível; ficou de fora.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~45 min.
+
+## 2026-09-29 — Protagonista v2, passo 4: estudo do rosto e prova na câmera do jogo (antes do rig)
+
+- **Pedido:** 3 variações do rosto pelo contrato (olhos amendoados sem pupila, 3 cílios longos no canto externo,
+  olheira mais funda que a do aldeão, fissura fina sob o olho esquerdo, boca reta e curta; neutra_cansada), variando
+  tamanho dos olhos, inclinação dos cantos e força da olheira; retalhos como no aldeão; prova na câmera do jogo com o
+  aldeão ao lado e crepúsculo; dizer em que zoom cada traço lê.
+- **Feito:** `estudo_rosto.py` (PIL, primitivas de traço do `aldeao_v2/desenhar_rosto.py`, mesmo rosto de 256 px e as
+  mesmas janelas → células 512×320 e 256×128; olhos e boca em camadas separadas) → `rosto_estudo/{a,b,c}_{olhos,boca}.png`
+  e `estudo_rosto_2d.png`; `prova_rosto.py` (Blender: `face_patch` do aldeão na malha "cabeca", 2 mm, olhos até ±45° e
+  janela 10% mais alta, boca na janela padrão; toon com alfa misturado) e `folha_rosto.py` → `rosto_prova.png`,
+  `_crepusculo.png` e `.json`; notas de leitura em `tools/arte/protagonista_v2/notas_rosto.json`. O peso 100% Head fica
+  para o rig.
+- **Variações:** a médios, canto externo caído 6 px, olheira 125; b grandes, cantos retos, olheira 150; c menores, canto
+  caído 12 px, olheira 180 (força de 0 a 255; o aldeão usa 110).
+- **Leitura na câmera do jogo:** zoom 2,5 (cabeça ~51 px): olhos nítidos, olheira lê como anel escuro (mais em b e c),
+  cílios só 1–2 px no canto, fissura e boca não leem; zoom 1 (~19 px): só os olhos, como pares de pixels claros (b
+  melhor, c quase some); zoom 0,4 (~8 px): nada do rosto. A 55° a frente do rosto encurta e a boca some sob a cabeça.
+- **O que deu errado e foi corrigido:** no primeiro rascunho a pálpebra e a sombra fechavam o olho num risco e as
+  olheiras pareciam óculos (reduzidas e suavizadas); na primeira prova cada rosto tinha duas bocas, porque a janela dos
+  olhos também cobre a altura da boca (camadas separadas).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h 15 min.
