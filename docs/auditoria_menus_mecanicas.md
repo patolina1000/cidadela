@@ -54,7 +54,7 @@ Legenda: **[decidido]** = o GDD já decide, só falta fazer. **[Arthur]** = prec
 16. **Caixa de seleção desmarcada quase invisível.** No painel de Configurações, com o tema padrão do Godot, a caixa
     do V-Sync desligado some no fundo escuro (só o texto aparece; ver `docs/prints/polimento_configuracoes_salvas.png`).
     Defeito visual pequeno; corrigir é dar um ícone próprio às caixas. **[Arthur]** só se quiser um tema de UI
-    próprio; senão, faço junto do próximo polimento.
+    próprio; senão, faço junto do próximo polimento. Feito na tarefa 2 (ícone próprio).
 17. **Palco da Biografia com faixas.** No print `docs/prints/polimento_biografia.png` o palco 3D aparece como um
     retângulo mais claro no alto, com a protagonista passando da borda de baixo para o painel das animações.
     Pode ser o enquadramento do SubViewport; é visual, então **[Arthur]** diz se incomoda antes de eu mexer.

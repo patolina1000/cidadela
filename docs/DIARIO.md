@@ -4133,3 +4133,21 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:46–21:48 de relógio.
+
+---
+
+## 2026-09-29 — Caixas de seleção visíveis quando desmarcadas
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** tarefa 2, passo 2 (auditoria, item 16): caixas de seleção visíveis desmarcadas, com ícone próprio simples
+  nas cores da paleta, no menu inicial e no de pausa.
+- **O que foi feito:** `MenuStyle.CheckBox`: ícones de 20 px desenhados por código (uma moldura em osso com fundo
+  roxo profundo; marcada, com um quadrado de líquen roxo e osso dentro), texto em osso e sem a moldura de foco. O
+  `SettingsPanel`, que os dois menus usam, passou a criar as caixas por ele.
+- **Conferido no jogo:** no menu inicial, Tela cheia marcada e V-Sync desmarcado, as duas legíveis; o V-Sync voltou a
+  ligado no fim (`settings.cfg` igual ao padrão). Print: `docs/prints/configuracoes_caixas.png`.
+- **O que deu errado:** dois cliques seguidos em Configurações abriram e fecharam o painel antes da captura; conferi
+  pelo nó e cliquei de novo.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:48–21:51 de relógio.

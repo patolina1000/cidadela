@@ -30,11 +30,11 @@ public partial class SettingsPanel : PanelContainer
         title.AddThemeColorOverride("font_color", Palette.Bone);
         column.AddChild(title);
 
-        var fullscreen = new CheckBox { Text = "Tela cheia", ButtonPressed = GameSettings.Fullscreen };
+        var fullscreen = MenuStyle.CheckBox("Tela cheia", GameSettings.Fullscreen);
         fullscreen.Toggled += GameSettings.SetFullscreen;
         column.AddChild(fullscreen);
 
-        var vsync = new CheckBox { Text = "V-Sync", ButtonPressed = GameSettings.Vsync };
+        var vsync = MenuStyle.CheckBox("V-Sync", GameSettings.Vsync);
         vsync.Toggled += GameSettings.SetVsync;
         column.AddChild(vsync);
 
