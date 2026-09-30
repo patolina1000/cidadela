@@ -17,5 +17,9 @@
   "no_posto":        { "text": "Trabalhando no posto da máquina",         "problem": false, "icon": "diamond" },
   "buscando_carga":  { "text": "Carregador: indo buscar carga",           "problem": false, "icon": "arrow" },
   "levando_para_maquina": { "text": "Carregador: levando carga para a máquina", "problem": false, "icon": "box" },
-  "sem_o_que_carregar":   { "text": "Carregador: nada para levar no raio",      "problem": false, "icon": "pause" }
+  "sem_o_que_carregar":   { "text": "Carregador: nada para levar no raio",      "problem": false, "icon": "pause" },
+  // Ladainhas (docs/ladainhas.md): sem ladainha (parado), rezando (o comando atual) e travado (o motivo aparece no texto).
+  "sem_ladainha":   { "text": "Sem ladainha: parado",                    "problem": false, "icon": "dots" },
+  "ladainha":       { "text": "Rezando a ladainha",                      "problem": false, "icon": "diamond" },
+  "travado":        { "text": "Travado",                                 "problem": true,  "icon": "cross" }
 }

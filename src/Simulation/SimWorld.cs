@@ -304,7 +304,7 @@ public sealed class SimWorld
         Villager? nearest = null;
         foreach (Villager v in _villagers)
         {
-            if (v.Home is null && !v.Blank && (nearest is null ||
+            if (v.Home is null && !v.Blank && v.Litany is null && (nearest is null ||
                 System.Numerics.Vector2.Distance(v.Position, home) < System.Numerics.Vector2.Distance(nearest.Position, home)))
                 nearest = v;
         }

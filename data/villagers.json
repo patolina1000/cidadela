@@ -18,6 +18,12 @@
   "maxSpeed": 1.5,
   "gatherMultiplier": 1.5,
   "carry": { "pesado": 1, "leve": 10 },
+  // Ladainhas (docs/ladainhas.md). litanyLength: quantos comandos cabem por nível de Inteligência (1: 6; 2: 12).
+  //   litanyRadius: raio do "mais perto" (colher, arrancar, cavar) em volta de onde o comando foi gravado, em células.
+  //   agilityBonus: velocidade a mais por ponto de Agilidade acima de 1 (0.1 = +10%). Os três atributos nascem em 1.
+  "litanyLength": [6, 12],
+  "litanyRadius": 8,
+  "agilityBonus": 0.1,
   "radius": 0.15,
   "resourceCellCost": 0.5
 }

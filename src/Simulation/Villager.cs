@@ -60,6 +60,24 @@ public sealed class Villager
     /// <summary>Força (docs/ladainhas.md): quantos pesados leva por viagem, 1 por ponto. Nasce com 1.</summary>
     public int Strength { get; internal set; } = 1;
 
+    /// <summary>Agilidade: +10% de velocidade por ponto acima de 1 (data/villagers.json, agilityBonus). Nasce com 1.</summary>
+    public int Agility { get; internal set; } = 1;
+
+    /// <summary>Inteligência: tamanho da ladainha e quais comandos entende. Nasce com 1.</summary>
+    public int Intelligence { get; internal set; } = 1;
+
+    /// <summary>A ladainha que ele repete, ou null (parado: o aldeão não faz nada sozinho).</summary>
+    public Litany? Litany { get; private set; }
+
+    /// <summary>Índice do comando atual da ladainha.</summary>
+    public int CommandIndex { get; private set; }
+
+    /// <summary>O comando atual, ou null sem ladainha.</summary>
+    public LitanyCommand? CurrentCommand => Litany?.Commands[CommandIndex];
+
+    /// <summary>Por que o comando atual travou, ou null se está andando (docs/ladainhas.md: nunca travar calado).</summary>
+    public LitanyStuck? Stuck { get; private set; }
+
     /// <summary>Patamar de velocidade (índice em <see cref="VillagerStats.SpeedTiers"/>): 0 = base; as melhorias sobem.</summary>
     public int SpeedTier { get; private set; }
 
@@ -88,6 +106,8 @@ public sealed class Villager
     /// </summary>
     public VillagerStatus Status =>
         Resting ? VillagerStatus.Resting
+        : Litany is not null ? (Stuck is not null ? VillagerStatus.Stuck : VillagerStatus.Chanting)
+        : Blank ? VillagerStatus.NoLitany
         : Home is null ? VillagerStatus.Unemployed
         : Task == VillagerTask.AtPost ? VillagerStatus.AtPost
         : Task == VillagerTask.Fetching ? VillagerStatus.Fetching
@@ -131,6 +151,11 @@ public sealed class Villager
     public int HaulAmount { get; private set; }
 
     private readonly Queue<GridPos> _path = new();
+    // Ladainha: estado do comando atual (começou? ticks nele) e a espera depois de travar (1 s dobrando até 8 s).
+    private bool _commandStarted;
+    private int _commandTicks;
+    private int _stuckWait;
+    private int _stuckCount;
     private int _gatherTicks;
     private int _retryIn;
     private int _idleTicks;
@@ -189,9 +214,16 @@ public sealed class Villager
     internal void Tick(SimWorld world)
     {
         PreviousPosition = Position;
-        Speed = Stats.FinalSpeed(SpeedTier, world.FloorBonusAt(Cell), Penalized);
+        Speed = Stats.FinalSpeed(SpeedTier, world.FloorBonusAt(Cell), Penalized) * (1f + Stats.AgilityBonus * (Agility - 1));
         if (_happyTicks > 0)
             _happyTicks--;
+        if (Litany is not null)
+        {
+            _idleTicks = 0;
+            TickLitany(world);
+            UpdateExpression();
+            return;
+        }
         if (Home is null)
         {
             _idleTicks++;
@@ -634,7 +666,10 @@ public sealed class Villager
             if (world.BlocksVillager(next))
             {
                 _path.Clear();
-                Replan(world);
+                if (Litany is not null)
+                    _commandStarted = false; // a ladainha recalcula o caminho no próximo tick
+                else
+                    Replan(world);
                 return false;
             }
             var target = new Vector2(next.X, next.Z);
@@ -739,6 +774,141 @@ public sealed class Villager
                 list.Add(n);
         }
         return list;
+    }
+
+    // ---- Ladainhas (docs/ladainhas.md) ------------------------------------------------------------------------
+
+    /// <summary>Se ele aceitaria essa ladainha, e por que não: tamanho e comandos cabem na Inteligência dele?</summary>
+    public LitanyFit CanLearn(Litany litany) =>
+        litany.Commands.Count == 0 ? LitanyFit.Empty
+        : litany.RequiredIntelligence > Intelligence ? LitanyFit.TooHard
+        : litany.Commands.Count > Stats.MaxCommands(Intelligence) ? LitanyFit.TooLong
+        : LitanyFit.Ok;
+
+    /// <summary>
+    /// Recebe uma ladainha (ou null: para e fica parado). Recusa o que não cabe na Inteligência. Começa do primeiro
+    /// comando; sai do posto em que estivesse (quem manda agora é a ladainha).
+    /// </summary>
+    internal LitanyFit Learn(SimWorld world, Litany? litany)
+    {
+        if (litany is not null && CanLearn(litany) is var fit && fit != LitanyFit.Ok)
+            return fit;
+        LeaveHome(world);
+        Litany = litany;
+        Blank = false;
+        CommandIndex = 0;
+        ResetCommand();
+        Stuck = null;
+        _stuckCount = 0;
+        _stuckWait = 0;
+        Task = VillagerTask.Waiting;
+        return LitanyFit.Ok;
+    }
+
+    /// <summary>Solta o posto ou a cabana em que estava (ladainha nova, ou fim do "operar").</summary>
+    private void LeaveHome(SimWorld world)
+    {
+        if (Home is Building home)
+        {
+            for (int i = 0; i < home.Crew.Length; i++)
+                if (home.Crew[i] == this)
+                    home.Crew[i] = null;
+            if (home.Workplace is Workplace work && work.Worker == this)
+                work.Worker = null;
+        }
+        Home = null;
+        PostCell = null;
+        HaulFrom = HaulTo = null;
+        HaulKind = null;
+        HaulAmount = 0;
+        Target = null;
+        _path.Clear();
+    }
+
+    private void ResetCommand()
+    {
+        _commandStarted = false;
+        _commandTicks = 0;
+        _gatherTicks = 0;
+        _path.Clear();
+    }
+
+    /// <summary>Um comando por vez; terminou, passa ao próximo (depois do último, volta ao primeiro).</summary>
+    private void TickLitany(SimWorld world)
+    {
+        if (_stuckWait > 0)
+        {
+            _stuckWait--;
+            return;
+        }
+        LitanyCommand command = Litany!.Commands[CommandIndex];
+        bool done = command.Verb switch
+        {
+            LitanyVerb.Wait => ++_commandTicks >= command.Ticks,
+            LitanyVerb.GoTo => DoGoTo(world, command.Target!),
+            _ => DoAction(world, command),
+        };
+        if (!done)
+            return;
+        Stuck = null;
+        _stuckCount = 0;
+        CommandIndex = (CommandIndex + 1) % Litany.Commands.Count;
+        ResetCommand();
+    }
+
+    /// <summary>Os comandos com item e alvo (pegar, pôr, colher, operar): passo 5.</summary>
+    private bool DoAction(SimWorld world, LitanyCommand command) => true;
+
+    /// <summary>Travou: guarda o motivo e espera 1 s, dobrando a cada vez até 8 s, antes de tentar de novo.</summary>
+    private void Fail(LitanyStuck reason)
+    {
+        Stuck = reason;
+        _stuckWait = SimClock.TicksPerSecond << Math.Min(_stuckCount, 3);
+        _stuckCount++;
+        ResetCommand();
+        Task = VillagerTask.Waiting;
+    }
+
+    /// <summary>Anda até ficar encostado nos alvos dados; true quando chegou.</summary>
+    private bool WalkTo(SimWorld world, List<GridPos> goals)
+    {
+        if (!_commandStarted)
+        {
+            if (goals.Contains(Cell))
+            {
+                _path.Clear();
+                return true;
+            }
+            if (goals.Count == 0 || !TrySetPath(world, goals))
+            {
+                Fail(LitanyStuck.NoPath);
+                return false;
+            }
+            _commandStarted = true;
+            Task = VillagerTask.GoingToResource;
+        }
+        if (!FollowPath(world))
+            return false;
+        _commandStarted = false;
+        return true;
+    }
+
+    /// <summary>Ir até uma construção (encostado nela) ou até uma célula do chão.</summary>
+    private bool DoGoTo(SimWorld world, LitanyTarget target)
+    {
+        List<GridPos> goals;
+        if (target.Kind == LitanyTargetKind.Building)
+        {
+            if (world.BuildingAt(target.Cell) is null)
+            {
+                Fail(LitanyStuck.NoPlace);
+                return false;
+            }
+            goals = FreeNeighbors(world, target.Cell);
+        }
+        else
+            goals = world.IsSolid(target.Cell) ? FreeNeighbors(world, target.Cell) : new List<GridPos> { target.Cell };
+        return WalkTo(world, goals);
     }
 
     /// <summary>Quantos desse item cabem numa viagem: pesado, 1 por ponto de Força; leve, 10 (docs/ladainhas.md).</summary>

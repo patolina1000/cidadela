@@ -1,0 +1,5 @@
+{
+  // Ladainhas nomeadas (docs/ladainhas.md): o aldeão repete os comandos sempre do início. O mapa diz qual cada aldeão
+  // carrega ("litany": "nome"). Comandos: goto (building ou cell), take/put (item + building), gather (resource + near
+  // [x, z] + radius opcional; "clay" cava a margem), operate (building), wait (seconds). Alvos em células do mapa.
+}

@@ -73,7 +73,10 @@ public partial class GameRoot : Node3D
             FileAccess.GetFileAsString(BuildingsPath),
             FileAccess.GetFileAsString(RecipesPath),
             FileAccess.GetFileAsString(TerrainPath));
-        _world = MapLoader.Parse(FileAccess.GetFileAsString(MapPath), data);
+        LitanyLibrary litanies = FileAccess.FileExists(GameFiles.Litanies)
+            ? LitanyLibrary.Parse(FileAccess.GetFileAsString(GameFiles.Litanies), data)
+            : LitanyLibrary.Empty;
+        _world = MapLoader.Parse(FileAccess.GetFileAsString(MapPath), data, litanies);
 
         _view = GetNode<WorldView>("WorldView");
         _view.Build(_world);

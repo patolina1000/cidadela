@@ -11,7 +11,10 @@ namespace Cidadela.Simulation;
 /// </summary>
 public static class MapLoader
 {
-    public static SimWorld Parse(string json, GameData gameData)
+    /// <summary>
+    /// <paramref name="litanies"/>: as ladainhas que os aldeões do mapa podem carregar ("litany": "nome" no aldeão).
+    /// </summary>
+    public static SimWorld Parse(string json, GameData gameData, LitanyLibrary? litanies = null)
     {
         MapData data = JsonSerializer.Deserialize<MapData>(json, GameData.JsonOptions)
             ?? throw new FormatException("Mapa vazio.");
@@ -39,11 +42,17 @@ public static class MapLoader
                     .Add(gameData.Item(kind).Kind, amount);
         }
 
+        var withLitany = new List<(Villager, Litany)>();
         foreach (PlacedData v in data.Villagers)
         {
             GridPos cell = Checked(world, v.X, v.Z);
-            world.AddVillager(new System.Numerics.Vector2(cell.X, cell.Z));
+            Villager villager = world.AddVillager(new System.Numerics.Vector2(cell.X, cell.Z));
+            if (v.Litany is string name)
+                withLitany.Add((villager, (litanies ?? LitanyLibrary.Empty)[name]));
         }
+        foreach ((Villager villager, Litany litany) in withLitany)
+            if (villager.Learn(world, litany) is var fit && fit != LitanyFit.Ok)
+                throw new FormatException($"Aldeão em ({villager.Cell.X}, {villager.Cell.Z}) recusa a ladainha \"{litany.Name}\": {fit}.");
         world.AssignIdleWorkers();
 
         return world;
@@ -122,6 +131,8 @@ public static class MapLoader
         public int Z { get; set; }
         public string? Direction { get; set; }
         public Dictionary<string, int> Items { get; set; } = new();
+        /// <summary>Aldeão: a ladainha que ele já carrega (data/ladainhas.json).</summary>
+        public string? Litany { get; set; }
     }
 
     private sealed class CastellanData

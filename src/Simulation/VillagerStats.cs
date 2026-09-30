@@ -15,8 +15,19 @@ namespace Cidadela.Simulation;
 /// caminho para atravessar a célula de um recurso que só bloqueia um círculo (prefere o chão aberto, mas passa sob a copa
 /// ou rente à pedra se for mais curto).
 public sealed record VillagerStats(IReadOnlyList<float> SpeedTiers, float PenaltyFactor, float MaxSpeed,
-    float GatherMultiplier, int CarryHeavy, int CarryLight, float Radius = 0.15f, float ResourceCellCost = 0.5f)
+    float GatherMultiplier, int CarryHeavy, int CarryLight, float Radius = 0.15f, float ResourceCellCost = 0.5f,
+    IReadOnlyList<int>? LitanyLength = null, float LitanyRadius = 8f, float AgilityBonus = 0.1f)
 {
+    /// <summary>
+    /// Quantos comandos uma ladainha pode ter com essa Inteligência (docs/ladainhas.md: 6 na 1, 12 na 2); acima da
+    /// lista, o último valor.
+    /// </summary>
+    public int MaxCommands(int intelligence)
+    {
+        IReadOnlyList<int> lengths = LitanyLength ?? new[] { 6, 12 };
+        return lengths[Math.Clamp(intelligence, 1, lengths.Count) - 1];
+    }
+
     /// <summary>Quantos itens desse peso cabem numa viagem com Força 1.</summary>
     public int CarryFor(ItemWeight weight) => weight == ItemWeight.Heavy ? CarryHeavy : CarryLight;
 

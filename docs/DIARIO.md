@@ -6183,3 +6183,27 @@ onde errou, correções manuais e quanto tempo levou.
   na tela desde o passo 7). Plano renumerado na nota 08 (passo 10 novo: cabanas como lugares; 11: as duas linhas).
 - **Testes:** nada de código mudou.
 - **Tempo:** 20:04–20:05 de relógio.
+
+## 2026-09-30 — Ladainhas, passo 4: interpretador
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 4 do plano das ladainhas (aprovado com a regra absoluta: o aldeão não faz nada sozinho).
+- **Feito:**
+  - Simulação: `LitanyVerb` (ir até, pegar, pôr, colher, operar, esperar), `LitanyTarget` (construção pela célula,
+    tipo de recurso perto de um ponto com raio, célula do chão), `LitanyCommand`, `Litany`, `LitanyFit` (aceita ou
+    por que não: longa demais, difícil demais, vazia), `LitanyStuck` (os motivos de trava), `LitanyLibrary`
+    (`data/ladainhas.json`, erros claros com o nome do que está errado), `TeachLitanyCommand`.
+  - `Villager`: atributos Força, Agilidade (+10% de velocidade por ponto acima de 1) e Inteligência, todos 1;
+    `Litany`, `CommandIndex`, `Stuck`; `Learn` recusa o que não cabe (6 comandos na Inteligência 1, 12 na 2) e solta o
+    posto em que estivesse; `TickLitany`: um comando por vez, determinista, e depois do último volta ao primeiro; ao
+    travar guarda o motivo e espera 1 s, dobrando até 8 s. Neste passo andam "esperar" e "ir até" (os outros: passo 5).
+    Aldeão com ladainha não é chamado para posto. Estados novos: sem ladainha, rezando, travado.
+  - `data/villagers.json`: `litanyLength` [6, 12], `litanyRadius` 8, `agilityBonus` 0,1. `data/ladainhas.json` criado
+    (vazio). Mapa: `"litany": "nome"` no aldeão (`MapLoader.Parse(json, data, litanies)`); o jogo carrega a biblioteca.
+- **Testes:** `LitanyTests` (sem ladainha fica parado; repete do início; esperar conta os segundos; ir até encosta na
+  construção; sem caminho trava com motivo e tenta de novo; 6 comandos na Int 1, 7 recusados, 12 na Int 2; JSON inválido
+  diz o que está errado; ladainha desconhecida no mapa dá erro; Agilidade +10% por ponto). O teste de "sem caminho" falhou
+  uma vez por erro dele (abri um canto só na diagonal, e o caminho não corta quinas). `dotnet build` 0/0;
+  `dotnet test` 253 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 20:05–20:09 de relógio.

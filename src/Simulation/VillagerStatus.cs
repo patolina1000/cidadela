@@ -34,6 +34,12 @@ public enum VillagerStatus
     Hauling,
     /// <summary>Carregador sem o que levar: nenhuma máquina no raio pede um item que exista num baú, cabana ou máquina.</summary>
     NothingToHaul,
+    /// <summary>Sem ladainha: parado, esperando que alguém o ensine (docs/ladainhas.md).</summary>
+    NoLitany,
+    /// <summary>Rezando a ladainha: fazendo o comando atual.</summary>
+    Chanting,
+    /// <summary>A ladainha travou: o comando atual não dá (o motivo está em <see cref="Villager.Stuck"/>).</summary>
+    Stuck,
 }
 
 public static class VillagerStatuses
@@ -54,6 +60,9 @@ public static class VillagerStatuses
         VillagerStatus.Fetching => "buscando_carga",
         VillagerStatus.Hauling => "levando_para_maquina",
         VillagerStatus.NothingToHaul => "sem_o_que_carregar",
+        VillagerStatus.NoLitany => "sem_ladainha",
+        VillagerStatus.Chanting => "ladainha",
+        VillagerStatus.Stuck => "travado",
         _ => "esperando",
     };
 
@@ -63,5 +72,6 @@ public static class VillagerStatuses
         VillagerStatus.Resting, VillagerStatus.Gathering, VillagerStatus.Carrying, VillagerStatus.GoingToResource,
         VillagerStatus.Waiting, VillagerStatus.GoingToPost, VillagerStatus.AtPost,
         VillagerStatus.Fetching, VillagerStatus.Hauling, VillagerStatus.NothingToHaul,
+        VillagerStatus.NoLitany, VillagerStatus.Chanting, VillagerStatus.Stuck,
     };
 }

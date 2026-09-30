@@ -214,8 +214,10 @@ public sealed class GameData
             throw new FormatException("villagers.json: penaltySpeed precisa ser positivo e no máximo o patamar base.");
         if (v.MaxSpeed <= 0f || v.GatherMultiplier <= 0f || v.Carry is null || v.Carry.Heavy <= 0 || v.Carry.Light <= 0)
             throw new FormatException("villagers.json: maxSpeed, gatherMultiplier e carry (pesado e leve) precisam ser positivos.");
+        if (v.LitanyLength.Count == 0 || v.LitanyLength.Exists(n => n <= 0) || v.LitanyRadius <= 0f || v.AgilityBonus < 0f)
+            throw new FormatException("villagers.json: litanyLength (positivos), litanyRadius (positivo) e agilityBonus (não negativo).");
         var villagers = new VillagerStats(v.SpeedTiers, v.PenaltySpeed / v.SpeedTiers[0], v.MaxSpeed, v.GatherMultiplier,
-            v.Carry.Heavy, v.Carry.Light, v.Radius, v.ResourceCellCost);
+            v.Carry.Heavy, v.Carry.Light, v.Radius, v.ResourceCellCost, v.LitanyLength, v.LitanyRadius, v.AgilityBonus);
 
         var terrains = new List<TerrainType>();
         if (terrainJson is null)
@@ -358,6 +360,9 @@ public sealed class GameData
         public float MaxSpeed { get; set; } = 1.5f;
         public float GatherMultiplier { get; set; } = 1.5f;
         public CarryData? Carry { get; set; }
+        public List<int> LitanyLength { get; set; } = new() { 6, 12 };
+        public float LitanyRadius { get; set; } = 8f;
+        public float AgilityBonus { get; set; } = 0.1f;
         public float Radius { get; set; } = 0.15f;
         public float ResourceCellCost { get; set; } = 0.5f;
     }
