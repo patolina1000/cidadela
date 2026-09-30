@@ -3321,3 +3321,26 @@ onde errou, correções manuais e quanto tempo levou.
   0,898; 51 / 19 / 8 px nos zooms 2,5 / 1 / 0,4). Na câmera do jogo b3 lê igual à b1 (a boca não lê de cima): a diferença
   é só de perto, onde o vão olhos–boca fica parecido com o da v1.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Protagonista v2, passo 6: atlas do rosto (b3 aprovada)
+
+- **Pedido:** Arthur aprovou o corpo limpo e o rosto b3. Subir a fissura para perto do canto do olho esquerdo (na b3 ela
+  ficava na altura da boca e as duas pareciam um bigode torto); atlas por código como no aldeão, com as 5 expressões do
+  contrato (emoção pelas pálpebras e pela olheira, sem sobrancelha); rosto.json no padrão do aldeão (ossoPeito "Spine";
+  passada depois do rig); prova em close (frente e 3/4) e no zoom 2,5 com o aldeão; GIF do piscar.
+- **Feito:** `tools/arte/protagonista_v2/atlas_rosto.py` → `assets/modelos/protagonista_v2/rosto/olhos.png` (3×2 de
+  512×320: aberto_cansado, meio_fechado, fechado, apertado, dor, olhar_baixo), `boca.png` (2×2 de 256×128: reta, tensa,
+  dor, uma vazia) e `rosto.json` (expressões neutra_cansada, esforco, dor, piscar, olhar_cristal; ossoCabeca "Head",
+  ossoPeito "Spine"; sem passadaRun até o rig); margem de 16 px conferida por código; prévia `rosto_atlas.png`.
+  `prova_atlas.py` (Blender, retalhos nas janelas da b3) e `folha_atlas.py` → `rosto_atlas_prova.png` (+ crepúsculo),
+  `piscar_close.gif` e `piscar_jogo.gif` (aberto 1,2 s, meio 80 ms, fechado 120 ms, meio 80 ms).
+- **Expressões:** esforço = pálpebras apertando numa fenda (a de baixo sobe 38%) + boca tensa mais larga; dor = pálpebra
+  de cima inclinada (canto interno quase aberto, externo 66% coberto), a de baixo sobe 30%, olheira mais forte + boca
+  entreaberta caída; olhar_cristal = pálpebras baixas (50–56%), sobra o crescente de baixo (a cabeça vai inclinar no
+  clipe); piscar = linha fechada curvada com os cílios.
+- **Leitura no zoom 2,5:** as cinco se separam pela quantidade de branco do olho (neutra > olhar_cristal > dor >
+  esforço > piscar, sem branco); o piscar lê no GIF.
+- **O que deu errado e foi corrigido:** o aldeão tem arquivos com os mesmos nomes (`estudo_rosto.py`,
+  `desenhar_rosto.py`) e o Python importava o errado; o script da protagonista virou `atlas_rosto.py` e carrega os dois
+  módulos pelo caminho. A primeira dor quase não se diferenciava da neutra (inclinação reforçada).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~1 h.

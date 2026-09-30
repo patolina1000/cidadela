@@ -173,5 +173,40 @@
     "tipo": "imagem",
     "caminho": "assets/previews/protagonista_v2/rosto_prova_r3.png",
     "nota": "b3 = b1 com a boca 2 cm mais alta só no retalho; cabeça igual (L/A 0,90). No jogo lê igual à b1: a diferença é só de perto."
+  },
+  {
+    "quando": "2026-09-29T22:48:03",
+    "titulo": "Protagonista v2 — atlas do rosto em 2D (5 expressões)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_atlas.png",
+    "nota": "neutra_cansada (b3), esforço, dor, piscar, olhar_cristal; fissura subida para o canto externo do olho esquerdo dela."
+  },
+  {
+    "quando": "2026-09-29T22:48:04",
+    "titulo": "Protagonista v2 — piscar no zoom 2,5 (cabeça ampliada 6×)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/piscar_jogo.gif",
+    "nota": "aberto 1,2 s → meio_fechado → fechado → meio_fechado; pixels do jogo."
+  },
+  {
+    "quando": "2026-09-29T22:48:05",
+    "titulo": "Protagonista v2 — piscar em close",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/piscar_close.gif",
+    "nota": "aberto 1,2 s → meio_fechado 80 ms → fechado 120 ms → meio_fechado 80 ms."
+  },
+  {
+    "quando": "2026-09-29T22:48:06",
+    "titulo": "Protagonista v2 — prova do atlas (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_atlas_prova_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T22:48:07",
+    "titulo": "Protagonista v2 — prova do atlas do rosto (5 expressões)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/rosto_atlas_prova.png",
+    "nota": "Close de frente e 3/4, zoom 2,5 com o aldeão e a cabeça ampliada 6×. No zoom 2,5 as expressões se separam pela quantidade de branco do olho."
   }
 ]
