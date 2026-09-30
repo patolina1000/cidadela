@@ -18,9 +18,9 @@ public enum VillagerTask
     GoingToPost,
     /// <summary>Encostado na máquina, no posto: conta para a equipe dela.</summary>
     AtPost,
-    /// <summary>Carregador indo buscar bruto num baú ou cabana.</summary>
+    /// <summary>Carregador indo buscar um item num baú, cabana ou saída de máquina.</summary>
     Fetching,
-    /// <summary>Carregador levando bruto até a máquina.</summary>
+    /// <summary>Carregador levando o item até a máquina.</summary>
     Hauling,
 }
 
@@ -112,7 +112,7 @@ public sealed class Villager
     /// <summary>Célula onde fica encostado no posto (escolhida ao ir), ou null.</summary>
     public GridPos? PostCell { get; private set; }
 
-    /// <summary>Carregador: de onde está buscando (baú ou cabana), ou null.</summary>
+    /// <summary>Carregador: de onde está buscando (baú, cabana ou máquina), ou null.</summary>
     public Building? HaulFrom { get; private set; }
 
     /// <summary>Carregador: a máquina para onde leva, ou null.</summary>
@@ -259,8 +259,9 @@ public sealed class Villager
     }
 
     /// <summary>
-    /// Carregador: busca bruto num baú ou cabana dentro do raio do posto e leva até a máquina, no
-    /// raio, que ainda aceita esse item (descontando o que outros carregadores já levam para ela). Sobra na mão vai para a
+    /// Carregador: busca um item num baú, cabana ou saída de máquina dentro do raio do posto e leva até a máquina, no
+    /// raio, que ainda aceita esse item (descontando o que outros carregadores já levam para ela). Leva pesado e leve
+    /// (D5 do Arthur, 30/09), pela carga do peso: 1 pesado ou 10 leves por viagem, a pé. Sobra na mão vai para a
     /// próxima máquina que aceitar.
     /// </summary>
     private void TickCarrier(SimWorld world)
@@ -304,7 +305,7 @@ public sealed class Villager
                 continue;
             if (b.Machine is not null)
                 machines.Add(b);
-            else if (b.Storage is not null || b.Workplace is not null)
+            if (b.Storage is not null || b.Workplace is not null || b.Machine is not null)
                 sources.Add(b);
         }
         machines.Sort((a, b) => Distance(a.Cell).CompareTo(Distance(b.Cell)));
@@ -333,12 +334,12 @@ public sealed class Villager
         {
             foreach (string kind in m.Machine!.Recipe.Inputs.Keys)
             {
-                int need = world.IsHeavy(kind) ? Need(world, m, kind) : 0;
+                int need = Need(world, m, kind);
                 if (need <= 0)
                     continue;
                 Building? best = null;
                 foreach (Building src in sources)
-                    if (Stock(src, kind) > 0 && (best is null || Distance(src.Cell) < Distance(best.Cell)))
+                    if (src != m && Stock(src, kind) > 0 && (best is null || Distance(src.Cell) < Distance(best.Cell)))
                         best = src;
                 if (best is null || !TrySetPath(world, FreeNeighbors(world, best.Cell)))
                     continue;
@@ -364,13 +365,14 @@ public sealed class Villager
         return need;
     }
 
+    /// <summary>Quanto desse item a fonte tem para dar: baú, cabana, ou a saída (nunca a entrada) de uma máquina.</summary>
     private static int Stock(Building source, string kind) =>
-        source.Storage?.Count(kind) ?? source.Workplace?.Stored.Count(kind) ?? 0;
+        source.Storage?.Count(kind) ?? source.Workplace?.Stored.Count(kind) ?? source.Machine?.Output.Count(kind) ?? 0;
 
     private void PickUp(SimWorld world)
     {
         Building src = HaulFrom!;
-        Inventory? stock = src.Storage ?? src.Workplace?.Stored;
+        Inventory? stock = src.Storage ?? src.Workplace?.Stored ?? src.Machine?.Output;
         int taken = 0;
         while (stock is not null && taken < HaulAmount && stock.TryRemoveOne(HaulKind!))
             taken++;

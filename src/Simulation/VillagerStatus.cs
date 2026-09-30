@@ -28,11 +28,11 @@ public enum VillagerStatus
     GoingToPost,
     /// <summary>No posto, encostado na máquina.</summary>
     AtPost,
-    /// <summary>Carregador indo buscar bruto.</summary>
+    /// <summary>Carregador indo buscar um item.</summary>
     Fetching,
-    /// <summary>Carregador levando bruto para a máquina.</summary>
+    /// <summary>Carregador levando um item para a máquina.</summary>
     Hauling,
-    /// <summary>Carregador sem o que levar: nenhuma máquina no raio pede bruto que exista num baú ou cabana.</summary>
+    /// <summary>Carregador sem o que levar: nenhuma máquina no raio pede um item que exista num baú, cabana ou máquina.</summary>
     NothingToHaul,
 }
 

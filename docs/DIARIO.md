@@ -5906,3 +5906,17 @@ onde errou, correções manuais e quanto tempo levou.
   headless sem erro.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 16:48–16:50 de relógio.
+
+## 2026-09-30 — Linha da energia, passo 8: carregadores com pesos
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 8 do plano: carregador leva o podre da saída da Mina ao Purificador, pela carga do peso; D5 (leva
+  leves também, 10 por viagem, a pé).
+- **Feito:** `Villager.PlanHaul`: as fontes agora são baú, cabana **e a saída** das máquinas no raio (nunca a entrada;
+  nunca a própria máquina de destino); qualquer item que a máquina pede, pesado ou leve; a quantidade da viagem é a carga
+  do peso (1 pesado, 10 leves), limitada ao que a máquina ainda aceita. Textos do estado do carregador sem "bruto".
+- **Testes:** `CarrierTests.CarriersBringLightItemsToo` (no lugar do que dizia o contrário),
+  `CarriersTakeFromTheOutputOfAMachine`; `EnergyCarrierTests` (Mina → Purificador com os dados do jogo: 1 por viagem,
+  enche a entrada). `dotnet build` 0/0; `dotnet test` 232 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 16:51–16:51 de relógio.

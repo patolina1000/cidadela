@@ -2,7 +2,7 @@ using Xunit;
 
 namespace Cidadela.Simulation.Tests;
 
-/// <summary>Carregadores: item pesado do baú ou da cabana até a máquina que o aceita (dados de teste).</summary>
+/// <summary>Carregadores: item do baú, da cabana ou da saída de máquina até a máquina que o aceita (dados de teste).</summary>
 public class CarrierTests
 {
     private static int Seconds(float s) => (int)(s * SimClock.TicksPerSecond);
@@ -44,12 +44,24 @@ public class CarrierTests
     }
 
     [Fact]
-    public void CarriersDoNotBringLightItems()
+    public void CarriersBringLightItemsToo()
     {
+        // D5 do Arthur (30/09): leve também vai nas costas (ineficiente, mas vai). A prensa guarda 2 hastes.
         SimWorld world = World(""", { "kind": "press", "x": 10, "z": 10 }""", "shaft", inChest: 5);
         TestWorlds.Run(world, Seconds(30f));
-        Assert.Equal(0, world.BuildingAt(new GridPos(10, 10))!.Machine!.Input.Count("shaft"));
-        Assert.All(world.Villagers, v => Assert.Equal(VillagerStatus.NothingToHaul, v.Status));
+        Assert.Equal(2, world.BuildingAt(new GridPos(10, 10))!.Machine!.Input.Count("shaft"));
+        Assert.Equal(3, world.BuildingAt(new GridPos(5, 10))!.Storage!.Count("shaft"));
+    }
+
+    [Fact]
+    public void CarriersTakeFromTheOutputOfAMachine()
+    {
+        // Forno com hastes prontas na saída; a prensa pede hastes.
+        SimWorld world = World(""", { "kind": "kiln", "x": 8, "z": 10 }, { "kind": "press", "x": 10, "z": 10 }""", "wood", inChest: 0);
+        world.BuildingAt(new GridPos(8, 10))!.Machine!.Output.Add("shaft", 6);
+        TestWorlds.Run(world, Seconds(20f));
+        Assert.Equal(2, world.BuildingAt(new GridPos(10, 10))!.Machine!.Input.Count("shaft"));
+        Assert.Equal(4, world.BuildingAt(new GridPos(8, 10))!.Machine!.Output.Count("shaft"));
     }
 
     [Fact]

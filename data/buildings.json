@@ -8,8 +8,9 @@
   //   células em volta da cabana, guardando até "capacity" itens (que ela solta na esteira ou baú à frente).
   // posts: postos de trabalho. Ao construir, o aldeão livre mais perto ocupa cada posto; a máquina só anda com todos
   //   ocupados por quem já chegou. name: ofício; tool: ícone da ferramenta sobre a cabeça dele.
-  // carriers: Posto de Carregadores: "count" vagas; cada carregador busca item pesado (tora, pedra) num baú ou cabana a
-  //   até "radius" células do posto e leva até a máquina, no mesmo raio, que ainda aceita o item.
+  // carriers: Posto de Carregadores: "count" vagas; cada carregador busca um item num baú, cabana ou saída de máquina a
+  //   até "radius" células do posto e leva até a máquina, no mesmo raio, que ainda aceita o item. Leva pesado (1 por
+  //   viagem) e leve (10), a pé: mariposa e esteira são o caminho bom para os leves (D5 do Arthur, 30/09).
   // tower: torre de mana (docs/linha_energia.md, regra 6): o fio liga outras torres a até "wire" células (centro a centro)
   //   e a área de abastecimento "area"×"area" em volta dela liga à rede o que gasta, gera ou guarda mana.
   // mana: mana por segundo. use: gasta trabalhando (máquina só gasta trabalhando: D1 do Arthur); idleUse: gasta parada
