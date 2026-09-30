@@ -49,10 +49,10 @@ public class ResourceShapeTests
     [InlineData("stone", 9, 8)]
     [InlineData("stone", 8, 9)]
     [InlineData("stone", 9, 9)]
-    [InlineData("iron", 8, 8)]
-    [InlineData("iron", 9, 8)]
-    [InlineData("iron", 8, 9)]
-    [InlineData("iron", 9, 9)]
+    [InlineData("rotten_shard", 8, 8)]
+    [InlineData("rotten_shard", 9, 8)]
+    [InlineData("rotten_shard", 8, 9)]
+    [InlineData("rotten_shard", 9, 9)]
     public void CastellanSlidesAroundRealStonesFromEveryDirection(string kind, int x, int z)
     {
         var center = new Vector2(x, z);
@@ -76,7 +76,7 @@ public class ResourceShapeTests
 
     [Theory]
     [InlineData("stone")]
-    [InlineData("iron")]
+    [InlineData("rotten_shard")]
     public void GatherReachIsMeasuredToTheRealBase(string kind)
     {
         SimWorld world = OneResource(kind, 5, 5);

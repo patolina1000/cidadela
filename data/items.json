@@ -1,11 +1,11 @@
 {
   // Todos os itens do jogo: nome mostrado e cor (hex) das formas simples do protótipo (paleta do GDD, seção 17).
-  // A ordem aqui é a ordem dos botões do inventário.
-  // raw: item BRUTO: não entra em esteira; só anda nas costas dos carregadores ou do Castelão.
-  "wood":     { "name": "Tora",             "color": "6B5B4B", "raw": true },
-  "stone":    { "name": "Pedra",            "color": "A89F91", "raw": true },
-  "iron":     { "name": "Minério de ferro", "color": "1E2A3A", "raw": true },
-  "shaft":    { "name": "Haste",            "color": "C9B38A" },
-  "ingot":    { "name": "Lingote",          "color": "8C929C" },
-  "sword":    { "name": "Espada",           "color": "B8C7E6" }
+  // A ordem aqui é a ordem dos botões do inventário. Itens da linha da energia (docs/linha_energia.md).
+  // peso: "pesado" (só nas costas; nunca em esteira nem em mariposa) ou "leve" (esteira e mariposa; nas costas também,
+  //   mas ineficiente). "medio" está em aberto e o jogo recusa.
+  "wood":         { "name": "Tora",            "color": "6B5B4B", "peso": "pesado" },
+  "stone":        { "name": "Pedra",           "color": "A89F91", "peso": "pesado" },
+  "rotten_shard": { "name": "Fragmento podre", "color": "6B4F7C", "peso": "pesado" },
+  "pure_shard":   { "name": "Fragmento puro",  "color": "B8C7E6", "peso": "leve" },
+  "water_jar":    { "name": "Jarro d'água",    "color": "4F7C7A", "peso": "leve" }
 }

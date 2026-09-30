@@ -8,17 +8,17 @@ public class BeltTests
     // Esteira a 1,5 célula/s = 0,075 por tick.
     private const float Step = 1.5f / SimClock.TicksPerSecond;
 
-    /// <summary>Castelão em (4, 4) com madeira e as construções dadas.</summary>
+    /// <summary>Castelão em (4, 4) com hastes (item leve: pesado não entra em esteira) e as construções dadas.</summary>
     private static SimWorld World(string buildings, int wood = 10)
     {
         SimWorld world = TestWorlds.Open(x: 4, z: 4, buildings: buildings);
-        world.Castellan.Inventory.Add("wood", wood);
+        world.Castellan.Inventory.Add("shaft", wood);
         return world;
     }
 
     private static void Insert(SimWorld world, int x, int z)
     {
-        world.Enqueue(new InsertItemCommand(new GridPos(x, z), "wood"));
+        world.Enqueue(new InsertItemCommand(new GridPos(x, z), "shaft"));
         world.Tick();
     }
 
@@ -31,7 +31,7 @@ public class BeltTests
         Insert(world, 6, 4); // entra e já anda 1 tick
         TestWorlds.Run(world, 9);
         Assert.Equal(10 * Step, Lane(world, 6, 4).Items[0].Progress, 3);
-        Assert.Equal(9, world.Castellan.Inventory.Count("wood"));
+        Assert.Equal(9, world.Castellan.Inventory.Count("shaft"));
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class BeltTests
         BeltLane lane = Lane(world, 6, 4);
         Assert.Equal(3, lane.Items.Count);
         Assert.Equal(new[] { 1f, 0.5f, 0f }, lane.Items.Select(i => i.Progress).ToArray());
-        Assert.Equal(7, world.Castellan.Inventory.Count("wood")); // as 2 que não couberam ficaram
+        Assert.Equal(7, world.Castellan.Inventory.Count("shaft")); // as 2 que não couberam ficaram
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class BeltTests
         Insert(world, 6, 4);
         TestWorlds.Run(world, 60);
         Assert.Empty(Lane(world, 6, 4).Items);
-        Assert.Equal(1, world.BuildingAt(new GridPos(7, 4))!.Storage!.Count("wood"));
+        Assert.Equal(1, world.BuildingAt(new GridPos(7, 4))!.Storage!.Count("shaft"));
     }
 
     [Fact]
@@ -119,13 +119,13 @@ public class BeltTests
         Insert(world, 6, 4);
         Insert(world, 6, 4);
         Inventory chest = world.BuildingAt(new GridPos(6, 4))!.Storage!;
-        Assert.Equal(2, chest.Count("wood"));
-        Assert.Equal(1, world.Castellan.Inventory.Count("wood"));
+        Assert.Equal(2, chest.Count("shaft"));
+        Assert.Equal(1, world.Castellan.Inventory.Count("shaft"));
 
         world.Enqueue(new TakeAllCommand(new GridPos(6, 4)));
         world.Tick();
         Assert.True(chest.IsEmpty);
-        Assert.Equal(3, world.Castellan.Inventory.Count("wood"));
+        Assert.Equal(3, world.Castellan.Inventory.Count("shaft"));
     }
 
     [Fact]
@@ -138,10 +138,10 @@ public class BeltTests
         Insert(world, 6, 4);
         Assert.Empty(Lane(world, 6, 4).Items);
 
-        world.Castellan.Inventory.Add("wood", 1);
+        world.Castellan.Inventory.Add("shaft", 1);
         Insert(world, 18, 18);
         Assert.Empty(Lane(world, 18, 18).Items);
-        Assert.Equal(1, world.Castellan.Inventory.Count("wood"));
+        Assert.Equal(1, world.Castellan.Inventory.Count("shaft"));
     }
 
     [Fact]
@@ -154,14 +154,15 @@ public class BeltTests
         Insert(world, 6, 4);
         Insert(world, 6, 5);
         Insert(world, 6, 5);
-        Assert.Equal(0, world.Castellan.Inventory.Count("wood"));
+        Assert.Equal(0, world.Castellan.Inventory.Count("shaft"));
 
         world.Enqueue(new DeconstructCommand(new GridPos(6, 4)));
         world.Enqueue(new DeconstructCommand(new GridPos(6, 5)));
         world.Tick();
 
-        // 1 no cinto + 2 no baú + custos (1 + 4).
-        Assert.Equal(8, world.Castellan.Inventory.Count("wood"));
+        // 1 no cinto + 2 no baú; os custos (1 + 4) voltam em madeira.
+        Assert.Equal(3, world.Castellan.Inventory.Count("shaft"));
+        Assert.Equal(5, world.Castellan.Inventory.Count("wood"));
         Assert.Empty(world.BeltItems);
     }
 

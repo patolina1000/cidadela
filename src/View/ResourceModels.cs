@@ -227,7 +227,16 @@ public partial class ResourceModels : Node3D
             return Loaded;
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true, ReadCommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
         var file = JsonSerializer.Deserialize<Dictionary<string, FamilyFile>>(FileAccess.GetFileAsString(ManifestPath), options) ?? new();
+        var families = new List<(string Kind, FamilyFile Family, Dictionary<string, string> Recolor)>();
         foreach ((string kind, FamilyFile family) in file)
+            families.Add((kind, family, new Dictionary<string, string>()));
+        // Recursos sem modelo próprio usam os de outro, recoloridos (data/visual.json, "resourceModels").
+        foreach ((string kind, VisualSettings.ResourceModelSettings alias) in VisualSettings.Current.ResourceModels)
+            if (file.TryGetValue(alias.From, out FamilyFile? source))
+                families.Add((kind, source, alias.Recolor));
+            else
+                GD.PushWarning($"[cenário] resourceModels.{kind}: \"{alias.From}\" não está no manifesto.");
+        foreach ((string kind, FamilyFile family, Dictionary<string, string> recolor) in families)
         {
             var list = new List<Variant>();
             // As árvores esmaecem quando tapam a protagonista; pedra e veio são baixos.
@@ -242,7 +251,7 @@ public partial class ResourceModels : Node3D
                 }
                 list.Add(new Variant
                 {
-                    Name = System.IO.Path.GetFileNameWithoutExtension(v.File), Mesh = ToonMesh(scene, v.ColdRim, occlusion),
+                    Name = $"{kind}_{System.IO.Path.GetFileNameWithoutExtension(v.File)}", Mesh = ToonMesh(scene, v.ColdRim, occlusion, recolor),
                     Weight = v.Weight ?? 0f, Height = v.Height, CastsShadow = v.CastsShadow,
                 });
             }
@@ -251,8 +260,11 @@ public partial class ResourceModels : Node3D
         return Loaded;
     }
 
-    /// <summary>A malha do GLB com cada material trocado pelo toon da mesma cor (borda se o nome estiver em coldRim).</summary>
-    private static Mesh ToonMesh(PackedScene scene, List<string> coldRim, bool occlusion)
+    /// <summary>
+    /// A malha do GLB com cada material trocado pelo toon da mesma cor (ou da cor de <paramref name="recolor"/> pelo nome do
+    /// material), com borda se o nome estiver em coldRim.
+    /// </summary>
+    private static Mesh ToonMesh(PackedScene scene, List<string> coldRim, bool occlusion, Dictionary<string, string> recolor)
     {
         Node root = scene.Instantiate();
         MeshInstance3D source = FindMesh(root) ?? throw new FormatException($"{scene.ResourcePath} sem malha.");
@@ -261,7 +273,8 @@ public partial class ResourceModels : Node3D
         {
             Material? original = source.GetActiveMaterial(i);
             string name = original?.ResourceName ?? "";
-            Color color = original is BaseMaterial3D b ? b.AlbedoColor : Colors.Magenta;
+            Color color = recolor.TryGetValue(name, out string? hex) ? new Color(hex)
+                : original is BaseMaterial3D b ? b.AlbedoColor : Colors.Magenta;
             mesh.SurfaceSetMaterial(i, MaterialFor(color, coldRim.Contains(name), occlusion));
         }
         root.Free();

@@ -3,13 +3,13 @@ using Xunit;
 
 namespace Cidadela.Simulation.Tests;
 
-/// <summary>Postos de máquina: aldeão ocupa, máquina só anda com todos, desmontar libera.</summary>
+/// <summary>Postos de máquina: aldeão ocupa, máquina só anda com todos, desmontar libera (dados de teste).</summary>
 public class PostTests
 {
     private static SimWorld Sawmill(string villagers)
     {
-        SimWorld world = TestWorlds.Open(x: 1, z: 1, data: TestWorlds.RealData(),
-            buildings: """[{ "kind": "sawmill", "x": 8, "z": 8, "direction": "east" }]""", villagers: villagers);
+        SimWorld world = TestWorlds.Open(x: 1, z: 1,
+            buildings: """[{ "kind": "crewed_mill", "x": 8, "z": 8, "direction": "east" }]""", villagers: villagers);
         world.BuildingAt(new GridPos(8, 8))!.Machine!.Input.Add("wood", 1);
         return world;
     }
@@ -51,15 +51,14 @@ public class PostTests
     [Fact]
     public void DeconstructingFreesTheCrewForAnotherPost()
     {
-        SimWorld world = TestWorlds.Open(x: 8, z: 6, data: TestWorlds.RealData(),
-            buildings: """[{ "kind": "smelter", "x": 8, "z": 8 }]""", villagers: """[{ "x": 8, "z": 9 }]""");
+        SimWorld world = TestWorlds.Open(x: 8, z: 6,
+            buildings: """[{ "kind": "press", "x": 8, "z": 8 }]""", villagers: """[{ "x": 8, "z": 9 }]""");
         TestWorlds.Run(world, 2);
         Villager smith = world.Villagers[0];
         Assert.Equal(VillagerTask.AtPost, smith.Task);
 
         world.Castellan.Inventory.Add("wood", 8);
-        world.Castellan.Inventory.Add("stone", 4);
-        world.Enqueue(new BuildCommand("sawmill", new GridPos(10, 8), Direction.East));
+        world.Enqueue(new BuildCommand("crewed_mill", new GridPos(10, 8), Direction.East));
         world.Tick();
         Assert.Equal(VillagerTask.AtPost, smith.Task); // o posto dele não muda por causa de outra máquina
 
@@ -73,13 +72,11 @@ public class PostTests
     [Fact]
     public void MachineWithoutPostsRunsAlone()
     {
-        SimWorld world = TestWorlds.Open(x: 1, z: 1, data: TestWorlds.RealData(),
-            buildings: """[{ "kind": "forge", "x": 8, "z": 8 }]""");
-        Building forge = world.BuildingAt(new GridPos(8, 8))!;
-        Assert.True(forge.CrewReady);
-        forge.Machine!.Input.Add("ingot", 2);
-        forge.Machine.Input.Add("shaft", 1);
+        SimWorld world = TestWorlds.Open(x: 1, z: 1, buildings: """[{ "kind": "kiln", "x": 8, "z": 8 }]""");
+        Building kiln = world.BuildingAt(new GridPos(8, 8))!;
+        Assert.True(kiln.CrewReady);
+        kiln.Machine!.Input.Add("wood", 10);
         world.Tick();
-        Assert.True(forge.Machine.IsWorking);
+        Assert.True(kiln.Machine.IsWorking);
     }
 }

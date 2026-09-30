@@ -333,7 +333,7 @@ public sealed class Villager
         {
             foreach (string kind in m.Machine!.Recipe.Inputs.Keys)
             {
-                int need = world.IsRaw(kind) ? Need(world, m, kind) : 0;
+                int need = world.IsHeavy(kind) ? Need(world, m, kind) : 0;
                 if (need <= 0)
                     continue;
                 Building? best = null;
@@ -345,7 +345,7 @@ public sealed class Villager
                 HaulFrom = best;
                 HaulTo = m;
                 HaulKind = kind;
-                HaulAmount = Math.Min(Stats.Carry, need);
+                HaulAmount = Math.Min(CarryFor(world, kind), need);
                 Task = VillagerTask.Fetching;
                 _noPath = false;
                 return;
@@ -544,7 +544,7 @@ public sealed class Villager
             CarryingKind = node.Kind;
             CarryingCount++;
         }
-        if (CarryingCount >= Stats.Carry || node.IsDepleted)
+        if (CarryingCount >= CarryFor(world, node.Kind) || node.IsDepleted)
             GoHome(world);
     }
 
@@ -710,6 +710,9 @@ public sealed class Villager
         }
         return list;
     }
+
+    /// <summary>Quantos desse item cabem numa viagem (pelo peso: docs/linha_energia.md, regra 7).</summary>
+    public int CarryFor(SimWorld world, string kind) => Stats.CarryFor(world.Data.Item(kind).Weight);
 
     private float Distance(GridPos cell) => Vector2.Distance(Position, new Vector2(cell.X, cell.Z));
 

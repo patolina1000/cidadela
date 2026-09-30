@@ -45,7 +45,6 @@ public partial class WorldView : Node3D
     /// <summary>Esconde os ícones (a câmera cinematográfica esconde a interface).</summary>
     public bool IconsVisible { get => _villagerIcons.Visible; set => _villagerIcons.Visible = value; }
     private readonly Dictionary<Building, Dictionary<string, int>> _chestSnapshots = new();
-    private float _smokeTimer;
     private float _time;
     private int _buildingsVersion = -1;
     private Node3D? _ghost;
@@ -286,30 +285,20 @@ public partial class WorldView : Node3D
     }
 
     /// <summary>
-    /// Máquina trabalhando mostra que está viva (GDD, seção 17: "estado visível"): a serraria gira a lâmina,
-    /// as outras pulsam e soltam fumaça. Parada, fica imóvel.
+    /// Máquina trabalhando mostra que está viva (GDD, seção 17: "estado visível"): pulsa. Parada, fica imóvel.
     /// </summary>
     private void RenderMachines(float dt)
     {
         _time += dt;
-        _smokeTimer -= dt;
-        bool puff = _smokeTimer <= 0f;
-        if (puff)
-            _smokeTimer = 0.45f;
 
         foreach ((Building building, Node3D node) in _buildingNodes)
         {
             if (building.Machine is not MachineState machine)
                 continue;
             var model = node.GetNode<Node3D>("Model");
-            if (model.GetNodeOrNull<Node3D>("Spin") is Node3D spin && machine.IsWorking)
-                spin.Rotation = new Vector3(spin.Rotation.X + dt * 12f, 0f, 0f);
-
             float pulse = machine.IsWorking ? 1f + 0.04f * Mathf.Sin(_time * 10f) : 1f;
             model.Scale = new Vector3(1f, pulse, 1f);
 
-            if (puff && machine.IsWorking && building.Kind is "smelter" or "forge")
-                _effects.Smoke(node.Position + new Vector3(0f, 1.15f, 0f));
         }
     }
 
@@ -471,7 +460,7 @@ public partial class WorldView : Node3D
         return worker.Task switch
         {
             VillagerTask.GoingToResource => $"indo buscar {resource}",
-            VillagerTask.Gathering => $"coletando ({worker.CarryingCount}/{worker.Stats.Carry})",
+            VillagerTask.Gathering => $"coletando ({worker.CarryingCount}/{worker.CarryFor(_world, work.Job.Resource)})",
             VillagerTask.ReturningHome => $"levando {worker.CarryingCount} {resource}",
             _ when work.Free <= 0 => "parado: cabana cheia",
             _ => $"parado: sem {resource} no raio de {work.Job.Radius:0} células",

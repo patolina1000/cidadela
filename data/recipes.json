@@ -1,8 +1,5 @@
 {
-  // Receitas das máquinas (GDD, seção 5). Máquinas antigas, fora da barra desde a linha da energia (docs/linha_energia.md).
+  // Receitas das máquinas (GDD, seção 5; linha da energia: docs/linha_energia.md).
   // machine: construção que faz a receita (data/buildings.json). Por enquanto, uma receita por máquina.
   // inputs/outputs: itens por ciclo (sem inputs: produz sozinha). seconds: duração de um ciclo.
-  "shafts":   { "machine": "sawmill", "inputs": { "wood": 1 },              "outputs": { "shaft": 2 }, "seconds": 2 },
-  "ingot":    { "machine": "smelter", "inputs": { "iron": 2 },              "outputs": { "ingot": 1 }, "seconds": 3 },
-  "sword":    { "machine": "forge",   "inputs": { "ingot": 2, "shaft": 1 }, "outputs": { "sword": 1 }, "seconds": 5 }
 }

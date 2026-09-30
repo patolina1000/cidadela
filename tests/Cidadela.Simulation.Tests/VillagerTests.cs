@@ -84,14 +84,13 @@ public class VillagerTests
     }
 
     [Fact]
-    public void HutPushesOntoTheBeltInFront()
+    public void HutPushesIntoTheChestInFront()
     {
         SimWorld world = World("""[{ "kind": "wood", "x": 4, "z": 7 }]""", buildings: """
-            [{ "kind": "lumber_hut", "x": 4, "z": 4, "direction": "east" },
-             { "kind": "belt", "x": 5, "z": 4, "direction": "east" }, { "kind": "chest", "x": 6, "z": 4 }]
+            [{ "kind": "lumber_hut", "x": 4, "z": 4, "direction": "east" }, { "kind": "chest", "x": 5, "z": 4 }]
             """);
         TestWorlds.Run(world, 600);
-        Assert.True(world.BuildingAt(new GridPos(6, 4))!.Storage!.Count("wood") >= 2);
+        Assert.True(world.BuildingAt(new GridPos(5, 4))!.Storage!.Count("wood") >= 2);
     }
 
     [Fact]

@@ -29,7 +29,7 @@ public class CastellanRadiusTests
     [Theory]
     [InlineData("wood")]
     [InlineData("stone")]
-    [InlineData("iron")]
+    [InlineData("rotten_shard")]
     public void SheStillNeverWalksIntoAResource(string kind)
     {
         for (int a = 0; a < 8; a++)

@@ -39,25 +39,6 @@ public static class BuildingModels
                 Add(model, new BoxMesh { Size = new Vector3(0.62f, 0.42f, 0.5f) }, Palette.Wood, new Vector3(0f, 0.21f, 0f));
                 Add(model, new BoxMesh { Size = new Vector3(0.66f, 0.08f, 0.54f) }, Palette.Wheat, new Vector3(0f, 0.46f, 0f));
                 break;
-            case "sawmill":
-                Add(model, new CylinderMesh { TopRadius = 0.42f, BottomRadius = 0.44f, Height = 0.5f }, Palette.Wood, new Vector3(0f, 0.25f, 0f));
-                // A lâmina fica num pivô "Spin" que gira em volta de X quando a máquina trabalha.
-                var spin = new Node3D { Name = "Spin", Position = new Vector3(0f, 0.62f, 0f) };
-                model.AddChild(spin);
-                var blade = Add(spin, new CylinderMesh { TopRadius = 0.3f, BottomRadius = 0.3f, Height = 0.05f }, Palette.Stone, Vector3.Zero);
-                blade.Rotation = new Vector3(0f, 0f, Mathf.Pi / 2f);
-                AddOutputArrow(model);
-                break;
-            case "smelter":
-                Add(model, new CylinderMesh { TopRadius = 0.28f, BottomRadius = 0.4f, Height = 1.1f }, Palette.Stone, new Vector3(0f, 0.55f, 0f));
-                Add(model, new CylinderMesh { TopRadius = 0.16f, BottomRadius = 0.16f, Height = 0.08f }, Palette.Pumpkin, new Vector3(0f, 1.12f, 0f));
-                AddOutputArrow(model);
-                break;
-            case "forge":
-                Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.5f, 0.7f) }, Palette.Pumpkin, new Vector3(0f, 0.25f, 0f));
-                Add(model, new CylinderMesh { TopRadius = 0.1f, BottomRadius = 0.13f, Height = 0.7f }, Palette.Midnight, new Vector3(0.22f, 0.85f, 0.15f));
-                AddOutputArrow(model);
-                break;
             case "carrier_post":
                 // Tablado com sacos e uma vara de carregar.
                 Add(model, new BoxMesh { Size = new Vector3(0.8f, 0.1f, 0.8f) }, Palette.Wood, new Vector3(0f, 0.05f, 0f));

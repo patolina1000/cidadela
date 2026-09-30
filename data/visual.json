@@ -26,5 +26,12 @@
   //   pixels numa tela de referenceHeight de altura (fica igual em qualquer zoom); enabled: se começa ligado (a tecla O
   //   do jogo alterna). depthOffset: metros que a casca recua da câmera, para não furar camadas sobrepostas da mesma
   //   malha (as mechas do cabelo); na silhueta não muda nada.
-  "outline": { "enabled": true, "color": "#1B1620", "widthPx": 1.5, "referenceHeight": 1890, "depthOffset": 0.03 }
+  "outline": { "enabled": true, "color": "#1B1620", "widthPx": 1.5, "referenceHeight": 1890, "depthOffset": 0.03 },
+  // resourceModels: recurso sem modelo próprio no manifesto do cenário (assets/cenario/cenario.json) desenhado com os
+  //   modelos de outro ("from"), trocando a cor de materiais pelo nome ("recolor": material → hex). O veio de cristal
+  //   podre (docs/linha_energia.md) usa o veio de ferro com as lascas em líquen roxo (GDD, seção 17), provisório
+  //   (decisão do Arthur, 30/09/2026).
+  "resourceModels": {
+    "rotten_shard": { "from": "iron", "recolor": { "minerio": "#6B4F7C" } }
+  }
 }

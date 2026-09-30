@@ -42,17 +42,14 @@
     { "kind": "stone", "x": 12, "z": 8 },
     { "kind": "stone", "x": 13, "z": 9 },
     { "kind": "stone", "x": 12, "z": 10 },
-    { "kind": "iron",  "x": 13, "z": 11 },
+    { "kind": "rotten_shard", "x": 13, "z": 11 },
     { "kind": "stone", "x": 26, "z": 4 },
     { "kind": "stone", "x": 27, "z": 5 },
-    { "kind": "iron",  "x": 25, "z": 26 },
-    { "kind": "iron",  "x": 26, "z": 26 }
+    { "kind": "rotten_shard", "x": 25, "z": 26 },
+    { "kind": "rotten_shard", "x": 26, "z": 26 }
   ],
   // Construções já presentes no início (tipos de data/buildings.json). direction: north, east, south, west.
   "buildings": [
-    { "kind": "sawmill", "x": 12, "z": 14 },
-    { "kind": "smelter", "x": 18, "z": 14 },
-    { "kind": "forge",   "x": 18, "z": 18 }
   ],
   // Terreno (tipos de data/terrain.json): um padrão e manchas por cima, na ordem (a última vence).
   // Mancha com radius é um círculo em volta da célula; com width e height, um retângulo a partir dela.

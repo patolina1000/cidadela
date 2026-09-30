@@ -70,16 +70,6 @@ public class MachineTests
     }
 
     [Fact]
-    public void BeltPointingIntoTheMachineFeedsIt()
-    {
-        // Esteira sobe de (5, 5) para (5, 4), que vira para leste e entra na serraria.
-        SimWorld world = World(extra: """, { "kind": "belt", "x": 5, "z": 5, "direction": "north" }, { "kind": "belt", "x": 5, "z": 4, "direction": "east" }""");
-        Insert(world, new GridPos(5, 5));
-        TestWorlds.Run(world, 60);
-        Assert.True(Machine(world).IsWorking || Machine(world).Output.Count("shaft") > 0);
-    }
-
-    [Fact]
     public void PushesOutputOntoTheBeltInFront()
     {
         SimWorld world = World(extra: """, { "kind": "belt", "x": 7, "z": 4, "direction": "east" }""");

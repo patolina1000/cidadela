@@ -9,9 +9,9 @@ internal static class TestWorlds
 {
     public const string Items = """
         {
-          "wood":  { "name": "Madeira", "color": "6B5B4B" },
-          "stone": { "name": "Pedra",   "color": "A89F91" },
-          "shaft": { "name": "Haste",   "color": "C9B38A" }
+          "wood":  { "name": "Madeira", "color": "6B5B4B", "peso": "pesado" },
+          "stone": { "name": "Pedra",   "color": "A89F91", "peso": "pesado" },
+          "shaft": { "name": "Haste",   "color": "C9B38A", "peso": "leve" }
         }
         """;
 
@@ -22,13 +22,21 @@ internal static class TestWorlds
         }
         """;
 
-    /// <summary>Serraria de teste: 1 madeira vira 2 hastes em 1 s (20 ticks).</summary>
+    /// <summary>
+    /// Máquinas de teste: serraria (1 madeira → 2 hastes em 1 s, sem postos); forno (10 madeiras → 20 hastes em 120 s, sem
+    /// postos); serraria com 2 postos (1 madeira → 2 hastes em 2 s); prensa com 1 posto (1 haste → 1 pedra em 5 s).
+    /// </summary>
     public const string Recipes = """
-        { "shafts": { "machine": "sawmill", "inputs": { "wood": 1 }, "outputs": { "shaft": 2 }, "seconds": 1 } }
+        {
+          "shafts": { "machine": "sawmill",     "inputs": { "wood": 1 },  "outputs": { "shaft": 2 },  "seconds": 1 },
+          "kiln":   { "machine": "kiln",        "inputs": { "wood": 10 }, "outputs": { "shaft": 20 }, "seconds": 120 },
+          "crewed": { "machine": "crewed_mill", "inputs": { "wood": 1 },  "outputs": { "shaft": 2 },  "seconds": 2 },
+          "press":  { "machine": "press",       "inputs": { "shaft": 1 }, "outputs": { "stone": 1 },  "seconds": 5 }
+        }
         """;
 
-    /// <summary>Aldeão de teste: patamares 5, 6 e 8 células/s, penalidade 2,5 no base (fator 0,5), teto 7; coleta no mesmo tempo que o Castelão, carrega 2.</summary>
-    public const string VillagerStats = """{ "speedTiers": [5.0, 6.0, 8.0], "penaltySpeed": 2.5, "maxSpeed": 7.0, "gatherMultiplier": 1.0, "carry": 2 }""";
+    /// <summary>Aldeão de teste: patamares 5, 6 e 8 células/s, penalidade 2,5 no base (fator 0,5), teto 7; coleta no mesmo tempo que o Castelão, carrega 2 pesados ou 10 leves.</summary>
+    public const string VillagerStats = """{ "speedTiers": [5.0, 6.0, 8.0], "penaltySpeed": 2.5, "maxSpeed": 7.0, "gatherMultiplier": 1.0, "carry": { "pesado": 2, "leve": 10 } }""";
 
     public const string CastellanStats ="""{ "speed": 6.0, "reach": 10.0, "gatherReach": 1.0, "radius": 0.3 }""";
 
@@ -37,6 +45,13 @@ internal static class TestWorlds
           "belt":  { "name": "Esteira", "cost": { "wood": 1 }, "solid": false, "beltSpeed": 1.5 },
           "chest": { "name": "Baú",     "cost": { "wood": 4 }, "solid": true,  "storage": true },
           "sawmill": { "name": "Serraria", "cost": { "wood": 8 }, "solid": true },
+          "kiln": { "name": "Forno", "cost": { "wood": 4 }, "solid": true },
+          "crewed_mill": { "name": "Serraria com postos", "cost": { "wood": 8 }, "solid": true,
+                           "posts": { "count": 2, "name": "Serrador", "tool": "saw" } },
+          "press": { "name": "Prensa", "cost": { "wood": 2 }, "solid": true,
+                     "posts": { "count": 1, "name": "Prenseiro", "tool": "press" } },
+          "carrier_post": { "name": "Posto de Carregadores", "cost": { "wood": 4 }, "solid": true,
+                            "carriers": { "count": 2, "radius": 12 } },
           "floor": { "name": "Piso de teste", "cost": { "wood": 1 }, "solid": false, "speedBonus": 1.2 },
           "lumber_hut": { "name": "Cabana do Lenhador", "cost": { "wood": 2 }, "solid": true,
                           "job": { "name": "Lenhador", "resource": "wood", "radius": 8, "capacity": 3 } }
@@ -57,7 +72,7 @@ internal static class TestWorlds
               "terrain": {{terrain}} }
             """, data ?? Data());
 
-    /// <summary>Os JSON de verdade de data/ (os números do jogo), para os testes da linha da flecha.</summary>
+    /// <summary>Os JSON de verdade de data/ (os números do jogo).</summary>
     public static GameData RealData() => GameData.Parse(DataFile("items.json"), DataFile("resources.json"),
         DataFile("castellan.json"), DataFile("villagers.json"), DataFile("buildings.json"), DataFile("recipes.json"),
         DataFile("terrain.json"));

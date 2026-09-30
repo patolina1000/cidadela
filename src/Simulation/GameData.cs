@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Cidadela.Simulation;
 
@@ -79,7 +80,7 @@ public sealed class GameData
     {
         var items = new List<ItemType>();
         foreach ((string kind, ItemData i) in Ordered<ItemData>(itemsJson, "items.json"))
-            items.Add(new ItemType(kind, i.Name, i.Color, i.Raw));
+            items.Add(new ItemType(kind, i.Name, i.Color, WeightOf(kind, i.Weight)));
         var itemKinds = new HashSet<string>();
         foreach (ItemType i in items)
             itemKinds.Add(i.Kind);
@@ -181,10 +182,10 @@ public sealed class GameData
                 throw new FormatException("villagers.json: speedTiers precisam ser positivos e em ordem crescente.");
         if (v.PenaltySpeed <= 0f || v.PenaltySpeed > v.SpeedTiers[0])
             throw new FormatException("villagers.json: penaltySpeed precisa ser positivo e no máximo o patamar base.");
-        if (v.MaxSpeed <= 0f || v.GatherMultiplier <= 0f || v.Carry <= 0)
-            throw new FormatException("villagers.json: maxSpeed, gatherMultiplier e carry precisam ser positivos.");
-        var villagers = new VillagerStats(v.SpeedTiers, v.PenaltySpeed / v.SpeedTiers[0], v.MaxSpeed, v.GatherMultiplier, v.Carry,
-            v.Radius, v.ResourceCellCost);
+        if (v.MaxSpeed <= 0f || v.GatherMultiplier <= 0f || v.Carry is null || v.Carry.Heavy <= 0 || v.Carry.Light <= 0)
+            throw new FormatException("villagers.json: maxSpeed, gatherMultiplier e carry (pesado e leve) precisam ser positivos.");
+        var villagers = new VillagerStats(v.SpeedTiers, v.PenaltySpeed / v.SpeedTiers[0], v.MaxSpeed, v.GatherMultiplier,
+            v.Carry.Heavy, v.Carry.Light, v.Radius, v.ResourceCellCost);
 
         var terrains = new List<TerrainType>();
         if (terrainJson is null)
@@ -201,6 +202,15 @@ public sealed class GameData
 
         return new GameData(items, resources, stats, villagers, buildings, recipes, terrains);
     }
+
+    /// <summary>"pesado" ou "leve"; "medio" está em aberto (docs/linha_energia.md, regra 3) e é recusado.</summary>
+    private static ItemWeight WeightOf(string kind, string weight) => weight switch
+    {
+        "pesado" => ItemWeight.Heavy,
+        "leve" => ItemWeight.Light,
+        "medio" => throw new FormatException($"Item \"{kind}\": peso \"medio\" ainda está em aberto (use pesado ou leve)."),
+        _ => throw new FormatException($"Item \"{kind}\": peso precisa ser \"pesado\" ou \"leve\" (veio \"{weight}\")."),
+    };
 
     private static int SecondsToTicks(float seconds) =>
         Math.Max(1, (int)MathF.Round(seconds * SimClock.TicksPerSecond));
@@ -234,7 +244,8 @@ public sealed class GameData
     {
         public string Name { get; set; } = "";
         public string Color { get; set; } = "FF00FF";
-        public bool Raw { get; set; }
+        [JsonPropertyName("peso")]
+        public string Weight { get; set; } = "";
     }
 
     private sealed class RecipeData
@@ -295,9 +306,18 @@ public sealed class GameData
         public float PenaltySpeed { get; set; }
         public float MaxSpeed { get; set; } = 1.5f;
         public float GatherMultiplier { get; set; } = 1.5f;
-        public int Carry { get; set; } = 5;
+        public CarryData? Carry { get; set; }
         public float Radius { get; set; } = 0.15f;
         public float ResourceCellCost { get; set; } = 0.5f;
+    }
+
+    /// <summary>Itens por viagem nas costas, pelo peso ("pesado", "leve").</summary>
+    private sealed class CarryData
+    {
+        [JsonPropertyName("pesado")]
+        public int Heavy { get; set; }
+        [JsonPropertyName("leve")]
+        public int Light { get; set; }
     }
 
     private sealed class ResourceData

@@ -92,10 +92,10 @@ public class VillagerSpeedTests
     }
 
     [Theory]
-    [InlineData("""{ "speedTiers": [], "penaltySpeed": 0.5, "maxSpeed": 1.5, "gatherMultiplier": 1.0, "carry": 2 }""")]
-    [InlineData("""{ "speedTiers": [1.0, 0.8], "penaltySpeed": 0.5, "maxSpeed": 1.5, "gatherMultiplier": 1.0, "carry": 2 }""")]
-    [InlineData("""{ "speedTiers": [1.0], "penaltySpeed": 1.2, "maxSpeed": 1.5, "gatherMultiplier": 1.0, "carry": 2 }""")]
-    [InlineData("""{ "speedTiers": [1.0], "penaltySpeed": 0.5, "maxSpeed": 0, "gatherMultiplier": 1.0, "carry": 2 }""")]
+    [InlineData("""{ "speedTiers": [], "penaltySpeed": 0.5, "maxSpeed": 1.5, "gatherMultiplier": 1.0, "carry": { "pesado": 1, "leve": 10 } }""")]
+    [InlineData("""{ "speedTiers": [1.0, 0.8], "penaltySpeed": 0.5, "maxSpeed": 1.5, "gatherMultiplier": 1.0, "carry": { "pesado": 1, "leve": 10 } }""")]
+    [InlineData("""{ "speedTiers": [1.0], "penaltySpeed": 1.2, "maxSpeed": 1.5, "gatherMultiplier": 1.0, "carry": { "pesado": 1, "leve": 10 } }""")]
+    [InlineData("""{ "speedTiers": [1.0], "penaltySpeed": 0.5, "maxSpeed": 0, "gatherMultiplier": 1.0, "carry": { "pesado": 1, "leve": 10 } }""")]
     public void InvalidSpeedDataIsRejected(string villagers)
     {
         Assert.Throws<FormatException>(() => GameData.Parse(TestWorlds.Items, TestWorlds.Resources, TestWorlds.CastellanStats,

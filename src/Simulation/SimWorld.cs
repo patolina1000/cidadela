@@ -135,13 +135,13 @@ public sealed class SimWorld
     }
 
     /// <summary>
-    /// Tenta pôr 1 item na esteira (que não aponte de volta) ou baú à frente da construção. Item bruto não entra em
+    /// Tenta pôr 1 item na esteira (que não aponte de volta) ou baú à frente da construção. Item pesado não entra em
     /// esteira: só no baú.
     /// </summary>
     private bool PushForward(Building from, string kind)
     {
         Building? front = BuildingAt(from.Cell.Step(from.Direction));
-        if (front?.Belt is BeltLane lane && front.Direction != from.Direction.Opposite() && lane.HasRoomAtEntry && !IsRaw(kind))
+        if (front?.Belt is BeltLane lane && front.Direction != from.Direction.Opposite() && lane.HasRoomAtEntry && !IsHeavy(kind))
         {
             var item = new BeltItem(_nextItemId++, kind);
             lane.AddAtEntry(item);
@@ -208,7 +208,7 @@ public sealed class SimWorld
         if (BuildingAt(cell) is not Building target || !Castellan.CanReach(cell))
             return;
 
-        if (target.Belt is BeltLane lane && lane.HasRoomAtEntry && !IsRaw(kind) && Castellan.Inventory.TryRemoveOne(kind))
+        if (target.Belt is BeltLane lane && lane.HasRoomAtEntry && !IsHeavy(kind) && Castellan.Inventory.TryRemoveOne(kind))
         {
             var item = new BeltItem(_nextItemId++, kind);
             lane.AddAtEntry(item);
@@ -225,12 +225,12 @@ public sealed class SimWorld
         }
     }
 
-    /// <summary>Se o item é bruto (não entra em esteira).</summary>
-    public bool IsRaw(string kind) => Data.Item(kind).Raw;
+    /// <summary>Se o item é pesado (não entra em esteira nem em mariposa; só nas costas).</summary>
+    public bool IsHeavy(string kind) => Data.Item(kind).IsHeavy;
 
     /// <summary>
     /// Item nascendo na entrada de uma esteira (alimentador do palco da Biografia e de testes). Não olha a regra do
-    /// bruto: é um alimentador de cena, não o jogo.
+    /// peso: é um alimentador de cena, não o jogo.
     /// </summary>
     internal void TrySpawnItem(GridPos cell, string kind)
     {

@@ -20,6 +20,7 @@ public sealed class VisualSettings
     public IconSettings VillagerIcon { get; set; } = new();
     public PickSettings ResourcePick { get; set; } = new();
     public OutlineSettings Outline { get; set; } = new();
+    public System.Collections.Generic.Dictionary<string, ResourceModelSettings> ResourceModels { get; set; } = new();
 
     public static VisualSettings Current => _current ??=
         JsonSerializer.Deserialize<VisualSettings>(FileAccess.GetFileAsString("res://data/visual.json"), Options) ?? new VisualSettings();
@@ -40,6 +41,14 @@ public sealed class VisualSettings
         material.SetShaderParameter("occlusion_radius", Occlusion.Radius);
         material.SetShaderParameter("occlusion_keep", Occlusion.Keep);
         material.SetShaderParameter("occlusion_softness", Occlusion.Softness);
+    }
+
+    /// <summary>Recurso desenhado com os modelos de outro do manifesto do cenário, com materiais recoloridos.</summary>
+    public sealed class ResourceModelSettings
+    {
+        public string From { get; set; } = "";
+        /// <summary>Nome do material no GLB → cor hex nova.</summary>
+        public System.Collections.Generic.Dictionary<string, string> Recolor { get; set; } = new();
     }
 
     public sealed class OutlineSettings

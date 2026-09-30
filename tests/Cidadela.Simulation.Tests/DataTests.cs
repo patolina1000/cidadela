@@ -21,9 +21,6 @@ public class DataTests
         Assert.Contains("wood", data.Resources.Keys);
         Assert.Equal("belt", data.Buildings[0].Kind); // a esteira é a tecla 1
         Assert.NotEmpty(world.Resources);
-        Assert.NotEmpty(world.Buildings);
-        Assert.NotNull(data.RecipeFor("sawmill"));
-        Assert.Contains(world.Buildings, b => b.Machine is not null); // máquinas do mapa já trabalham
         Assert.False(world.IsSolid(new GridPos((int)world.Castellan.Position.X, (int)world.Castellan.Position.Y)));
         Assert.Equal("grass", data.Terrains[0].Kind); // o primeiro terreno é o padrão
         Assert.Equal(data.Terrain("dirt").Index, world.Grid.TerrainAt(new GridPos(15, 16))); // pátio da base

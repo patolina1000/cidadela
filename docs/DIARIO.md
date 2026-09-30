@@ -5776,3 +5776,37 @@ onde errou, correções manuais e quanto tempo levou.
 - **Testes:** nada de código mudou.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 15:54–15:54 de relógio.
+
+## 2026-09-30 — Linha da energia, passo 3: pesos dos itens e fim dos itens antigos
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 3 do plano (nota 08), com as respostas do Arthur às dúvidas: D4 (jogar fora minério de ferro,
+  haste, lingote e espada e o que só existia por eles) e D3 (veio de cristal podre = veio de ferro do cenário tingido).
+- **Feito:**
+  - `data/items.json`: tora, pedra, fragmento podre (pesados), fragmento puro e jarro d'água (leves). Campo `"peso"`
+    ("pesado"/"leve"; "medio" recusado por estar em aberto) no lugar de `raw`; `ItemWeight` e `ItemType.IsHeavy`.
+  - Carga nas costas por peso: `data/villagers.json` `"carry": { "pesado": 1, "leve": 10 }`
+    (`VillagerStats.CarryFor`, `Villager.CarryFor`). Vale para cabanas e carregadores. **A protagonista continua com
+    inventário sem limite** (a especificação fala de "costas" dos carregadores; com 1 pesado ela não juntaria as 10
+    pedras de uma construção) — escolha do mais simples, registrada.
+  - Pesado não entra em esteira (regra antiga do bruto, agora pelo peso).
+  - Recurso `rotten_shard` (veio de cristal podre, 300 por veio, mesmas formas de bloqueio do veio de ferro) no lugar de
+    `iron`; os mapas trocaram `iron` por ele. Desenho: `data/visual.json` `"resourceModels"` desenha um recurso com os
+    modelos de outro do manifesto, recolorindo materiais pelo nome (`minerio` → líquen roxo #6B4F7C).
+  - **Saíram (D4):** itens minério de ferro, haste, lingote e espada; serraria, fundição, forja, Cabana do Mineiro, as
+    três receitas (`data/recipes.json` ficou vazio até o passo 5), os modelos delas, a fumaça e o giro de lâmina das
+    máquinas antigas, as máquinas dos mapas `mapa_teste` e `teste_cenario`, e as entradas da Biografia (serraria,
+    fundição, forja, cabana do mineiro, haste, lingote, espada, ferro). **Ficaram** as cabanas do lenhador e do
+    pedreiro (funcionam com tora e pedra; fora da barra). Baú passou a custar 5 toras (especificação).
+  - Testes de postos e carregadores passaram a usar máquinas **de teste** (forno, serraria com postos, prensa) em
+    `TestWorlds`, sem depender dos dados do jogo; testes de esteira usam haste (leve) nos dados de teste.
+- **O que deu errado:** 10 testes de esteira e 1 de cabana quebraram porque a madeira de teste virou pesada; trocados
+  para haste / baú. `BeltPointingIntoTheMachineFeedsIt` saiu (esteira alimentando máquina acaba no passo 5, regra 4).
+- **Testes:** `ItemWeightTests` (pesos do jogo, carga 1/10, "medio" e desconhecido recusados, pesado fora da esteira,
+  lenhador leva 1 tora por viagem), `CarrierTests.CarriersTakeTheHeavyLimitPerTrip`. `dotnet build` 0/0;
+  `dotnet test` 196 passaram. CenarioTeste rodado pelo godot-ai (print `docs/prints/energia_passo3_veio_podre.png`),
+  sem erro; Biography em headless, sem erro.
+- **Pendência:** textos da Biografia para a linha da energia (Relicário, Mina, Poço etc.) não foram escritos (não
+  inventar lore).
+- **Correções manuais:** nenhuma.
+- **Tempo:** início não medido (depois das 15:55)–16:39 de relógio.

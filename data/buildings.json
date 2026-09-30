@@ -8,23 +8,16 @@
   //   células em volta da cabana, guardando até "capacity" itens (que ela solta na esteira ou baú à frente).
   // posts: postos de trabalho. Ao construir, o aldeão livre mais perto ocupa cada posto; a máquina só anda com todos
   //   ocupados por quem já chegou. name: ofício; tool: ícone da ferramenta sobre a cabeça dele.
-  // carriers: Posto de Carregadores: "count" vagas; cada carregador busca bruto (tora, pedra, minério) num baú ou cabana a
+  // carriers: Posto de Carregadores: "count" vagas; cada carregador busca item pesado (tora, pedra) num baú ou cabana a
   //   até "radius" células do posto e leva até a máquina, no mesmo raio, que ainda aceita o item.
   // hotbar: false tira da barra de construção (o código e os dados ficam; mapas e testes ainda podem usar).
-  //   Fora da barra desde a mudança de rumo de 30/09 (linha da energia, docs/linha_energia.md): cabanas e máquinas antigas.
+  //   Fora da barra desde a mudança de rumo de 30/09 (linha da energia, docs/linha_energia.md): as cabanas.
   "belt":       { "name": "Esteira",  "cost": { "wood": 1 },                         "solid": false, "beltSpeed": 1.5 },
-  "chest":      { "name": "Baú",      "cost": { "wood": 4 },                         "solid": true,  "storage": true },
+  "chest":      { "name": "Baú",      "cost": { "wood": 5 },                         "solid": true,  "storage": true },
   "carrier_post": { "name": "Posto de Carregadores", "cost": { "wood": 4 },            "solid": true,
                     "carriers": { "count": 2, "radius": 12 } },
   "lumber_hut": { "name": "Cabana do Lenhador", "cost": { "wood": 6 },             "solid": true, "hotbar": false,
                   "job": { "name": "Lenhador", "resource": "wood",  "radius": 12, "capacity": 50 } },
-  "iron_hut":   { "name": "Cabana do Mineiro",  "cost": { "wood": 6, "stone": 4 }, "solid": true, "hotbar": false,
-                  "job": { "name": "Mineiro",  "resource": "iron",  "radius": 12, "capacity": 50 } },
   "stone_hut":  { "name": "Cabana do Pedreiro", "cost": { "wood": 6, "stone": 2 }, "solid": true, "hotbar": false,
-                  "job": { "name": "Pedreiro", "resource": "stone", "radius": 12, "capacity": 50 } },
-  "sawmill":    { "name": "Serraria", "cost": { "wood": 8, "stone": 4 },            "solid": true, "hotbar": false,
-                  "posts": { "count": 2, "name": "Serrador", "tool": "saw" } },
-  "smelter":    { "name": "Fundição", "cost": { "stone": 10 },                      "solid": true, "hotbar": false,
-                  "posts": { "count": 1, "name": "Fundidor", "tool": "bellows" } },
-  "forge":      { "name": "Forja",    "cost": { "wood": 6, "stone": 6, "iron": 4 }, "solid": true, "hotbar": false }
+                  "job": { "name": "Pedreiro", "resource": "stone", "radius": 12, "capacity": 50 } }
 }
