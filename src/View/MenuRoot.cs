@@ -5,7 +5,7 @@ namespace Cidadela.View;
 
 /// <summary>
 /// Menu inicial (scenes/Menu.tscn): o crepúsculo do jogo ao fundo, com a protagonista parada em idle e o
-/// cristal aceso, sobre um pedaço de grama (aguardando o novo aldeão: os aldeões em volta dela voltam com ele).
+/// cristal aceso, sobre um pedaço de grama, com aldeões v2 em idle por perto (cabelos sorteados a cada abertura).
 /// Botões: Novo jogo, Continuar
 /// (desativado sem save), Biografia, Configurações (<see cref="SettingsPanel"/>) e Sair.
 /// </summary>
@@ -17,6 +17,10 @@ public partial class MenuRoot : Node3D
     private Camera3D _camera = null!;
     private Control _settings = null!;
     private float _time;
+    private readonly System.Collections.Generic.List<(VillagerVisual Visual, VillagerVisual.DrawState State)> _villagers = new();
+
+    // Aldeões em volta da protagonista, em metros a partir dela: à direita e à frente, fora do painel da esquerda.
+    private static readonly Vector2[] VillagerOffsets = { new(0.62f, 0.28f), new(1.05f, -0.45f), new(-0.55f, 0.35f), new(0.3f, 0.85f) };
 
     public override void _Ready()
     {
@@ -45,6 +49,8 @@ public partial class MenuRoot : Node3D
         var castellan = new CastellanVisual { Name = "Castellan", Position = center, Rotation = new Vector3(0f, Mathf.Pi, 0f) };
         AddChild(castellan);
 
+        AddVillagers(center);
+
         _camera = new Camera3D { Name = "Camera", Fov = 38f, Current = true };
         AddChild(_camera);
         // O painel do menu cobre o terço esquerdo: o grupo fica à direita do centro da tela.
@@ -52,9 +58,35 @@ public partial class MenuRoot : Node3D
         _camera.LookAt(center + new Vector3(-0.35f, 0.55f, 0f), Vector3.Up);
     }
 
+    /// <summary>
+    /// Aldeões sem simulação, desenhados por um <see cref="VillagerVisual.DrawState"/> fixo: parados (idle), olhando
+    /// para a câmera, cada um com um cabelo diferente sorteado agora.
+    /// </summary>
+    private void AddVillagers(Vector3 center)
+    {
+        var rng = new RandomNumberGenerator();
+        rng.Randomize();
+        var hairs = new System.Collections.Generic.List<int>();
+        for (int h = 1; h <= Villager.HairVariants; h++)
+            hairs.Insert(rng.RandiRange(0, hairs.Count), h);
+
+        for (int i = 0; i < VillagerOffsets.Length; i++)
+        {
+            var visual = new VillagerVisual { Name = $"Villager_{i}", Seed = rng.RandiRange(1, 100000) };
+            AddChild(visual);
+            // O visual soma meia célula à posição; a frente +Y da simulação é +Z, onde está a câmera.
+            var position = new System.Numerics.Vector2(center.X + VillagerOffsets[i].X - 0.5f, center.Z + VillagerOffsets[i].Y - 0.5f);
+            var state = new VillagerVisual.DrawState(position, new System.Numerics.Vector2(0f, 1f), hairs[i],
+                VillagerExpression.Distracted, false, null, null, -1f, 0f);
+            _villagers.Add((visual, state));
+        }
+    }
+
     public override void _Process(double delta)
     {
         _time += (float)delta;
+        foreach ((VillagerVisual visual, VillagerVisual.DrawState state) in _villagers)
+            visual.UpdateFrom(state, _data, (float)delta);
         // Balanço lento da câmera, como uma respiração.
         _camera.Position += new Vector3(0f, Mathf.Sin(_time * 0.4f) * 0.0004f, 0f);
     }

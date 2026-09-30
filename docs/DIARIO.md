@@ -4115,3 +4115,21 @@ onde errou, correções manuais e quanto tempo levou.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 21:43–21:46 de relógio.
+
+---
+
+## 2026-09-29 — Aldeões v2 no menu inicial
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** tarefa 2, passo 1 (auditoria, item 5): 3 ou 4 aldeões v2 no menu inicial, perto da protagonista, em
+  idle, com cabelos sorteados, como o GDD pede (seção 12); tirar o "aguardando o novo aldeão".
+- **O que foi feito:** `MenuRoot.AddVillagers`: 4 `VillagerVisual` sem simulação, com um `DrawState` fixo (parado,
+  olhando para a câmera, expressão distraída, que é a padrão), a 0,3–1,1 m da protagonista, três à direita e na frente
+  e um à esquerda, fora do painel. Cada abertura do menu sorteia 4 dos 5 cabelos, sem repetir, e a semente do
+  piscar e do tom. O comentário "aguardando o novo aldeão" saiu; a auditoria marca o item 5 como feito.
+- **Conferido no jogo:** quatro aldeões em idle com cabelos diferentes, piscando; log sem erros.
+  Print: `docs/prints/menu_inicial_aldeoes.png`.
+- **O que deu errado:** nada.
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:46–21:48 de relógio.

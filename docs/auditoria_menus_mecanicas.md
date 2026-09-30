@@ -24,7 +24,7 @@ Legenda: **[decidido]** = o GDD já decide, só falta fazer. **[Arthur]** = prec
    **[Arthur]**: confirmar essas teclas e riscar o "(ou 1, 2, 3)" dos andares no GDD.
 5. **Menu inicial sem aldeões.** O GDD diz "a protagonista em idle com o cristal aceso e aldeões por perto"; o
    `MenuRoot` ainda diz "aguardando o novo aldeão", mas o aldeão v2 já está no jogo. **[decidido]**, 0 crédito
-   (é pôr 3 ou 4 `VillagerVisual` como no jogo). Não fiz nesta tarefa por não estar na lista; sugiro como próxima.
+   (é pôr 3 ou 4 `VillagerVisual` como no jogo). Feito na tarefa 2.
 6. **Construir e mexer no mundo durante a pausa.** O GDD não diz. Escolhi o mais simples: na pausa, cliques e teclas
    que mudam o mundo (construir, coletar, desmontar, pôr item, WASD) são ignorados; câmera, zoom, giro e
    cinematográfica continuam. **[Arthur]**: jogos como RimWorld deixam planejar na pausa; aqui não há
