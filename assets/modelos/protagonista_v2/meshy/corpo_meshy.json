@@ -25,6 +25,32 @@
         "target_polycount": 2500,
         "symmetry_mode": "auto"
       }
+    },
+    {
+      "entrada": "b_multi",
+      "tentativa": 1,
+      "task_id": "01a0efaa-2e6e-72fb-a1a6-8d343e404f45",
+      "endpoint": "multi-image-to-3d",
+      "status": "SUCCEEDED",
+      "creditos": 20,
+      "saldo_antes": 2278,
+      "saldo_depois": 2258,
+      "glb": "assets/modelos/protagonista_v2/meshy/corpo_b_multi_1.glb",
+      "erro": null,
+      "imagens": [
+        "corpo_frente.png",
+        "corpo_lado.png",
+        "corpo_costas.png"
+      ],
+      "parametros": {
+        "ai_model": "latest",
+        "should_texture": false,
+        "pose_mode": "a-pose",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 2500,
+        "symmetry_mode": "auto"
+      }
     }
   ]
 }

@@ -3130,3 +3130,12 @@ onde errou, correções manuais e quanto tempo levou.
 - **Geração A:** tarefa `01a0efa8-beea-71aa-806a-73567944494f` (image-to-3d), **20 créditos** (saldo 2.298 → 2.278).
   `corpo_a_frente_1.glb`, 124 KB, 2.602 triângulos brutos, uma malha sem material, 1,90 m de altura bruta.
 - **Créditos:** 20 (acumulado nesta parte: 20/60). **Correções manuais:** nenhuma. **Tempo:** ~15 min.
+
+## 2026-09-29 — Protagonista v2, passo 2B: corpo na Meshy, frente + perfil + costas
+
+- **Geração B:** tarefa `01a0efaa-2e6e-72fb-a1a6-8d343e404f45` (multi-image-to-3d, `corpo_frente`, `corpo_lado`,
+  `corpo_costas`, sem o topo), mesmos parâmetros da A, **20 créditos** (saldo 2.278 → 2.258).
+  `corpo_b_multi_1.glb`, 124 KB, 2.620 triângulos brutos, uma malha sem material, 1,90 m de altura bruta.
+- A reserva (3ª geração) **não foi usada**: nenhuma das duas falhou tecnicamente no download (a conferência
+  visual vem na folha de contato).
+- **Créditos:** 20 (acumulado nesta parte: 40/60). **Correções manuais:** nenhuma. **Tempo:** ~5 min.
