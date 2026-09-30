@@ -24,8 +24,8 @@ from render_meshy import AMBIENT_RGB, SUN_EULER, SUN_RGB, light_dir, load_villag
 from rig_lib import play  # noqa: E402
 
 BODY = ROOT / "assets/modelos/protagonista_v2/protagonista_corpo.glb"
-HAIR = ROOT / "assets/modelos/protagonista_v2/cabelo.glb"
-HORNS = ROOT / "assets/modelos/protagonista_v2/chifres.glb"
+HAIR = Path(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--cabelo=")), ROOT / "assets/modelos/protagonista_v2/cabelo.glb")).resolve()
+HORNS = Path(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--chifres=")), ROOT / "assets/modelos/protagonista_v2/chifres.glb")).resolve()
 GEM = ROOT / "assets/modelos/protagonista_v2/cristal.glb"
 ROSTO = ROOT / "assets/modelos/protagonista_v2/rosto"
 COLORS = {"pele": "#91ADB7", "tecido": "#3F3342", "chifre": "#2B2140", "cabelo": "#4B5A69", "Cristal": "#8FE3FF"}

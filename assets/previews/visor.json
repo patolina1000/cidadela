@@ -564,5 +564,68 @@
     "tipo": "imagem",
     "caminho": "assets/previews/protagonista_v2/cabelo_prova.png",
     "nota": "937 tri, pesos Head/neck/Spine/Spine01, janela dos olhos aberta, chifres atravessando. Orelha de gato: com o cabelo escuro, de frente os chifres ainda leem como orelhas; de cima, como chifres."
+  },
+  {
+    "quando": "2026-09-30T00:18:06",
+    "titulo": "Protagonista v2 — idle-loop com cabelo limpo (costas)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_costas.gif",
+    "nota": "Depois da limpeza: nenhum vértice do cabelo dentro do corpo em nenhum quadro."
+  },
+  {
+    "quando": "2026-09-30T00:18:07",
+    "titulo": "Protagonista v2 — idle-loop com cabelo limpo (lado)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_lado.gif",
+    "nota": "Depois da limpeza: nenhum vértice do cabelo dentro do corpo em nenhum quadro."
+  },
+  {
+    "quando": "2026-09-30T00:18:08",
+    "titulo": "Protagonista v2 — idle-loop com cabelo limpo (jogo)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/idle-loop_jogo.gif",
+    "nota": "Depois da limpeza: nenhum vértice do cabelo dentro do corpo em nenhum quadro."
+  },
+  {
+    "quando": "2026-09-30T00:18:09",
+    "titulo": "Protagonista v2 — run-loop com cabelo limpo (costas)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_costas.gif",
+    "nota": "Depois da limpeza: nenhum vértice do cabelo dentro do corpo em nenhum quadro."
+  },
+  {
+    "quando": "2026-09-30T00:18:10",
+    "titulo": "Protagonista v2 — run-loop com cabelo limpo (lado)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_lado.gif",
+    "nota": "Depois da limpeza: nenhum vértice do cabelo dentro do corpo em nenhum quadro."
+  },
+  {
+    "quando": "2026-09-30T00:18:11",
+    "titulo": "Protagonista v2 — run-loop com cabelo limpo (jogo)",
+    "tipo": "gif",
+    "caminho": "assets/previews/protagonista_v2/cabelo_gifs/run-loop_jogo.gif",
+    "nota": "Depois da limpeza: nenhum vértice do cabelo dentro do corpo em nenhum quadro."
+  },
+  {
+    "quando": "2026-09-30T00:18:12",
+    "titulo": "Protagonista v2 — cabelo limpo (folha)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_prova.png",
+    "nota": "926 tri; folga mínima 3,5 mm nos clipes."
+  },
+  {
+    "quando": "2026-09-30T00:18:13",
+    "titulo": "Protagonista v2 — limpeza e chifres recuados (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_limpeza_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-30T00:18:14",
+    "titulo": "Protagonista v2 — limpeza do cabelo e chifres com a base recuada",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/cabelo_limpeza.png",
+    "nota": "Antes/depois da limpeza; chifres 20° atuais × base recuada 18 mm (de frente saem de dentro do cabelo). Recomendação: recuada."
   }
 ]

@@ -13,7 +13,7 @@
 5. Decimação do par a ≤ MAX_TRIS, facetado, material "chifre" #2B2140, rígido, no espaço do corpo em repouso.
 
 Uso:
-  /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/arte/protagonista_v2/extrair_chifres.py -- <glb_meshy> [--inclinacao=N] [--escala=S] [--saida=arquivo.glb]
+  /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/arte/protagonista_v2/extrair_chifres.py -- <glb_meshy> [--inclinacao=N] [--escala=S] [--recuo=M] [--saida=arquivo.glb]
 Saída: assets/modelos/protagonista_v2/chifres.glb e chifres.json
 """
 
@@ -41,6 +41,7 @@ MAX_TRIS = 300
 BASE_RINGS = 2  # anéis de faces do crânio em volta de cada chifre (a base entra no crânio)
 EMBED = 0.97  # base puxada para dentro até este raio normalizado do crânio do corpo
 SCALE = float(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--escala=")), 1.0))  # tamanho, pela base
+SLIDE = float(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--recuo=")), 0.0))  # m, base para trás
 SEAT_R = 1.03  # depois de escalar: o que fica até este raio normalizado volta para EMBED (base assentada)
 TILT_DEG = float(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--inclinacao=")), 0.0))  # + = para trás
 FRONT_MAX_Y = 0.3  # ilhas com centro (y normalizado) atrás disto são a duplicata da vista de costas
@@ -137,6 +138,13 @@ def main() -> None:
                     seated += 1
         report["vertices_reassentados"] = seated
     report["escala"] = SCALE
+    if SLIDE:  # a base desliza para trás pelo crânio: giro em volta do eixo X que passa pelo centro da cabeça
+        ang = -SLIDE / float(rb[2])
+        rot = Matrix.Translation(Vector(cb.tolist())) @ Matrix.Rotation(ang, 4, "X") @ Matrix.Translation(-Vector(cb.tolist()))
+        for v in bm.verts:
+            v.co = rot @ v.co
+        report["recuo_m"] = SLIDE
+        report["recuo_graus"] = round(math.degrees(-ang), 2)
     mesh = bpy.data.meshes.new("chifres")
     bm.to_mesh(mesh)
     bm.free()

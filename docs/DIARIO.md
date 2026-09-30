@@ -3530,3 +3530,19 @@ onde errou, correções manuais e quanto tempo levou.
   vértice dentro do corpo em nenhum quadro, folga mínima de 3,5 mm** (antes −28 mm). 926 triângulos.
 - **Resta:** um ponto pequeno de pele na têmpora, na frente do chifre, no perfil.
 - **Créditos:** 0 (na protagonista: 121 de 300). **Correções manuais:** nenhuma. **Tempo:** ~1 h.
+
+## 2026-09-30 — Protagonista v2: chifres com a base recuada (teste) e folha da limpeza
+
+- **Pedido:** testar, contra a orelha de gato de frente, mover a base dos chifres 1,5–2 cm para trás no crânio (atrás da linha
+  do cabelo); mostrar 20° atual × base recuada de frente e na câmera do jogo; folha com antes e depois; GIFs novos.
+- **Feito:** `extrair_chifres.py --recuo=M` (a peça gira em volta do eixo X que passa pelo centro da cabeça, então a base
+  desliza pelo crânio e continua assentada): 18 mm = 13,7°, 291 triângulos. `extrair_cabelo.py` e `prova_cabelo.py` ganharam
+  `--chifres=`, `--saida=`, `--cabelo=` para gerar a variante sem tocar nos arquivos aprovados; o cabelo recortado para os chifres
+  recuados também fica sem nada dentro do corpo (folga mínima 3,5 mm). Variante guardada em
+  `assets/modelos/protagonista_v2/variantes/` (`chifres_recuados.glb`, `cabelo_recuados.glb`, com os `.json`).
+- **Resultado:** de frente, com a base recuada, os chifres saem de dentro do cabelo, mais baixos e menores na silhueta: bem menos
+  orelha de gato. De perfil, 3/4 e de cima continuam lendo como chifres correndo para trás; a falha de pele na têmpora some (o
+  chifre recuado deixa o cabelo inteiro na frente dele).
+- **Folha:** `folha_limpeza.py` → `assets/previews/protagonista_v2/cabelo_limpeza.png` (+ crepúsculo); `cabelo_prova.png` e
+  `cabelo_gifs/` refeitos com o cabelo limpo (chifres atuais), no visor.
+- **Créditos:** 0 (na protagonista: 121 de 300). **Correções manuais:** nenhuma. **Tempo:** ~1 h.

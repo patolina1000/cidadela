@@ -41,8 +41,8 @@ from corpo_lib import ROOT, import_glb  # noqa: E402
 from rig_lib import export_contract_glb, play  # noqa: E402
 
 BODY = ROOT / "assets/modelos/protagonista_v2/protagonista_corpo.glb"
-HORNS = ROOT / "assets/modelos/protagonista_v2/chifres.glb"
-OUT = ROOT / "assets/modelos/protagonista_v2/cabelo.glb"
+HORNS = Path(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--chifres=")), ROOT / "assets/modelos/protagonista_v2/chifres.glb")).resolve()
+OUT = Path(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--saida=")), ROOT / "assets/modelos/protagonista_v2/cabelo.glb")).resolve()
 COLOR = "#4B5A69"
 MAX_TRIS = 1000
 DIHEDRAL_DEG = 30
@@ -258,7 +258,7 @@ def inside_horn(tree, normals, p):
 
 
 def main() -> None:
-    src = Path(sys.argv[sys.argv.index("--") + 1:][0]).resolve()
+    src = Path([a for a in sys.argv[sys.argv.index("--") + 1:] if not a.startswith("--")][0]).resolve()
     bpy.ops.wm.read_factory_settings(use_empty=True)
     report = {"bruto": str(src.relative_to(ROOT))}
 
