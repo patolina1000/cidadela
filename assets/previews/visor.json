@@ -482,5 +482,31 @@
       "assets/modelos/protagonista_v2/cristal.glb",
       "assets/modelos/aldeao_v2/aldeao_corpo.glb"
     ]
+  },
+  {
+    "quando": "2026-09-29T23:41:08",
+    "titulo": "Protagonista v2 — corpo final com chifres e cristal",
+    "tipo": "glb",
+    "caminho": "assets/modelos/protagonista_v2/protagonista_corpo.glb",
+    "nota": "protagonista_corpo.glb + chifres.glb (0°) + cristal.glb, no espaço do corpo em repouso; clipes idle-loop e run-loop.",
+    "junto": [
+      "assets/modelos/protagonista_v2/chifres.glb",
+      "assets/modelos/protagonista_v2/cristal.glb",
+      "assets/modelos/aldeao_v2/aldeao_corpo.glb"
+    ]
+  },
+  {
+    "quando": "2026-09-29T23:41:09",
+    "titulo": "Protagonista v2 — chifres (crepúsculo)",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/chifres_prova_crepusculo.png",
+    "nota": "A mesma folha × #6A5B7C."
+  },
+  {
+    "quando": "2026-09-29T23:41:10",
+    "titulo": "Protagonista v2 — chifres (piloto): folha de contato",
+    "tipo": "imagem",
+    "caminho": "assets/previews/protagonista_v2/chifres_prova.png",
+    "nota": "Geração 1 (20 créditos) veio com quatro chifres; usado o par da frente. 290 tri. Orelha de gato: risco real de frente a 0°; 20° para trás mitiga."
   }
 ]

@@ -3445,3 +3445,30 @@ onde errou, correções manuais e quanto tempo levou.
 - **GIFs finais:** `assets/previews/protagonista_v2/clipes_finais/` (jogo e lado), no visor. O `gif_clipes.py` mede o laço
   depois de tirar a deriva da raiz, o que dá 0,8 / 2,4 cm nesses clipes; no GLB o laço é 0 (conferido osso a osso).
 - **Créditos:** 0 (na protagonista: 81 de 300). **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.
+
+## 2026-09-29 — Protagonista v2, passo 8: chifres (piloto), 20 créditos
+
+- **Pedido:** chifres rígidos pela Meshy (multi-imagem frente/perfil/costas, sem o topo); folha de contato com o bruto e a
+  peça extraída sobre a cabeça, frente, perfil, 3/4, câmera do jogo e crepúsculo, com o risco de "orelha de gato" avaliado.
+- **Meshy (`meshy_chifres.py`):** 1 geração, só malha, remesh 6.000, simetria desligada (os chifres são assimétricos) —
+  tarefa `01a0f02a-2ecf-778e-9ac7-ca836cf33a48`, **20 créditos** (saldo 2.217 → 2.197). O teto de 300 é conferido
+  somando corpo, rig, clipes e chifres (`meshy/chifres_meshy.json`, público, sem chave).
+- **Problema do bruto:** veio com **quatro chifres** — a Meshy pôs os da vista de frente e os da vista de costas em
+  profundidades diferentes. Salvo sem gastar a reserva: `chifres_lib.py` separa as ilhas que saltam do elipsoide ajustado
+  à cabeça careca do busto (com os chifres descartados em rodadas); fica o par da frente (y normalizado < 0,3), que bate
+  com o perfil da folha; a duplicata de trás e o queixo (fora do elipsoide) saem.
+- **Encaixe (`extrair_chifres.py` → `assets/modelos/protagonista_v2/chifres.glb` + `.json`):** o mesmo ajuste de
+  elipsoide nas duas cabeças (do pescoço para cima; uma calota sozinha dava elipsoide degenerado), escala por eixo
+  0,125 / 0,126 / 0,130 (o busto é ~4% mais estreito que alto em relação ao corpo); base com 2 anéis de faces do crânio,
+  afundada a 97% do raio (29 vértices; sem fresta); decimação a **290 triângulos** o par, facetados, material "chifre"
+  #2B2140, rígidos, no espaço do corpo em repouso. Direito 56 mm (a ponta chega ao topo da cabeça, 0,80 m), esquerdo 41 mm.
+  Inclinação ajustável por `--inclinacao=N` (graus para trás, pela base de cada chifre).
+- **Orelha de gato (`prova_chifres.py`):** de frente, a 0° os dois sobem quase na vertical (8,7° e 5,2°) dos cantos de cima
+  da cabeça — o risco é real no close de frente. Variações só de prévia: 20° para trás tira boa parte da leitura sem perder
+  o chifre; 35° vira toco. Na câmera do jogo (de cima) eles correm ao longo do crânio: 8 / 21 / 55 px de largura nos zooms
+  0,4 / 1 / 2,5. O cabelo longo, que ainda vem, vai mudar essa leitura.
+- **Folha:** `assets/previews/protagonista_v2/chifres_prova.png` (+ crepúsculo), `folha_chifres.py`; no visor, com o
+  corpo final + chifres + cristal em 3D.
+- **O que deu errado e foi corrigido:** crescimento da base por raio engolia o crânio inteiro (virou 2 anéis); o sinal da
+  inclinação estava invertido (positivo inclinava para a frente).
+- **Créditos:** 20 (na protagonista: 101 de 300; saldo 2.197). **Correções manuais:** nenhuma. **Tempo:** ~1 h 30.
