@@ -3314,3 +3314,12 @@ onde errou, correções manuais e quanto tempo levou.
   Godot basta. Toco e mancha têm triângulos pequenos (1,4–2,7 px² nos 10 % menores), mas só 30–42 no total e sem
   sombra.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.
+
+## 2026-09-29 — Cenário, tarefa 7: folhas finais para o Arthur aprovar
+
+- **Pedido (Diretor):** refazer `cenario_contato.png` e `esgotado_contato.png` com as pedras centralizadas e o
+  material `madeira` do toco (tarefa 6), para a aprovação final.
+- **Feito:** renders refeitos com os GLBs atuais (`folha_cenario.py`, `folha_esgotado.py`) e as duas folhas
+  montadas de novo; nenhum script de modelo mudou. As pedras aparecem iguais, só assentadas no centro da célula.
+  Publicadas no visor.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~10 min.
