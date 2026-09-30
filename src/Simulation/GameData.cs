@@ -122,16 +122,23 @@ public sealed class GameData
             ?? throw new FormatException("castellan.json vazio.");
         if (c.Speed <= 0f)
             throw new FormatException("castellan.json: speed precisa ser positivo.");
-        RecipeType? purifyByHand = null;
-        if (c.PurifyByHand is RecipeData hand)
+        var handRecipes = new Dictionary<string, HandRecipe>();
+        foreach ((string id, HandRecipeData hand) in c.HandRecipes)
         {
-            if (hand.Seconds <= 0f || hand.Inputs.Count == 0 || hand.Outputs.Count == 0)
-                throw new FormatException("castellan.json: purifyByHand precisa de entradas, saídas e seconds positivos.");
-            CheckItems(itemKinds, hand.Inputs, "entradas de purifyByHand");
-            CheckItems(itemKinds, hand.Outputs, "saídas de purifyByHand");
-            purifyByHand = new RecipeType("purifyByHand", "castellan", hand.Inputs, hand.Outputs, SecondsToTicks(hand.Seconds));
+            if (hand.Seconds <= 0f || hand.Inputs.Count == 0 || hand.Outputs.Count == 0 || hand.NearWater < 0f)
+                throw new FormatException($"castellan.json: handRecipes.{id} precisa de entradas, saídas e seconds positivos.");
+            CheckItems(itemKinds, hand.Inputs, $"entradas de handRecipes.{id}");
+            CheckItems(itemKinds, hand.Outputs, $"saídas de handRecipes.{id}");
+            handRecipes[id] = new HandRecipe(new RecipeType(id, "castellan", hand.Inputs, hand.Outputs, SecondsToTicks(hand.Seconds)), hand.NearWater);
         }
-        var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius, c.GatherSurfaceReach, purifyByHand);
+        DigType? dig = null;
+        if (c.DigClay is DigData dd)
+        {
+            if (!itemKinds.Contains(dd.Item) || dd.Seconds <= 0f)
+                throw new FormatException("castellan.json: digClay precisa de um item e seconds positivos.");
+            dig = new DigType(dd.Item, SecondsToTicks(dd.Seconds));
+        }
+        var stats = new CastellanStats(c.Speed, c.Reach, c.GatherReach, c.Radius, c.GatherSurfaceReach, handRecipes, dig);
 
         var buildings = new List<BuildingType>();
         foreach ((string kind, BuildingData b) in Ordered<BuildingData>(buildingsJson, "buildings.json"))
@@ -426,6 +433,21 @@ public sealed class GameData
         public float GatherReach { get; set; } = 1f;
         public float Radius { get; set; } = 0.3f;
         public float GatherSurfaceReach { get; set; } = 1.3f;
-        public RecipeData? PurifyByHand { get; set; }
+        public Dictionary<string, HandRecipeData> HandRecipes { get; set; } = new();
+        public DigData? DigClay { get; set; }
+    }
+
+    private sealed class HandRecipeData
+    {
+        public Dictionary<string, int> Inputs { get; set; } = new();
+        public Dictionary<string, int> Outputs { get; set; } = new();
+        public float Seconds { get; set; }
+        public float NearWater { get; set; }
+    }
+
+    private sealed class DigData
+    {
+        public string Item { get; set; } = "";
+        public float Seconds { get; set; }
     }
 }

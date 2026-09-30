@@ -32,9 +32,9 @@ public class CastellanHandTests
     {
         SimWorld world = World();
         world.Castellan.Inventory.Add("rotten_shard", 5);
-        world.Enqueue(new PurifyByHandCommand());
-        world.Enqueue(new PurifyByHandCommand());
-        world.Enqueue(new PurifyByHandCommand()); // o terceiro não tem podres suficientes
+        world.Enqueue(new HandCraftCommand("purify"));
+        world.Enqueue(new HandCraftCommand("purify"));
+        world.Enqueue(new HandCraftCommand("purify")); // o terceiro não tem podres suficientes
         TestWorlds.Run(world, Seconds(6f) + 1);
         Assert.Equal(1, world.Castellan.Inventory.Count("pure_shard"));
         TestWorlds.Run(world, Seconds(12f));
@@ -49,7 +49,7 @@ public class CastellanHandTests
     {
         SimWorld world = World();
         world.Castellan.Inventory.Add("rotten_shard", 2);
-        world.Enqueue(new PurifyByHandCommand());
+        world.Enqueue(new HandCraftCommand("purify"));
         TestWorlds.Run(world, Seconds(3f));
         TestWorlds.Move(world, 1f, 0f, ticks: Seconds(2f));
         TestWorlds.Move(world, 0f, 0f, ticks: 1);

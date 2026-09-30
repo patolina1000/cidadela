@@ -6041,3 +6041,26 @@ onde errou, correções manuais e quanto tempo levou.
   corrigido no teste.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 19:16–19:18 de relógio.
+
+## 2026-09-30 — Linha 2, passo 5: ações à mão novas (cavar argila, moldar casca)
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 5 do plano da linha 2 (L6, L7).
+- **Feito:**
+  - `data/castellan.json`: `"handRecipes"` (purify, P; mold, M: 2 argilas → 1 casca em 20 s, sem jarro, a até 2 células
+    da água, `nearWater`) no lugar do `purifyByHand`; `"digClay"` (1 argila a cada 3 s na margem, sem esgotar).
+    `HandRecipe`, `DigType`, `HandCraftCommand` (substitui `PurifyByHandCommand`).
+  - `Castellan`: uma fila só para as receitas à mão (a que falta material sai da fila; a que precisa de água espera
+    ela chegar perto e pausa longe, `HandNeedsWater`); `NearWater` (centro a centro); clicar numa margem encostada
+    cava argila (`DigCell`), andar interrompe.
+  - Tecla **M** molda; HUD mostra cavando, moldando, "chegue perto da água" e a fila.
+  - Pôr casca e puro no Cristal-mãe à mão já funcionava (item na mão + clique), agora testado.
+- **Escolha do mais simples (registrada):** "ela forma o primeiro aldeão sem nenhuma máquina" = sem máquinas de produção
+  e sem aldeões; a mana ainda vem de um Relicário e uma torre que ela constrói e alimenta à mão (o Cristal-mãe precisa
+  de mana, especificação).
+- **Testes:** `ClayHandTests` (margem dá 1 argila a cada 3 s sem esgotar; grama não; andar para; moldar leva 20 s perto
+  da água sem jarro; a 3 células não começa e a 2 começa; casca e puro entram no Cristal-mãe à mão; de ponta a ponta:
+  30 podres, 15 purificações, argila, casca, Relicário, torre, combustível → 1 aldeão livre). `dotnet build` 0/0;
+  `dotnet test` 262 passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 19:19–19:20 de relógio.

@@ -178,7 +178,11 @@ public partial class GameRoot : Node3D
         }
         else if (k == Key.P && !_clock.Paused)
         {
-            _world.Enqueue(new PurifyByHandCommand()); // mais uma purificação à mão na fila
+            _world.Enqueue(new HandCraftCommand("purify")); // mais uma purificação à mão na fila
+        }
+        else if (k == Key.M && !_clock.Paused)
+        {
+            _world.Enqueue(new HandCraftCommand("mold")); // mais uma casca moldada à mão na fila
         }
         else if (k == Key.H)
         {
@@ -470,12 +474,18 @@ public partial class GameRoot : Node3D
     {
         if (castellan.GatherTarget is ResourceNode node)
             yield return $"Coletando {node.Type.Name} {castellan.GatherProgress:P0} (restam {node.Remaining})";
+        if (castellan.DigCell is not null)
+            yield return $"Cavando argila {castellan.WorkProgress:P0}";
         if (castellan.Post is Building post)
             yield return $"No posto: {post.Type.Name} (E ou andar sai)";
         if (castellan.HandBusy || castellan.HandQueue > 0)
-            yield return $"Purificando à mão {castellan.HandProgress:P0}" + (castellan.HandQueue > 0 ? $" (+{castellan.HandQueue} na fila)" : "");
-        if (castellan.GatherTarget is null && castellan.Post is null && !castellan.HandBusy)
-            yield return "E opera a máquina encostada  ·  P purifica à mão (2 podres → 1 puro)";
+        {
+            string what = castellan.HandCurrent?.Recipe.Id == "mold" ? "Moldando casca" : castellan.HandCurrent is null ? "À mão" : "Purificando à mão";
+            yield return (castellan.HandNeedsWater ? "Moldar: chegue perto da água" : $"{what} {castellan.HandProgress:P0}")
+                + (castellan.HandQueue > 0 ? $" (+{castellan.HandQueue} na fila)" : "");
+        }
+        if (castellan.GatherTarget is null && castellan.DigCell is null && castellan.Post is null && !castellan.HandBusy)
+            yield return "E opera a máquina encostada  ·  P purifica (2 podres → 1 puro)  ·  M molda casca perto da água (2 argilas)";
     }
 
     private static string DirectionName(Direction d) => d switch

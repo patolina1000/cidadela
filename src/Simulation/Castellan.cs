@@ -32,14 +32,29 @@ public sealed class Castellan
     /// <summary>A máquina em cujo posto ela está, ou null (docs/linha_energia.md: encostar e apertar E).</summary>
     public Building? Post { get; private set; }
 
-    /// <summary>Quantas purificações à mão ainda estão na fila (a que está em andamento não conta).</summary>
-    public int HandQueue { get; private set; }
+    /// <summary>Quantas receitas à mão ainda estão na fila (a que está em andamento não conta).</summary>
+    public int HandQueue => _handQueue.Count;
 
-    /// <summary>Se está purificando à mão agora (as entradas já saíram do inventário).</summary>
-    public bool HandBusy { get; private set; }
+    /// <summary>A receita à mão em andamento (as entradas já saíram do inventário), ou null.</summary>
+    public HandRecipe? HandCurrent { get; private set; }
 
-    /// <summary>Progresso da purificação à mão em andamento, de 0 a 1.</summary>
-    public float HandProgress => HandBusy && Stats.PurifyByHand is RecipeType r ? (float)_handTicks / r.Ticks : 0f;
+    /// <summary>Se está fazendo algo à mão agora.</summary>
+    public bool HandBusy => HandCurrent is not null;
+
+    /// <summary>A próxima (ou a atual) receita à mão espera ela chegar perto da água (moldar a casca).</summary>
+    public bool HandNeedsWater { get; private set; }
+
+    /// <summary>Progresso da receita à mão em andamento, de 0 a 1.</summary>
+    public float HandProgress => HandCurrent is HandRecipe r ? (float)_handTicks / r.Recipe.Ticks : 0f;
+
+    /// <summary>Célula de margem que está cavando (argila), ou null.</summary>
+    public GridPos? DigCell { get; private set; }
+
+    /// <summary>Progresso da coleta ou da escavação atual, de 0 a 1.</summary>
+    public float WorkProgress => DigCell is not null && Stats.Dig is DigType dig ? (float)_digTicks / dig.Ticks : GatherProgress;
+
+    private readonly System.Collections.Generic.Queue<HandRecipe> _handQueue = new();
+    private int _digTicks;
 
     private Vector2 _moveDirection;
     private int _gatherTicks;
@@ -96,8 +111,19 @@ public sealed class Castellan
     internal void StartGathering(SimWorld world, GridPos cell)
     {
         ResourceNode? node = world.GatherableAt(cell);
-        if (node is null || !CanGather(cell, node.Shape))
+        if (node is null)
+        {
+            // Margem livre: cava argila (não esgota; docs/linha_aldeoes.md).
+            if (Stats.Dig is not null && world.IsBank(cell) && world.BuildingAt(cell) is null && CanGather(cell))
+            {
+                StopGathering();
+                DigCell = cell;
+            }
             return;
+        }
+        if (!CanGather(cell, node.Shape))
+            return;
+        DigCell = null;
         if (node != GatherTarget)
             _gatherTicks = 0;
         GatherTarget = node;
@@ -112,39 +138,74 @@ public sealed class Castellan
             return;
         }
         Gather();
-        TickHand();
+        Dig();
+        TickHand(world);
     }
 
-    /// <summary>Põe mais uma purificação à mão na fila (só ela faz; sem água).</summary>
-    internal void QueuePurify()
+    /// <summary>Põe mais uma receita à mão na fila (purificar, moldar); id desconhecido não faz nada.</summary>
+    internal void QueueHandCraft(string id)
     {
-        if (Stats.PurifyByHand is not null)
-            HandQueue++;
+        if (Stats.HandRecipes is not null && Stats.HandRecipes.TryGetValue(id, out HandRecipe? recipe))
+            _handQueue.Enqueue(recipe);
     }
 
-    /// <summary>Purificação à mão: começa a próxima da fila se tiver as entradas (senão esvazia a fila) e anda parada.</summary>
-    private void TickHand()
+    /// <summary>
+    /// Receitas à mão, uma de cada vez, só com ela parada: começa a próxima da fila se tiver as entradas (senão a tira da
+    /// fila); a que precisa de água perto (moldar) espera ela chegar a até a distância pedida, e pausa longe dela.
+    /// </summary>
+    private void TickHand(SimWorld world)
     {
-        if (Stats.PurifyByHand is not RecipeType recipe)
+        HandRecipe? next = HandCurrent ?? (_handQueue.Count > 0 ? _handQueue.Peek() : null);
+        HandNeedsWater = next is { NearWater: > 0f } && !NearWater(world, next.NearWater);
+        if (next is null || HandNeedsWater)
             return;
-        if (!HandBusy)
+        if (HandCurrent is null)
         {
-            if (HandQueue <= 0)
+            _handQueue.Dequeue();
+            if (!Inventory.TryRemove(next.Recipe.Inputs))
                 return;
-            if (!Inventory.TryRemove(recipe.Inputs))
-            {
-                HandQueue = 0;
-                return;
-            }
-            HandQueue--;
-            HandBusy = true;
+            HandCurrent = next;
             _handTicks = 0;
         }
-        if (++_handTicks < recipe.Ticks)
+        if (++_handTicks < next.Recipe.Ticks)
             return;
-        Inventory.Add(recipe.Outputs);
-        HandBusy = false;
+        Inventory.Add(next.Recipe.Outputs);
+        HandCurrent = null;
         _handTicks = 0;
+    }
+
+    /// <summary>Se há água a até <paramref name="distance"/> células (centro a centro) dela.</summary>
+    public bool NearWater(SimWorld world, float distance)
+    {
+        int r = (int)MathF.Ceiling(distance);
+        int cx = (int)MathF.Round(Position.X), cz = (int)MathF.Round(Position.Y);
+        for (int dx = -r; dx <= r; dx++)
+        for (int dz = -r; dz <= r; dz++)
+        {
+            var cell = new GridPos(cx + dx, cz + dz);
+            if (world.IsWater(cell) && Vector2.Distance(Position, new Vector2(cell.X, cell.Z)) <= distance + 1e-4f)
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>Cavando a margem: 1 argila a cada tempo de escavação; a margem não esgota.</summary>
+    private void Dig()
+    {
+        if (DigCell is not GridPos cell || Stats.Dig is not DigType dig)
+            return;
+        if (!CanGather(cell))
+        {
+            DigCell = null;
+            return;
+        }
+        Vector2 toCell = new Vector2(cell.X, cell.Z) - Position;
+        if (toCell.LengthSquared() > 1e-6f)
+            Facing = Vector2.Normalize(toCell);
+        if (++_digTicks < dig.Ticks)
+            return;
+        _digTicks = 0;
+        Inventory.Add(dig.Item);
     }
 
     /// <summary>Assume o posto vago dessa máquina (índice <paramref name="slot"/>), virada para ela.</summary>
@@ -282,6 +343,8 @@ public sealed class Castellan
     private void StopGathering()
     {
         GatherTarget = null;
+        DigCell = null;
+        _digTicks = 0;
         _gatherTicks = 0;
     }
 }
