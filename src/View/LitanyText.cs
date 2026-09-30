@@ -38,7 +38,12 @@ public static class LitanyText
             LitanyVerb.Gather => c.Target!.Anchored
                 ? $"{Verb(c, data)} {ResourceName(c.Target.Resource!, data)} perto de {Place(new LitanyTarget(LitanyTargetKind.Building, c.Target.Cell), world)}"
                 : $"{Verb(c, data)} {ResourceName(c.Target.Resource!, data)} perto de ({c.Target.Cell.X}, {c.Target.Cell.Z}), raio {c.Target.Radius:0}",
-            LitanyVerb.Operate => $"operar {Place(c.Target!, world)}",
+            LitanyVerb.Operate => $"operar {Place(c.Target!, world)}" + c.Until switch
+            {
+                OperateUntil.OutputFull => " até a saída encher",
+                OperateUntil.NoInput => " até faltar insumo",
+                _ => "",
+            },
             _ => $"esperar {c.Ticks / (float)SimClock.TicksPerSecond:0.#} s",
         };
     }
@@ -54,7 +59,6 @@ public static class LitanyText
             LitanyStuck.NoPlace => "o lugar sumiu",
             LitanyStuck.NoResource => $"não acho {(c?.Target?.Resource is string r ? ResourceName(r, world.Data) : "nada")} no raio",
             LitanyStuck.HandsFull => "mãos cheias",
-            LitanyStuck.HandsEmpty => $"não tenho {item} na mão",
             LitanyStuck.SourceEmpty => $"{place}: sem {item}",
             LitanyStuck.TargetFull => $"{place}: cheio",
             LitanyStuck.NotAccepted => $"{place} não usa {item}",

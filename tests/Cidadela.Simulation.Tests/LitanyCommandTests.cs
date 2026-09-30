@@ -69,14 +69,13 @@ public class LitanyCommandTests
         SimWorld world = World("""
             { "l": { "commands": [{ "do": "take", "item": "water_jar", "building": [2, 8] }, { "do": "put", "item": "water_jar", "building": [11, 8] }] } }
             """, """[{ "x": 6, "z": 8, "litany": "l" }]""", """, { "kind": "well", "x": 2, "z": 8 }, { "kind": "purifier", "x": 11, "z": 8 }""");
-        world.BuildingAt(new GridPos(2, 8))!.Machine!.Output.Add("water_jar", 3);
-        TestWorlds.Run(world, Seconds(20f));
-        Assert.Equal(2, world.BuildingAt(new GridPos(11, 8))!.Machine!.Input.Count("water_jar")); // cabe 2 (2 ciclos)
+        world.BuildingAt(new GridPos(2, 8))!.Machine!.Output.Add("water_jar", 7);
+        TestWorlds.Run(world, Seconds(40f));
+        Assert.Equal(5, world.BuildingAt(new GridPos(11, 8))!.Machine!.Input.Count("water_jar")); // cabem 5 (5 ciclos)
     }
 
     [Theory]
     [InlineData("""{ "do": "take", "item": "stone", "building": [12, 10] }""", LitanyStuck.SourceEmpty)]
-    [InlineData("""{ "do": "put", "item": "stone", "building": [16, 10] }""", LitanyStuck.HandsEmpty)]
     [InlineData("""{ "do": "take", "item": "stone", "building": [5, 5] }""", LitanyStuck.NoPlace)]
     [InlineData("""{ "do": "gather", "resource": "wood", "near": [14, 12], "radius": 3 }""", LitanyStuck.NoResource)]
     [InlineData("""{ "do": "operate", "building": [12, 10] }""", LitanyStuck.NoPost)]
@@ -97,10 +96,60 @@ public class LitanyCommandTests
             """, """[{ "x": 14, "z": 12, "litany": "wood" }, { "x": 14, "z": 14, "litany": "rot" }]""", """, { "kind": "purifier", "x": 11, "z": 8 }""");
         foreach (Villager v in world.Villagers)
             v.GiveForTests(v.Litany!.Name == "wood" ? "wood" : "rotten_shard", 1);
-        world.BuildingAt(new GridPos(11, 8))!.Machine!.Input.Add("rotten_shard", 4); // cheia (2 ciclos)
+        world.BuildingAt(new GridPos(11, 8))!.Machine!.Input.Add("rotten_shard", 10); // cheia (5 ciclos)
         TestWorlds.Run(world, 3);
         Assert.Equal(LitanyStuck.NotAccepted, world.Villagers.Single(v => v.Litany!.Name == "wood").Stuck);
         Assert.Equal(LitanyStuck.TargetFull, world.Villagers.Single(v => v.Litany!.Name == "rot").Stuck);
+    }
+
+    [Fact]
+    public void PuttingWithNothingInHandMovesOn()
+    {
+        // O lugar anterior pegou tudo: "pôr" sem o item na mão segue a ladainha (não trava para sempre).
+        SimWorld world = World("""{ "l": { "commands": [{ "do": "put", "item": "stone", "building": [16, 10] }, { "do": "wait", "seconds": 30 }] } }""",
+            """[{ "x": 14, "z": 12, "litany": "l" }]""");
+        TestWorlds.Run(world, 3);
+        Assert.Null(world.Villagers[0].Stuck);
+        Assert.Equal(1, world.Villagers[0].CommandIndex);
+    }
+
+    [Fact]
+    public void TakingFromAnEmptyPlaceMovesOnIfHandsAlreadyHaveTheItem()
+    {
+        SimWorld world = World("""{ "l": { "commands": [{ "do": "take", "item": "pure_shard", "building": [12, 10] }, { "do": "wait", "seconds": 30 }] } }""",
+            """[{ "x": 14, "z": 12, "litany": "l" }]""");
+        world.Villagers[0].GiveForTests("pure_shard", 3);
+        TestWorlds.Run(world, 3);
+        Assert.Null(world.Villagers[0].Stuck);
+        Assert.Equal(1, world.Villagers[0].CommandIndex);
+    }
+
+    [Fact]
+    public void OperatingUntilTheOutputIsFullWaitsForTheInput()
+    {
+        // Purificador sem insumo: "até faltar insumo" sai logo; "até a saída encher" fica no posto esperando.
+        SimWorld world = World("""
+            { "full":  { "commands": [{ "do": "operate", "building": [11, 8], "until": "full" }, { "do": "wait", "seconds": 60 }] },
+              "empty": { "commands": [{ "do": "operate", "building": [13, 8], "until": "empty" }, { "do": "wait", "seconds": 60 }] } }
+            """, """[{ "x": 11, "z": 9, "litany": "full" }, { "x": 13, "z": 9, "litany": "empty" }]""",
+            """, { "kind": "purifier", "x": 11, "z": 8 }, { "kind": "purifier", "x": 13, "z": 8 }""");
+        TestWorlds.Run(world, Seconds(3f));
+        Villager waiting = world.Villagers.Single(v => v.Litany!.Name == "full");
+        Villager left = world.Villagers.Single(v => v.Litany!.Name == "empty");
+        Assert.Equal(VillagerTask.AtPost, waiting.Task);
+        Assert.Equal(0, waiting.CommandIndex);
+        Assert.Equal(1, left.CommandIndex);
+        // Com insumo para 5 ciclos, a saída enche e ele solta o posto.
+        MachineState p = world.BuildingAt(new GridPos(11, 8))!.Machine!;
+        for (int i = 0; i < 5; i++)
+        {
+            p.Input.Add("rotten_shard", 2);
+            p.Input.Add("water_jar", 1);
+            TestWorlds.Run(world, Seconds(10.5f));
+        }
+        Assert.Equal(5, p.Output.Count("pure_shard"));
+        TestWorlds.Run(world, 5);
+        Assert.Equal(1, waiting.CommandIndex);
     }
 
     [Fact]

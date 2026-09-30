@@ -437,7 +437,7 @@ public sealed class Villager
         LitanyVerb.Take => DoTake(world, command.Item!, command.Target!.Cell),
         LitanyVerb.Put => DoPut(world, command.Item!, command.Target!.Cell),
         LitanyVerb.Gather => DoGather(world, command.Target!),
-        LitanyVerb.Operate => DoOperate(world, command.Target!.Cell),
+        LitanyVerb.Operate => DoOperate(world, command.Target!.Cell, command.Until),
         _ => true,
     };
 
@@ -503,6 +503,8 @@ public sealed class Villager
             int free = stock.Count(item) - ReservedBy(world, place, item);
             if (free <= 0)
             {
+                if (CarryingKind == item && CarryingCount > 0)
+                    return true; // já tem desse item na mão: segue com o que tem
                 Fail(LitanyStuck.SourceEmpty);
                 return false;
             }
@@ -545,10 +547,7 @@ public sealed class Villager
             return false;
         }
         if (CarryingKind != item || CarryingCount <= 0)
-        {
-            Fail(LitanyStuck.HandsEmpty);
-            return false;
-        }
+            return true; // nada desse item na mão (o lugar anterior pegou tudo): segue a ladainha
         int Room() => place.Storage is not null ? int.MaxValue
             : place.Machine is MachineState m ? m.Room(item)
             : place.Workplace is Workplace w ? w.Free
@@ -721,7 +720,7 @@ public sealed class Villager
     /// Operar [máquina] até ela ficar sem insumo ou com a saída cheia: ocupa um posto vago (como a protagonista), vai
     /// até encostar e fica; depois solta o posto e segue a ladainha.
     /// </summary>
-    private bool DoOperate(SimWorld world, GridPos cell)
+    private bool DoOperate(SimWorld world, GridPos cell, OperateUntil until)
     {
         if (world.BuildingAt(cell) is not Building machine)
         {
@@ -769,9 +768,13 @@ public sealed class Villager
             _commandTicks = 0;
             return false;
         }
-        // Encostado: fica enquanto a máquina trabalha ou pode começar (sem mana, espera).
+        // Encostado: fica enquanto a máquina trabalha ou pode começar (sem mana, espera). "Até a saída encher" espera também
+        // o insumo chegar; "até faltar insumo" sai quando falta.
         MachineState m = machine.Machine;
         if (++_commandTicks < 2 || m.IsWorking || m.CanStart)
+            return false;
+        if (until == OperateUntil.OutputFull && m.Waiting != MachineWait.OutputFull && m.Recipe.Outputs.Count > 0
+            && !m.Exhausted)
             return false;
         LeaveHome(world);
         Task = VillagerTask.Waiting;

@@ -13,8 +13,6 @@ public enum LitanyStuck
     NoResource,
     /// <summary>Mãos ocupadas com outro item (ou cheias) para pegar ou colher.</summary>
     HandsFull,
-    /// <summary>Não tem o item na mão para pôr.</summary>
-    HandsEmpty,
     /// <summary>O lugar não tem o item para pegar.</summary>
     SourceEmpty,
     /// <summary>O lugar está cheio (ou a máquina não aceita mais desse item).</summary>

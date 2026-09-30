@@ -31,10 +31,10 @@ public class VillagerStatusTests
     public void AStuckCommandIsStuckWithItsReason()
     {
         SimWorld world = World();
-        Teach(world, world.Villagers[0], Litany(Put("wood", 4, 4)));
+        Teach(world, world.Villagers[0], Litany(Gather("wood", 4, 4))); // nenhuma árvore no raio
         Run(world, 2);
         Assert.Equal(VillagerStatus.Stuck, world.Villagers[0].Status);
-        Assert.Equal(LitanyStuck.HandsEmpty, world.Villagers[0].Stuck);
+        Assert.Equal(LitanyStuck.NoResource, world.Villagers[0].Stuck);
     }
 
     [Fact]

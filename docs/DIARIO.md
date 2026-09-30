@@ -6338,3 +6338,50 @@ onde errou, correções manuais e quanto tempo levou.
   grava a cabana; JSON). `dotnet build` 0/0; `dotnet test` 270 passaram.
 - **Correções manuais:** nenhuma.
 - **Tempo:** 20:25–20:25 de relógio.
+
+## 2026-09-30 — Ladainhas, passo 11: TESTE A das duas linhas com ladainhas prontas
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** TESTE A sem esteiras: energia e aldeões, com o mínimo de aldeões carregando ladainhas prontas do JSON,
+  tudo andando sozinho.
+- **Feito:**
+  - `data/maps/linha_energia.json` refeito, compacto (20×16). Há um laguinho com um Poço de cada lado e margem para o
+    Barreiro. Cada linha tem Mina no veio e Purificador; há 2 Relicários (5 puros cada), Oleiro, baú de troca (8, 7) e
+    Cristal-mãe; 4 torres.
+  - `data/ladainhas.json`: 9 ladainhas de Inteligência 1: 2 mineiros, 2 aguadeiros, 2 purificadores, barreiro, oleiro
+    e cristaleiro. Para Inteligência 1 (sem condições) não travar em impasse:
+    - quem opera, opera **até a saída encher** e só então pega o que a própria máquina fez;
+    - quem abastece Relicário nunca espera pelo Cristal-mãe; a sobra vai para o baú, que nunca enche;
+    - quem leva o puro ao Cristal-mãe não faz mais nada;
+    - o jarro que não coube volta ao baú.
+  - "Operar" ganhou o "até" da spec: `"until": "full"` (até a saída encher, ou o veio esgotar) ou `"empty"` (até faltar
+    insumo); sem "until", o que vier primeiro. O bloco mostra "operar Purificador (6, 5) até a saída encher".
+  - O Purificador guarda 5 ciclos de insumo (`inputCycles`), para uma viagem de 5 jarros caber.
+- **Escolhas do mais simples (registradas):**
+  - "pôr" sem o item na mão segue a ladainha: o lugar anterior pegou tudo, e travar ali seria impasse sem saída. A trava
+    "não tenho na mão" sumiu.
+  - "pegar" de um lugar vazio segue quando a mão já tem aquele item.
+- **Resultado (simulação, 60 min):**
+  - nasce 1 aldeão a cada 150 s, o limite do próprio Cristal-mãe;
+  - mana com 2 Relicários: gera 20/s, pede ~13,5/s;
+  - o veio da Mina 1 (300 cristais) acaba aos ~26 min; com 1 Relicário: gera 10/s, pede ~7,3/s e continua nascendo
+    1 a cada 150 s;
+  - o veio da Mina 2 acaba aos ~48 min e a linha para (sem mudar a Mina de veio).
+  - Os recém-nascidos ficam parados ao lado do cristal (sem ladainha).
+- **O que deu errado no caminho:** três impasses nas primeiras versões.
+  - Operar parava por falta de insumo e o aldeão ficava esperando algo que só ele traria.
+  - O oleiro ficava de mãos cheias de jarro e não pegava a casca.
+  - Os Relicários esvaziavam enquanto o purificador esperava o Cristal-mãe. Sem mana, nada mais purifica e a linha
+    morre para sempre.
+  - O barreiro, levando o puro, travava a casca.
+  - Todos foram corrigidos com a ordem e a divisão das ladainhas descritas acima.
+- **Testes:** `EnergyLineMapTests` reescrito com 4 testes:
+  - 9 aldeões com ladainha que cabe na Inteligência 1, e tudo na rede;
+  - 20 min com ≥ 6 nascimentos a 150–160 s um do outro, e a mana sobrando;
+  - com 1 Relicário (depois do veio 1 acabar), ≥ 3 nascimentos em 10 min;
+  - os recém-nascidos sem ladainha não saem do lugar.
+
+  Também: operar até a saída encher espera o insumo, e pôr/pegar seguem. `dotnet build` 0/0; `dotnet test` 275
+  passaram.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 20:26–20:37 de relógio.

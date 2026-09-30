@@ -1,13 +1,69 @@
 {
   // Ladainhas nomeadas (docs/ladainhas.md): o aldeão repete os comandos sempre do início. O mapa diz qual cada aldeão
   // carrega ("litany": "nome"). Comandos: goto (building ou cell), take/put (item + building), gather (resource + near
-  // [x, z] + radius opcional; "clay" cava a margem), operate (building), wait (seconds). Alvos em células do mapa.
+  // [x, z] + radius opcional, ou building: a área da cabana; "clay" cava a margem), operate (building; "until": "full" =
+  // até a saída encher, "empty" = até faltar insumo, sem "until" = o que vier primeiro), wait (seconds).
   //
-  // Teste A (data/maps/linha_energia.json), em construção (passo 11 completa as duas linhas):
-  "testeA_opera_mina_1":       { "commands": [{ "do": "operate", "building": [7, 10] }] },
-  "testeA_opera_purificador_1": { "commands": [{ "do": "operate", "building": [6, 10] }] },
-  "testeA_podres_1": { "commands": [
-    { "do": "take", "item": "rotten_shard", "building": [7, 10] },
-    { "do": "put",  "item": "rotten_shard", "building": [6, 10] }
+  // TESTE A das duas linhas (data/maps/linha_energia.json): 9 aldeões, todos Inteligência 1 (sem condições). Regras para
+  // não travar em impasse (cada um só espera por algo que acontece sem depender dele):
+  //   - quem opera, opera ATÉ A SAÍDA ENCHER e só então pega o que a própria máquina fez;
+  //   - os Relicários queimam sozinhos, então pôr neles nunca trava por muito tempo;
+  //   - ninguém que abastece Relicário espera pelo Cristal-mãe (ele demora 150 s): o purificador 1 põe a sobra no baú
+  //     (8, 7) e o cristaleiro leva de lá ao Cristal-mãe (o que não coube volta ao baú). Se um Relicário esvaziasse de
+  //     vez, a linha pararia sem mana para purificar;
+  //   - quem leva o puro ao Cristal-mãe não faz mais nada: se ele espera (Cristal-mãe com puro e sem casca), a casca
+  //     chega sem depender dele; e quem leva a casca não leva puro;
+  //   - o oleiro repõe o jarro do Oleiro DEPOIS de operar (o Oleiro começa com 5 jarros); a sobra de jarros do
+  //     aguadeiro 1 também fica no baú, o ponto de troca, que nunca enche; o jarro que não coube volta para o baú (senão
+  //     ele não pega a casca: mãos cheias).
+  "testeA_mineiro_1": { "commands": [
+    {"do": "operate", "building": [6, 3], "until": "full"},
+    {"do": "take", "item": "rotten_shard", "building": [6, 3]},
+    {"do": "put", "item": "rotten_shard", "building": [6, 5]}
+  ] },
+  "testeA_mineiro_2": { "commands": [
+    {"do": "operate", "building": [12, 3], "until": "full"},
+    {"do": "take", "item": "rotten_shard", "building": [12, 3]},
+    {"do": "put", "item": "rotten_shard", "building": [12, 5]}
+  ] },
+  "testeA_aguadeiro_1": { "commands": [
+    {"do": "operate", "building": [8, 5], "until": "full"},
+    {"do": "take", "item": "water_jar", "building": [8, 5]},
+    {"do": "put", "item": "water_jar", "building": [6, 5]},
+    {"do": "put", "item": "water_jar", "building": [8, 7]}
+  ] },
+  "testeA_aguadeiro_2": { "commands": [
+    {"do": "operate", "building": [10, 5], "until": "full"},
+    {"do": "take", "item": "water_jar", "building": [10, 5]},
+    {"do": "put", "item": "water_jar", "building": [12, 5]}
+  ] },
+  "testeA_purificador_1": { "commands": [
+    {"do": "operate", "building": [6, 5], "until": "full"},
+    {"do": "take", "item": "pure_shard", "building": [6, 5]},
+    {"do": "put", "item": "pure_shard", "building": [6, 7]},
+    {"do": "put", "item": "pure_shard", "building": [8, 7]}
+  ] },
+  "testeA_purificador_2": { "commands": [
+    {"do": "operate", "building": [12, 5], "until": "full"},
+    {"do": "take", "item": "pure_shard", "building": [12, 5]},
+    {"do": "put", "item": "pure_shard", "building": [12, 7]}
+  ] },
+  "testeA_barreiro": { "commands": [
+    {"do": "operate", "building": [8, 3], "until": "full"},
+    {"do": "take", "item": "clay", "building": [8, 3]},
+    {"do": "put", "item": "clay", "building": [8, 4]}
+  ] },
+  "testeA_cristaleiro": { "commands": [
+    {"do": "take", "item": "pure_shard", "building": [8, 7]},
+    {"do": "put", "item": "pure_shard", "building": [10, 8]},
+    {"do": "put", "item": "pure_shard", "building": [8, 7]}
+  ] },
+  "testeA_oleiro": { "commands": [
+    {"do": "operate", "building": [8, 4], "until": "full"},
+    {"do": "take", "item": "shell", "building": [8, 4]},
+    {"do": "put", "item": "shell", "building": [10, 8]},
+    {"do": "take", "item": "water_jar", "building": [8, 7]},
+    {"do": "put", "item": "water_jar", "building": [8, 4]},
+    {"do": "put", "item": "water_jar", "building": [8, 7]}
   ] }
 }

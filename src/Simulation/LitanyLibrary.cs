@@ -7,7 +7,7 @@ namespace Cidadela.Simulation;
 /// <summary>
 /// Ladainhas nomeadas, vindas de data/ladainhas.json (docs/ladainhas.md, Q10). Cada comando é um objeto com "do" e os
 /// alvos: { "do": "take", "item": "water_jar", "building": [2, 12] }, { "do": "gather", "resource": "wood",
-/// "near": [5, 5], "radius": 8 }, { "do": "goto", "cell": [4, 4] }, { "do": "operate", "building": [7, 8] },
+/// "near": [5, 5], "radius": 8 }, { "do": "goto", "cell": [4, 4] }, { "do": "operate", "building": [7, 8], "until": "full" },
 /// { "do": "wait", "seconds": 2 }. Sem "radius" no colher, vale o raio padrão (data/villagers.json). Colher "perto de uma
 /// cabana ou Posto de Carregadores": { "do": "gather", "resource": "wood", "building": [4, 4] } (a área é a dela).
 /// </summary>
@@ -70,7 +70,14 @@ public sealed class LitanyLibrary
                 return new LitanyCommand(LitanyVerb.Gather,
                     new LitanyTarget(LitanyTargetKind.Resource, new GridPos(c.Near[0], c.Near[1]), c.Resource, radius));
             case "operate":
-                return new LitanyCommand(LitanyVerb.Operate, PlaceOf(c, where, allowCell: false));
+                OperateUntil until = c.Until switch
+                {
+                    null => OperateUntil.Either,
+                    "full" => OperateUntil.OutputFull,
+                    "empty" => OperateUntil.NoInput,
+                    _ => throw new FormatException($"{where}: \"until\" precisa ser \"full\" (saída cheia) ou \"empty\" (sem insumo)."),
+                };
+                return new LitanyCommand(LitanyVerb.Operate, PlaceOf(c, where, allowCell: false), Until: until);
             case "wait":
                 if (c.Seconds is not float seconds || seconds <= 0f)
                     throw new FormatException($"{where}: \"wait\" precisa de \"seconds\" positivo.");
@@ -104,5 +111,6 @@ public sealed class LitanyLibrary
         public int[]? Near { get; set; }
         public float? Radius { get; set; }
         public float? Seconds { get; set; }
+        public string? Until { get; set; }
     }
 }

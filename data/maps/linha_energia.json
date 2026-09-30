@@ -1,69 +1,72 @@
 {
-  // TESTE A das duas linhas (docs/linha_energia.md e docs/linha_aldeoes.md): máquinas, torres, Relicários e 9 aldeões.
-  // MUDANÇA DE RUMO (30/09, ladainhas): as esteiras e mariposas deste mapa saíram (arquivadas na tag
-  // esteiras-mariposas-arquivadas). Sem elas a linha NÃO anda sozinha: este mapa será refeito com aldeões carregando
-  // ladainhas prontas (docs/ladainhas.md, teste A). O baú (3, 8) fica como ponto de troca.
-  "width": 22,
-  "height": 18,
-  "castellan": { "x": 12, "z": 6 },
+  // TESTE A das duas linhas (docs/ladainhas.md, "Testes com o Arthur"): energia e aldeões, SEM esteiras, 2 Relicários
+  // (5 puros cada) e o mínimo de aldeões, cada um com a sua ladainha pronta de data/ladainhas.json (9, Inteligência 1).
+  // Cena: scenes/tests/LinhaEnergia.tscn. A câmera fica ao sul (z maior).
+  // Um laguinho em x 9 (z 2–5) com um Poço de cada lado; margem em x 8 (z 2–3) para o Barreiro. Cada par de máquinas fica
+  // encostado no mesmo aldeão: Mina (6, 3) + Purificador (6, 5) pelo mineiro em (6, 4); Poço (8, 5) + Purificador (6, 5) +
+  // Oleiro (8, 4) pelo aguadeiro em (7, 5); Barreiro (8, 3) + Oleiro pelo barreiro em (7, 3); do outro lado, o mesmo
+  // espelhado (Mina (12, 3), Purificador (12, 5), Poço (10, 5)). Os Purificadores levam o puro aos Relicários (6, 7) e
+  // (12, 7); a sobra do purificador 1 e do aguadeiro 1 fica no baú (8, 7), o ponto de troca; o barreiro leva a argila
+  // ao Oleiro (que começa com 5 jarros); o cristaleiro leva o puro do baú ao Cristal-mãe (10, 8); o oleiro leva a casca
+  // ao Cristal-mãe e repõe o jarro do Oleiro com o do baú. Torres (7, 7), (7, 2), (11, 7), (11, 2). Os veios (300 cristais) acabam por
+  // volta dos 50 min.
+  "width": 20,
+  "height": 16,
+  "castellan": { "x": 9, "z": 11 },
   "resources": [
-    { "kind": "rotten_shard", "x": 7, "z": 10 },
-    { "kind": "rotten_shard", "x": 10, "z": 10 },
-    { "kind": "rotten_shard", "x": 15, "z": 16 },
-    { "kind": "rotten_shard", "x": 17, "z": 15 },
-    { "kind": "wood", "x": 12, "z": 2 },
-    { "kind": "wood", "x": 14, "z": 3 },
-    { "kind": "wood", "x": 16, "z": 2 },
+    { "kind": "rotten_shard", "x": 6, "z": 3 },
+    { "kind": "rotten_shard", "x": 12, "z": 3 },
+    { "kind": "rotten_shard", "x": 15, "z": 2 },
+    { "kind": "rotten_shard", "x": 3, "z": 2 },
+    { "kind": "wood", "x": 2, "z": 10 },
+    { "kind": "wood", "x": 3, "z": 12 },
+    { "kind": "wood", "x": 15, "z": 11 },
+    { "kind": "wood", "x": 17, "z": 9 },
+    { "kind": "wood", "x": 16, "z": 13 },
+    { "kind": "wood", "x": 4, "z": 14 },
+    { "kind": "wood", "x": 13, "z": 13 },
     { "kind": "wood", "x": 18, "z": 4 },
-    { "kind": "wood", "x": 20, "z": 3 },
-    { "kind": "wood", "x": 21, "z": 6 },
-    { "kind": "wood", "x": 20, "z": 15 },
-    { "kind": "wood", "x": 13, "z": 17 },
-    { "kind": "wood", "x": 6, "z": 17 },
-    { "kind": "wood", "x": 9, "z": 16 },
-    { "kind": "stone", "x": 15, "z": 5 },
+    { "kind": "stone", "x": 15, "z": 7 },
     { "kind": "stone", "x": 16, "z": 6 },
-    { "kind": "stone", "x": 17, "z": 13 },
-    { "kind": "stone", "x": 18, "z": 13 },
-    { "kind": "stone", "x": 5, "z": 16 }
+    { "kind": "stone", "x": 2, "z": 7 },
+    { "kind": "stone", "x": 3, "z": 8 },
+    { "kind": "stone", "x": 10, "z": 13 }
   ],
   "buildings": [
-    { "kind": "crystal_mine", "x": 7, "z": 10 },
-    { "kind": "crystal_mine", "x": 10, "z": 10 },
-    { "kind": "well", "x": 2, "z": 12 },
-    { "kind": "purifier", "x": 6, "z": 10 },
-    { "kind": "purifier", "x": 9, "z": 10 },
-    { "kind": "clay_pit", "x": 2, "z": 14 },
-    { "kind": "potter", "x": 4, "z": 14 },
-    { "kind": "carrier_post", "x": 11, "z": 14 },
-    { "kind": "reliquary", "x": 5, "z": 6, "items": { "pure_shard": 5 } },
-    { "kind": "reliquary", "x": 4, "z": 6, "items": { "pure_shard": 5 } },
-    { "kind": "chest", "x": 3, "z": 8 },
-    { "kind": "mana_tower", "x": 3, "z": 13 },
-    { "kind": "mana_tower", "x": 8, "z": 10 },
-    { "kind": "mana_tower", "x": 6, "z": 5 },
-    { "kind": "mother_crystal", "x": 7, "z": 6 }
+    { "kind": "crystal_mine", "x": 6, "z": 3 },
+    { "kind": "crystal_mine", "x": 12, "z": 3 },
+    { "kind": "well", "x": 8, "z": 5 },
+    { "kind": "well", "x": 10, "z": 5 },
+    { "kind": "purifier", "x": 6, "z": 5 },
+    { "kind": "purifier", "x": 12, "z": 5 },
+    { "kind": "clay_pit", "x": 8, "z": 3 },
+    { "kind": "potter", "x": 8, "z": 4, "items": { "water_jar": 5 } },
+    { "kind": "reliquary", "x": 6, "z": 7, "items": { "pure_shard": 5 } },
+    { "kind": "reliquary", "x": 12, "z": 7, "items": { "pure_shard": 5 } },
+    { "kind": "mother_crystal", "x": 10, "z": 8 },
+    { "kind": "chest", "x": 8, "z": 7 },
+    { "kind": "mana_tower", "x": 7, "z": 7 },
+    { "kind": "mana_tower", "x": 7, "z": 2 },
+    { "kind": "mana_tower", "x": 11, "z": 7 },
+    { "kind": "mana_tower", "x": 11, "z": 2 }
   ],
-  // Na ordem das construções que chamam gente (cada uma chama o livre mais perto): Minas, Poço, Purificadores,
-  // Barreiro, Oleiro e os 2 carregadores.
   "villagers": [
-    { "x": 7, "z": 11, "litany": "testeA_opera_mina_1" },
-    { "x": 11, "z": 10 },
-    { "x": 2, "z": 11 },
-    { "x": 5, "z": 10, "litany": "testeA_opera_purificador_1" },
-    { "x": 8, "z": 9 },
-    { "x": 2, "z": 15 },
-    { "x": 4, "z": 15 },
-    { "x": 12, "z": 14, "litany": "testeA_podres_1" },
-    { "x": 10, "z": 13 }
+    { "x": 6, "z": 4, "litany": "testeA_mineiro_1" },
+    { "x": 12, "z": 4, "litany": "testeA_mineiro_2" },
+    { "x": 7, "z": 5, "litany": "testeA_aguadeiro_1" },
+    { "x": 11, "z": 5, "litany": "testeA_aguadeiro_2" },
+    { "x": 6, "z": 6, "litany": "testeA_purificador_1" },
+    { "x": 12, "z": 6, "litany": "testeA_purificador_2" },
+    { "x": 7, "z": 3, "litany": "testeA_barreiro" },
+    { "x": 7, "z": 4, "litany": "testeA_oleiro" },
+    { "x": 9, "z": 7, "litany": "testeA_cristaleiro" }
   ],
   "terrain": {
     "default": "grass",
     "patches": [
-      { "kind": "water", "x": 0, "z": 0, "width": 2, "height": 18 },
-      { "kind": "sand",  "x": 2, "z": 0, "width": 1, "height": 13 },
-      { "kind": "bank",  "x": 2, "z": 13, "width": 1, "height": 5 },
-      { "kind": "dirt",  "x": 3, "z": 5, "width": 17, "height": 9 }
+      { "kind": "dirt",  "x": 4, "z": 1, "width": 11, "height": 9 },
+      { "kind": "water", "x": 9, "z": 2, "width": 1, "height": 4 },
+      { "kind": "bank",  "x": 8, "z": 2, "width": 1, "height": 2 }
     ]
   }
 }
