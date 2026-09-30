@@ -295,4 +295,5 @@ def main():
     print("MEDIDAS " + json.dumps(medidas["atras"]))
 
 
-main()
+if __name__ == "__main__":  # folha_cenario.py importa as peças daqui sem rodar a folha da árvore
+    main()

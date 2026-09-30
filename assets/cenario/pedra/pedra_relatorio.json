@@ -1,0 +1,80 @@
+{
+  "fonte": "tools/arte/cenario/pedra.py",
+  "unidade": "m",
+  "frente": "+Z",
+  "variacoes": [
+    {
+      "arquivo": "pedra_1.glb",
+      "triangulos": 76,
+      "altura_m": 0.499,
+      "pegada_x_m": [
+        -0.261,
+        0.277
+      ],
+      "pegada_z_m": [
+        -0.306,
+        0.347
+      ],
+      "nome": "bloco",
+      "semente": 101,
+      "cores": {
+        "pedra": "#66636B",
+        "musgo": "#4E5544"
+      }
+    },
+    {
+      "arquivo": "pedra_2.glb",
+      "triangulos": 76,
+      "altura_m": 0.405,
+      "pegada_x_m": [
+        -0.274,
+        0.254
+      ],
+      "pegada_z_m": [
+        -0.367,
+        0.408
+      ],
+      "nome": "dupla",
+      "semente": 113,
+      "cores": {
+        "pedra": "#66636B"
+      }
+    },
+    {
+      "arquivo": "pedra_3.glb",
+      "triangulos": 112,
+      "altura_m": 0.538,
+      "pegada_x_m": [
+        -0.284,
+        0.203
+      ],
+      "pegada_z_m": [
+        -0.277,
+        0.25
+      ],
+      "nome": "pilha",
+      "semente": 127,
+      "cores": {
+        "pedra": "#66636B"
+      }
+    },
+    {
+      "arquivo": "pedra_4.glb",
+      "triangulos": 76,
+      "altura_m": 0.397,
+      "pegada_x_m": [
+        -0.254,
+        0.277
+      ],
+      "pegada_z_m": [
+        -0.37,
+        0.314
+      ],
+      "nome": "laje",
+      "semente": 139,
+      "cores": {
+        "pedra": "#66636B"
+      }
+    }
+  ]
+}

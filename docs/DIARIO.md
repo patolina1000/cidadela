@@ -3226,3 +3226,24 @@ onde errou, correções manuais e quanto tempo levou.
   ao lado do tronco), 0 % a 1 m, 58 % a 2 m; protagonista atrás da alta: 44 % / 3 % / 82 %. A faixa ruim agora é
   a de ~1 m atrás.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~20 min.
+
+## 2026-09-29 — Cenário, tarefa 3B: pedra e veio de ferro, piloto, e folha conjunta
+
+- **Pedido (Diretor):** pedra (0,35–0,55 m) e veio de ferro (0,30–0,45 m), 4 variações cada, ≤ ~200 triângulos,
+  pelas regras da árvore; as três famílias juntas; folha no mesmo formato com a borda fria (b) e a árvore
+  revisão 3.
+- **Feito:** `tools/arte/cenario/cenario_lib.py` (bloco = casca convexa de pontos num elipsoide torto, base
+  cortada no chão, camadas de cima giradas; material chapado; exportação e relatório), `pedra.py`, `veio.py`.
+  Pedra: seixos macios de pedra fria #66636B: 1 bloco com tampa de musgo (76 tri, 0,50 m), 2 dupla (76, 0,40),
+  3 pilha em espiral (112, 0,54), 4 laje (76, 0,40). Veio: rocha macia lama #2E2931 com lascas facetadas
+  #1E2A3A: 1 leque (84, 0,43), 2 cruzado (104, 0,41), 3 coroa em espiral (100, 0,28), 4 torre (68, 0,42).
+  Materiais `pedra`, `musgo`, `minerio`.
+- **Folha:** `folha_cenario.py` (reusa as peças de `folha_arvore.py`, que ganhou `if __name__`) e
+  `montar_folha_cenario.py` → `assets/previews/cenario/cenario_contato.png`: vistas de cada uma, as três
+  famílias em 3/4, fila na câmera do jogo e pedaço de mapa (bosque, pedras, mancha de 4 veios) nos 3 zooms, com
+  crepúsculo. `PROPOSTA.md` atualizada (árvore 2,1–2,6 m, pedra/veio como feitos).
+- **Deu errado:** a primeira versão (casca de 10–14 pontos, facetada, lascas finas) parecia low-poly genérico ao
+  lado da copa macia e do aldeão, e as lascas eram espinhos que somem no zoom 0,4. Troquei para seixos de 20–24
+  pontos com normais suaves e lascas 45 % mais gordas, facetadas (cristal contra rocha lisa). No mapa, os
+  personagens ficaram escondidos atrás das copas; passei os dois para a frente.
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~40 min.

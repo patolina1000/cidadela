@@ -29,19 +29,19 @@ do "manda".
 | | Árvore | Pedra | Veio de ferro |
 | --- | --- | --- | --- |
 | Pegada | 1 célula; tronco perto do centro, copa ≤ 1,1 m de diâmetro (pode passar um pouco da célula) | 1 célula, 0,7–0,9 m | 1 célula, 0,7–0,9 m |
-| Altura | **1,3–1,7 m** (média 1,5) | 0,35–0,55 m | 0,30–0,45 m |
-| Triângulos | ≤ 400 | 120–250 | 150–300 |
+| Altura | **2,1–2,6 m**, copa a partir de ≥ 1,0 m (revisão 3) | 0,35–0,55 m | 0,30–0,45 m |
+| Triângulos | ≤ 400 | ≤ 200 (piloto: 76–112) | ≤ 200 (piloto: 68–104) |
 | Cores | tronco terra #4A3B3A, lama #2E2931 ou terra arroxeada #3F3342; copa musgo acinzentado #4E5544 ou líquen roxo #6B4F7C | pedra fria #66636B, sombra lama #2E2931, uma com tampa de musgo #4E5544 | rocha lama #2E2931 + pedra fria #66636B; lascas de minério azul meia-noite #1E2A3A (a cor do ferro no jogo) |
-| Variações | 4: gota, dupla, tufos, alta (todas com tronco torto torcido e ponta da copa enrolada) | 3–4: bloco torto, dois blocos, pilha, laje inclinada | 3–4: poucas lascas grandes em ângulos diferentes |
+| Variações | 4: gota, dupla, tufos, alta (tronco torto torcido, ponta da copa dobrada); sorteio 30/30/10/30 % | 4 seixos macios: bloco com tampa de musgo, dupla, pilha em espiral, laje | 4: leque, cruzado, coroa, torre (lascas facetadas sobre rocha macia) |
 | Esgotado | **toco** (malha própria, ~40 triângulos) no lugar ou some, como hoje | some; opcional: 2–3 lascas chatas no chão | **fica a mancha no chão** (tipo de terreno, GDD "Piso e chão"); a rocha some |
 
 O que fazer ao esgotar é regra de jogo: fica para o Diretor e o Arthur. O mais simples é continuar sumindo
 como hoje; o toco e a mancha só entram se forem pedidos.
 
-**Por que 1,5 m para a árvore:** é ~4 aldeões e ~2 protagonistas, e fica acima das máquinas (≤ 1,2 m), então um
-bosque se lê como bosque e não como arbusto. Mais alta que isso esconde demais a 55°: a copa de uma árvore de
-altura *h* cobre o chão até ~0,7·*h* atrás dela (1,5 m → ~1 célula). A copa começa acima da cabeça do aldeão
-(0,40 m), perto da altura da protagonista, para ela se ver passando embaixo e ao lado.
+**Altura da árvore (revisão 3, pedido do Arthur):** os personagens não podem alcançar as folhas, então a copa
+começa a ≥ 1,0 m (acima da protagonista, 0,80 m) e a árvore fica com 2,1–2,6 m, com ~1 m de tronco livre. A 55°
+ela esconde quem está ~1 m atrás (medido: 0–3 % do corpo aparece); a 0,5 m o personagem aparece por baixo da copa
+e a 2 m volta a aparecer. O JOGO vai esmaecer a copa com personagem atrás. (Proposta inicial era 1,3–1,7 m.)
 
 ## Contrato de cenário: regras gerais propostas
 
