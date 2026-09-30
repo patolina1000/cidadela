@@ -52,6 +52,15 @@ public partial class VillagerPanel : PanelContainer
         Visible = false;
     }
 
+    /// <summary>Quem recusou a última cópia, e por quê.</summary>
+    private string CopyText()
+    {
+        foreach ((int id, LitanyFit fit) in _world.LastCopyResults)
+            if (fit != LitanyFit.Ok)
+                return $"\nAldeão {id} {RefusalText(fit).ToLowerInvariant()}";
+        return "";
+    }
+
     public void ShowVillager(Villager? villager)
     {
         Villager = villager;
@@ -86,7 +95,8 @@ public partial class VillagerPanel : PanelContainer
             ? "Sem ladainha: parado. (O aldeão não faz nada sozinho.)   T: ensinar" + carrying
             : v.Stuck is LitanyStuck reason
                 ? $"TRAVADO em \"{LitanyText.Command(v.CurrentCommand!, _world)}\": {LitanyText.Stuck(reason, v.CurrentCommand, _world)}" + carrying
-                : $"Ladainha \"{v.Litany.Name}\" ({v.Litany.Commands.Count}/{v.Stats.MaxCommands(v.Intelligence)} comandos)" + carrying;
+                : $"Ladainha \"{v.Litany.Name}\" ({v.Litany.Commands.Count}/{v.Stats.MaxCommands(v.Intelligence)} comandos)   ·   " +
+                  "T: ensinar outra   ·   Shift+clique em outro aldeão: copiar" + carrying + CopyText();
         _state.AddThemeColorOverride("font_color", v.Stuck is not null ? Palette.Pumpkin : new Color(0.85f, 0.85f, 0.9f));
         if (_blocks.CustomMinimumSize.Y < 1f && v.Litany is not null)
             _blocks.Show(_world, v);

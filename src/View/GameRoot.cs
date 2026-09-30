@@ -160,7 +160,11 @@ public partial class GameRoot : Node3D
             if (click.Pressed && _selected is null && _heldItem is null && _camera.GroundUnder(click.Position) is Vector3 ground
                 && _view.VillagerAt(ground) is Villager villager)
             {
-                _villagerPanel.ShowVillager(villager); // clicar no aldeão mostra a ladainha dele em blocos
+                // Shift+clique em outro aldeão copia a ladainha do escolhido para ele (de graça; vários, um a um).
+                if (click.ShiftPressed && _villagerPanel.Villager is { Litany: not null } source && source != villager)
+                    _world.Enqueue(new CopyLitanyCommand(source.Id, new[] { villager.Id }));
+                else
+                    _villagerPanel.ShowVillager(villager); // clicar no aldeão mostra a ladainha dele em blocos
                 return;
             }
             if (click.Pressed && _world.Teaching is null)

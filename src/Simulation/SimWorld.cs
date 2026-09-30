@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace Cidadela.Simulation;
@@ -314,6 +315,24 @@ public sealed class SimWorld
     }
 
     internal void CancelTeaching() => Teaching = null;
+
+    /// <summary>O resultado da última cópia de ladainha, por aldeão (id → aceitou ou por que recusou).</summary>
+    public IReadOnlyDictionary<int, LitanyFit> LastCopyResults => _lastCopyResults;
+    private readonly Dictionary<int, LitanyFit> _lastCopyResults = new();
+
+    internal void CopyLitany(int fromId, IReadOnlyList<int> toIds)
+    {
+        _lastCopyResults.Clear();
+        Litany? litany = null;
+        foreach (Villager v in _villagers)
+            if (v.Id == fromId)
+                litany = v.Litany;
+        if (litany is null)
+            return;
+        foreach (Villager v in _villagers)
+            if (v.Id != fromId && toIds.Contains(v.Id))
+                _lastCopyResults[v.Id] = v.Learn(this, litany);
+    }
 
     internal void RecordGoToHere()
     {

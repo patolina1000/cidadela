@@ -6304,3 +6304,16 @@ onde errou, correções manuais e quanto tempo levou.
   (print `docs/prints/ladainhas_passo8_ensinar.png`).
 - **Correções manuais:** nenhuma.
 - **Tempo:** 20:22–20:23 de relógio.
+
+## 2026-09-30 — Ladainhas, passo 9: copiar
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** passo 9 do plano: copiar a ladainha de um aldeão para outros, de graça, vários.
+- **Feito:** `CopyLitanyCommand` (de um para vários) e `SimWorld.CopyLitany`: cada um recebe a mesma ladainha e começa do
+  primeiro comando, independente; quem não tem Inteligência para ela recusa, e o motivo fica em `LastCopyResults`.
+  Interface: com o painel de um aldeão aberto, **Shift+clique** em outro aldeão copia para ele (um a um, quantos quiser);
+  o painel diz quem recusou e por quê.
+- **Testes:** `CopyLitanyTests` (copia para dois, cada um começa do início e colhe árvores diferentes; Inteligência 1
+  recusa a ladainha de 7 comandos; copiar de quem não tem ladainha não faz nada). `dotnet build` 0/0; `dotnet test` 263.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 20:24–20:24 de relógio.
