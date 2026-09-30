@@ -10,6 +10,8 @@ namespace Cidadela.View;
 /// palco 3D no centro com a iluminação do jogo, texto à direita. No palco, arrastar com o botão esquerdo
 /// gira e a roda aproxima. Embaixo, botões de animação da entrada (clipes dos personagens; funcionando e
 /// parada nas máquinas) e, no aldeão, expressões, cabelos, tons e chapéu. Tudo vem de data/biography.json.
+/// O palco é desenhado num SubViewport do tamanho do vão entre as colunas (na resolução real da janela), para o
+/// modelo ficar centrado nele; fora do vão o fundo é liso e a tela principal não desenha 3D.
 /// </summary>
 public partial class BiographyRoot : Node3D
 {
@@ -28,6 +30,8 @@ public partial class BiographyRoot : Node3D
     private VillagerVisual.DrawState _villagerState;
     private int _villagerSeed = 1; // muda o tom do cabelo (sorteado pelo id)
     private Camera3D _camera = null!;
+    private SubViewport _stageViewport = null!;
+    private TextureRect _stageView = null!;
     private float _yaw = Mathf.Pi, _pitch = 0.32f, _distance = 3f, _targetHeight = 0.4f;
     private bool _dragging;
     private Vector2 _lastMouse;
@@ -86,8 +90,12 @@ public partial class BiographyRoot : Node3D
 
         _stage = new Node3D { Name = "Stage", Position = center + new Vector3(0f, 0.04f, 0f) };
         AddChild(_stage);
-        _camera = new Camera3D { Name = "Camera", Fov = 40f, Current = true };
-        AddChild(_camera);
+        // O SubViewport vê o mesmo mundo (céu, névoa e sol da cena); a câmera dele é a única da cena.
+        _stageViewport = new SubViewport { Name = "StageViewport", RenderTargetUpdateMode = SubViewport.UpdateMode.Always };
+        AddChild(_stageViewport);
+        // Largura fixa: o vão é mais alto que largo. 26° na largura deixa folga em cima e embaixo do modelo.
+        _camera = new Camera3D { Name = "Camera", Fov = 26f, KeepAspect = Camera3D.KeepAspectEnum.Width, Current = true };
+        _stageViewport.AddChild(_camera);
         PlaceCamera();
     }
 
@@ -264,7 +272,7 @@ public partial class BiographyRoot : Node3D
         _machineView.CastellanNode.Visible = false;
         GetNode<Node3D>("Pedestal").Visible = false;
 
-        _targetHeight = 0.45f; _distance = 4.6f;
+        _targetHeight = 0.45f; _distance = 7f; // longe o bastante para o vão estreito mostrar as esteiras dos dois lados
         _defaultYaw = 0f; // câmera ao sul, olhando para o norte: a esteira corre da esquerda para a direita
     }
 
@@ -276,6 +284,22 @@ public partial class BiographyRoot : Node3D
         AddChild(layer);
         var vignette = new ColorRect { Name = "Vignette", Material = GD.Load<ShaderMaterial>("res://scenes/vignette_material.tres"), MouseFilter = Control.MouseFilterEnum.Ignore };
         vignette.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+
+        var background = new ColorRect { Name = "Background", Color = new Color(0.06f, 0.05f, 0.09f), MouseFilter = Control.MouseFilterEnum.Ignore };
+        background.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        layer.AddChild(background);
+
+        // Palco: o vão entre as colunas, acima dos controles. O mouse passa direto (arrastar gira, roda aproxima).
+        _stageView = new TextureRect
+        {
+            Name = "Stage", Texture = _stageViewport.GetTexture(), MouseFilter = Control.MouseFilterEnum.Ignore,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.Scale,
+            AnchorLeft = 0f, AnchorRight = 1f, AnchorTop = 0f, AnchorBottom = 1f,
+            OffsetLeft = LeftWidth + ListWidth, OffsetRight = -RightWidth, OffsetTop = 0f, OffsetBottom = -BottomHeight,
+        };
+        layer.AddChild(_stageView);
+        _stageView.Resized += UpdateStageSize;
+        GetViewport().SizeChanged += UpdateStageSize;
         layer.AddChild(vignette);
 
         // Categorias (esquerda).
@@ -321,6 +345,14 @@ public partial class BiographyRoot : Node3D
         _controls = new VBoxContainer();
         _controls.AddThemeConstantOverride("separation", 6);
         bottom.AddChild(_controls);
+    }
+
+    /// <summary>O SubViewport renderiza em pixels reais da janela (a interface é desenhada em 1152×648 e esticada).</summary>
+    private void UpdateStageSize()
+    {
+        float scale = GetWindow().Size.Y / Mathf.Max(1f, GetViewport().GetVisibleRect().Size.Y);
+        Vector2 size = _stageView.Size * scale;
+        _stageViewport.Size = new Vector2I(Mathf.Max(1, Mathf.RoundToInt(size.X)), Mathf.Max(1, Mathf.RoundToInt(size.Y)));
     }
 
     private void ShowCategory(Biography.Category category)

@@ -4150,4 +4150,28 @@ onde errou, correções manuais e quanto tempo levou.
   pelo nó e cliquei de novo.
 - `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
 - **Correções manuais:** nenhuma.
-- **Tempo:** 21:48–21:51 de relógio.
+- **Tempo:** 21:48–21:49 de relógio.
+
+---
+
+## 2026-09-29 — Palco da Biografia num SubViewport, centrado no vão
+
+- **Agente / modelo:** Claude Code + Opus 5.5 (agente JOGO), na `master`.
+- **Pedido:** tarefa 2, passo 3 (auditoria, item 17): palco da Biografia sem o retângulo claro e sem a protagonista
+  passando da borda.
+- **Causa:** não havia SubViewport. O 3D ocupava a tela inteira, com a câmera centrada no meio da tela, e os painéis
+  translúcidos escureciam tudo menos o vão entre as colunas: o "retângulo claro" era o vão, e o modelo, centrado na
+  tela e não no vão, descia para baixo do painel de controles.
+- **O que foi feito:** `BiographyRoot`: a câmera passou para um `SubViewport` que vê o mesmo mundo (céu, névoa e sol
+  da cena), mostrado num `TextureRect` exatamente no vão (entre as colunas, acima dos controles), renderizado na
+  resolução real da janela (o tamanho do vão × a escala da janela, refeito ao redimensionar), para não ficar borrado
+  em 4K. O fundo fora do vão virou liso (o roxo escuro dos painéis) e a tela principal não desenha mais 3D. Câmera
+  com largura fixa (o vão é mais alto que largo) e 26° na largura; as máquinas afastaram de 4,6 para 7 m para as
+  esteiras dos dois lados caberem. O mouse passa pelo palco: arrastar gira e a roda aproxima, como antes.
+- **Conferido no jogo:** protagonista, aldeão e serraria (funcionando) inteiros e centrados no vão; log sem erros.
+  Prints: `docs/prints/biografia_palco_protagonista.png`, `biografia_palco_aldeao.png`, `biografia_palco_serraria.png`.
+- **O que deu errado:** com 20° a protagonista encostava em cima e embaixo (subi para 26°), e a serraria a 4,6 m
+  cortava as esteiras (afastei para 7 m).
+- `dotnet build`: 0 erros, 0 avisos. Sem mudança na simulação.
+- **Correções manuais:** nenhuma.
+- **Tempo:** 21:49–21:52 de relógio.

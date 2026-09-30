@@ -59,6 +59,7 @@ Legenda: **[decidido]** = o GDD já decide, só falta fazer. **[Arthur]** = prec
     retângulo mais claro no alto, com a protagonista passando da borda de baixo para o painel das animações.
     Pode ser o enquadramento do SubViewport; é visual, então **[Arthur]** diz se incomoda antes de eu mexer.
     (A Biografia ainda mostra a protagonista v1, o que é esperado até a v2 chegar.)
+    Feito na tarefa 2: o palco virou um SubViewport só no vão, com o modelo centrado.
 
 Prints desta auditoria: `docs/prints/jogo_pausado.png`, `menu_pausa.png`, `polimento_menu_inicial.png`,
 `polimento_configuracoes_salvas.png`, `polimento_biografia.png` (960×540, capturas do godot-ai).
