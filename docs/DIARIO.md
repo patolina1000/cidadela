@@ -3570,3 +3570,16 @@ onde errou, correções manuais e quanto tempo levou.
   cabeludo: 8.515 px com ela); o corte dos chifres furava a calota; a decimação comia a borda da calota; um erro de sinal meu na
   borda de trás da máscara; pontos de pele na nuca quando o idle inclina a cabeça (calota descendo 8 mm).
 - **Créditos:** 0 (na protagonista: 121 de 300). **Correções manuais:** nenhuma. **Tempo:** ~2 h 30.
+
+## 2026-09-30 — Protagonista v2 APROVADA (fechamento)
+
+- **Aprovado pelo Arthur (30/09):** corpo (82edb7d), rosto b3 + atlas, Run 3 + Long Breathe, cristal, chifres com a base
+  recuada e cabelo com calota (423d5a9). Conferido que os arquivos principais são a versão aprovada (`chifres.glb` idêntico à
+  variante recuada; `cabelo.glb` é o com calota).
+- **sha256 dos GLBs aprovados** (também em `assets/modelos/protagonista_v2/aprovado.json`):
+  - `protagonista_corpo.glb`: `383bda5f36dc2be26dd6035e968195f55b8b190d297106b2c2205bc268ca7e64`
+  - `cabelo.glb`: `60af4a19c98e0e7303d41fce08958d96caae4f57af86117492b08361cae5ede4`
+  - `chifres.glb`: `0b9eb13c4cea7d201b090ccd1691bd552f2e23561dac25428d2a2255c0be5ba3`
+  - `cristal.glb`: `24d50792ff19b36e0bcca3c13a1be1125f75bcbb4a4b2e856d602d75831e893c`
+- **Créditos da Meshy na protagonista v2:** 121 de 300 (corpo 40, rig 5, clipes 36, chifres 20, cabelo 20).
+- **ARTE travada** por decisão do Arthur até nova ordem.
