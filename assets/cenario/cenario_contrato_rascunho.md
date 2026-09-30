@@ -48,8 +48,9 @@ Mudanças só com aval do Arthur: quem precisar mudar algo, para e pergunta.
 
 ## BORDA FRIA E SOMBRA
 
-- Borda de luz fria do toon (opção b, aprovada pelo Arthur) nos materiais listados em `coldRim`: copa; pedra e musgo;
-  rocha e minério do veio; manchas. Tronco e toco sem borda. A borda ainda não existe no `Toon.gdshaderinc`: é
+- Borda de luz fria do toon (opção b) nos materiais listados em `coldRim`: pedra e musgo; rocha e minério do veio;
+  manchas (por enquanto). Copa, tronco e toco sem borda: o Arthur viu a borda na copa dentro do jogo e não gostou
+  (29/09/2026); como a copa volta a sumir no crepúsculo, a alternativa está em aberto. A borda ainda não existe no `Toon.gdshaderinc`: é
   tarefa do JOGO; a arte a aproximou no Blender (faixa dura, cor do sol frio × 0,10).
 - Projetam sombra só as massas grandes (`castsShadow`: árvore, pedra, veio), na cascata perto; toco e mancha não.
 - O JOGO esmaece a copa quando um personagem está atrás dela (a ~1 m atrás, a árvore esconde de 97 a 100 % do corpo

@@ -14,7 +14,8 @@ ROOT = Path(__file__).resolve().parents[3]
 
 FAMILIAS = [
     # (id do recurso, família, prefixo dos arquivos, pesos, materiais com borda fria, projeta sombra, comentário)
-    ("wood", "árvore", "arvore/arvore_", [0.3, 0.3, 0.1, 0.3], ["copa"], True,
+    # Copa sem borda fria: o Arthur viu no jogo e não gostou do brilho em volta das folhas (tarefa 8, 29/09/2026).
+    ("wood", "árvore", "arvore/arvore_", [0.3, 0.3, 0.1, 0.3], [], True,
      "1 gota, 2 dupla, 3 tufos (líquen roxo, destaque raro), 4 alta. Copa a partir de ≥ 1,0 m (fora do alcance)."),
     ("stone", "pedra", "pedra/pedra_", [0.25] * 4, ["pedra", "musgo"], True,
      "1 bloco com tampa de musgo, 2 dupla, 3 pilha em espiral, 4 laje. Pedra escurecida #57535F."),
@@ -44,8 +45,9 @@ def main():
         "  // Arthur; regras em assets/cenario/cenario_contrato_rascunho.md. A chave é o id do recurso (data/resources.json).",
         "  // weight: peso do sorteio da variação por célula (soma 1). height: metros. cells: pegada em células (1 = a célula",
         "  // do nó). overhang: quanto a malha pode passar da borda da célula, em metros, no pior giro (a copa inclinada). triangles: LOD0; o LOD",
-        "  // automático do Godot basta (verificacao.json). coldRim: materiais que levam a borda de luz fria do toon (opção b,",
-        "  // aprovada pelo Arthur). castsShadow: só as massas grandes projetam sombra (GDD, seção 13).",
+        "  // automático do Godot basta (verificacao.json). coldRim: materiais que levam a borda de luz fria do toon (opção b);",
+        "  // a copa das árvores ficou SEM borda (o Arthur não gostou no jogo, 29/09/2026); pedra e veio seguem com ela por",
+        "  // enquanto. castsShadow: só as massas grandes projetam sombra (GDD, seção 13).",
         "  // O jogo sorteia também o giro em Y (0–360°) e a escala (0,9–1,1) por instância.",
         "  // depleted: o que fica quando o recurso esgota. OPCIONAL: a decisão é do Arthur; sem ela, o nó some (como hoje).",
     ]

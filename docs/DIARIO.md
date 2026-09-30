@@ -3323,3 +3323,14 @@ onde errou, correções manuais e quanto tempo levou.
   montadas de novo; nenhum script de modelo mudou. As pedras aparecem iguais, só assentadas no centro da célula.
   Publicadas no visor.
 - **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~10 min.
+
+## 2026-09-29 — Cenário, tarefa 8: copa das árvores sem borda fria
+
+- **Pedido (Diretor):** o Arthur viu as árvores no jogo e não gostou do brilho claro em volta das folhas (a borda
+  de luz fria na copa). Desligar a borda na copa em `cenario.json`; pedra e veio ficam como estão; não clarear a
+  cor por conta própria, só registrar alternativas na nota 11.
+- **Feito:** `manifesto.py` com `coldRim: []` nas 4 árvores e o comentário do cabeçalho explicando;
+  `cenario.json` regerado (pedra, veio e manchas iguais). O rascunho de contrato acompanha (copa, tronco e toco sem
+  borda; alternativa em aberto). Nenhum GLB nem cor mudou. As folhas publicadas ainda mostram a copa com borda.
+- **Alternativas sem borda registradas na nota 11** para o Diretor levar ao Arthur (nenhuma aplicada).
+- **Créditos:** 0. **Correções manuais:** nenhuma. **Tempo:** ~10 min.
